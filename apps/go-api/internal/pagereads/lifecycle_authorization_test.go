@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
@@ -49,7 +51,8 @@ func TestAuthorizeLifecycleAllowsPageOwnerWithGuestProjectRole(t *testing.T) {
 
 func TestAuthorizeLifecycleMapsMissingPageToRecorded403(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{rowFunc(func(...any) error { return pgx.ErrNoRows })}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 
 	err := repository.AuthorizeLifecycle(context.Background(), "update", uuid.New(), "demo", uuid.New(), uuid.New())
 

@@ -6,6 +6,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_member_me"
@@ -91,7 +93,8 @@ func TestWorkspaceMemberMeAuthenticationAndInternalErrors(t *testing.T) {
 		t.Fatal("expected missing-principal error")
 	}
 
-	service, _ = NewWorkspaceMemberMe(repository, memberMeSessionTest{})
+	service, err = NewWorkspaceMemberMe(repository, memberMeSessionTest{})
+	require.NoError(t, err)
 	ctx, _ := service.(api.Authorizer).APIKeyAuth(context.Background(), "session", nil)
 	if _, err = service.Get(ctx, &api.GetPayload{Slug: "demo"}); err == nil || err.Error() != "internal" {
 		t.Fatalf("database error = %v", err)

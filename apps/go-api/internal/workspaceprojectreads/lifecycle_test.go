@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/google/uuid"
@@ -37,7 +39,8 @@ func (f *projectCoverAssetsFake) Validate(_ context.Context, workspace, project,
 }
 
 func TestSessionProjectFieldsRejectActorAndArchiveAssignmentsIncludingNull(t *testing.T) {
-	repo, _ := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	for _, value := range []any{nil, "00000000-0000-4000-8000-000000000001"} {
 		_, err := repo.validateProjectFields(context.Background(), "workspace", "project", djangoinput.Input{Fields: map[string]any{"created_by": value, "updated_by": value, "archived_at": value}, Surrogates: nil}, true, false, false)
 		var response *djangoapi.HTTPError
@@ -59,7 +62,8 @@ func TestSessionProjectCoverPreservesNullAndValidatesExistingAssetScope(t *testi
 		projectLifecycleBoolRow(true),
 		projectLifecycleBoolRow(true),
 	}}}
-	repo, _ := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	reader := &projectCoverAssetsFake{allowed: true}
 	repo.coverAssets = reader.Validate
 	values, err := repo.validateProjectFields(context.Background(), workspace.String(), project.String(), djangoinput.Input{Fields: map[string]any{"cover_image_asset": nil}, Surrogates: nil}, true, false, false)
@@ -145,7 +149,8 @@ func TestCreateProjectUppercasesUnicodeIdentifierWithFullMappings(t *testing.T) 
 		workspaceProjectJSONRow(`{"id":"00000000-0000-4000-8000-000000000003","identifier":"STRASSE"}`),
 	}}, tx: tx}
 	effects := &projectLifecycleEffectsFake{}
-	repo, _ := NewLifecycleRepository(db, effects, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(db, effects, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	input, err := djangoinput.Parse(strings.NewReader(`{"name":"Unicode Example","identifier":"straße"}`), "application/json")
 	if err != nil {
 		t.Fatal(err)
@@ -179,7 +184,8 @@ func TestProjectPATCHUppercasesUnicodeIdentifierAndRetainsReservation(t *testing
 		workspaceProjectJSONRow(`{"id":"` + projectID + `","identifier":"STRASSE"}`),
 	}}}
 	effects := &projectLifecycleEffectsFake{}
-	repo, _ := NewLifecycleRepository(db, effects, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(db, effects, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	input, err := djangoinput.Parse(strings.NewReader(`{"identifier":"straße"}`), "application/json")
 	if err != nil {
 		t.Fatal(err)
@@ -212,7 +218,8 @@ func TestProjectPUTUppercasesUnicodeIdentifierAndRetainsReservation(t *testing.T
 		workspaceProjectJSONRow(`{"id":"` + projectID + `","identifier":"STRASSE"}`),
 	}}}
 	effects := &projectLifecycleEffectsFake{}
-	repo, _ := NewLifecycleRepository(db, effects, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(db, effects, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	input, err := djangoinput.Parse(strings.NewReader(`{"name":"Unicode project","identifier":"straße"}`), "application/json")
 	if err != nil {
 		t.Fatal(err)
@@ -237,7 +244,8 @@ func TestProjectPUTUppercasesUnicodeIdentifierAndRetainsReservation(t *testing.T
 }
 
 func TestProjectJSONFieldsNormalizeDecimalNumbersLikePython(t *testing.T) {
-	repo, _ := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	input, err := djangoinput.Parse(strings.NewReader(`{"icon_prop":{"fraction":9007199254740993.0,"integer":9007199254740993,"text":"9007199254740993.0"}}`), "application/json")
 	if err != nil {
 		t.Fatal(err)
@@ -302,7 +310,8 @@ func TestProjectJSONFieldUnicodeValidationUsesOriginalJSONAndFormSource(t *testi
 			if err != nil {
 				t.Fatal(err)
 			}
-			repo, _ := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+			repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+			require.NoError(t, constructorErr)
 			values, err := repo.validateProjectFields(context.Background(), "workspace", "project", input, false, false, false)
 			if test.valid {
 				if err != nil {
@@ -329,7 +338,8 @@ func TestSessionProjectJSONFieldUnicodeValidationCoversAllPersistedFields(t *tes
 			if err != nil {
 				t.Fatal(err)
 			}
-			repo, _ := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+			repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+			require.NoError(t, constructorErr)
 			_, err = repo.validateProjectFields(context.Background(), "workspace", "project", input, true, false, false)
 			var response *djangoapi.HTTPError
 			if !errors.As(err, &response) || response.Status != 400 || !reflect.DeepEqual(response.Body[field], []string{"Value must be valid JSON."}) {
@@ -344,7 +354,8 @@ func TestAPIProjectValidationIgnoresNonIconJSONFieldUnicode(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	repo, _ := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	values, err := repo.validateProjectFields(context.Background(), "workspace", "project", input, false, false, false)
 	if err != nil {
 		t.Fatalf("API ignored non-icon JSONFields were rejected: %v", err)
@@ -373,7 +384,8 @@ func TestProjectCreateAndPATCHRejectUnpairedJSONFieldBeforeWritesOrActivity(t *t
 				}}}
 			}
 			effects := &projectLifecycleEffectsFake{}
-			repo, _ := NewLifecycleRepository(db, effects, "", validProjectCover)
+			repo, constructorErr := NewLifecycleRepository(db, effects, "", validProjectCover)
+			require.NoError(t, constructorErr)
 			input, err := djangoinput.Parse(strings.NewReader(body), "application/json")
 			if err != nil {
 				t.Fatal(err)
@@ -557,7 +569,8 @@ func TestProjectCompositeValidationErrorsUsePythonSourceRepresentation(t *testin
 			if err != nil {
 				t.Fatal(err)
 			}
-			repo, _ := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+			repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+			require.NoError(t, constructorErr)
 			_, err = repo.validateProjectFields(context.Background(), "workspace", "project", input, test.app, false, false)
 			var response *djangoapi.HTTPError
 			if !errors.As(err, &response) || response.Status != 400 || !reflect.DeepEqual(response.Body[test.field], []string{test.want}) {
@@ -586,7 +599,8 @@ func TestProjectForeignKeyValidationKeepsSourceTypeAndUUIDErrors(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: test.rows}}
-			repo, _ := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+			repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+			require.NoError(t, constructorErr)
 			_, err := repo.validateProjectFields(context.Background(), uuid.NewString(), uuid.NewString(), djangoinput.Input{Fields: map[string]any{test.field: test.value}}, true, false, false)
 			var response *djangoapi.HTTPError
 			if !errors.As(err, &response) || response.Status != 400 || !reflect.DeepEqual(response.Body[test.field], []string{test.want}) {
@@ -609,7 +623,8 @@ func TestProjectBooleanAcceptsNumericNegativeZeroButRejectsStringControl(t *test
 		t.Errorf("projectBoolean(string negative zero)=(%v,%v), want rejected", got, ok)
 	}
 
-	repo, _ := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	for _, body := range []string{`{"page_view":-0.0}`, `{"page_view":-0e2}`, `{"page_view":-1e-9999}`} {
 		input, err := djangoinput.Parse(strings.NewReader(body), "application/json")
 		if err != nil {
@@ -674,7 +689,8 @@ func assertProjectRequestedDataJSON(t *testing.T, effects *projectLifecycleEffec
 }
 
 func TestProjectHTMLMatchesSourceContainersAndEmptyJSONValues(t *testing.T) {
-	repo, _ := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	for _, vector := range []struct {
 		body string
 		want any
@@ -700,7 +716,8 @@ func TestProjectHTMLMatchesSourceContainersAndEmptyJSONValues(t *testing.T) {
 func TestProjectFullAndPartialFormsUseLastValueJSONAndCheckboxSemantics(t *testing.T) {
 	for _, replace := range []bool{false, true} {
 		db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: []pgx.Row{projectLifecycleBoolRow(false), projectLifecycleBoolRow(false)}}}
-		repo, _ := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+		repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+		require.NoError(t, constructorErr)
 		input, err := djangoinput.Parse(strings.NewReader(`name=first&name=last&identifier=FORM&description_html=%7B%22type%22%3A%22doc%22%7D`), "application/x-www-form-urlencoded")
 		if err != nil {
 			t.Fatal(err)
@@ -725,7 +742,8 @@ func TestProjectIntakeEffectUsesValidatedBooleanAndRetainsOriginalTaskInput(t *t
 		workspaceProjectJSONRow(`{"id":"00000000-0000-4000-8000-000000000003","sort_order":65535}`),
 	}}}
 	effects := &projectLifecycleEffectsFake{}
-	repo, _ := NewLifecycleRepository(db, effects, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(db, effects, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	input, err := djangoinput.Parse(strings.NewReader(`inbox_view=false`), "application/x-www-form-urlencoded")
 	if err != nil {
 		t.Fatal(err)
@@ -763,7 +781,8 @@ func projectLifecycleWorkspaceRow() pgx.Row {
 func TestCreateProjectRollsBackMembershipAndStatesBeforePublishing(t *testing.T) {
 	db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: []pgx.Row{projectLifecycleWorkspaceRow(), projectLifecycleBoolRow(false)}}, tx: &projectLifecycleTxFake{failStates: true}}
 	effects := &projectLifecycleEffectsFake{}
-	repo, _ := NewLifecycleRepository(db, effects, "http://localhost", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(db, effects, "http://localhost", validProjectCover)
+	require.NoError(t, constructorErr)
 	_, err := repo.CreateProject(context.Background(), "00000000-0000-4000-8000-000000000001", "space", djangoinput.Input{Fields: map[string]any{"name": "Created", "identifier": "NEW"}, Surrogates: nil}, false)
 	if err == nil {
 		t.Fatal("creation succeeded after rejected state insert")
@@ -784,7 +803,8 @@ func TestCreateProjectRollsBackMembershipAndStatesBeforePublishing(t *testing.T)
 }
 func TestProjectWritesRequireActiveWorkspaceBeforeProjectAdmin(t *testing.T) {
 	db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: []pgx.Row{projectLifecycleBoolRow(false)}}}
-	repo, _ := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	err := repo.AuthorizeProjectWrite(context.Background(), "actor", "space", "project", "patch", true)
 	if err == nil {
 		t.Fatal("stale project admin authorized")
@@ -796,7 +816,8 @@ func TestProjectWritesRequireActiveWorkspaceBeforeProjectAdmin(t *testing.T) {
 
 func TestAPIProjectAuthorizationRejectsAbsentProjectScopeBeforeUUIDQuery(t *testing.T) {
 	db := &projectLifecycleDBFake{}
-	repo, _ := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	// ProjectBasePermission filters project_id=None for unsupported unsafe
 	// collection methods. No membership can match that absent project scope.
 	if err := repo.AuthorizeProjectWrite(context.Background(), "actor", "space", "", "patch", false); !errors.Is(err, ErrForbidden) {
@@ -812,7 +833,8 @@ func TestAPIProjectPATCHMissingProjectRetainsHandlerErrorBody(t *testing.T) {
 		db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: []pgx.Row{
 			workspaceProjectRow(func(...any) error { return pgx.ErrNoRows }),
 		}}}
-		repo, _ := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+		repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+		require.NoError(t, constructorErr)
 		var err error
 		if checkOnly {
 			err = repo.CheckProjectMutation(context.Background(), "space", "project", "patch", false)
@@ -827,7 +849,8 @@ func TestAPIProjectPATCHMissingProjectRetainsHandlerErrorBody(t *testing.T) {
 }
 func TestProjectRestoreRetainsProjectMembershipWhileV1ArchiveUsesWorkspaceRole(t *testing.T) {
 	db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: []pgx.Row{projectLifecycleBoolRow(true), projectLifecycleBoolRow(true)}}}
-	repo, _ := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	if err := repo.AuthorizeProjectWrite(context.Background(), "actor", "space", "project", "archive", false); err != nil {
 		t.Fatal(err)
 	}
@@ -865,7 +888,8 @@ func TestProjectWriteResponsePreservesSerializerFloatTypeWithoutChangingIntegerF
 func TestDeleteProjectAppliesFullModelSaveAuditAndQueuesCascade(t *testing.T) {
 	db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: []pgx.Row{projectLifecycleBoolRow(true)}}}
 	effects := &projectLifecycleEffectsFake{}
-	repo, _ := NewLifecycleRepository(db, effects, "http://localhost", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(db, effects, "http://localhost", validProjectCover)
+	require.NoError(t, constructorErr)
 	if err := repo.DeleteProject(context.Background(), "actor", "space", "project", true); err != nil {
 		t.Fatal(err)
 	}
@@ -882,7 +906,8 @@ func TestDeleteProjectAppliesFullModelSaveAuditAndQueuesCascade(t *testing.T) {
 
 func TestAPIProjectUpdateRejectsForeignStateWithFieldErrorBeforeWrite(t *testing.T) {
 	db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: []pgx.Row{projectLifecycleBoolRow(true), projectLifecycleBoolRow(false)}}}
-	repo, _ := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	_, err := repo.validateProjectFields(context.Background(), "workspace", "project", djangoinput.Input{Fields: map[string]any{"default_state": "00000000-0000-4000-8000-000000000001"}, Surrogates: nil}, false, false, false)
 	var response *djangoapi.HTTPError
 	if !errors.As(err, &response) || response.Status != 400 || !reflect.DeepEqual(response.Body, map[string]any{"default_state": []string{"The provided state does not belong to this project."}}) {
@@ -894,7 +919,8 @@ func TestAPIProjectUpdateRejectsForeignStateWithFieldErrorBeforeWrite(t *testing
 }
 func TestAPIProjectUpdateAcceptsStateBelongingToProject(t *testing.T) {
 	db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: []pgx.Row{projectLifecycleBoolRow(true), projectLifecycleBoolRow(true)}}}
-	repo, _ := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	values, err := repo.validateProjectFields(context.Background(), "workspace", "project", djangoinput.Input{Fields: map[string]any{"default_state": "00000000-0000-4000-8000-000000000001"}, Surrogates: nil}, false, false, false)
 	if err != nil {
 		t.Fatal(err)
@@ -911,7 +937,8 @@ func validProjectCover(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (bool, 
 func TestNewSessionProjectRejectsExistingStateAndEstimateButAcceptsNull(t *testing.T) {
 	for _, field := range []string{"default_state", "estimate"} {
 		db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: []pgx.Row{projectLifecycleBoolRow(true), projectLifecycleBoolRow(false), projectLifecycleBoolRow(false), projectLifecycleBoolRow(false)}}}
-		repo, _ := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+		repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+		require.NoError(t, constructorErr)
 		fields := map[string]any{"name": "Created", "identifier": "NEW", field: uuid.NewString()}
 		_, err := repo.validateProjectFields(context.Background(), uuid.NewString(), "", djangoinput.Input{Fields: fields, Surrogates: nil}, true, false, true)
 		var response *djangoapi.HTTPError
@@ -931,7 +958,8 @@ func TestNewSessionProjectRejectsExistingStateAndEstimateButAcceptsNull(t *testi
 }
 
 func TestProjectFieldValidationCollectsNullChoiceAndIntegerFailures(t *testing.T) {
-	repo, _ := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
+	require.NoError(t, constructorErr)
 	_, err := repo.validateProjectFields(context.Background(), "workspace", "project", djangoinput.Input{Fields: map[string]any{"page_view": nil, "archive_in": "1.5", "network": json.Number("2.0"), "timezone": "Etc/UTC"}, Surrogates: nil}, true, false, false)
 	var response *djangoapi.HTTPError
 	if !errors.As(err, &response) || response.Status != 400 || len(response.Body) != 4 {

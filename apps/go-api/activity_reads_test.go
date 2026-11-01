@@ -12,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	api "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
 	activitystore "github.com/CaliLuke/go-plane/internal/activityreads"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
@@ -191,7 +193,8 @@ func TestActivityReadsSessionAuthenticationAndProjection(t *testing.T) {
 		"extra_stats": nil,
 		"results":     []any{map[string]any{"id": uuid.New().String(), "created_at": "2026-01-10T08:00:00Z", "field": "name", "icon_prop": map[string]any{"created_at": "2026-01-10T08:00:00Z"}, "description_json": map[string]any{"updated_at": "2026-01-10T08:00:00Z"}}},
 	}}
-	serviceValue, _ := NewActivityReads(repository, repository, &activityAPIKeyStub{}, &activitySessionStub{principal: djangosession.Principal{UserID: userID.String(), UserTimezone: "Asia/Kolkata"}}, &activityThrottleStub{})
+	serviceValue, constructorErr := NewActivityReads(repository, repository, &activityAPIKeyStub{}, &activitySessionStub{principal: djangosession.Principal{UserID: userID.String(), UserTimezone: "Asia/Kolkata"}}, &activityThrottleStub{})
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*activityReadsService)
 	ctx, err := service.APIKeyAuth(context.Background(), "session", &security.APIKeyScheme{Name: "PlaneSessionCookie"})
 	if err != nil {
@@ -223,7 +226,8 @@ func TestActivityReadsRejectInvalidSessionTimezones(t *testing.T) {
 	} {
 		t.Run(timezone, func(t *testing.T) {
 			repository := &activityRepositoryStub{body: emptyActivityPage()}
-			serviceValue, _ := NewActivityReads(repository, repository, &activityAPIKeyStub{}, &activitySessionStub{principal: djangosession.Principal{UserID: uuid.New().String(), UserTimezone: timezone}}, &activityThrottleStub{})
+			serviceValue, constructorErr := NewActivityReads(repository, repository, &activityAPIKeyStub{}, &activitySessionStub{principal: djangosession.Principal{UserID: uuid.New().String(), UserTimezone: timezone}}, &activityThrottleStub{})
+			require.NoError(t, constructorErr)
 			service := serviceValue.(*activityReadsService)
 			ctx, authErr := service.APIKeyAuth(context.Background(), "session", &security.APIKeyScheme{Name: "PlaneSessionCookie"})
 			if authErr != nil {
@@ -243,7 +247,8 @@ func TestActivityReadsRejectInvalidSessionTimezones(t *testing.T) {
 
 func TestActivityReadsRejectAuthenticationFailures(t *testing.T) {
 	repository := &activityRepositoryStub{}
-	serviceValue, _ := NewActivityReads(repository, repository, &activityAPIKeyStub{err: apikey.ErrInvalid}, &activitySessionStub{err: djangosession.ErrSessionNotFound}, &activityThrottleStub{})
+	serviceValue, constructorErr := NewActivityReads(repository, repository, &activityAPIKeyStub{err: apikey.ErrInvalid}, &activitySessionStub{err: djangosession.ErrSessionNotFound}, &activityThrottleStub{})
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*activityReadsService)
 
 	_, err := service.APIKeyAuth(context.Background(), "bad", &security.APIKeyScheme{Name: "ApiKeyAuth"})
@@ -262,7 +267,8 @@ func TestActivityReadsRejectAuthenticationFailures(t *testing.T) {
 func TestActivityReadsProtocolAuthorizationRequiresMemberRoleBeforeThrottle(t *testing.T) {
 	repository := &activityRepositoryStub{authorizeErr: activitystore.ErrForbidden}
 	throttle := &activityThrottleStub{rate: apikey.Rate{Allowed: true}}
-	serviceValue, _ := NewActivityReads(repository, repository, &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "UTC"}}, &activitySessionStub{}, throttle)
+	serviceValue, constructorErr := NewActivityReads(repository, repository, &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "UTC"}}, &activitySessionStub{}, throttle)
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*activityReadsService)
 
 	status, body := service.AuthorizeAPIActivityProtocol(context.Background(), "token", "demo", uuid.New().String(), "POST")
@@ -278,7 +284,8 @@ func TestActivityReadsProtocolAuthorizationRequiresMemberRoleBeforeThrottle(t *t
 
 	repository = &activityRepositoryStub{}
 	throttle = &activityThrottleStub{rate: apikey.Rate{Allowed: true}}
-	serviceValue, _ = NewActivityReads(repository, repository, &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "UTC"}}, &activitySessionStub{}, throttle)
+	serviceValue, constructorErr = NewActivityReads(repository, repository, &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "UTC"}}, &activitySessionStub{}, throttle)
+	require.NoError(t, constructorErr)
 	status, body = serviceValue.(*activityReadsService).AuthorizeAPIActivityProtocol(context.Background(), "token", "demo", uuid.New().String(), "HEAD")
 	if status != 0 || body != nil || repository.request.RequireProjectMemberRole {
 		t.Fatalf("safe protocol authorization status=%d body=%#v require_member_role=%t", status, body, repository.request.RequireProjectMemberRole)
@@ -288,7 +295,8 @@ func TestActivityReadsProtocolAuthorizationRequiresMemberRoleBeforeThrottle(t *t
 func TestActivityReadsAuthorizeBeforeThrottle(t *testing.T) {
 	repository := &activityRepositoryStub{authorizeErr: activitystore.ErrForbidden}
 	throttle := &activityThrottleStub{rate: apikey.Rate{Allowed: true}}
-	serviceValue, _ := NewActivityReads(repository, repository, &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "UTC"}}, &activitySessionStub{}, throttle)
+	serviceValue, constructorErr := NewActivityReads(repository, repository, &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "UTC"}}, &activitySessionStub{}, throttle)
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*activityReadsService)
 	ctx, err := service.APIKeyAuth(context.Background(), "token", &security.APIKeyScheme{Name: "ApiKeyAuth"})
 	if err != nil {
@@ -311,7 +319,8 @@ func TestActivityReadsAuthorizeBeforeThrottle(t *testing.T) {
 
 func TestActivityReadsSessionAuthUsesRetainedCookieMetadata(t *testing.T) {
 	sessions := &activitySessionStub{principal: djangosession.Principal{UserID: uuid.New().String(), UserTimezone: "UTC"}}
-	serviceValue, _ := NewActivityReads(&activityRepositoryStub{}, &activityRepositoryStub{}, &activityAPIKeyStub{}, sessions, &activityThrottleStub{})
+	serviceValue, constructorErr := NewActivityReads(&activityRepositoryStub{}, &activityRepositoryStub{}, &activityAPIKeyStub{}, sessions, &activityThrottleStub{})
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*activityReadsService)
 	policy, err := loomhttp.NewRequestMetadataPolicy([]string{"Cookie"}, nil)
 	if err != nil {
@@ -331,7 +340,8 @@ func TestActivityReadsSessionAuthUsesRetainedCookieMetadata(t *testing.T) {
 
 func TestActivityReadsInspectedSessionCannotUseGeneratedFallbackCookie(t *testing.T) {
 	sessions := &activitySessionStub{principal: djangosession.Principal{UserID: uuid.New().String(), UserTimezone: "UTC"}}
-	serviceValue, _ := NewActivityReads(&activityRepositoryStub{}, &activityRepositoryStub{}, &activityAPIKeyStub{}, sessions, &activityThrottleStub{})
+	serviceValue, constructorErr := NewActivityReads(&activityRepositoryStub{}, &activityRepositoryStub{}, &activityAPIKeyStub{}, sessions, &activityThrottleStub{})
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*activityReadsService)
 	ctx := WithReadServiceSessionPrincipal(context.Background(), "", "")
 	_, err := service.APIKeyAuth(ctx, "generated-fallback", &security.APIKeyScheme{Name: "PlaneSessionCookie"})
@@ -348,7 +358,8 @@ func TestActivityReadsRawJSONPreservesProjectionAndLargeIntegers(t *testing.T) {
 	repository := &activityRepositoryStub{body: map[string]any{
 		"id": uuid.New().String(), "new_value": json.Number("9007199254740993"), "field": "estimate_point",
 	}}
-	serviceValue, _ := NewActivityReads(repository, repository, &activityAPIKeyStub{}, &activitySessionStub{}, &activityThrottleStub{})
+	serviceValue, constructorErr := NewActivityReads(repository, repository, &activityAPIKeyStub{}, &activitySessionStub{}, &activityThrottleStub{})
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*activityReadsService)
 	ctx := context.WithValue(context.Background(), activityReadsPrincipalKey{}, activitystore.Principal{UserID: uuid.New(), Authenticated: true, Timezone: "UTC"})
 	ctx = WithReadServiceQueryPresence(ctx, url.Values{"fields": {"new_value, field"}})
@@ -391,7 +402,8 @@ func TestUserActivityReadsIgnoreFieldsProjection(t *testing.T) {
 	repository := &activityRepositoryStub{body: map[string]any{
 		"results": []any{map[string]any{"id": "activity", "field": "name"}},
 	}}
-	serviceValue, _ := NewActivityReads(repository, repository, &activityAPIKeyStub{}, &activitySessionStub{}, &activityThrottleStub{})
+	serviceValue, constructorErr := NewActivityReads(repository, repository, &activityAPIKeyStub{}, &activitySessionStub{}, &activityThrottleStub{})
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*activityReadsService)
 	ctx := WithReadServiceSessionPrincipal(context.Background(), uuid.New().String(), "UTC")
 	ctx = WithReadServiceQueryPresence(ctx, url.Values{"fields": {"id"}})

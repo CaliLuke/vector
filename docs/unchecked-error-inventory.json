@@ -8,10 +8,10 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 815,
+    "findings": 485,
     "also_in_ERR_01": 0,
-    "additional_ERR_02": 815,
-    "test_file_findings": 516,
+    "additional_ERR_02": 485,
+    "test_file_findings": 186,
     "non_test_file_findings": 299
   },
   "findings": [
@@ -58,87 +58,10 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/activity_reads_test.go",
-      "line": 194,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/activity_reads_test.go",
-      "line": 226,
-      "column": 18,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/activity_reads_test.go",
-      "line": 246,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/activity_reads_test.go",
-      "line": 265,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/activity_reads_test.go",
-      "line": 281,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/activity_reads_test.go",
-      "line": 291,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/activity_reads_test.go",
-      "line": 314,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/activity_reads_test.go",
-      "line": 334,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/activity_reads_test.go",
-      "line": 351,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/activity_reads_test.go",
-      "line": 394,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/analytic_views.go",
       "line": 181,
       "column": 12,
       "message": "Error return value of `strconv.ParseFloat` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/analytic_views_test.go",
-      "line": 124,
-      "column": 14,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -279,27 +202,6 @@
       "line": 133,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_user_identity_test.go",
-      "line": 31,
-      "column": 9,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_user_identity_test.go",
-      "line": 41,
-      "column": 9,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_user_identity_test.go",
-      "line": 59,
-      "column": 9,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -842,45 +744,10 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/custom_view_creation_test.go",
-      "line": 65,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/custom_view_creation_test.go",
-      "line": 78,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/cycle_reads.go",
       "line": 259,
       "column": 2,
       "message": "Error return value of `service.recentVisits.Record` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cycle_reads_test.go",
-      "line": 171,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/deploy_board_reads_test.go",
-      "line": 78,
-      "column": 18,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/deploy_board_reads_test.go",
-      "line": 99,
-      "column": 16,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1108,48 +975,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/activityreads/repository_test.go",
-      "line": 91,
-      "column": 15,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/activityreads/repository_test.go",
-      "line": 110,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/activityreads/repository_test.go",
-      "line": 133,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/activityreads/repository_test.go",
-      "line": 153,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/activityreads/repository_test.go",
-      "line": 198,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/analyticviews/repository_test.go",
-      "line": 85,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/assets/attachment.go",
       "line": 94,
       "column": 13,
@@ -1294,13 +1119,6 @@
       "line": 147,
       "column": 9,
       "message": "Error return value of `io.ReadAll` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/authentication/apikey/throttle_test.go",
-      "line": 127,
-      "column": 12,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1710,34 +1528,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/cyclereads/api_v1_test.go",
-      "line": 13,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/api_v1_test.go",
-      "line": 27,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/api_v1_test.go",
-      "line": 40,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/api_v1_test.go",
-      "line": 52,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/cyclereads/live_labels_integration_test.go",
       "line": 139,
       "column": 9,
@@ -1746,281 +1536,29 @@
     },
     {
       "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 105,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 137,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 148,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 173,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 216,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 246,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 283,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 294,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 475,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 540,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 571,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 597,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 628,
+      "line": 642,
       "column": 12,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 650,
-      "column": 17,
       "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/cyclereads/repository_test.go",
       "line": 664,
+      "column": 17,
+      "message": "Error return value is not checked",
+      "also_in_configured_audit": false
+    },
+    {
+      "file": "apps/go-api/internal/cyclereads/repository_test.go",
+      "line": 678,
       "column": 12,
       "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 696,
+      "line": 710,
       "column": 12,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 915,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 985,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1006,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1043,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1104,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1213,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1252,
-      "column": 23,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1267,
-      "column": 21,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1284,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1313,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1337,
-      "column": 15,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1352,
-      "column": 23,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1365,
-      "column": 20,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1383,
-      "column": 21,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1410,
-      "column": 23,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1429,
-      "column": 15,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1456,
-      "column": 22,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1473,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 1491,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/deployboardreads/repository_integration_test.go",
-      "line": 99,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/deployboardreads/repository_test.go",
-      "line": 59,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/deployboardreads/repository_test.go",
-      "line": 85,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/deployboardreads/repository_test.go",
-      "line": 101,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/deployboardreads/repository_test.go",
-      "line": 148,
-      "column": 14,
       "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
@@ -2057,76 +1595,6 @@
       "line": 346,
       "column": 12,
       "message": "Error return value of `value.Float64` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/entityfavorites/repository_test.go",
-      "line": 58,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/entityfavorites/repository_test.go",
-      "line": 75,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/entityfavorites/repository_test.go",
-      "line": 93,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/estimatereads/repository_integration_test.go",
-      "line": 36,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/estimatereads/repository_test.go",
-      "line": 57,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/estimatereads/repository_test.go",
-      "line": 81,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/estimatereads/repository_test.go",
-      "line": 104,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/estimatereads/repository_test.go",
-      "line": 115,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/estimatereads/repository_test.go",
-      "line": 143,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/estimatereads/repository_test.go",
-      "line": 181,
-      "column": 14,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -2176,13 +1644,6 @@
       "line": 256,
       "column": 7,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/instanceadminsession/repository_test.go",
-      "line": 75,
-      "column": 5,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -2277,167 +1738,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 68,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 105,
-      "column": 15,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 117,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 134,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 146,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 167,
-      "column": 15,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 207,
-      "column": 15,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 248,
-      "column": 15,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 267,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 283,
-      "column": 15,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 306,
-      "column": 15,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 332,
-      "column": 18,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 363,
-      "column": 20,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 381,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 401,
-      "column": 18,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 416,
-      "column": 26,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 429,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 489,
-      "column": 19,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 504,
-      "column": 20,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 519,
-      "column": 27,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 707,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 933,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/intakeinboxreads/repository_test.go",
-      "line": 945,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/issuequery/query.go",
       "line": 114,
       "column": 12,
@@ -2449,27 +1749,6 @@
       "line": 320,
       "column": 11,
       "message": "Error return value of `strconv.ParseFloat` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/lastvisitedworkspace/repository_test.go",
-      "line": 27,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/litelists/repository_test.go",
-      "line": 58,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/litelists/repository_test.go",
-      "line": 69,
-      "column": 5,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -2641,164 +1920,10 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/modulereads/api_v1_test.go",
-      "line": 13,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/api_v1_test.go",
-      "line": 22,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 91,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 129,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 162,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 194,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 232,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 267,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 300,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 332,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 356,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 380,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 479,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 509,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 532,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 543,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 553,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 574,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/modulereads/repository_test.go",
-      "line": 673,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/mutationreceipts/execute_integration_test.go",
       "line": 220,
       "column": 35,
       "message": "Error return value of `receipts.Execute` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notifications/repository_integration_test.go",
-      "line": 109,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notifications/repository_integration_test.go",
-      "line": 159,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notifications/repository_integration_test.go",
-      "line": 187,
-      "column": 5,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -2998,153 +2123,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/pagereads/lifecycle_authorization_test.go",
-      "line": 52,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 64,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 82,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 109,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 148,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 157,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 168,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 188,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 222,
-      "column": 15,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 236,
-      "column": 15,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 251,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 260,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 309,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 350,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 363,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 391,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 435,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 451,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 469,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 488,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/repository_test.go",
-      "line": 512,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/parity/compare.go",
       "line": 113,
       "column": 11,
@@ -3159,101 +2137,10 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/projectidentifiers/repository_test.go",
-      "line": 66,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectidentifiers/repository_test.go",
-      "line": 96,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectidentifiers/repository_test.go",
-      "line": 108,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectidentifiers/repository_test.go",
-      "line": 117,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/projectintakewrites/repository.go",
       "line": 251,
       "column": 45,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectlabelreads/api_v1_test.go",
-      "line": 14,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectlabelreads/api_v1_test.go",
-      "line": 23,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectlabelreads/api_v1_test.go",
-      "line": 36,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectlabelreads/api_v1_test.go",
-      "line": 45,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectlabelreads/repository_integration_test.go",
-      "line": 81,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectlabelreads/repository_test.go",
-      "line": 57,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectlabelreads/repository_test.go",
-      "line": 73,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectlabelreads/repository_test.go",
-      "line": 81,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectlabelreads/repository_test.go",
-      "line": 102,
-      "column": 14,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -3306,41 +2193,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/projectmembershipreads/invitations_test.go",
-      "line": 24,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/invitations_test.go",
-      "line": 41,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/invitations_test.go",
-      "line": 56,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/invitations_test.go",
-      "line": 82,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/invitations_test.go",
-      "line": 100,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/projectmembershipreads/lifecycle_bulk.go",
       "line": 173,
       "column": 14,
@@ -3390,118 +2242,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 45,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 68,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 79,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 102,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 115,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 133,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 145,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 173,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 212,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 231,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 274,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 308,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 333,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 352,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 369,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/repository_test.go",
-      "line": 389,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/projectmembershipreads/roles_scope_integration_test.go",
       "line": 65,
       "column": 17,
@@ -3520,62 +2260,6 @@
       "line": 34,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectstatereads/repository_integration_test.go",
-      "line": 95,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectstatereads/repository_test.go",
-      "line": 58,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectstatereads/repository_test.go",
-      "line": 80,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectstatereads/repository_test.go",
-      "line": 88,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectstatereads/repository_test.go",
-      "line": 107,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectstatereads/repository_test.go",
-      "line": 127,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectstatereads/repository_test.go",
-      "line": 143,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectstatereads/repository_test.go",
-      "line": 178,
-      "column": 14,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -3604,209 +2288,6 @@
       "line": 456,
       "column": 6,
       "message": "Error return value of `io.WriteString` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_integration_test.go",
-      "line": 141,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 94,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 131,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 155,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 185,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 205,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 217,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 237,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 246,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 280,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 291,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 300,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 309,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 319,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 337,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 381,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/repository_test.go",
-      "line": 393,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/throttle_test.go",
-      "line": 111,
-      "column": 12,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/throttle_test.go",
-      "line": 334,
-      "column": 12,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/throttle_test.go",
-      "line": 359,
-      "column": 12,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/throttle_test.go",
-      "line": 384,
-      "column": 12,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/throttle_test.go",
-      "line": 417,
-      "column": 12,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/throttle_test.go",
-      "line": 431,
-      "column": 12,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/throttle_test.go",
-      "line": 582,
-      "column": 12,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/throttle_test.go",
-      "line": 595,
-      "column": 12,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/throttle_test.go",
-      "line": 612,
-      "column": 12,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/throttle_test.go",
-      "line": 686,
-      "column": 13,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/throttle_test.go",
-      "line": 713,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/publicprojectmetadatareads/throttle_test.go",
-      "line": 730,
-      "column": 12,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -3894,41 +2375,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/standardviews/repository_test.go",
-      "line": 88,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/standardviews/service_test.go",
-      "line": 38,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/standardviews/service_test.go",
-      "line": 39,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/standardviews/service_test.go",
-      "line": 51,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/standardviews/service_test.go",
-      "line": 52,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/stickies/content/binary_test.go",
       "line": 177,
       "column": 3,
@@ -3978,20 +2424,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/useraccounts/repository_test.go",
-      "line": 70,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/useraccounts/repository_test.go",
-      "line": 91,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/useraccountwrites/repository.go",
       "line": 258,
       "column": 2,
@@ -3999,178 +2431,17 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/userapitokens/repository_test.go",
-      "line": 46,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/userapitokens/repository_test.go",
-      "line": 63,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/userapitokens/repository_test.go",
-      "line": 84,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/useridentity/repository_integration_test.go",
-      "line": 72,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/useridentity/repository_test.go",
-      "line": 51,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/useridentity/repository_test.go",
-      "line": 70,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/useridentity/repository_test.go",
-      "line": 93,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/useridentity/repository_test.go",
-      "line": 117,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/usernotificationpreferences/repository_test.go",
-      "line": 86,
-      "column": 13,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/usernotificationpreferences/repository_test.go",
-      "line": 96,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/usernotificationpreferences/repository_test.go",
-      "line": 115,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/usernotificationpreferences/repository_test.go",
-      "line": 129,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/userproperties/repository_integration_test.go",
-      "line": 111,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/userproperties/repository_integration_test.go",
-      "line": 216,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/userproperties/repository_integration_test.go",
-      "line": 263,
+      "line": 267,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/userproperties/repository_integration_test.go",
-      "line": 264,
+      "line": 268,
       "column": 9,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/userproperties/repository_test.go",
-      "line": 45,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/userproperties/repository_test.go",
-      "line": 60,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/userproperties/repository_test.go",
-      "line": 76,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/userproperties/repository_test.go",
-      "line": 87,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/userproperties/repository_test.go",
-      "line": 104,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/usersettings/repository_test.go",
-      "line": 44,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/usersettings/repository_test.go",
-      "line": 70,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/usersettings/repository_test.go",
-      "line": 89,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/usersettings/repository_test.go",
-      "line": 109,
-      "column": 5,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -4615,454 +2886,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/workspacefavorites/repository_test.go",
-      "line": 141,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspacefavorites/repository_test.go",
-      "line": 178,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspacefavorites/repository_test.go",
-      "line": 201,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspacememberme/repository_test.go",
-      "line": 58,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspacememberme/repository_test.go",
-      "line": 76,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspacemetadata/repository_test.go",
-      "line": 71,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/api_projects_test.go",
-      "line": 23,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/api_projects_test.go",
-      "line": 42,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/api_projects_test.go",
-      "line": 77,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/api_projects_test.go",
-      "line": 98,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/api_projects_test.go",
-      "line": 127,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/api_projects_test.go",
-      "line": 143,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/api_projects_test.go",
-      "line": 161,
-      "column": 10,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_retired_contract_test.go",
-      "line": 85,
-      "column": 11,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_retired_contract_test.go",
-      "line": 128,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_retired_contract_test.go",
-      "line": 154,
-      "column": 10,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_retired_contract_test.go",
-      "line": 171,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_retired_contract_test.go",
-      "line": 184,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 40,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 62,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 148,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 182,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 215,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 240,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 305,
-      "column": 10,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 332,
-      "column": 10,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 347,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 376,
-      "column": 10,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 560,
-      "column": 10,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 589,
-      "column": 10,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 612,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 677,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 703,
-      "column": 9,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 728,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 766,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 787,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 799,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 815,
-      "column": 9,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 830,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 868,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 885,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 897,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 914,
-      "column": 9,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/lifecycle_test.go",
-      "line": 934,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 77,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 94,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 112,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 125,
-      "column": 19,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 137,
-      "column": 15,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 142,
-      "column": 17,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 153,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 186,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 204,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 223,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 257,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 306,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 344,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 381,
-      "column": 15,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 403,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceprojectreads/repository_test.go",
-      "line": 437,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspacerecentvisits/repository_test.go",
-      "line": 99,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspacerecentvisits/repository_test.go",
-      "line": 149,
-      "column": 14,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspacethemes/repository_test.go",
-      "line": 53,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspacethemes/repository_test.go",
-      "line": 77,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/workspaceuserinsights/activity_visibility_integration_test.go",
       "line": 100,
       "column": 6,
@@ -5210,13 +3033,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/project_label_reads_test.go",
-      "line": 56,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/project_label_writes.go",
       "line": 57,
       "column": 8,
@@ -5267,21 +3083,7 @@
     },
     {
       "file": "apps/go-api/project_lifecycle_test.go",
-      "line": 68,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_lifecycle_test.go",
-      "line": 178,
-      "column": 5,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_lifecycle_test.go",
-      "line": 189,
+      "line": 193,
       "column": 7,
       "message": "Error return value of `io.ReadAll` is not checked",
       "also_in_configured_audit": false
@@ -5301,34 +3103,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/project_membership_reads_test.go",
-      "line": 169,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_membership_reads_test.go",
-      "line": 296,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_membership_reads_test.go",
-      "line": 364,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_membership_reads_test.go",
-      "line": 393,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/project_publication.go",
       "line": 92,
       "column": 10,
@@ -5343,20 +3117,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/project_publication_test.go",
-      "line": 58,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_state_reads_test.go",
-      "line": 62,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/project_state_writes_test.go",
       "line": 139,
       "column": 12,
@@ -5368,13 +3128,6 @@
       "line": 358,
       "column": 3,
       "message": "Error return value of `body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/public_project_metadata_reads_test.go",
-      "line": 75,
-      "column": 16,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -5462,38 +3215,10 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/user_accounts_test.go",
-      "line": 77,
-      "column": 11,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/user_accounts_test.go",
-      "line": 85,
-      "column": 11,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/user_api_tokens_test.go",
       "line": 79,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/user_notification_preferences_test.go",
-      "line": 72,
-      "column": 11,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/user_notification_preferences_test.go",
-      "line": 89,
-      "column": 11,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -5602,20 +3327,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/workspace_favorites_test.go",
-      "line": 167,
-      "column": 18,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_home_preferences_test.go",
-      "line": 117,
-      "column": 11,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/workspace_lifecycle.go",
       "line": 132,
       "column": 10,
@@ -5638,14 +3349,7 @@
     },
     {
       "file": "apps/go-api/workspace_member_me_test.go",
-      "line": 94,
-      "column": 11,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_member_me_test.go",
-      "line": 95,
+      "line": 98,
       "column": 7,
       "message": "Error return value of `(github.com/CaliLuke/go-plane/gen/workspace_member_me.Authorizer).APIKeyAuth` is not checked",
       "also_in_configured_audit": false
@@ -5672,13 +3376,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/workspace_quick_links_test.go",
-      "line": 98,
-      "column": 7,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/workspace_search.go",
       "line": 180,
       "column": 10,
@@ -5690,13 +3387,6 @@
       "line": 181,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_themes_test.go",
-      "line": 102,
-      "column": 10,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {

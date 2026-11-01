@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
@@ -74,7 +76,8 @@ func TestAPIProjectLiteIncludesArchivedOnlyWhenRequested(t *testing.T) {
 			return nil
 		}),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	includeText := "1"
 	if _, err := repository.APIProjects(context.Background(), user, "demo", APIProjectListOptions{IncludeArchived: include, PerPage: &includeText}); err != nil {
 		t.Fatal(err)
@@ -91,7 +94,8 @@ func TestAPIProjectsRejectsInvalidPaginationBeforeProjectQuery(t *testing.T) {
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000002")
 	bad := "not-a-number"
 	database := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectRoleRow(20)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.APIProjects(context.Background(), user, "demo", APIProjectListOptions{PerPage: &bad})
 	var response *djangoapi.HTTPError
 	if !errors.As(err, &response) || response.Status != 400 || response.Body["detail"] != "Invalid per_page parameter." {
@@ -109,7 +113,8 @@ func TestAPIProjectSummaryAllowsMemberButRejectsGuest(t *testing.T) {
 		workspaceProjectRoleRow(15),
 		workspaceProjectJSONRow(`{"counts":{"issues":1},"id":"p","identifier":"ABC","name":"Core"}`),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	body, err := repository.APIProjectSummary(context.Background(), user, "demo", project, APIProjectSummaryOptions{Fields: []string{"issues", "unknown"}})
 	if err != nil {
 		t.Fatal(err)
@@ -122,7 +127,8 @@ func TestAPIProjectSummaryAllowsMemberButRejectsGuest(t *testing.T) {
 		t.Fatalf("summary count projection changed: %s", database.queries[1])
 	}
 	guestDB := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectRoleRow(5)}}
-	guestRepository, _ := NewRepository(guestDB)
+	guestRepository, constructorErr := NewRepository(guestDB)
+	require.NoError(t, constructorErr)
 	if _, err := guestRepository.APIProjectSummary(context.Background(), user, "demo", project, APIProjectSummaryOptions{}); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("guest summary error = %v", err)
 	}
@@ -134,12 +140,14 @@ func TestAPIProjectSummaryAllowsMemberButRejectsGuest(t *testing.T) {
 func TestAPIProjectWorkspaceLookupDistinguishesMissingWorkspaceFromNonmember(t *testing.T) {
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000002")
 	missingDB := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectRow(func(...any) error { return pgx.ErrNoRows })}}
-	missingRepo, _ := NewRepository(missingDB)
+	missingRepo, constructorErr := NewRepository(missingDB)
+	require.NoError(t, constructorErr)
 	if _, err := missingRepo.APIProjects(context.Background(), user, "missing", APIProjectListOptions{}); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("missing workspace error = %v, want ErrNotFound", err)
 	}
 	nonmemberDB := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectRoleRow(0)}}
-	nonmemberRepo, _ := NewRepository(nonmemberDB)
+	nonmemberRepo, constructorErr := NewRepository(nonmemberDB)
+	require.NoError(t, constructorErr)
 	if _, err := nonmemberRepo.APIProjects(context.Background(), user, "private", APIProjectListOptions{}); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("nonmember error = %v, want ErrForbidden", err)
 	}
@@ -150,7 +158,8 @@ func TestWorkspaceListsBatchAuthorizedProjectionAndApplyFiltersTogether(t *testi
 	searchTerms := []string{"Core", "Workspace"}
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000002")
 	database := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectJSONRow(`[]`), workspaceProjectJSONRow(`[]`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	options := WorkspaceOptions{Owner: &owner, SearchTerms: searchTerms}
 	if body, err := repository.UserWorkspaces(context.Background(), user, options); err != nil || string(body) != `[]` {
 		t.Fatalf("UserWorkspaces() = %s, %v", body, err)
@@ -183,7 +192,8 @@ func TestWorkspaceListsBatchAuthorizedProjectionAndApplyFiltersTogether(t *testi
 
 func TestWorkspaceDetailHidesForeignDeletedAndFilteredRows(t *testing.T) {
 	database := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectRow(func(...any) error { return pgx.ErrNoRows })}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Workspace(context.Background(), uuid.New(), "foreign", WorkspaceOptions{})
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("Workspace() error = %v", err)
@@ -201,7 +211,8 @@ func TestWorkspaceDetailHidesForeignDeletedAndFilteredRows(t *testing.T) {
 
 func TestWorkspaceRoleRequiresActiveAllowedMembershipInLiveTenant(t *testing.T) {
 	database := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectRow(func(...any) error { return pgx.ErrNoRows })}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Projects(context.Background(), uuid.New(), "demo")
 	if !errors.Is(err, ErrForbidden) {
 		t.Fatalf("Projects() error = %v", err)
@@ -220,7 +231,8 @@ func TestWorkspaceRoleRequiresActiveAllowedMembershipInLiveTenant(t *testing.T) 
 func TestProjectStatsUsesRequestedProjectionAndBatchedCounts(t *testing.T) {
 	projectID := uuid.MustParse("00000000-0000-4000-8000-000000000003")
 	database := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectRoleRow(20), workspaceProjectJSONRow(`[]`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	projectIDs := projectID.String()
 	body, err := repository.ProjectStats(context.Background(), uuid.New(), "demo", []string{"completed_issues", "bogus"}, &projectIDs)
 	if err != nil || string(body) != `[]` {
@@ -254,7 +266,8 @@ func TestProjectStatsValidatesProjectIDsAfterAuthorization(t *testing.T) {
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			database := &workspaceProjectDatabase{rows: []pgx.Row{testCase.row}}
-			repository, _ := NewRepository(database)
+			repository, constructorErr := NewRepository(database)
+			require.NoError(t, constructorErr)
 			_, err := repository.ProjectStats(context.Background(), uuid.New(), "demo", nil, &invalid)
 			if !errors.Is(err, testCase.wantErr) {
 				t.Fatalf("ProjectStats() error = %v, want %v", err, testCase.wantErr)
@@ -303,7 +316,8 @@ func TestProjectIssueStatsMirrorIssueManagerVisibility(t *testing.T) {
 
 func TestCompactProjectsPreserveRoleVisibilityProjectionAndArchivedRows(t *testing.T) {
 	database := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectRoleRow(15), workspaceProjectJSONRow(`[]`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if _, err := repository.Projects(context.Background(), uuid.New(), "demo"); err != nil {
 		t.Fatal(err)
 	}
@@ -341,7 +355,8 @@ func TestProjectDetailsPlainAndPaginatedVariantsUseBothParameterGate(t *testing.
 	for _, testCase := range tests {
 		t.Run(testCase.name, func(t *testing.T) {
 			database := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectRoleRow(20), workspaceProjectJSONRow(`[]`)}}
-			repository, _ := NewRepository(database)
+			repository, constructorErr := NewRepository(database)
+			require.NoError(t, constructorErr)
 			if _, err := repository.ProjectDetails(context.Background(), uuid.New(), "demo", testCase.options); err != nil {
 				t.Fatal(err)
 			}
@@ -378,7 +393,8 @@ func TestProjectDetailsRejectMalformedPagination(t *testing.T) {
 		{PerPage: stringPointer("-1"), Cursor: stringPointer("-1:0:0")},
 	} {
 		database := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectRoleRow(20)}}
-		repository, _ := NewRepository(database)
+		repository, constructorErr := NewRepository(database)
+		require.NoError(t, constructorErr)
 		_, err := repository.ProjectDetails(context.Background(), uuid.New(), "demo", options)
 		if !errors.Is(err, ErrBadRequest) {
 			t.Errorf("ProjectDetails(%#v) error = %v", options, err)
@@ -400,7 +416,8 @@ func TestDjangoTimestampUsesUserOffsetAndCanonicalUTC(t *testing.T) {
 
 func TestDetailedProjectionBatchesMembersSequenceFavoritesAndAssets(t *testing.T) {
 	database := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectRoleRow(5), workspaceProjectJSONRow(`[]`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if _, err := repository.ProjectDetails(context.Background(), uuid.New(), "demo", ProjectDetailsOptions{}); err != nil {
 		t.Fatal(err)
 	}
@@ -434,7 +451,8 @@ func TestProjectDetailScopesTenantArchiveAndMapsMembershipStates(t *testing.T) {
 	for _, testCase := range tests {
 		t.Run(testCase.name, func(t *testing.T) {
 			database := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectRoleRow(20), testCase.row}}
-			repository, _ := NewRepository(database)
+			repository, constructorErr := NewRepository(database)
+			require.NoError(t, constructorErr)
 			_, err := repository.Project(context.Background(), uuid.New(), "demo", uuid.New())
 			if !errors.Is(err, testCase.wantErr) {
 				t.Fatalf("Project() error = %v, want %v", err, testCase.wantErr)

@@ -8,6 +8,8 @@ import (
 	"io"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	storeuuid "uuid"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
@@ -65,7 +67,8 @@ func (f *projectLifecycleReadFake) APIProjects(_ context.Context, _ storeuuid.UU
 func TestProjectLifecycleReadChecksPermissionBeforeThrottle(t *testing.T) {
 	repo := &projectLifecycleReadFake{denied: store.ErrForbidden}
 	throttle := &activityThrottleStub{rate: apikey.Rate{Allowed: true}}
-	s, _ := NewProjectLifecycle(repo, &activitySessionStub{}, &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "UTC"}}, throttle)
+	s, constructorErr := NewProjectLifecycle(repo, &activitySessionStub{}, &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "UTC"}}, throttle)
+	require.NoError(t, constructorErr)
 	ctx, err := s.APIKeyAuth(context.Background(), "key", &security.APIKeyScheme{Name: "ApiKeyAuth"})
 	if err != nil {
 		t.Fatal(err)
@@ -175,7 +178,8 @@ func TestProjectLifecycleRejectsIncompleteUTF8AfterCompleteJSONBeforeWrite(t *te
 func TestProjectLifecycleLiteReadPreservesOriginalIntegerQuery(t *testing.T) {
 	repo := &projectLifecycleReadFake{}
 	throttle := &activityThrottleStub{rate: apikey.Rate{Allowed: true}}
-	s, _ := NewProjectLifecycle(repo, &activitySessionStub{}, &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "UTC"}}, throttle)
+	s, constructorErr := NewProjectLifecycle(repo, &activitySessionStub{}, &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "UTC"}}, throttle)
+	require.NoError(t, constructorErr)
 	ctx, err := s.APIKeyAuth(context.Background(), "key", &security.APIKeyScheme{Name: "ApiKeyAuth"})
 	if err != nil {
 		t.Fatal(err)

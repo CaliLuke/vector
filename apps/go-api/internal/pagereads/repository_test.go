@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -61,7 +63,8 @@ func TestNewRepositoryRequiresDatabase(t *testing.T) {
 
 func TestProjectAuthorizationRequiresActiveMembershipAndAllowedPageRole(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true), bytesRow([]byte(`{"public_pages":1,"private_pages":2,"archived_pages":3}`))}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Summary(context.Background(), uuid.New(), "demo", uuid.New())
 	if err != nil {
 		t.Fatal(err)
@@ -79,7 +82,8 @@ func TestProjectAuthorizationRequiresActiveMembershipAndAllowedPageRole(t *testi
 
 func TestProjectAuthorizationMapsMissingMembershipToForbidden(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(false)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.List(context.Background(), uuid.New(), "demo", uuid.New(), "", "-created_at", "UTC")
 	if !errors.Is(err, ErrForbidden) {
 		t.Fatalf("err=%v", err)
@@ -106,7 +110,8 @@ func TestPageAuthorizationPreservesOwnershipPublicPrivateAndActiveLinkRules(t *t
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			database := &databaseStub{rows: []pgx.Row{stringRow(test.access)}}
-			repository, _ := NewRepository(database)
+			repository, constructorErr := NewRepository(database)
+			require.NoError(t, constructorErr)
 			err := repository.authorizePage(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), test.restrict)
 			if !errors.Is(err, test.want) {
 				t.Fatalf("err=%v want=%v", err, test.want)
@@ -145,7 +150,8 @@ func TestOptionsAuthorizationUsesProjectPagePermissionScope(t *testing.T) {
 	pageID := uuid.New()
 
 	database := &databaseStub{rows: []pgx.Row{boolRow(true)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if err := repository.AuthorizeOptions(context.Background(), userID, "demo", projectID, nil); err != nil {
 		t.Fatal(err)
 	}
@@ -154,7 +160,8 @@ func TestOptionsAuthorizationUsesProjectPagePermissionScope(t *testing.T) {
 	}
 
 	database = &databaseStub{rows: []pgx.Row{stringRow("allowed")}}
-	repository, _ = NewRepository(database)
+	repository, constructorErr = NewRepository(database)
+	require.NoError(t, constructorErr)
 	if err := repository.AuthorizeOptions(context.Background(), userID, "demo", projectID, &pageID); err != nil {
 		t.Fatal(err)
 	}
@@ -165,7 +172,8 @@ func TestOptionsAuthorizationUsesProjectPagePermissionScope(t *testing.T) {
 
 func TestSummaryCountsVisiblePublicPrivateAndArchivedTopLevelPages(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true), bytesRow([]byte(`{"public_pages":4,"private_pages":2,"archived_pages":1}`))}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Summary(context.Background(), uuid.New(), "demo", uuid.New())
 	if err != nil || string(data) != `{"public_pages":4,"private_pages":2,"archived_pages":1}` {
 		t.Fatalf("data=%s err=%v", data, err)
@@ -185,7 +193,8 @@ func TestSummaryCountsVisiblePublicPrivateAndArchivedTopLevelPages(t *testing.T)
 
 func TestListSearchesNamesButAlwaysOrdersFavoritesBeforeCreation(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true), bytesRow([]byte(`[]`))}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.List(context.Background(), uuid.New(), "demo", uuid.New(), `road, "map plan"`, "name", "America/New_York")
 	if err != nil || string(data) != `[]` {
 		t.Fatalf("data=%s err=%v", data, err)
@@ -219,7 +228,8 @@ func TestListSearchesNamesButAlwaysOrdersFavoritesBeforeCreation(t *testing.T) {
 func TestListRejectsInvalidAndExplicitlyEmptyDjangoOrderFieldBeforeReadingPages(t *testing.T) {
 	for _, orderBy := range []string{"not_a_page_field", ""} {
 		database := &databaseStub{rows: []pgx.Row{boolRow(true)}}
-		repository, _ := NewRepository(database)
+		repository, constructorErr := NewRepository(database)
+		require.NoError(t, constructorErr)
 		_, err := repository.List(context.Background(), uuid.New(), "demo", uuid.New(), "", orderBy, "UTC")
 		if !errors.Is(err, ErrInvalidOrder) {
 			t.Fatalf("orderBy=%q err=%v", orderBy, err)
@@ -233,7 +243,8 @@ func TestListRejectsInvalidAndExplicitlyEmptyDjangoOrderFieldBeforeReadingPages(
 func TestDetailRejectsInvalidAndExplicitlyEmptyDjangoOrderFieldBeforeReadingPage(t *testing.T) {
 	for _, orderBy := range []string{"not_a_page_field", ""} {
 		database := &databaseStub{rows: []pgx.Row{stringRow("allowed")}}
-		repository, _ := NewRepository(database)
+		repository, constructorErr := NewRepository(database)
+		require.NoError(t, constructorErr)
 		_, err := repository.Detail(
 			context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), "", orderBy, "UTC",
 		)
@@ -248,7 +259,8 @@ func TestDetailRejectsInvalidAndExplicitlyEmptyDjangoOrderFieldBeforeReadingPage
 
 func TestListAndDetailRejectNullSearchAsDRFValidationError(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.List(
 		context.Background(), uuid.New(), "demo", uuid.New(), "before\x00after", "-created_at", "UTC",
 	)
@@ -257,7 +269,8 @@ func TestListAndDetailRejectNullSearchAsDRFValidationError(t *testing.T) {
 	}
 
 	database = &databaseStub{rows: []pgx.Row{stringRow("allowed")}}
-	repository, _ = NewRepository(database)
+	repository, constructorErr = NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err = repository.Detail(
 		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), "before\x00after", "-created_at", "UTC",
 	)
@@ -306,7 +319,8 @@ func TestPageOrderValidationMatchesDjangoLazyFirstSegmentResolution(t *testing.T
 
 func TestListEscapesDjangoLikeWildcards(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true), bytesRow([]byte(`[]`))}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.List(
 		context.Background(), uuid.New(), "demo", uuid.New(), `100%_done\later`, "-created_at", "UTC",
 	)
@@ -347,7 +361,8 @@ func TestPageSearchTermsMatchDRFSmartSplit(t *testing.T) {
 
 func TestListTreatsUnmatchedQuoteAsNormalSearchTerm(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true), bytesRow([]byte(`[]`))}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.List(context.Background(), uuid.New(), "demo", uuid.New(), `"unterminated`, "-created_at", "UTC")
 	if err != nil {
 		t.Fatal(err)
@@ -360,7 +375,8 @@ func TestListTreatsUnmatchedQuoteAsNormalSearchTerm(t *testing.T) {
 
 func TestDetailReturnsStoredHTMLIssueIDsAndMapsMissingRow(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{stringRow("allowed"), bytesRow([]byte(`{"description_html":"<p>stored</p>","issue_ids":[]}`))}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Detail(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), "stored page", "-created_at", "Asia/Kolkata")
 	if err != nil || !strings.Contains(string(data), "<p>stored</p>") {
 		t.Fatalf("data=%s err=%v", data, err)
@@ -388,7 +404,8 @@ func TestDetailReturnsStoredHTMLIssueIDsAndMapsMissingRow(t *testing.T) {
 	}
 
 	database = &databaseStub{rows: []pgx.Row{stringRow("allowed"), rowFunc(func(...any) error { return pgx.ErrNoRows })}}
-	repository, _ = NewRepository(database)
+	repository, constructorErr = NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err = repository.Detail(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), "nonmatching", "-created_at", "UTC")
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("err=%v", err)
@@ -432,7 +449,8 @@ func TestDetailReturnsClassifiedDenialWithoutReadingPage(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			database := &databaseStub{rows: []pgx.Row{stringRow(test.access)}}
-			repository, _ := NewRepository(database)
+			repository, constructorErr := NewRepository(database)
+			require.NoError(t, constructorErr)
 			_, err := repository.Detail(
 				context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), "", "-created_at", "UTC",
 			)
@@ -448,7 +466,8 @@ func TestDetailReturnsClassifiedDenialWithoutReadingPage(t *testing.T) {
 func TestDescriptionReturnsRawBinaryAndCoalescesNullToEmpty(t *testing.T) {
 	binary := []byte{0x00, 0x01, 0xff}
 	database := &databaseStub{rows: []pgx.Row{stringRow("allowed"), bytesRow(binary)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Description(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New())
 	if err != nil || string(data) != string(binary) {
 		t.Fatalf("data=%v err=%v", data, err)
@@ -466,7 +485,8 @@ func TestDescriptionReturnsRawBinaryAndCoalescesNullToEmpty(t *testing.T) {
 
 func TestVersionListOrdersNewestFirstAndVersionDetailPreservesStoredFields(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{stringRow("allowed"), bytesRow([]byte(`[]`))}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.VersionList(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), "Europe/Paris")
 	if err != nil {
 		t.Fatal(err)
@@ -485,7 +505,8 @@ func TestVersionListOrdersNewestFirstAndVersionDetailPreservesStoredFields(t *te
 	}
 
 	database = &databaseStub{rows: []pgx.Row{stringRow("allowed"), bytesRow([]byte(`{"description_binary":"AAE=","description_html":"<p>stored</p>","description_json":{"type":"doc"}}`))}}
-	repository, _ = NewRepository(database)
+	repository, constructorErr = NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.VersionDetail(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), uuid.New(), "Europe/Paris")
 	if err != nil || !strings.Contains(string(data), `"description_json":{"type":"doc"}`) {
 		t.Fatalf("data=%s err=%v", data, err)
@@ -509,7 +530,8 @@ func TestVersionListOrdersNewestFirstAndVersionDetailPreservesStoredFields(t *te
 
 func TestVersionDetailMapsMissingVersionToNotFound(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{stringRow("allowed"), rowFunc(func(...any) error { return pgx.ErrNoRows })}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.VersionDetail(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), uuid.New(), "UTC")
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("err=%v", err)

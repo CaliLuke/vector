@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -82,7 +84,8 @@ func TestRepositoryMapsMissingRowsAndValidatesDatabase(t *testing.T) {
 		t.Fatal("expected nil database error")
 	}
 	database := &analyticDB{row: analyticRow(func(...any) error { return pgx.ErrNoRows })}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if _, err := repository.Get(context.Background(), uuid.Nil(), "demo", uuid.Nil()); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("get error=%v", err)
 	}

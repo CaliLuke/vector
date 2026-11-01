@@ -8,6 +8,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/jackc/pgx/v5"
 )
 
@@ -20,7 +22,8 @@ func TestAPIProjectLiteSortOrderUsesProjectMemberAnnotation(t *testing.T) {
 		*dest[2].(*bool) = true
 		return nil
 	})}}
-	repo, _ := NewRepository(db)
+	repo, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	if _, err := repo.APIProjects(context.Background(), user, "space", APIProjectListOptions{OrderBy: &order}); err != nil {
 		t.Fatal(err)
 	}
@@ -39,7 +42,8 @@ func TestAPIProjectListUsesFullSerializerAndProjectVisibility(t *testing.T) {
 			return nil
 		}),
 	}}
-	repo, _ := NewRepository(db)
+	repo, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	body, err := repo.APIProjectList(context.Background(), user, "space", APIProjectListOptions{})
 	if err != nil || string(body) != `{"results":[]}` {
 		t.Fatalf("list full API projects: body=%s err=%v", body, err)
@@ -74,7 +78,8 @@ func TestAPIProjectListKeepsSourceSortPrimaryAndUsesStableIDTie(t *testing.T) {
 			return nil
 		}),
 	}}
-	repo, _ := NewRepository(db)
+	repo, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	if _, err := repo.APIProjectList(context.Background(), user, "space", APIProjectListOptions{}); err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +100,8 @@ func TestAPIProjectDetailRestrictsWorkspaceAndVisibility(t *testing.T) {
 			return nil
 		}),
 	}}
-	repo, _ := NewRepository(db)
+	repo, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	body, err := repo.APIProject(context.Background(), user, "space", project, APIProjectDetailOptions{})
 	if err != nil || string(body) != `{"id":"00000000-0000-4000-8000-000000000003"}` {
 		t.Fatalf("get API project: body=%s err=%v", body, err)
@@ -124,7 +130,8 @@ func TestAPIProjectListAndDetailVisibilityAllowsPublicProjectsForWorkspaceRoles(
 					return nil
 				}),
 			}}
-			listRepo, _ := NewRepository(listDB)
+			listRepo, constructorErr := NewRepository(listDB)
+			require.NoError(t, constructorErr)
 			if _, err := listRepo.APIProjectList(context.Background(), user, "space", APIProjectListOptions{}); err != nil {
 				t.Fatal(err)
 			}
@@ -140,7 +147,8 @@ func TestAPIProjectListAndDetailVisibilityAllowsPublicProjectsForWorkspaceRoles(
 					return nil
 				}),
 			}}
-			detailRepo, _ := NewRepository(detailDB)
+			detailRepo, constructorErr := NewRepository(detailDB)
+			require.NoError(t, constructorErr)
 			if _, err := detailRepo.APIProject(context.Background(), user, "space", project, APIProjectDetailOptions{}); err != nil {
 				t.Fatal(err)
 			}
@@ -158,7 +166,8 @@ func TestAPIProjectProjectionFiltersFieldsAndExpandsWorkspace(t *testing.T) {
 				*dest[0].(*[]byte) = []byte(`{"id":"workspace-id","name":"Core Workspace","slug":"core"}`)
 				return nil
 			})}}
-			repo, _ := NewRepository(db)
+			repo, constructorErr := NewRepository(db)
+			require.NoError(t, constructorErr)
 			input := json.RawMessage(`{"id":"project-id","name":"Alpha","workspace":"workspace-id","description":"omitted"}`)
 			if collection {
 				input = append(append([]byte(`{"total_results":1,"results":[`), input...), []byte(`]}`)...)

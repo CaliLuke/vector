@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -55,7 +57,8 @@ func TestRepositoryRequiresDB(t *testing.T) {
 
 func TestEntityFavoriteListsSerializerJSONAndScopesProject(t *testing.T) {
 	db := &testDB{rows: []pgx.Row{jsonRow(`[]`), jsonRow(`[{"id":"favorite"}]`)}}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	if body, err := r.ListProjects(context.Background(), testUser, "demo"); err != nil || string(body) != `[]` {
 		t.Fatalf("project list=%s %v", body, err)
 	}
@@ -72,7 +75,8 @@ func TestEntityFavoriteListsSerializerJSONAndScopesProject(t *testing.T) {
 
 func TestEntityFavoriteWritesReturn204SemanticsAndMissing(t *testing.T) {
 	db := &testDB{tag: pgconn.NewCommandTag("DELETE 1")}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	if err := r.CreateCycle(context.Background(), testUser, "demo", testProject, testEntity); err != nil {
 		t.Fatal(err)
 	}
@@ -90,7 +94,8 @@ func TestEntityFavoriteWritesReturn204SemanticsAndMissing(t *testing.T) {
 
 func TestEntityFavoriteDuplicate(t *testing.T) {
 	db := &testDB{err: &pgconn.PgError{Code: "23505"}}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	if err := r.CreateView(context.Background(), testUser, "demo", testProject, testEntity); !errors.Is(err, ErrAlreadyExists) {
 		t.Fatalf("duplicate=%v", err)
 	}

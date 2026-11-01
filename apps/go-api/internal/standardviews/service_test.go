@@ -5,6 +5,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -35,8 +37,10 @@ func serviceBool(value bool) pgx.Row {
 
 func TestServiceRequiresActiveScopeBeforeListing(t *testing.T) {
 	db := &serviceDB{rows: []pgx.Row{serviceBool(false)}}
-	r, _ := NewRepository(db)
-	s, _ := NewService(r)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
+	s, constructorErr := NewService(r)
+	require.NoError(t, constructorErr)
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	if _, err := s.ListWorkspace(context.Background(), user, "demo"); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("ListWorkspace() = %v, want ErrForbidden", err)
@@ -48,8 +52,10 @@ func TestServiceRequiresActiveScopeBeforeListing(t *testing.T) {
 
 func TestServiceValidatesCreateInput(t *testing.T) {
 	db := &serviceDB{rows: []pgx.Row{serviceBool(true)}}
-	r, _ := NewRepository(db)
-	s, _ := NewService(r)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
+	s, constructorErr := NewService(r)
+	require.NoError(t, constructorErr)
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	if _, err := s.CreateWorkspace(context.Background(), user, "demo", ViewInput{}); err == nil {
 		t.Fatal("CreateWorkspace() accepted an empty input")

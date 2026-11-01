@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -63,7 +65,8 @@ func TestRepositoryRequiresDatabase(t *testing.T) {
 
 func TestGetNormalizesNameAndScopesWorkspaceMember(t *testing.T) {
 	db := &identifierDB{rows: []pgx.Row{identifierJSON(`{"exists":1,"identifiers":[]}`)}}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	user := uuid.New()
 	body, err := r.Get(context.Background(), user, "acme", "  ab  ")
 	if err != nil || string(body) != `{"exists":1,"identifiers":[]}` {
@@ -93,7 +96,8 @@ func TestNormalizeNameUsesFullUnicodeUppercase(t *testing.T) {
 
 func TestNameRequiredBeforeDatabaseAccess(t *testing.T) {
 	db := &identifierDB{}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	if _, err := r.Get(context.Background(), uuid.New(), "acme", " \t"); !errors.Is(err, ErrNameRequired) {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -105,7 +109,8 @@ func TestNameRequiredBeforeDatabaseAccess(t *testing.T) {
 func TestDeleteBlocksExistingProjectAndSoftDeletesUnusedName(t *testing.T) {
 	user := uuid.New()
 	db := &identifierDB{rows: []pgx.Row{identifierBool(true)}}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	if err := r.Delete(context.Background(), user, "acme", " ab "); !errors.Is(err, ErrProjectExists) {
 		t.Fatalf("Delete(existing) error = %v", err)
 	}
@@ -114,7 +119,8 @@ func TestDeleteBlocksExistingProjectAndSoftDeletesUnusedName(t *testing.T) {
 	}
 
 	db = &identifierDB{rows: []pgx.Row{identifierBool(false)}}
-	r, _ = NewRepository(db)
+	r, constructorErr = NewRepository(db)
+	require.NoError(t, constructorErr)
 	if err := r.Delete(context.Background(), user, "acme", " ab "); err != nil {
 		t.Fatal(err)
 	}

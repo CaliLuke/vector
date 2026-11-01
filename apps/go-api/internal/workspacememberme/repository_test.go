@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -55,7 +57,8 @@ func TestGetBuildsActiveMemberShapeAndDraftCount(t *testing.T) {
 
 func TestGetReturnsDjangoNullInstanceShapeWhenWorkspaceIsMissing(t *testing.T) {
 	database := &memberMeDB{row: memberMeRow(func(...any) error { return pgx.ErrNoRows })}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	result, err := repository.Get(context.Background(), uuid.Nil(), "missing")
 	if err != nil {
 		t.Fatal(err)
@@ -73,7 +76,8 @@ func TestRepositoryValidationAndDatabaseError(t *testing.T) {
 	}
 	want := errors.New("database")
 	database := &memberMeDB{row: memberMeRow(func(...any) error { return want })}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if _, err := repository.Get(context.Background(), uuid.Nil(), "demo"); !errors.Is(err, want) {
 		t.Fatalf("error = %v", err)
 	}

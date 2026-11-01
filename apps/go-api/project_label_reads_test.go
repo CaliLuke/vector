@@ -6,6 +6,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/project_label_reads"
@@ -53,7 +55,8 @@ func TestProjectLabelReadsListAndDetail(t *testing.T) {
 		list:   json.RawMessage(`[` + projectLabelFixture + `]`),
 		detail: json.RawMessage(projectLabelFixture),
 	}
-	serviceValue, _ := NewProjectLabelReads(repository, projectLabelReadsSessionsStub{})
+	serviceValue, constructorErr := NewProjectLabelReads(repository, projectLabelReadsSessionsStub{})
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*projectLabelReadsService)
 	ctx, err := service.APIKeyAuth(context.Background(), "session", &security.APIKeyScheme{})
 	if err != nil {

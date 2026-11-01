@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -88,7 +90,8 @@ func TestNewRepositoryRequiresDatabase(t *testing.T) {
 
 func TestWorkspaceListRequiresWorkspaceAndProjectMembership(t *testing.T) {
 	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), moduleJSONRow(`[]`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID := uuid.New()
 	data, err := repository.WorkspaceList(context.Background(), userID, "demo")
 	if err != nil || string(data) != `[]` {
@@ -126,7 +129,8 @@ func TestProjectAuthorizationDistinguishesGuestAndElevatedReads(t *testing.T) {
 		moduleBoolRow(true), moduleJSONRow(`[]`),
 		moduleBoolRow(true), emptyModulePageRow(0),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID, projectID, moduleID := uuid.New(), uuid.New(), uuid.New()
 	if _, err := repository.Links(context.Background(), userID, "demo", projectID, moduleID); err != nil {
 		t.Fatal(err)
@@ -159,7 +163,8 @@ func TestActiveAndArchivedListsUseOppositeScopesAndAggregates(t *testing.T) {
 		moduleBoolRow(true), moduleJSONRow(`[]`),
 		moduleBoolRow(true), moduleJSONRow(`[]`),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID, projectID := uuid.New(), uuid.New()
 	if _, err := repository.List(context.Background(), userID, "demo", projectID, false); err != nil {
 		t.Fatal(err)
@@ -191,7 +196,8 @@ func TestActiveAndArchivedListsUseOppositeScopesAndAggregates(t *testing.T) {
 
 func TestArchiveDetailAcceptsModuleIDAndUsesArchivedDetailProjection(t *testing.T) {
 	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), moduleJSONRow(`{"id":"ok"}`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID, projectID, moduleID := uuid.New(), uuid.New(), uuid.New()
 	if _, err := repository.ArchiveDetail(context.Background(), userID, "demo", projectID, moduleID); err != nil {
 		t.Fatal(err)
@@ -229,7 +235,8 @@ func TestArchivedDetailBurndownKeepsZeroSeriesForValidDates(t *testing.T) {
 
 func TestIssueListAppliesScopedFiltersOrderingAndPagination(t *testing.T) {
 	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), emptyModulePageRow(17)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID, projectID, moduleID := uuid.New(), uuid.New(), uuid.New()
 	page, err := repository.Issues(context.Background(), userID, "demo", projectID, moduleID, IssueListOptions{
 		Limit: 25, Page: 2, OrderBy: "-priority", State: uuid.New().String() + "," + uuid.New().String(), Priority: "urgent,high",
@@ -264,7 +271,8 @@ func TestGroupedIssueListFetchesTheFullSetAndReturnsFieldDomains(t *testing.T) {
 		moduleBoolRow(true),
 		moduleGroupedPageRow(`[]`, 4, `["low","high","urgent"]`, `["None","label-a"]`),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	page, err := repository.Issues(
 		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(),
 		IssueListOptions{Limit: 2, Page: 1, CursorValue: 1.5, CursorSet: true, GroupBy: "priority", SubGroupBy: "labels__id"},
@@ -297,7 +305,8 @@ func TestGroupedIssueListFetchesTheFullSetAndReturnsFieldDomains(t *testing.T) {
 
 func TestIssueListHandlesNullFiltersAndIndependentModuleFilter(t *testing.T) {
 	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), emptyModulePageRow(0)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Issues(
 		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(),
 		IssueListOptions{CreatedBy: "None", Cycle: "None", Module: uuid.New().String()},
@@ -329,7 +338,8 @@ func TestIssueFiltersMatchDjangoSanitizingAndDateSemantics(t *testing.T) {
 	}
 
 	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), emptyModulePageRow(0)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Issues(
 		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(),
 		IssueListOptions{
@@ -353,7 +363,8 @@ func TestIssueFiltersMatchDjangoSanitizingAndDateSemantics(t *testing.T) {
 
 func TestIssueNameEscapesLikeWildcardsAndInboxOverridesIntake(t *testing.T) {
 	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), emptyModulePageRow(0)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Issues(
 		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(),
 		IssueListOptions{Name: `%_\`, IntakeStatus: " 1 ", InboxStatus: "\u20032\u2003"},
@@ -377,7 +388,8 @@ func TestIssueNameEscapesLikeWildcardsAndInboxOverridesIntake(t *testing.T) {
 func TestComplexIssueFiltersSupportLogicalTreesAndRelationScopes(t *testing.T) {
 	assigneeID := uuid.New().String()
 	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), emptyModulePageRow(0)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Issues(
 		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(),
 		IssueListOptions{Filters: `{"or":[{"priority__in":["high","urgent"]},{"assignee_id":"` + assigneeID + `"}]}`},
@@ -476,7 +488,8 @@ func TestModuleIssueOrderingMatchesDjangoRanksAndAllowlist(t *testing.T) {
 
 func TestIssueDetailLooksUpIssueIDAndReturnsRelationship(t *testing.T) {
 	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), moduleJSONRow(`{"id":"relationship"}`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID, projectID, moduleID, issueID := uuid.New(), uuid.New(), uuid.New(), uuid.New()
 	if _, err := repository.IssueDetail(context.Background(), userID, "demo", projectID, moduleID, issueID); err != nil {
 		t.Fatal(err)
@@ -506,7 +519,8 @@ func TestIssueDetailLooksUpIssueIDAndReturnsRelationship(t *testing.T) {
 
 func TestModuleLinkDetailCannotEscapeModuleOrTenant(t *testing.T) {
 	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), moduleJSONRow(`{"id":"link"}`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID, projectID, moduleID, linkID := uuid.New(), uuid.New(), uuid.New(), uuid.New()
 	if _, err := repository.LinkDetail(context.Background(), userID, "demo", projectID, moduleID, linkID); err != nil {
 		t.Fatal(err)
@@ -529,7 +543,8 @@ func TestDetailMapsMissingScopedObjectToNotFound(t *testing.T) {
 	database := &moduleDatabaseStub{rows: []pgx.Row{
 		moduleBoolRow(true), moduleRowFunc(func(...any) error { return pgx.ErrNoRows }),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Detail(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New())
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("err=%v", err)
@@ -540,7 +555,8 @@ func TestArchivedDetailPreservesSparseSuccessForMissingModule(t *testing.T) {
 	database := &moduleDatabaseStub{rows: []pgx.Row{
 		moduleBoolRow(true), moduleRowFunc(func(...any) error { return pgx.ErrNoRows }),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.ArchivedDetail(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New())
 	const expected = `{"distribution":{"assignees":[],"completion_chart":{},"labels":[]},"estimate_distribution":{},"member_ids":[]}`
 	if err != nil || string(data) != expected {
@@ -550,7 +566,8 @@ func TestArchivedDetailPreservesSparseSuccessForMissingModule(t *testing.T) {
 
 func TestMissingMembershipIsForbidden(t *testing.T) {
 	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(false)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.List(context.Background(), uuid.New(), "demo", uuid.New(), false)
 	if !errors.Is(err, ErrForbidden) {
 		t.Fatalf("err=%v", err)
@@ -571,7 +588,8 @@ func TestModuleIssueFilterCanonicalizationAndUngroupedM2MSubgroup(t *testing.T) 
 	}
 
 	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), emptyModulePageRow(1)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err = repository.Issues(
 		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(),
 		IssueListOptions{SubGroupBy: "labels__id", LabelsSet: true, Project: identifier.String(), LoggedBy: "None"},
@@ -670,7 +688,8 @@ func TestRelatedOrderingUsesDjangoFilterAliases(t *testing.T) {
 
 func TestUngroupedLabelSubgroupUsesCanonicalAxisForPageMetadata(t *testing.T) {
 	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), emptyModulePageRow(1)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Issues(
 		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(),
 		IssueListOptions{SubGroupBy: "labels__id", Limit: 1},

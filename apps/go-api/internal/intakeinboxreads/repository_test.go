@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -65,7 +67,8 @@ func TestNewRepositoryRequiresDatabase(t *testing.T) {
 func TestDraftIssueListScopesCreatorTenantFiltersAndProjection(t *testing.T) {
 	stateID := uuid.New()
 	database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true), repositoryJSONRow(`{"total_count":1,"results":[]}`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	result, err := repository.DraftIssueList(context.Background(), uuid.New(), "demo", ListOptions{
 		PerPage: "25", Cursor: "25:2:0", Filters: map[string]string{"state": stateID.String(), "priority": "high,urgent", "name": "login"},
 	})
@@ -102,7 +105,8 @@ func TestDraftIssueListRejectsUnsupportedFilters(t *testing.T) {
 	}
 	for _, options := range tests {
 		database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true)}}
-		repository, _ := NewRepository(database)
+		repository, constructorErr := NewRepository(database)
+		require.NoError(t, constructorErr)
 		if _, err := repository.DraftIssueList(context.Background(), uuid.New(), "demo", options); !errors.Is(err, ErrBadRequest) {
 			t.Errorf("options=%+v err=%v", options, err)
 		}
@@ -114,7 +118,8 @@ func TestDraftIssueListRejectsUnsupportedFilters(t *testing.T) {
 
 func TestDraftIssueDetailReturnsAuthorizedOwnersDraft(t *testing.T) {
 	database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true), repositoryJSONRow(`{"id":"` + uuid.New().String() + `"}`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID, draftID := uuid.New(), uuid.New()
 	_, err := repository.DraftIssueDetail(context.Background(), userID, "demo", draftID)
 	if err != nil {
@@ -131,7 +136,8 @@ func TestDraftIssueDetailReturnsAuthorizedOwnersDraft(t *testing.T) {
 
 func TestDraftIssueDetailDeniesAccessBeforeReadingContent(t *testing.T) {
 	database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(false)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.DraftIssueDetail(context.Background(), uuid.New(), "demo", uuid.New())
 	if !errors.Is(err, ErrForbidden) || len(database.queries) != 1 {
 		t.Fatalf("err=%v queries=%d", err, len(database.queries))
@@ -143,7 +149,8 @@ func TestDraftIssueDetailHandlesDeletionAfterAuthorization(t *testing.T) {
 		repositoryBoolRow(true),
 		repositoryRow(func(...any) error { return pgx.ErrNoRows }),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.DraftIssueDetail(context.Background(), uuid.New(), "demo", uuid.New())
 	if !errors.Is(err, ErrNotFound) || len(database.queries) != 2 {
 		t.Fatalf("err=%v queries=%d", err, len(database.queries))
@@ -164,7 +171,8 @@ func TestIssueListAliasesPreserveEnvelopeFilteringOrderingAndGuestRestriction(t 
 	}
 	invoke := func(inbox bool) (*repositoryDatabaseStub, string) {
 		database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true), repositoryIntakeContextRow(intakeID, true), repositoryJSONRow(`{"count":0,"results":[]}`)}}
-		repository, _ := NewRepository(database)
+		repository, constructorErr := NewRepository(database)
+		require.NoError(t, constructorErr)
 		var result []byte
 		var err error
 		if inbox {
@@ -204,7 +212,8 @@ func TestIssueListAliasesPreserveEnvelopeFilteringOrderingAndGuestRestriction(t 
 func TestIssueDetailAliasesUseIssueIDAndDetailedProjection(t *testing.T) {
 	invoke := func(inbox bool) string {
 		database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true), repositoryIntakeContextRow(uuid.New(), false), repositoryJSONRow(`{"id":"` + uuid.New().String() + `"}`)}}
-		repository, _ := NewRepository(database)
+		repository, constructorErr := NewRepository(database)
+		require.NoError(t, constructorErr)
 		var err error
 		if inbox {
 			_, err = repository.InboxIssueDetail(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New())
@@ -245,7 +254,8 @@ func TestIssueDetailMissingActiveIntakePreservesDjangoInternalFailure(t *testing
 			repositoryBoolRow(true),
 			repositoryRow(func(...any) error { return pgx.ErrNoRows }),
 		}}
-		repository, _ := NewRepository(database)
+		repository, constructorErr := NewRepository(database)
+		require.NoError(t, constructorErr)
 		var err error
 		if inbox {
 			_, err = repository.InboxIssueDetail(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New())
@@ -264,7 +274,8 @@ func TestIssueDetailReturnsGuestRestrictionOnlyAfterFindingRelationship(t *testi
 		repositoryIntakeContextRow(uuid.New(), true),
 		repositoryBoolRow(false),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.InboxIssueDetail(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New())
 	if !errors.Is(err, ErrGuestRestricted) {
 		t.Fatalf("err=%v", err)
@@ -280,7 +291,8 @@ func TestIntakeContainerAliasesPreserveListRoleAndAuthenticatedDetailBehavior(t 
 	intakeID := uuid.New()
 	list := func(inbox bool) *repositoryDatabaseStub {
 		database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true), repositoryJSONRow(`{"name":"Inbox"}`)}}
-		repository, _ := NewRepository(database)
+		repository, constructorErr := NewRepository(database)
+		require.NoError(t, constructorErr)
 		var err error
 		if inbox {
 			_, err = repository.InboxList(context.Background(), userID, "demo", projectID)
@@ -303,7 +315,8 @@ func TestIntakeContainerAliasesPreserveListRoleAndAuthenticatedDetailBehavior(t 
 	}
 	detail := func(inbox bool) *repositoryDatabaseStub {
 		database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryJSONRow(`{"name":"Inbox"}`)}}
-		repository, _ := NewRepository(database)
+		repository, constructorErr := NewRepository(database)
+		require.NoError(t, constructorErr)
 		var err error
 		if inbox {
 			_, err = repository.InboxDetail(context.Background(), userID, "demo", projectID, intakeID)
@@ -329,7 +342,8 @@ func TestIntakeContainerAliasesPreserveListRoleAndAuthenticatedDetailBehavior(t 
 
 func TestDescriptionVersionListAndDetailHaveDistinctProjections(t *testing.T) {
 	listDatabase := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true), repositoryBoolRow(false), repositoryJSONRow(`{"results":[]}`)}}
-	listRepository, _ := NewRepository(listDatabase)
+	listRepository, constructorErr := NewRepository(listDatabase)
+	require.NoError(t, constructorErr)
 	cursor := "50:2:0"
 	_, err := listRepository.DescriptionVersionList(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), &cursor)
 	if err != nil {
@@ -360,7 +374,8 @@ func TestDescriptionVersionListAndDetailHaveDistinctProjections(t *testing.T) {
 	}
 
 	detailDatabase := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true), repositoryBoolRow(false), repositoryJSONRow(`{"description_html":"<p>x</p>"}`)}}
-	detailRepository, _ := NewRepository(detailDatabase)
+	detailRepository, constructorErr := NewRepository(detailDatabase)
+	require.NoError(t, constructorErr)
 	_, err = detailRepository.DescriptionVersionDetail(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), uuid.New())
 	if err != nil {
 		t.Fatal(err)
@@ -378,7 +393,8 @@ func TestDescriptionVersionNegativePagePreservesCursorAndClampsQueryStart(t *tes
 		repositoryBoolRow(false),
 		repositoryJSONRow(`{"results":[]}`),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	cursor := "50:-2:0"
 	if _, err := repository.DescriptionVersionList(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), &cursor); err != nil {
 		t.Fatal(err)
@@ -398,7 +414,8 @@ func TestDescriptionVersionNegativePagePreservesCursorAndClampsQueryStart(t *tes
 		repositoryBoolRow(false),
 		repositoryJSONRow(`{"cursor":"1000:-999999999999999999999999:0","results":[]}`),
 	}}
-	hugeRepository, _ := NewRepository(hugeDatabase)
+	hugeRepository, constructorErr := NewRepository(hugeDatabase)
+	require.NoError(t, constructorErr)
 	hugeCursor := "1000:-999999999999999999999999:0"
 	if _, err := hugeRepository.DescriptionVersionList(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), &hugeCursor); err != nil {
 		t.Fatal(err)
@@ -413,7 +430,8 @@ func TestDescriptionVersionNegativePagePreservesCursorAndClampsQueryStart(t *tes
 		repositoryBoolRow(false),
 		repositoryJSONRow(`{"cursor":"1000:999999999999999999999999:0","results":[]}`),
 	}}
-	hugePositiveRepository, _ := NewRepository(hugePositiveDatabase)
+	hugePositiveRepository, constructorErr := NewRepository(hugePositiveDatabase)
+	require.NoError(t, constructorErr)
 	hugePositiveCursor := "1000:999999999999999999999999:0"
 	if _, err := hugePositiveRepository.DescriptionVersionList(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), &hugePositiveCursor); err != nil {
 		t.Fatal(err)
@@ -426,7 +444,8 @@ func TestDescriptionVersionNegativePagePreservesCursorAndClampsQueryStart(t *tes
 
 func TestIssueDateFiltersImplementRelativeDatesAndUserTimezone(t *testing.T) {
 	database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true), repositoryJSONRow(`{"total_count":0,"results":[]}`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.DraftIssueList(context.Background(), uuid.New(), "demo", ListOptions{
 		Timezone: "America/New_York",
 		Filters: map[string]string{
@@ -486,7 +505,8 @@ func TestRelativeDateFilterUsesDjangoWeekAndMonthBoundaries(t *testing.T) {
 
 func TestListFilterErrorsPrecedePaginationErrors(t *testing.T) {
 	draftDatabase := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true)}}
-	draftRepository, _ := NewRepository(draftDatabase)
+	draftRepository, constructorErr := NewRepository(draftDatabase)
+	require.NoError(t, constructorErr)
 	_, err := draftRepository.DraftIssueList(context.Background(), uuid.New(), "demo", ListOptions{
 		PerPage: "bad", PerPageSet: true, Filters: map[string]string{"estimate_point": "bad"},
 	})
@@ -501,7 +521,8 @@ func TestListFilterErrorsPrecedePaginationErrors(t *testing.T) {
 		repositoryBoolRow(true),
 		repositoryIntakeContextRow(uuid.New(), false),
 	}}
-	intakeRepository, _ := NewRepository(intakeDatabase)
+	intakeRepository, constructorErr := NewRepository(intakeDatabase)
+	require.NoError(t, constructorErr)
 	_, err = intakeRepository.IntakeIssueList(context.Background(), uuid.New(), "demo", uuid.New(), ListOptions{
 		PerPage: "bad", PerPageSet: true, StatusSet: true, Filters: map[string]string{"status": "bad"},
 	})
@@ -516,7 +537,8 @@ func TestListFilterErrorsPrecedePaginationErrors(t *testing.T) {
 		repositoryBoolRow(true),
 		repositoryRow(func(...any) error { return pgx.ErrNoRows }),
 	}}
-	missingIntakeRepository, _ := NewRepository(missingIntakeDatabase)
+	missingIntakeRepository, constructorErr := NewRepository(missingIntakeDatabase)
+	require.NoError(t, constructorErr)
 	_, err = missingIntakeRepository.IntakeIssueList(context.Background(), uuid.New(), "demo", uuid.New(), ListOptions{
 		Filters: map[string]string{"logged_by": uuid.New().String()},
 	})
@@ -704,7 +726,8 @@ func TestStrictEstimatePointAndMalformedAbsoluteDateReturnInvalidDetail(t *testi
 	} {
 		t.Run(name, func(t *testing.T) {
 			database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true)}}
-			repository, _ := NewRepository(database)
+			repository, constructorErr := NewRepository(database)
+			require.NoError(t, constructorErr)
 			_, err := repository.DraftIssueList(context.Background(), uuid.New(), "demo", ListOptions{Filters: filters})
 			if !errors.Is(err, ErrInvalidDetail) {
 				t.Fatalf("err=%v", err)
@@ -930,7 +953,8 @@ func repositoryArgsContain(args []any, want any) bool {
 
 func TestDescriptionVersionGuestRestrictionStopsBeforeVersionRead(t *testing.T) {
 	database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true), repositoryBoolRow(true)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.DescriptionVersionList(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), nil)
 	if !errors.Is(err, ErrGuestRestricted) {
 		t.Fatalf("err=%v", err)
@@ -942,7 +966,8 @@ func TestDescriptionVersionGuestRestrictionStopsBeforeVersionRead(t *testing.T) 
 
 func TestAuthorizationDenialStopsBeforeDataRead(t *testing.T) {
 	database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(false)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.InboxIssueList(context.Background(), uuid.New(), "other-workspace", uuid.New(), ListOptions{})
 	if !errors.Is(err, ErrForbidden) {
 		t.Fatalf("err=%v", err)

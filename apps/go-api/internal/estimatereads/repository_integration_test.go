@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
@@ -33,7 +35,8 @@ func TestRepositoryPreservesEstimateReadSemantics(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
-	repository, _ := NewRepository(connection)
+	repository, constructorErr := NewRepository(connection)
+	require.NoError(t, constructorErr)
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000001")
 	workspaceID := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	projectID := uuid.MustParse("00000000-0000-4000-8000-000000000020")

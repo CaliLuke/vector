@@ -19,6 +19,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/tracelog"
 )
 
 func linkDatabase(t *testing.T) *pgxpool.Pool {
@@ -52,6 +53,9 @@ INSERT INTO users VALUES ('10000000-0000-4000-8000-000000000001',true,false,'UTC
 	if err != nil {
 		t.Fatal(err)
 	}
+	config.ConnConfig.Tracer = &tracelog.TraceLog{LogLevel: tracelog.LogLevelError, Logger: tracelog.LoggerFunc(func(ctx context.Context, _ tracelog.LogLevel, message string, data map[string]any) {
+		t.Logf("OAuth database operation=%s elapsed=%v error_type=%T context_error=%v", message, data["time"], data["err"], ctx.Err())
+	})}
 	if err = database.ConfigurePool(config); err != nil {
 		t.Fatal(err)
 	}

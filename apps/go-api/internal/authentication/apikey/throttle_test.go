@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 type throttleCacheStub struct {
@@ -124,7 +126,8 @@ func TestThrottleRejectsCorruptHistoryWithoutOverwritingIt(t *testing.T) {
 func TestThrottleExpiresOldestDjangoPickleHistory(t *testing.T) {
 	now := time.Date(2026, 9, 3, 12, 1, 0, 0, time.UTC)
 	cache := &throttleCacheStub{value: encodeThrottlePickle([]float64{float64(now.Add(-30 * time.Second).Unix()), float64(now.Add(-61 * time.Second).Unix())}), found: true}
-	throttle, _ := NewThrottle(cache, "2/min")
+	throttle, constructorErr := NewThrottle(cache, "2/min")
+	require.NoError(t, constructorErr)
 	throttle.now = func() time.Time { return now }
 
 	rate, err := throttle.Allow(context.Background(), "token")

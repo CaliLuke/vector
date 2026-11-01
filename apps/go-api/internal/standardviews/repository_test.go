@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -85,7 +87,8 @@ func TestProjectQueriesPreserveTenantMembershipVisibilityAndFavoriteRules(t *tes
 func TestDeleteProjectSoftDeletesAndCleansSideEffects(t *testing.T) {
 	project := uuid.MustParse("00000000-0000-4000-8000-000000000011")
 	db := &viewDB{rows: []pgx.Row{boolRow(true)}}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	id := uuid.MustParse("00000000-0000-4000-8000-000000000012")
 	if err := r.DeleteProject(context.Background(), user, "demo", project, id); err != nil {

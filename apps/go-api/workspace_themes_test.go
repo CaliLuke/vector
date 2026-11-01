@@ -7,6 +7,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	api "github.com/CaliLuke/go-plane/gen/workspace_themes"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/workspacethemes"
@@ -99,7 +101,8 @@ func TestWorkspaceThemesForbiddenAndValidation(t *testing.T) {
 		t.Fatal("expected not found")
 	}
 	bad := themeSessionStub{err: errors.New("invalid")}
-	badSvc, _ := NewWorkspaceThemes(repo, bad)
+	badSvc, constructorErr := NewWorkspaceThemes(repo, bad)
+	require.NoError(t, constructorErr)
 	if _, err := badSvc.(api.Authorizer).APIKeyAuth(context.Background(), "x", nil); err == nil {
 		t.Fatal("expected auth error")
 	}

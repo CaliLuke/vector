@@ -14,6 +14,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -108,7 +110,8 @@ func (sessions *throttleSessionsStub) RotateFallbackPrepared(_ context.Context, 
 
 func TestAnonymousThrottleMatchesDRFWindowAndDjangoCacheFormat(t *testing.T) {
 	cache := &throttleCacheStub{data: map[string][]byte{}}
-	throttle, _ := NewAnonymousThrottle(cache, &throttleSessionsStub{}, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, false, 0)
+	throttle, constructorErr := NewAnonymousThrottle(cache, &throttleSessionsStub{}, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, false, 0)
+	require.NoError(t, constructorErr)
 	now := time.Unix(1_725_220_000, 250_000_000)
 	throttle.now = func() time.Time { return now }
 	request := httptest.NewRequest("GET", "/", nil)
@@ -331,7 +334,8 @@ func TestConfiguredAnonymousThrottleZeroRateWaitMatchesDRF(t *testing.T) {
 func TestAnonymousThrottleUsesDjangoForwardedIdentifierAndExemptsSessions(t *testing.T) {
 	cache := &throttleCacheStub{data: map[string][]byte{}}
 	sessions := &throttleSessionsStub{valid: true}
-	throttle, _ := NewAnonymousThrottle(cache, sessions, &throttleInvalidatorStub{}, "custom-session", false, 0)
+	throttle, constructorErr := NewAnonymousThrottle(cache, sessions, &throttleInvalidatorStub{}, "custom-session", false, 0)
+	require.NoError(t, constructorErr)
 	request := httptest.NewRequest("GET", "/", nil)
 	request.Header.Set("X-Forwarded-For", " 192.0.2.1, 198.51.100.2 ")
 	request.AddCookie(&http.Cookie{Name: "custom-session", Value: "valid"})
@@ -356,7 +360,8 @@ func TestAnonymousThrottleValidatesTimezoneAfterAuthentication(t *testing.T) {
 		prepared: djangosession.SessionRefresh{SessionKey: "old-session"},
 		refresh:  djangosession.SessionRefresh{SessionKey: "rotated-session"},
 	}
-	throttle, _ := NewAnonymousThrottle(cache, sessions, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, true, 3600)
+	throttle, constructorErr := NewAnonymousThrottle(cache, sessions, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, true, 3600)
+	require.NoError(t, constructorErr)
 	request := httptest.NewRequest("GET", "/", nil)
 	request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "valid-session-key"})
 	allowed, _, _, _, rotated, userID, err := throttle.AllowRequest(context.Background(), request)
@@ -381,7 +386,8 @@ func TestAnonymousThrottleValidatesTimezoneAfterAuthentication(t *testing.T) {
 func TestAnonymousThrottleUsesLastDuplicateSessionCookie(t *testing.T) {
 	cache := &throttleCacheStub{data: map[string][]byte{}}
 	sessions := &throttleSessionsStub{valid: true}
-	throttle, _ := NewAnonymousThrottle(cache, sessions, &throttleInvalidatorStub{}, "session-id", false, 3600)
+	throttle, constructorErr := NewAnonymousThrottle(cache, sessions, &throttleInvalidatorStub{}, "session-id", false, 3600)
+	require.NoError(t, constructorErr)
 	request := httptest.NewRequest("GET", "/", nil)
 	request.Header.Set("Cookie", "session-id=first-session; session-id=last-session")
 	if _, _, _, _, _, _, err := throttle.AllowRequest(context.Background(), request); err != nil {
@@ -414,7 +420,8 @@ func TestAnonymousThrottlePreservesExplicitEmptyCookieName(t *testing.T) {
 func TestAnonymousThrottleJoinsRepeatedCookieHeadersLikeDjango(t *testing.T) {
 	cache := &throttleCacheStub{data: map[string][]byte{}}
 	sessions := &throttleSessionsStub{valid: true}
-	throttle, _ := NewAnonymousThrottle(cache, sessions, &throttleInvalidatorStub{}, "session-id", false, 3600)
+	throttle, constructorErr := NewAnonymousThrottle(cache, sessions, &throttleInvalidatorStub{}, "session-id", false, 3600)
+	require.NoError(t, constructorErr)
 	request := httptest.NewRequest("GET", "/", nil)
 	request.Header["Cookie"] = []string{"session-id=first-session", "session-id=second-session"}
 	if _, _, _, _, _, _, err := throttle.AllowRequest(context.Background(), request); err != nil {
@@ -428,7 +435,8 @@ func TestAnonymousThrottleJoinsRepeatedCookieHeadersLikeDjango(t *testing.T) {
 func TestAnonymousThrottleUnquotesCookieLikePython(t *testing.T) {
 	cache := &throttleCacheStub{data: map[string][]byte{}}
 	sessions := &throttleSessionsStub{valid: true}
-	throttle, _ := NewAnonymousThrottle(cache, sessions, &throttleInvalidatorStub{}, "session-id", false, 3600)
+	throttle, constructorErr := NewAnonymousThrottle(cache, sessions, &throttleInvalidatorStub{}, "session-id", false, 3600)
+	require.NoError(t, constructorErr)
 	request := httptest.NewRequest("GET", "/", nil)
 	request.Header.Set("Cookie", `session-id="quoted\054value\x"`)
 	if _, _, _, _, _, _, err := throttle.AllowRequest(context.Background(), request); err != nil {
@@ -579,7 +587,8 @@ func TestAnonymousThrottleFinalizesUnaccessedSessionsLikeDjango(t *testing.T) {
 
 func TestAnonymousThrottleJoinsRepeatedForwardedForHeaders(t *testing.T) {
 	cache := &throttleCacheStub{data: map[string][]byte{}}
-	throttle, _ := NewAnonymousThrottle(cache, &throttleSessionsStub{}, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, false, 0)
+	throttle, constructorErr := NewAnonymousThrottle(cache, &throttleSessionsStub{}, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, false, 0)
+	require.NoError(t, constructorErr)
 	request := httptest.NewRequest("GET", "/", nil)
 	request.Header["X-Forwarded-For"] = []string{"192.0.2.1", "198.51.100.2"}
 	if allowed, _, _, _, _, _, err := throttle.AllowRequest(context.Background(), request); err != nil || !allowed {
@@ -592,7 +601,8 @@ func TestAnonymousThrottleJoinsRepeatedForwardedForHeaders(t *testing.T) {
 
 func TestAnonymousThrottleDecodesForwardedForAsASGILatin1BeforeRemovingWhitespace(t *testing.T) {
 	cache := &throttleCacheStub{data: map[string][]byte{}}
-	throttle, _ := NewAnonymousThrottle(cache, &throttleSessionsStub{}, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, false, 0)
+	throttle, constructorErr := NewAnonymousThrottle(cache, &throttleSessionsStub{}, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, false, 0)
+	require.NoError(t, constructorErr)
 	request := httptest.NewRequest("GET", "/", nil)
 	request.Header["X-Forwarded-For"] = []string{"192.0.2.1" + string([]byte{0xa0}) + ", 198.51.100.2"}
 	if allowed, _, _, _, _, _, err := throttle.AllowRequest(context.Background(), request); err != nil || !allowed {
@@ -609,7 +619,8 @@ func TestAnonymousThrottleRefreshesFallbackSessionsWithoutSaveEveryRequest(t *te
 		valid: true, usedFallback: true,
 		refresh: djangosession.SessionRefresh{SessionKey: "rotated-session-key"},
 	}
-	throttle, _ := NewAnonymousThrottle(cache, sessions, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, false, 0)
+	throttle, constructorErr := NewAnonymousThrottle(cache, sessions, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, false, 0)
+	require.NoError(t, constructorErr)
 	request := httptest.NewRequest("GET", "/", nil)
 	request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "fallback-session-key"})
 	allowed, _, expire, refresh, rotated, _, err := throttle.AllowRequest(context.Background(), request)
@@ -683,7 +694,8 @@ func TestAnonymousThrottlePropagatesSessionStoreFailures(t *testing.T) {
 		djangosession.ErrInvalidSessionShape,
 	} {
 		cache := &throttleCacheStub{data: map[string][]byte{}}
-		throttle, _ := NewAnonymousThrottle(cache, &throttleSessionsStub{err: sessionErr}, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, false, 0)
+		throttle, constructorErr := NewAnonymousThrottle(cache, &throttleSessionsStub{err: sessionErr}, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, false, 0)
+		require.NoError(t, constructorErr)
 		request := httptest.NewRequest("GET", "/", nil)
 		request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "session-key"})
 		if allowed, _, expire, refresh, _, _, err := throttle.AllowRequest(context.Background(), request); allowed || expire || refresh || !errors.Is(err, sessionErr) {
@@ -710,7 +722,8 @@ func TestAnonymousThrottleExpiresEmptySessionsAndFlushesAuthHashMismatch(t *test
 		t.Run(testCase.name, func(t *testing.T) {
 			cache := &throttleCacheStub{data: map[string][]byte{}}
 			invalidator := &throttleInvalidatorStub{}
-			throttle, _ := NewAnonymousThrottle(cache, &throttleSessionsStub{err: testCase.err}, invalidator, djangosession.DefaultCookieName, false, 0)
+			throttle, constructorErr := NewAnonymousThrottle(cache, &throttleSessionsStub{err: testCase.err}, invalidator, djangosession.DefaultCookieName, false, 0)
+			require.NoError(t, constructorErr)
 			request := httptest.NewRequest("GET", "/", nil)
 			request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "session-key"})
 			allowed, _, expire, refresh, _, _, err := throttle.AllowRequest(context.Background(), request)
@@ -727,7 +740,8 @@ func TestAnonymousThrottleExpiresEmptySessionsAndFlushesAuthHashMismatch(t *test
 func TestAnonymousThrottlePropagatesSessionInvalidationFailure(t *testing.T) {
 	cache := &throttleCacheStub{data: map[string][]byte{}}
 	invalidator := &throttleInvalidatorStub{err: errors.New("database unavailable")}
-	throttle, _ := NewAnonymousThrottle(cache, &throttleSessionsStub{err: djangosession.ErrInvalidAuthHash}, invalidator, djangosession.DefaultCookieName, false, 0)
+	throttle, constructorErr := NewAnonymousThrottle(cache, &throttleSessionsStub{err: djangosession.ErrInvalidAuthHash}, invalidator, djangosession.DefaultCookieName, false, 0)
+	require.NoError(t, constructorErr)
 	request := httptest.NewRequest("GET", "/", nil)
 	request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "session-key"})
 	allowed, _, expire, refresh, _, _, err := throttle.AllowRequest(context.Background(), request)

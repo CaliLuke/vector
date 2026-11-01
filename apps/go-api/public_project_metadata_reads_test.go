@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/public_project_metadata_reads"
@@ -72,7 +74,8 @@ func TestPublicProjectMetadataReadsDecodeAndCapture(t *testing.T) {
 		settings: json.RawMessage(`{"id":"00000000-0000-4000-8000-000000000007","project_details":null,"workspace_detail":{"name":"Demo","slug":"demo","id":"00000000-0000-4000-8000-000000000001","logo_url":null},"created_at":"2026-01-02T03:04:05Z","updated_at":"2026-01-02T03:04:05Z","deleted_at":null,"entity_identifier":null,"entity_name":"project","anchor":"anchor","is_comments_enabled":false,"is_reactions_enabled":false,"is_votes_enabled":false,"view_props":{},"is_activity_enabled":false,"is_disabled":false,"created_by":null,"updated_by":null,"workspace":"00000000-0000-4000-8000-000000000001","project":null,"intake":null}`),
 		states:   json.RawMessage(`[{"name":"Backlog","group":"backlog","color":"#60646C","id":"00000000-0000-4000-8000-000000000002","sequence":100.0}]`),
 	}
-	serviceValue, _ := NewPublicProjectMetadataReads(repository)
+	serviceValue, constructorErr := NewPublicProjectMetadataReads(repository)
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*publicProjectMetadataReadsService)
 	capture := &PublicProjectMetadataReadsResponseCapture{}
 	ctx := WithPublicProjectMetadataReadsResponseCapture(context.Background(), capture)

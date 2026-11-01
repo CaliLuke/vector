@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -56,7 +58,8 @@ func TestNewRepositoryRequiresDatabase(t *testing.T) {
 
 func TestAuthorizeProjectRequiresExactActiveTenantMembership(t *testing.T) {
 	database := &deployBoardDatabaseStub{rows: []pgx.Row{deployBoardBoolRow(true)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID, projectID := uuid.New(), uuid.New()
 	if err := repository.AuthorizeProject(context.Background(), userID, "demo", projectID); err != nil {
 		t.Fatal(err)
@@ -82,7 +85,8 @@ func TestAuthorizeProjectRequiresExactActiveTenantMembership(t *testing.T) {
 
 func TestAuthorizeProjectRejectsOtherTenant(t *testing.T) {
 	database := &deployBoardDatabaseStub{rows: []pgx.Row{deployBoardBoolRow(false)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if err := repository.AuthorizeProject(context.Background(), uuid.New(), "other", uuid.New()); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("err = %v, want forbidden", err)
 	}
@@ -98,7 +102,8 @@ func TestCollectionReturnsUnsavedDefaultsOrSingleObjectWithoutPagination(t *test
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			database := &deployBoardDatabaseStub{rows: []pgx.Row{deployBoardBoolRow(true), deployBoardJSONRow(test.body)}}
-			repository, _ := NewRepository(database)
+			repository, constructorErr := NewRepository(database)
+			require.NoError(t, constructorErr)
 			body, err := repository.Collection(context.Background(), uuid.New(), "demo", uuid.New())
 			if err != nil || string(body) != test.body {
 				t.Fatalf("body=%s err=%v", body, err)
@@ -145,7 +150,8 @@ func TestDetailScopesBoardIDToRouteWorkspaceProjectAndDeploymentIdentity(t *test
 		deployBoardBoolRow(true),
 		deployBoardRowFunc(func(...any) error { return pgx.ErrNoRows }),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Detail(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New())
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("err=%v, want not found", err)

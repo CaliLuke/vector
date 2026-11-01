@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -138,7 +140,8 @@ func TestWorkspaceFavoritesRepositoryScopesAndResponse(t *testing.T) {
 
 func TestWorkspaceFavoritesCreateAllocatesSequenceAndReturnsDuplicate(t *testing.T) {
 	db := &favoriteDB{rows: []pgx.Row{favoriteJSONRow(`{"id":"favorite"}`)}}
-	repository, _ := NewRepository(db)
+	repository, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	entity := uuid.MustParse("00000000-0000-4000-8000-000000000013")
 	sequence := 42.0
@@ -175,7 +178,8 @@ func TestWorkspaceFavoritesCreateAllocatesSequenceAndReturnsDuplicate(t *testing
 func TestWorkspaceFavoritesUpdatePresenceAndNotFound(t *testing.T) {
 	name := "Renamed"
 	db := &favoriteDB{rows: []pgx.Row{favoriteUUIDRow(uuid.MustParse("00000000-0000-4000-8000-000000000013")), favoriteJSONRow(`{"id":"favorite"}`), favoriteNoRows()}}
-	repository, _ := NewRepository(db)
+	repository, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	id := uuid.MustParse("00000000-0000-4000-8000-000000000012")
 	body, err := repository.Update(context.Background(), user, "demo", id, UpdateInput{NamePresent: true, Name: &name, ParentPresent: true})
@@ -198,7 +202,8 @@ func TestWorkspaceFavoritesUpdatePresenceAndNotFound(t *testing.T) {
 
 func TestWorkspaceFavoritesDeleteNotFound(t *testing.T) {
 	db := &favoriteDB{tag: pgconn.NewCommandTag("DELETE 0")}
-	repository, _ := NewRepository(db)
+	repository, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	id := uuid.MustParse("00000000-0000-4000-8000-000000000012")
 	if err := repository.Delete(context.Background(), user, "demo", id); !errors.Is(err, ErrNotFound) {

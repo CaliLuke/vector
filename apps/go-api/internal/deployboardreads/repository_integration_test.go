@@ -9,6 +9,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
@@ -96,7 +98,8 @@ INSERT INTO deploy_boards (
 		t.Fatal(err)
 	}
 	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
-	repository, _ := NewRepository(connection)
+	repository, constructorErr := NewRepository(connection)
+	require.NoError(t, constructorErr)
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000001")
 	projectID := uuid.MustParse("00000000-0000-4000-8000-000000000100")
 	emptyProjectID := uuid.MustParse("00000000-0000-4000-8000-000000000101")

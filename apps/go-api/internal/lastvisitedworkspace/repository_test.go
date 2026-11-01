@@ -6,6 +6,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/jackc/pgx/v5"
 )
 
@@ -24,7 +26,8 @@ func (d *dbStub) QueryRow(_ context.Context, q string, _ ...any) pgx.Row {
 }
 func TestGetUsesProfileAndSerializerKeys(t *testing.T) {
 	d := &dbStub{}
-	r, _ := NewRepository(d)
+	r, constructorErr := NewRepository(d)
+	require.NoError(t, constructorErr)
 	if _, err := r.Get(context.Background(), uuid.Nil()); err != nil {
 		t.Fatal(err)
 	}

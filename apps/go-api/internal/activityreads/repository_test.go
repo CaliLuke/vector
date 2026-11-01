@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -88,7 +90,8 @@ func TestAPIActivitiesPreserveDjangoListAndDetailContracts(t *testing.T) {
 
 	t.Run("detail missing has endpoint-specific error", func(t *testing.T) {
 		database := &activityDatabase{allowed: true, missing: true}
-		repository, _ := NewRepository(database)
+		repository, constructorErr := NewRepository(database)
+		require.NoError(t, constructorErr)
 		request := Request{
 			Operation: "get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_activities_by_pk",
 			Params: map[string]string{
@@ -107,7 +110,8 @@ func TestAPIActivitiesPreserveDjangoListAndDetailContracts(t *testing.T) {
 }
 func TestActivityProtocolAuthorizationGatesProjectMemberRole(t *testing.T) {
 	database := &activityDatabase{allowed: true}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	projectID := uuid.New()
 	request := Request{
 		Operation:                "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_activities",
@@ -130,7 +134,8 @@ func TestUserActivitiesPaginateBeforeJSONAggregation(t *testing.T) {
 		"total_count": 2,
 		"results":     []any{map[string]any{"id": uuid.New().String()}},
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	result, err := repository.Read(context.Background(), Principal{UserID: uuid.New(), Authenticated: true}, Request{
 		Operation: "get_api_users_me_activities",
 		Params:    map[string]string{"per_page": "1", "cursor": "1:1:0"},
@@ -150,7 +155,8 @@ func TestUserActivitiesPaginateBeforeJSONAggregation(t *testing.T) {
 
 func TestUserActivitiesPreserveNegativeOnePageFailure(t *testing.T) {
 	database := &activityDatabase{body: map[string]any{"total_count": 2, "results": []any{}}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Read(context.Background(), Principal{UserID: uuid.New(), Authenticated: true}, Request{
 		Operation: "get_api_users_me_activities",
 		Params:    map[string]string{"per_page": "-1"},
@@ -195,7 +201,8 @@ func TestNegativePageSizePreservesDjangoFailureOrder(t *testing.T) {
 
 func TestUserActivitiesRejectInvalidPagination(t *testing.T) {
 	database := &activityDatabase{body: []any{}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Read(context.Background(), Principal{UserID: uuid.New(), Authenticated: true}, Request{
 		Operation: "get_api_users_me_activities",
 		Params:    map[string]string{"per_page": "1001"},

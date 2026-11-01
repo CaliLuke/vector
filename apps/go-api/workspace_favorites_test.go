@@ -6,6 +6,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_favorites"
@@ -164,7 +166,8 @@ func TestWorkspaceFavoritesAuthorizationAndNotFound(t *testing.T) {
 	if err := service.Delete(ctx, &api.DeletePayload{Slug: "demo", FavoriteID: favoriteTestID}); err == nil {
 		t.Fatal("expected not found")
 	}
-	invalidSession, _ := NewWorkspaceFavorites(repository, favoriteSessionStub{err: errors.New("invalid")})
+	invalidSession, constructorErr := NewWorkspaceFavorites(repository, favoriteSessionStub{err: errors.New("invalid")})
+	require.NoError(t, constructorErr)
 	if _, err := invalidSession.(api.Authorizer).APIKeyAuth(context.Background(), "bad", nil); err == nil {
 		t.Fatal("expected authentication error")
 	}

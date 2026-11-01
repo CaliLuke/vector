@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -68,7 +70,8 @@ func TestRepositoryListsWorkspaceLabelsWithProjectVisibilityAndDjangoOrdering(t 
 
 func TestRepositoryListsWorkspaceStatesWithVisibilityTriageAndGroupOrder(t *testing.T) {
 	db := &metadataDB{rows: []pgx.Row{metadataJSON(`[{"name":"Backlog One","order":0.5}]`)}}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	body, err := r.ListStates(context.Background(), uuid.Nil(), "workspace-metadata")
 	if err != nil || string(body) != `[{"name":"Backlog One","order":0.5}]` {
 		t.Fatalf("ListStates() = %s, %v", body, err)

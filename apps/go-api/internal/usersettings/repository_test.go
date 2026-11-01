@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -41,7 +43,8 @@ func TestRepositoryRequiresDatabase(t *testing.T) {
 
 func TestGetMirrorsSerializerWorkspaceSelectionAndLogo(t *testing.T) {
 	db := &settingsDB{row: settingsJSON(`{"id":"user","email":"u@example.com","workspace":{}}`)}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	if body, err := r.Get(context.Background(), uuid.New()); err != nil || string(body) != `{"id":"user","email":"u@example.com","workspace":{}}` {
 		t.Fatalf("Get() = %s, %v", body, err)
 	}
@@ -67,7 +70,8 @@ func TestGetMirrorsSerializerWorkspaceSelectionAndLogo(t *testing.T) {
 
 func TestGetResponseShapeMatchesDjangoFallbackFixture(t *testing.T) {
 	db := &settingsDB{row: settingsJSON(`{"id":"<uuid-1>","email":"settings@example.com","workspace":{"fallback_workspace_id":"<uuid-2>","fallback_workspace_slug":"settings-parity","invites":1,"last_workspace_id":null,"last_workspace_slug":null}}`)}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	body, err := r.Get(context.Background(), uuid.New())
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
@@ -86,7 +90,8 @@ func TestGetResponseShapeMatchesDjangoFallbackFixture(t *testing.T) {
 
 func TestGetResponseShapeMatchesDjangoSelectedFixture(t *testing.T) {
 	db := &settingsDB{row: settingsJSON(`{"id":"<uuid-1>","email":"settings@example.com","workspace":{"fallback_workspace_id":"<uuid-2>","fallback_workspace_slug":"settings-parity","invites":1,"last_workspace_id":"<uuid-2>","last_workspace_logo":"","last_workspace_name":"Settings Parity","last_workspace_slug":"settings-parity"}}`)}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	body, err := r.Get(context.Background(), uuid.New())
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
@@ -106,7 +111,8 @@ func TestGetResponseShapeMatchesDjangoSelectedFixture(t *testing.T) {
 
 func TestGetMapsMissingProfileToNotFound(t *testing.T) {
 	db := &settingsDB{row: settingsRow(func(...any) error { return pgx.ErrNoRows })}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	if _, err := r.Get(context.Background(), uuid.New()); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("Get() error = %v", err)
 	}

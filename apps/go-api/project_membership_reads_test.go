@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/project_membership_reads"
@@ -166,10 +168,11 @@ func TestProjectMembershipReadsAuthenticatesAndDecodesResults(t *testing.T) {
 }
 
 func TestProjectMembershipReadsMapsAuthenticationAndRepositoryErrors(t *testing.T) {
-	serviceValue, _ := NewProjectMembershipReads(
+	serviceValue, constructorErr := NewProjectMembershipReads(
 		&projectMembershipReadsRepositoryStub{err: store.ErrNotFound},
 		projectMembershipReadsSessionsStub{err: errors.New("invalid")},
 	)
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*projectMembershipReadsService)
 	if _, err := service.APIKeyAuth(context.Background(), "bad", &security.APIKeyScheme{}); err == nil {
 		t.Fatal("invalid session returned nil error")
@@ -293,10 +296,11 @@ func TestMemberDirectoryPreservesArbitraryJSONNumbersInTheHTTPResponse(t *testin
 }
 
 func TestProjectMembershipDirectoryDecodesDynamicResponses(t *testing.T) {
-	serviceValue, _ := NewProjectMembershipReads(
+	serviceValue, constructorErr := NewProjectMembershipReads(
 		&projectMembershipReadsRepositoryStub{},
 		projectMembershipReadsSessionsStub{},
 	)
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*projectMembershipReadsService)
 	ctx := context.WithValue(
 		context.Background(),
@@ -361,10 +365,11 @@ func TestProjectMembershipDirectoryDecodesFullDetailWithoutOriginalRole(t *testi
 			"logo_url":null
 		}
 	}`)
-	serviceValue, _ := NewProjectMembershipReads(
+	serviceValue, constructorErr := NewProjectMembershipReads(
 		&projectMembershipReadsRepositoryStub{projectMember: fullDetail},
 		projectMembershipReadsSessionsStub{},
 	)
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*projectMembershipReadsService)
 	capture := &ProjectMembershipReadsResponseCapture{}
 	ctx := WithProjectMembershipReadsResponseCapture(context.WithValue(
@@ -390,7 +395,7 @@ func TestProjectMembershipDirectoryDecodesFullDetailWithoutOriginalRole(t *testi
 }
 
 func TestWorkspaceProjectMembersDecodesNullMemberAndUnknownRole(t *testing.T) {
-	serviceValue, _ := NewProjectMembershipReads(
+	serviceValue, constructorErr := NewProjectMembershipReads(
 		&projectMembershipReadsRepositoryStub{workspaceProjectMembers: json.RawMessage(`{
 			"00000000-0000-4000-8000-000000000003":[{
 				"id":"00000000-0000-4000-8000-000000000004",
@@ -402,6 +407,7 @@ func TestWorkspaceProjectMembersDecodesNullMemberAndUnknownRole(t *testing.T) {
 		}`)},
 		projectMembershipReadsSessionsStub{},
 	)
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*projectMembershipReadsService)
 	ctx := context.WithValue(
 		context.Background(),

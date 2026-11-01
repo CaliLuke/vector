@@ -7,6 +7,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -50,7 +52,8 @@ func (d *themeDB) Exec(_ context.Context, q string, args ...any) (pgconn.Command
 
 func TestRepositorySQLScopingAndJSON(t *testing.T) {
 	d := &themeDB{row: themeRow{value: `[{"id":"x"}]`}}
-	r, _ := NewRepository(d)
+	r, constructorErr := NewRepository(d)
+	require.NoError(t, constructorErr)
 	id := uuid.New()
 	user := uuid.New()
 	if _, err := r.List(context.Background(), user, "acme"); err != nil {
@@ -74,7 +77,8 @@ func TestRepositorySQLScopingAndJSON(t *testing.T) {
 }
 func TestRepositoryDeleteRowsAffected(t *testing.T) {
 	d := &themeDB{tag: pgconn.NewCommandTag("UPDATE 0")}
-	r, _ := NewRepository(d)
+	r, constructorErr := NewRepository(d)
+	require.NoError(t, constructorErr)
 	err := r.Delete(context.Background(), uuid.New(), "acme", uuid.New())
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("err=%v", err)

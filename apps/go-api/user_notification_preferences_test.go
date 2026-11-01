@@ -7,6 +7,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	usernotificationapi "github.com/CaliLuke/go-plane/gen/user_notification_preferences"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	usernotificationstore "github.com/CaliLuke/go-plane/internal/usernotificationpreferences"
@@ -69,7 +71,8 @@ func TestUserNotificationPreferencesGetAndBooleanPatch(t *testing.T) {
 
 func TestUserNotificationPreferencesValidationAndErrors(t *testing.T) {
 	repository := &notificationPreferencesRepositoryStub{}
-	service, _ := NewUserNotificationPreferences(repository, notificationPreferencesSessionStub{})
+	service, constructorErr := NewUserNotificationPreferences(repository, notificationPreferencesSessionStub{})
+	require.NoError(t, constructorErr)
 	ctx := notificationPreferencesContext(t, service)
 	_, err := service.Patch(ctx, &usernotificationapi.PatchPayload{Body: &usernotificationapi.UserNotificationPreferencePatch{
 		PropertyChange: loom.NullValue[loom.JSONValue](),
@@ -86,7 +89,8 @@ func TestUserNotificationPreferencesValidationAndErrors(t *testing.T) {
 		t.Fatalf("not found error = %#v", err)
 	}
 
-	service, _ = NewUserNotificationPreferences(&notificationPreferencesRepositoryStub{}, notificationPreferencesSessionStub{err: errors.New("bad session")})
+	service, constructorErr = NewUserNotificationPreferences(&notificationPreferencesRepositoryStub{}, notificationPreferencesSessionStub{err: errors.New("bad session")})
+	require.NoError(t, constructorErr)
 	_, err = service.(usernotificationapi.Authorizer).APIKeyAuth(context.Background(), "session", nil)
 	var unauthenticated *usernotificationapi.UserNotificationPreferenceUnauthenticated
 	if !errors.As(err, &unauthenticated) {

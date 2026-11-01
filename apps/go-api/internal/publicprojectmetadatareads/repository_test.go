@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -91,7 +93,8 @@ func TestPublicCataloguesResolveAnchorAndPreserveDjangoOrdering(t *testing.T) {
 
 func TestProjectBoardsReturnsOnlyLiveEnabledConsistentPublicProjects(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{jsonRow(`[]`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.ProjectBoards(context.Background(), "missing-workspace")
 	if err != nil || string(data) != `[]` {
 		t.Fatalf("data=%s err=%v", data, err)
@@ -128,7 +131,8 @@ func TestResolvePublicBoardRequiresConsistentLiveEnabledProjectBoard(t *testing.
 		*destinations[4].(*bool) = true
 		return nil
 	})}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	board, err := repository.ResolvePublicBoard(context.Background(), "anchor")
 	if err != nil || board.WorkspaceSlug != "demo" || board.WorkspaceID != workspaceID || board.ProjectID != projectID || board.IntakeID == nil || *board.IntakeID != intakeID || !board.VotesEnabled {
 		t.Fatalf("board=%+v err=%v", board, err)
@@ -152,7 +156,8 @@ func TestIssueDetailUsesPublicScopeAndReactionActorForAvatarURL(t *testing.T) {
 	projectID, workspaceID := uuid.New(), uuid.New()
 	response := `{"id":"issue","reaction_items":[{"reaction":"heart","actor_details":{"avatar_url":"/api/assets/v2/static/reaction-asset/"}}],"vote_items":null}`
 	database := &databaseStub{rows: []pgx.Row{jsonRow(response)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.IssueDetail(context.Background(), PublicBoard{ProjectID: projectID, WorkspaceID: workspaceID}, "issue-id")
 	if err != nil || string(data) != response {
 		t.Fatalf("data=%s err=%v", data, err)
@@ -182,7 +187,8 @@ func TestIssueDetailUsesPublicScopeAndReactionActorForAvatarURL(t *testing.T) {
 func TestMembersApplyDjangoManagerAndEndpointFilters(t *testing.T) {
 	projectID := uuid.New()
 	database := &databaseStub{rows: []pgx.Row{anchorRow(&projectID), jsonRow(`[]`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Members(context.Background(), "anchor")
 	if err != nil || string(data) != `[]` {
 		t.Fatalf("data=%s err=%v", data, err)
@@ -202,7 +208,8 @@ func TestMembersApplyDjangoManagerAndEndpointFilters(t *testing.T) {
 
 func TestSettingsCarriesAuthenticatedUserToTimezoneLookup(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{jsonRow(`{"id":"00000000-0000-4000-8000-000000000001"}`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	ctx := WithUserID(context.Background(), "00000000-0000-4000-8000-000000000099")
 	if _, err := repository.Settings(ctx, "anchor"); err != nil {
 		t.Fatal(err)
@@ -214,7 +221,8 @@ func TestSettingsCarriesAuthenticatedUserToTimezoneLookup(t *testing.T) {
 
 func TestMetaUsesPublishedEntityIdentifierAndDjangoManagerFilters(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{jsonRow(`{"id":"00000000-0000-4000-8000-000000000001"}`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Meta(context.Background(), "anchor")
 	if err != nil || string(data) != `{"id":"00000000-0000-4000-8000-000000000001"}` {
 		t.Fatalf("data=%s err=%v", data, err)
@@ -234,7 +242,8 @@ func TestMetaUsesPublishedEntityIdentifierAndDjangoManagerFilters(t *testing.T) 
 
 func TestMetaMissingProjectMapsToNotPublished(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{rowFunc(func(...any) error { return pgx.ErrNoRows })}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Meta(context.Background(), "missing")
 	if !errors.Is(err, ErrProjectNotPublished) {
 		t.Fatalf("err=%v", err)
@@ -243,7 +252,8 @@ func TestMetaMissingProjectMapsToNotPublished(t *testing.T) {
 
 func TestSettingsUsesDjangoRelationsFiltersAndRendering(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{jsonRow(`{ "id" : "00000000-0000-4000-8000-000000000001", "project_details" : null }`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Settings(context.Background(), "anchor")
 	if err != nil || string(data) != `{"id":"00000000-0000-4000-8000-000000000001","project_details":null}` {
 		t.Fatalf("data=%s err=%v", data, err)
@@ -277,7 +287,8 @@ func TestSettingsUsesDjangoRelationsFiltersAndRendering(t *testing.T) {
 func TestProjectAnchorUsesWorkspaceAndProjectLookup(t *testing.T) {
 	projectID := uuid.New()
 	database := &databaseStub{rows: []pgx.Row{jsonRow(`{"id":"00000000-0000-4000-8000-000000000001"}`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if _, err := repository.ProjectAnchor(context.Background(), "demo", projectID); err != nil {
 		t.Fatal(err)
 	}
@@ -288,7 +299,8 @@ func TestProjectAnchorUsesWorkspaceAndProjectLookup(t *testing.T) {
 
 func TestProjectAnchorRejectsDuplicateDeployBoards(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{jsonRows(`{"id":"00000000-0000-4000-8000-000000000001"}`, 2)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.ProjectAnchor(context.Background(), "demo", uuid.New())
 	if err == nil || errors.Is(err, ErrRender) {
 		t.Fatalf("duplicate project anchor err=%v", err)
@@ -297,7 +309,8 @@ func TestProjectAnchorRejectsDuplicateDeployBoards(t *testing.T) {
 
 func TestSettingsQueryFailureIsAnEagerViewError(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{rowFunc(func(...any) error { return errors.New("database unavailable") })}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Settings(context.Background(), "anchor")
 	if err == nil || errors.Is(err, ErrRender) {
 		t.Fatalf("settings query err=%v", err)
@@ -306,7 +319,8 @@ func TestSettingsQueryFailureIsAnEagerViewError(t *testing.T) {
 
 func TestSettingsMissingObjectMapsToRequiredObject(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{rowFunc(func(...any) error { return pgx.ErrNoRows })}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Settings(context.Background(), "missing")
 	if !errors.Is(err, ErrRequiredObject) {
 		t.Fatalf("err=%v", err)
@@ -316,7 +330,8 @@ func TestSettingsMissingObjectMapsToRequiredObject(t *testing.T) {
 func TestStatesApplyManagerAndEndpointFilters(t *testing.T) {
 	projectID := uuid.New()
 	database := &databaseStub{rows: []pgx.Row{anchorRow(&projectID), jsonRow(`[]`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if _, err := repository.States(context.Background(), "anchor"); err != nil {
 		t.Fatal(err)
 	}
@@ -334,7 +349,8 @@ func TestStatesPreserveDjangoStringAndFloatEncoding(t *testing.T) {
 		anchorRow(&projectID),
 		jsonRow(`[{"name":"<&>","group":"backlog","color":"#000","id":"00000000-0000-4000-8000-000000000001","sequence":"100"}]`),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.States(context.Background(), "anchor")
 	if err != nil {
 		t.Fatal(err)
@@ -378,7 +394,8 @@ func TestPythonFloatJSONRejectsNonFiniteValues(t *testing.T) {
 
 func TestMissingAnchorMapsToInvalidAnchor(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{rowFunc(func(...any) error { return pgx.ErrNoRows })}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Labels(context.Background(), "missing")
 	if !errors.Is(err, ErrInvalidAnchor) {
 		t.Fatalf("err=%v", err)
@@ -390,7 +407,8 @@ func TestMetadataQueryFailureIsMarkedAsRenderPhase(t *testing.T) {
 		anchorRow(nil),
 		rowFunc(func(...any) error { return errors.New("database unavailable") }),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Labels(context.Background(), "anchor")
 	if !errors.Is(err, ErrRender) {
 		t.Fatalf("err=%v", err)

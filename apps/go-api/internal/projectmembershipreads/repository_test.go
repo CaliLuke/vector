@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -42,7 +44,8 @@ func TestAuthorizeWorkspaceUsesOnlyActiveUndeletedMembership(t *testing.T) {
 		*destinations[0].(*bool) = true
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000001")
 	if err := repository.AuthorizeWorkspace(context.Background(), userID, "demo"); err != nil {
 		t.Fatal(err)
@@ -65,7 +68,8 @@ func TestAuthorizeWorkspaceMapsMissingMembershipToForbidden(t *testing.T) {
 		*destinations[0].(*bool) = false
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if err := repository.AuthorizeWorkspace(context.Background(), uuid.Nil(), "demo"); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("err=%v", err)
 	}
@@ -76,7 +80,8 @@ func TestMembershipScopesTheActiveMemberAndBuildsNestedSerializerShape(t *testin
 		*destinations[0].(*[]byte) = []byte(`{"id":"membership"}`)
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	projectID := uuid.MustParse("00000000-0000-4000-8000-000000000001")
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000002")
 
@@ -99,7 +104,8 @@ func TestMembershipScopesTheActiveMemberAndBuildsNestedSerializerShape(t *testin
 
 func TestMembershipMapsMissingRows(t *testing.T) {
 	database := &databaseStub{row: rowFunc(func(...any) error { return pgx.ErrNoRows })}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Membership(context.Background(), uuid.Nil(), "demo", uuid.Nil())
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("err=%v", err)
@@ -112,7 +118,8 @@ func TestRolesRequiresAnActiveWorkspaceMemberAndReturnsAJSONMap(t *testing.T) {
 		*destinations[1].(*[]byte) = []byte(`{"project":15}`)
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Roles(context.Background(), uuid.Nil(), "demo")
 	if err != nil || string(data) != `{"project":15}` {
 		t.Fatalf("data=%s err=%v", data, err)
@@ -130,7 +137,8 @@ func TestRolesMapsInactiveWorkspaceMembershipToForbidden(t *testing.T) {
 		*destinations[1].(*[]byte) = []byte(`{}`)
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Roles(context.Background(), uuid.Nil(), "demo")
 	if !errors.Is(err, ErrForbidden) {
 		t.Fatalf("err=%v", err)
@@ -142,7 +150,8 @@ func TestWorkspaceMembersScopesAuthorizationSearchAndSerializerRole(t *testing.T
 		*destinations[0].(*[]byte) = []byte(`[]`)
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000001")
 	searchTerms := []string{"alex", "smith"}
 	data, err := repository.WorkspaceMembers(context.Background(), userID, "demo", searchTerms)
@@ -170,7 +179,8 @@ func TestMemberDirectoryRequesterRolesMatchDjangoPermissions(t *testing.T) {
 		*destinations[0].(*[]byte) = []byte(`{}`)
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	for name, call := range map[string]func() error{
 		"workspace members": func() error {
 			_, err := repository.WorkspaceMembers(context.Background(), uuid.Nil(), "demo", nil)
@@ -209,7 +219,8 @@ func TestWorkspaceProjectMembersAllowsEveryActiveWorkspaceRole(t *testing.T) {
 		*destinations[0].(*[]byte) = []byte(`{}`)
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if _, err := repository.WorkspaceProjectMembers(context.Background(), uuid.Nil(), "demo"); err != nil {
 		t.Fatal(err)
 	}
@@ -228,7 +239,8 @@ func TestTimestampDirectoryReadsActivateTheRequesterTimezone(t *testing.T) {
 		*destinations[0].(*[]byte) = []byte(`{}`)
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	calls := []func() error{
 		func() error {
 			_, err := repository.WorkspaceMembers(context.Background(), uuid.Nil(), "demo", nil)
@@ -271,7 +283,8 @@ func TestProjectDirectoryRequesterPreservesWorkspaceAdminFallback(t *testing.T) 
 		*destinations[0].(*[]byte) = []byte(`{}`)
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	calls := []func() error{
 		func() error {
 			_, err := repository.ProjectMembers(context.Background(), uuid.Nil(), "demo", uuid.Nil())
@@ -305,7 +318,8 @@ func TestProjectMemberScopesRequesterAndMapsMissingTarget(t *testing.T) {
 		*destinations[0].(*[]byte) = []byte(`null`)
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.ProjectMember(context.Background(), uuid.Nil(), "demo", uuid.Nil(), uuid.Nil())
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("err=%v", err)
@@ -330,7 +344,8 @@ func TestWorkspaceMemberAppliesSearchTermsToTheTarget(t *testing.T) {
 		*destinations[0].(*[]byte) = []byte(`null`)
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	searchTerms := []string{"alex", "smith"}
 	_, err := repository.WorkspaceMember(context.Background(), uuid.Nil(), "demo", uuid.Nil(), searchTerms)
 	if !errors.Is(err, ErrNotFound) {
@@ -349,7 +364,8 @@ func TestWorkspaceMemberSearchTreatsLikeMetacharactersLiterally(t *testing.T) {
 		*destinations[0].(*[]byte) = []byte(`null`)
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.WorkspaceMember(
 		context.Background(), uuid.Nil(), "demo", uuid.Nil(), []string{`100\%`, `under\_score`, `back\\slash`},
 	)
@@ -366,7 +382,8 @@ func TestWorkspaceMemberSearchUsesDjangoUnicodeCaseFolding(t *testing.T) {
 		*destinations[0].(*[]byte) = []byte(`null`)
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.WorkspaceMember(
 		context.Background(), uuid.Nil(), "demo", uuid.Nil(), []string{"ı"},
 	)
@@ -386,7 +403,8 @@ func TestWorkspaceMemberSearchUsesDjangoUnicodeCaseFolding(t *testing.T) {
 
 func TestMemberDirectoryMapsMissingRequesterToForbidden(t *testing.T) {
 	database := &databaseStub{row: rowFunc(func(...any) error { return pgx.ErrNoRows })}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.WorkspaceProjectMembers(context.Background(), uuid.Nil(), "demo")
 	if !errors.Is(err, ErrForbidden) {
 		t.Fatalf("err=%v", err)

@@ -11,6 +11,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
@@ -106,7 +108,8 @@ func assertNotificationStatus(t *testing.T, err error, status int) {
 
 func TestNotificationRepositoryPostgresScopeAndSelection(t *testing.T) {
 	tx := notificationTestDB(t)
-	r, _ := NewRepository(tx)
+	r, constructorErr := NewRepository(tx)
+	require.NoError(t, constructorErr)
 	ctx := t.Context()
 	for i, title := range []string{"older", "newer", "mentioned", "other entity", "deleted", "other receiver", "other workspace", "past snooze", "future snooze", "archived"} {
 		insertNotification(t, tx, 10+i, title)
@@ -156,7 +159,8 @@ func TestNotificationRepositoryPostgresScopeAndSelection(t *testing.T) {
 
 func TestNotificationRepositoryPostgresSubscribedExclusions(t *testing.T) {
 	tx := notificationTestDB(t)
-	r, _ := NewRepository(tx)
+	r, constructorErr := NewRepository(tx)
+	require.NoError(t, constructorErr)
 	ctx := t.Context()
 	for i, title := range []string{"ordinary assigned subscription", "created subscription", "assignee primary key subscription"} {
 		insertNotification(t, tx, 10+i, title)
@@ -184,7 +188,8 @@ func TestNotificationRepositoryPostgresSubscribedExclusions(t *testing.T) {
 
 func TestNotificationRepositoryPostgresPaginationOrdering(t *testing.T) {
 	tx := notificationTestDB(t)
-	r, _ := NewRepository(tx)
+	r, constructorErr := NewRepository(tx)
+	require.NoError(t, constructorErr)
 	ctx := t.Context()
 	insertNotification(t, tx, 10, "old creation tie")
 	insertNotification(t, tx, 11, "new creation tie")

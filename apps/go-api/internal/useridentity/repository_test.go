@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -48,7 +50,8 @@ func TestIdentityRepositoryOmitsUnavailableScopedAssetURLs(t *testing.T) {
 		true,
 		true,
 	)}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	body, err := repository.SessionUser(context.Background(), uuid.MustParse("00000000-0000-4000-8000-000000000010"))
 	if err != nil {
 		t.Fatal(err)
@@ -67,7 +70,8 @@ func TestNewRepositoryRequiresDatabase(t *testing.T) {
 
 func TestIdentityRepositoryReadsSessionAndProfile(t *testing.T) {
 	database := &identityDB{row: identityJSONRow(`{"id":"user"}`)}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	if body, err := repository.SessionUser(context.Background(), userID); err != nil || string(body) != `{"id":"user"}` {
 		t.Fatalf("SessionUser() = %s, %v", body, err)
@@ -90,7 +94,8 @@ func TestIdentityRepositoryReadsSessionAndProfile(t *testing.T) {
 
 func TestIdentityRepositoryUpdatesOnlyPresentProfileFields(t *testing.T) {
 	database := &identityDB{row: identityJSONRow(`{"theme":{"mode":"dark"}}`)}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	patch := json.RawMessage(`{"theme":{"mode":"dark"},"billing_address":null}`)
 	if _, err := repository.UpdateProfile(context.Background(), userID, patch); err != nil {
@@ -114,7 +119,8 @@ func TestIdentityRepositoryUpdatesOnlyPresentProfileFields(t *testing.T) {
 
 func TestIdentityRepositoryMapsMissingRows(t *testing.T) {
 	database := &identityDB{row: identityRow(func(...any) error { return pgx.ErrNoRows })}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if _, err := repository.Profile(context.Background(), uuid.Nil()); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("Profile() error = %v, want ErrNotFound", err)
 	}

@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -54,7 +56,8 @@ func TestNewRepositoryRequiresDatabase(t *testing.T) {
 
 func TestWorkspaceAuthorizationScopesActiveMembershipAndTenant(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID := uuid.New()
 	if err := repository.AuthorizeWorkspace(context.Background(), userID, "acme"); err != nil {
 		t.Fatal(err)
@@ -78,7 +81,8 @@ func TestWorkspaceAuthorizationScopesActiveMembershipAndTenant(t *testing.T) {
 
 func TestProjectAuthorizationRequiresExactActiveProjectMembership(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	projectID := uuid.New()
 	if err := repository.AuthorizeProject(context.Background(), uuid.New(), "acme", projectID); err != nil {
 		t.Fatal(err)
@@ -101,7 +105,8 @@ func TestProjectAuthorizationRequiresExactActiveProjectMembership(t *testing.T) 
 
 func TestAuthorizationRejectsMissingMembership(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(false), boolRow(false)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if err := repository.AuthorizeWorkspace(context.Background(), uuid.New(), "acme"); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("workspace err=%v", err)
 	}
@@ -112,7 +117,8 @@ func TestAuthorizationRejectsMissingMembership(t *testing.T) {
 
 func TestWorkspaceSelectedUsesSelectedProjectsInsteadOfAllEstimates(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true), jsonRow(`[]`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if _, err := repository.WorkspaceSelected(context.Background(), uuid.New(), "acme"); err != nil {
 		t.Fatal(err)
 	}
@@ -140,7 +146,8 @@ func TestProjectListAndDetailUseDistinctScopedPaths(t *testing.T) {
 		boolRow(true), jsonRow(`[]`),
 		boolRow(true), jsonRow(`{}`),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if _, err := repository.ProjectList(context.Background(), uuid.New(), "acme", projectID); err != nil {
 		t.Fatal(err)
 	}
@@ -178,7 +185,8 @@ func TestProjectDetailMapsUnavailableEstimateToNotFound(t *testing.T) {
 		boolRow(true),
 		rowFunc(func(...any) error { return pgx.ErrNoRows }),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.ProjectDetail(context.Background(), uuid.New(), "acme", uuid.New(), uuid.New())
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("err=%v", err)

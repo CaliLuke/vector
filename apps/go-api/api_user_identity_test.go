@@ -8,6 +8,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	api "github.com/CaliLuke/go-plane/apiuseridentity/gen/api_user_identity"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
@@ -28,7 +30,8 @@ func TestAPIIdentityThrottlePrecedesTimezoneAndRead(t *testing.T) {
 	repository := &apiIdentityRepositoryStub{}
 	keys := &activityAPIKeyStub{principal: apikey.Principal{UserID: googleuuid.New(), Timezone: "Invalid/Timezone"}}
 	throttle := &activityThrottleStub{rate: apikey.Rate{Allowed: false}}
-	value, _ := NewAPIUserIdentity(repository, keys, throttle)
+	value, constructorErr := NewAPIUserIdentity(repository, keys, throttle)
+	require.NoError(t, constructorErr)
 	service := value.(*apiUserIdentityReadsService)
 	status, body := service.AuthorizeAPIIdentityProtocol(context.Background(), "key")
 	if status != 429 || body["detail"] == nil || throttle.calls != 1 || repository.reads != 0 {
@@ -38,7 +41,8 @@ func TestAPIIdentityThrottlePrecedesTimezoneAndRead(t *testing.T) {
 func TestAPIIdentityRendersCompactJSONBeforeCompression(t *testing.T) {
 	repository := &apiIdentityRepositoryStub{body: json.RawMessage(`{"id": "user", "email": null, "first_name": "Zoë"}`)}
 	keys := &activityAPIKeyStub{principal: apikey.Principal{UserID: googleuuid.New(), Timezone: "UTC"}}
-	value, _ := NewAPIUserIdentity(repository, keys, &activityThrottleStub{rate: apikey.Rate{Allowed: true}})
+	value, constructorErr := NewAPIUserIdentity(repository, keys, &activityThrottleStub{rate: apikey.Rate{Allowed: true}})
+	require.NoError(t, constructorErr)
 	service := value.(*apiUserIdentityReadsService)
 	ctx, err := service.APIKeyAuth(context.Background(), "key", &security.APIKeyScheme{})
 	if err != nil {
@@ -56,7 +60,8 @@ func TestAPIIdentityRendersCompactJSONBeforeCompression(t *testing.T) {
 }
 func TestAPIIdentityRejectsInvalidKeyBeforeThrottle(t *testing.T) {
 	throttle := &activityThrottleStub{}
-	value, _ := NewAPIUserIdentity(&apiIdentityRepositoryStub{}, &activityAPIKeyStub{err: apikey.ErrInvalid}, throttle)
+	value, constructorErr := NewAPIUserIdentity(&apiIdentityRepositoryStub{}, &activityAPIKeyStub{err: apikey.ErrInvalid}, throttle)
+	require.NoError(t, constructorErr)
 	service := value.(*apiUserIdentityReadsService)
 	_, err := service.APIKeyAuth(context.Background(), "invalid", &security.APIKeyScheme{})
 	var denied *api.APIUserIdentityErrorBody

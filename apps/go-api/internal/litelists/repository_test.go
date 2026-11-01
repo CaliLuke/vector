@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -55,7 +57,8 @@ func TestListProjectsScopesVisibilityAndReturnsCount(t *testing.T) {
 
 func TestListMembersUsesSerializerFieldsAndPropagatesDatabaseErrors(t *testing.T) {
 	db := &dbStub{row: rowFunc(func(...any) error { return errors.New("boom") })}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	if _, err := r.ListWorkspaceMembers(context.Background(), "demo", ListOptions{}); err == nil {
 		t.Fatal("expected database error")
 	}
@@ -66,7 +69,8 @@ func TestListMembersUsesSerializerFieldsAndPropagatesDatabaseErrors(t *testing.T
 
 func TestListCyclesAndModulesExcludeArchived(t *testing.T) {
 	db := &dbStub{row: pageRow(`[]`, 0)}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	if _, err := r.ListCycles(context.Background(), "demo", uuid.Nil(), ListOptions{}); err != nil {
 		t.Fatal(err)
 	}

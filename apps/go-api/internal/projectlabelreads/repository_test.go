@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -54,7 +56,8 @@ func TestNewRepositoryRequiresDatabase(t *testing.T) {
 
 func TestAuthorizeWorkspaceRequiresActiveNonDeletedMembership(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID := uuid.New()
 	if err := repository.AuthorizeWorkspace(context.Background(), userID, "demo"); err != nil {
 		t.Fatal(err)
@@ -70,7 +73,8 @@ func TestAuthorizeWorkspaceRequiresActiveNonDeletedMembership(t *testing.T) {
 
 func TestAuthorizeWorkspaceMapsMissingMembershipToForbidden(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(false)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if err := repository.AuthorizeWorkspace(context.Background(), uuid.New(), "demo"); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("err=%v", err)
 	}
@@ -78,7 +82,8 @@ func TestAuthorizeWorkspaceMapsMissingMembershipToForbidden(t *testing.T) {
 
 func TestListScopesAndOrdersLabelsWhilePreservingInactiveProjectMembership(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true), jsonRow(`[]`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.List(context.Background(), uuid.New(), "demo", uuid.New())
 	if err != nil || string(data) != `[]` {
 		t.Fatalf("data=%s err=%v", data, err)
@@ -99,7 +104,8 @@ func TestListScopesAndOrdersLabelsWhilePreservingInactiveProjectMembership(t *te
 
 func TestDetailMapsUnavailableLabelToNotFound(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true), rowFunc(func(...any) error { return pgx.ErrNoRows })}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Detail(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New())
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("err=%v", err)

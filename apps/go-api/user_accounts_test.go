@@ -7,6 +7,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	useraccountsapi "github.com/CaliLuke/go-plane/gen/user_accounts"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	useraccountsstore "github.com/CaliLuke/go-plane/internal/useraccounts"
@@ -74,7 +76,8 @@ func TestUserAccountsListRetrieveAndDelete(t *testing.T) {
 }
 
 func TestUserAccountsErrors(t *testing.T) {
-	service, _ := NewUserAccounts(&userAccountsRepositoryStub{}, userAccountsSessionStub{err: errors.New("invalid session")})
+	service, constructorErr := NewUserAccounts(&userAccountsRepositoryStub{}, userAccountsSessionStub{err: errors.New("invalid session")})
+	require.NoError(t, constructorErr)
 	_, err := service.(useraccountsapi.Authorizer).APIKeyAuth(context.Background(), "session", nil)
 	var unauthenticated *useraccountsapi.UserAccountUnauthenticated
 	if !errors.As(err, &unauthenticated) {
@@ -82,7 +85,8 @@ func TestUserAccountsErrors(t *testing.T) {
 	}
 
 	repository := &userAccountsRepositoryStub{err: useraccountsstore.ErrNotFound}
-	service, _ = NewUserAccounts(repository, userAccountsSessionStub{})
+	service, constructorErr = NewUserAccounts(repository, userAccountsSessionStub{})
+	require.NoError(t, constructorErr)
 	ctx := userAccountsContext(t, service)
 	_, err = service.Retrieve(ctx, &useraccountsapi.RetrievePayload{Pk: "00000000-0000-4000-8000-000000000021"})
 	var notFound *useraccountsapi.UserAccountNotFound

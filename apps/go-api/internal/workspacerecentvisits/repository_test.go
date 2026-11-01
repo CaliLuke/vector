@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -96,7 +98,8 @@ func TestRecordUpdatesOrCreatesAndCapsPerUserWorkspace(t *testing.T) {
 			return nil
 		}),
 	}}
-	repository, _ := NewRepository(db)
+	repository, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	entityID := uuid.MustParse("00000000-0000-4000-8000-000000000020")
 	projectID := uuid.MustParse("00000000-0000-4000-8000-000000000030")
@@ -146,7 +149,8 @@ func TestRecordReportsMissingWorkspace(t *testing.T) {
 			return nil
 		}),
 	}}
-	repository, _ := NewRepository(db)
+	repository, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	err := repository.Record(context.Background(), uuid.New(), "missing", "cycle", uuid.New(), uuid.New())
 	if err == nil || !strings.Contains(err.Error(), `workspace "missing" not found`) {
 		t.Fatalf("Record missing workspace error = %v", err)

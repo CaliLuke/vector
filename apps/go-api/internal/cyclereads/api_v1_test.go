@@ -6,11 +6,14 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/jackc/pgx/v5"
 )
 
 func TestAPIV1ProjectionPrecedesExpansionAndKeepsMetadataOpaque(t *testing.T) {
-	repository, _ := NewRepository(&databaseStub{})
+	repository, constructorErr := NewRepository(&databaseStub{})
+	require.NoError(t, constructorErr)
 	metadata := map[string]any{"created_at": "2011-06-17T13:14:15Z"}
 	row := map[string]any{"id": "cycle-id", "name": "Sprint", "view_props": metadata, "project_id": "project-id"}
 	result, err := repository.apiSerialize(context.Background(), row, "cycle", "id,view_props", "id,project", "")
@@ -24,7 +27,8 @@ func TestAPIV1ProjectionPrecedesExpansionAndKeepsMetadataOpaque(t *testing.T) {
 
 func TestAPIV1RelatedOrderPreservesBaseCountAndWindowContinuation(t *testing.T) {
 	db := &databaseStub{rows: []pgx.Row{jsonRow(`{"total_count":1,"has_next":true,"results":[{"id":"a","name":"one"},{"id":"a","name":"one"}]}`)}}
-	repository, _ := NewRepository(db)
+	repository, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	body, err := repository.ReadAPIV1(context.Background(), "user", APIV1Request{Operation: "issues", Params: map[string]string{"per_page": "2", "order_by": "assignees__first_name"}, Present: map[string]bool{"per_page": true}})
 	if err != nil {
 		t.Fatal(err)
@@ -37,7 +41,8 @@ func TestAPIV1RelatedOrderPreservesBaseCountAndWindowContinuation(t *testing.T) 
 
 func TestAPIV1CurrentCyclesIgnoreMalformedPagination(t *testing.T) {
 	db := &databaseStub{rows: []pgx.Row{boolRow(true), jsonRow(`{"total_count":1,"has_next":false,"results":[{"id":"a","name":"one","total_issues":0}]}`)}}
-	repository, _ := NewRepository(db)
+	repository, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	body, err := repository.ReadAPIV1(context.Background(), "user", APIV1Request{Operation: "list", Params: map[string]string{"cycle_view": "current", "per_page": "bad", "cursor": "bad"}, Present: map[string]bool{"per_page": true, "cursor": true}})
 	if err != nil {
 		t.Fatal(err)
@@ -49,7 +54,8 @@ func TestAPIV1CurrentCyclesIgnoreMalformedPagination(t *testing.T) {
 }
 
 func TestAPIV1NullEstimateExpansionUsesSerializerInitialFields(t *testing.T) {
-	repository, _ := NewRepository(&databaseStub{})
+	repository, constructorErr := NewRepository(&databaseStub{})
+	require.NoError(t, constructorErr)
 	row := map[string]any{"id": "issue", "estimate_point_id": nil}
 	got, err := repository.apiSerialize(context.Background(), row, "issue", "id,estimate_point", "estimate_point", "")
 	if err != nil {

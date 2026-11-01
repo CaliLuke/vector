@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/jackc/pgx/v5/pgconn"
 
@@ -21,7 +23,8 @@ func TestWorkspaceInvitesUseNarrowSerializerAndNewestFirst(t *testing.T) {
 		*destinations[0].(*[]byte) = []byte(`[]`)
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.WorkspaceInvites(context.Background(), "demo")
 	if err != nil || string(data) != `[]` {
 		t.Fatalf("data=%s err=%v", data, err)
@@ -38,7 +41,8 @@ func TestWorkspaceInvitesUseNarrowSerializerAndNewestFirst(t *testing.T) {
 
 func TestWorkspaceInviteScopesBySlugAndMapsMissing(t *testing.T) {
 	database := &databaseStub{row: rowFunc(func(...any) error { return pgx.ErrNoRows })}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.WorkspaceInvite(context.Background(), "demo", uuid.Nil)
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("err=%v", err)
@@ -53,7 +57,8 @@ func TestAuthorizeWorkspaceRoleRequiresActiveWorkspaceMembershipAndExactRole(t *
 		*destinations[0].(*bool) = true
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000001")
 	if err := repository.AuthorizeWorkspaceRole(context.Background(), userID, "demo", 15, 20); err != nil {
 		t.Fatal(err)
@@ -79,7 +84,8 @@ func TestWorkspaceExistsExcludesTombstonedWorkspace(t *testing.T) {
 		*destinations[0].(*bool) = false
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	exists, err := repository.WorkspaceExists(context.Background(), "demo")
 	if err != nil || exists {
 		t.Fatalf("exists=%t err=%v", exists, err)
@@ -97,7 +103,8 @@ func TestWorkspaceMemberReadQueriesRetainInactiveRowsAndSerializerFields(t *test
 		}
 		return nil
 	})}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if _, err := repository.WorkspaceMemberUsers(context.Background(), "demo"); err != nil {
 		t.Fatal(err)
 	}

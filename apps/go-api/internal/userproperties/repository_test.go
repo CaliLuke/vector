@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -42,7 +44,8 @@ func TestRepositoryRequiresDatabase(t *testing.T) {
 
 func TestWorkspaceGetCreatesDjangoDefaults(t *testing.T) {
 	d := &db{rows: []pgx.Row{jsonRow(`{"filters":{},"navigation_project_limit":10}`)}}
-	r, _ := NewRepository(d)
+	r, constructorErr := NewRepository(d)
+	require.NoError(t, constructorErr)
 	got, err := r.GetWorkspace(context.Background(), uuid.Nil(), "demo")
 	if err != nil || string(got) != `{"filters":{},"navigation_project_limit":10}` {
 		t.Fatalf("get=%s err=%v", got, err)
@@ -57,7 +60,8 @@ func TestWorkspaceGetCreatesDjangoDefaults(t *testing.T) {
 
 func TestScopedPropertiesPatchMergesOnlyPresentFields(t *testing.T) {
 	d := &db{rows: []pgx.Row{jsonRow(`{"filters":{"state":"started"}}`)}}
-	r, _ := NewRepository(d)
+	r, constructorErr := NewRepository(d)
+	require.NoError(t, constructorErr)
 	id := uuid.MustParse("00000000-0000-4000-8000-000000000001")
 	got, err := r.PatchProject(context.Background(), uuid.Nil(), "demo", id, map[string]json.RawMessage{"filters": json.RawMessage(`{"state":"started"}`)})
 	if err != nil || len(got) == 0 {
@@ -73,7 +77,8 @@ func TestScopedPropertiesPatchMergesOnlyPresentFields(t *testing.T) {
 
 func TestProjectAuthorizationRequiresActiveProjectMembership(t *testing.T) {
 	d := &db{rows: []pgx.Row{row(func(dest ...any) error { *dest[0].(*bool) = true; return nil })}}
-	r, _ := NewRepository(d)
+	r, constructorErr := NewRepository(d)
+	require.NoError(t, constructorErr)
 	if ok, err := r.AuthorizedProject(context.Background(), uuid.Nil(), "demo", uuid.Nil()); err != nil || !ok {
 		t.Fatalf("authorized=%v err=%v", ok, err)
 	}
@@ -84,7 +89,8 @@ func TestProjectAuthorizationRequiresActiveProjectMembership(t *testing.T) {
 
 func TestWorkspacePatchSupportsNavigationFields(t *testing.T) {
 	d := &db{rows: []pgx.Row{jsonRow(`{"navigation_project_limit":25,"navigation_control_preference":"TABBED"}`)}}
-	r, _ := NewRepository(d)
+	r, constructorErr := NewRepository(d)
+	require.NoError(t, constructorErr)
 	_, err := r.PatchWorkspace(context.Background(), uuid.Nil(), "demo", map[string]json.RawMessage{
 		"navigation_project_limit":      json.RawMessage(`25`),
 		"navigation_control_preference": json.RawMessage(`"TABBED"`),
@@ -101,7 +107,8 @@ func TestWorkspacePatchSupportsNavigationFields(t *testing.T) {
 
 func TestProjectPatchSupportsSortOrderAndPreferences(t *testing.T) {
 	d := &db{rows: []pgx.Row{jsonRow(`{"sort_order":7.5,"preferences":{"pages":{"block_display":false}}}`)}}
-	r, _ := NewRepository(d)
+	r, constructorErr := NewRepository(d)
+	require.NoError(t, constructorErr)
 	_, err := r.PatchProject(context.Background(), uuid.Nil(), "demo", uuid.Nil(), map[string]json.RawMessage{
 		"sort_order":  json.RawMessage(`7.5`),
 		"preferences": json.RawMessage(`{"pages":{"block_display":false}}`),

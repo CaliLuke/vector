@@ -6,6 +6,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/project_state_reads"
@@ -59,7 +61,8 @@ func TestNewProjectStateReadsRequiresDependencies(t *testing.T) {
 
 func TestProjectStateReadsAuthenticateListAndGroup(t *testing.T) {
 	list := json.RawMessage(`[` + projectStateFixture[:len(projectStateFixture)-1] + `,"order":1.0}]`)
-	serviceValue, _ := NewProjectStateReads(&projectStateReadsRepositoryStub{list: list}, projectStateReadsSessionsStub{})
+	serviceValue, constructorErr := NewProjectStateReads(&projectStateReadsRepositoryStub{list: list}, projectStateReadsSessionsStub{})
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*projectStateReadsService)
 	ctx, err := service.APIKeyAuth(context.Background(), "session", &security.APIKeyScheme{})
 	if err != nil {

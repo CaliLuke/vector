@@ -7,6 +7,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -43,7 +45,8 @@ func tokenJSONRow(body string) pgx.Row {
 }
 func TestRepositoryFiltersSoftDeletedAndRedactsReadToken(t *testing.T) {
 	db := &tokenDB{rows: []pgx.Row{tokenJSONRow("[]"), tokenJSONRow(`{"id":"x"}`)}}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	u := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	if _, e := r.List(context.Background(), u); e != nil {
 		t.Fatal(e)
@@ -60,7 +63,8 @@ func TestRepositoryCreatePatchAndSoftDeleteAudit(t *testing.T) {
 	u := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	id := uuid.MustParse("00000000-0000-4000-8000-000000000011")
 	db := &tokenDB{rows: []pgx.Row{tokenJSONRow(`{"id":"x"}`), tokenJSONRow(`{"id":"x"}`)}, tag: pgconn.NewCommandTag("UPDATE 1")}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	expiry := "2026-09-01T00:00:00Z"
 	if _, e := r.Create(context.Background(), u, "label", "desc", "plane_api_x", &expiry); e != nil {
 		t.Fatal(e)
@@ -81,7 +85,8 @@ func TestRepositoryCreatePatchAndSoftDeleteAudit(t *testing.T) {
 }
 func TestRepositoryMissingDelete(t *testing.T) {
 	db := &tokenDB{tag: pgconn.NewCommandTag("UPDATE 0")}
-	r, _ := NewRepository(db)
+	r, constructorErr := NewRepository(db)
+	require.NoError(t, constructorErr)
 	if e := r.Delete(context.Background(), uuid.Nil(), uuid.Nil()); !errors.Is(e, ErrNotFound) {
 		t.Fatalf("error=%v", e)
 	}

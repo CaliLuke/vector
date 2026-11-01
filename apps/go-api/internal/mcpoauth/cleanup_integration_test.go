@@ -9,6 +9,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/mcpoauth"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,7 +24,13 @@ func TestPeriodicCleanupRemovesExpiredProofsAndRetainsActiveFlow(t *testing.T) {
 	require.NoError(t, err)
 	ctx, cancel := context.WithCancel(t.Context())
 	done := make(chan struct{})
-	go func() { defer close(done); links.RunCleanup(ctx, nil) }()
+	cleanupErrors := make(chan error, 1)
+	go func() {
+		defer close(done)
+		links.RunCleanup(ctx, func(err error) {
+			cleanupErrors <- err
+		})
+	}()
 	t.Cleanup(func() {
 		cancel()
 		select {
@@ -32,10 +39,17 @@ func TestPeriodicCleanupRemovesExpiredProofsAndRetainsActiveFlow(t *testing.T) {
 			t.Error("cleanup did not stop")
 		}
 	})
-	require.Eventually(t, func() bool {
+	var cleanupFailure error
+	require.EventuallyWithT(t, func(collect *assert.CollectT) {
+		select {
+		case cleanupFailure = <-cleanupErrors:
+		default:
+		}
+		assert.NoError(collect, cleanupFailure, "cleanup worker's initial attempt")
 		var count int
 		err := db.QueryRow(t.Context(), `SELECT count(*) FROM mcp_oauth_link_flows`).Scan(&count)
-		return err == nil && count == 1
+		assert.NoError(collect, err, "read retained cleanup flows")
+		assert.Equal(collect, 1, count, "only the active flow must remain")
 	}, 10*time.Second, 10*time.Millisecond)
 	var retained uuid.UUID
 	require.NoError(t, db.QueryRow(t.Context(), `SELECT id FROM mcp_oauth_link_flows`).Scan(&retained))

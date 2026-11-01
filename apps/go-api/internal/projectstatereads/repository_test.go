@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -55,7 +57,8 @@ func TestNewRepositoryRequiresDatabase(t *testing.T) {
 
 func TestAuthorizeProjectMirrorsAllowedRolesAndWorkspaceAdminOverride(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID := uuid.New()
 	projectID := uuid.New()
 	if err := repository.AuthorizeProject(context.Background(), userID, "demo", projectID); err != nil {
@@ -77,7 +80,8 @@ func TestAuthorizeProjectMirrorsAllowedRolesAndWorkspaceAdminOverride(t *testing
 
 func TestAuthorizeProjectMapsMissingMembershipToForbidden(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(false)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if err := repository.AuthorizeProject(context.Background(), uuid.New(), "demo", uuid.New()); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("err=%v", err)
 	}
@@ -85,7 +89,8 @@ func TestAuthorizeProjectMapsMissingMembershipToForbidden(t *testing.T) {
 
 func TestListScopesStatesAndCalculatesOrderWithinEachGroup(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true), jsonRow(`[]`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.List(context.Background(), uuid.New(), "demo", uuid.New())
 	if err != nil || string(data) != `[]` {
 		t.Fatalf("data=%s err=%v", data, err)
@@ -104,7 +109,8 @@ func TestListScopesStatesAndCalculatesOrderWithinEachGroup(t *testing.T) {
 
 func TestDetailHidesUnavailableStatesAsNotFound(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{rowFunc(func(...any) error { return pgx.ErrNoRows })}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Detail(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New())
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("err=%v", err)
@@ -124,7 +130,8 @@ func TestDetailHidesUnavailableStatesAsNotFound(t *testing.T) {
 
 func TestIntakeUsesTriageGroupWithoutArchivedOrIsTriageFilters(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true), jsonRow(`{"group":"triage"}`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Intake(context.Background(), uuid.New(), "demo", uuid.New())
 	if err != nil || string(data) != `{"group":"triage"}` {
 		t.Fatalf("data=%s err=%v", data, err)
@@ -140,7 +147,8 @@ func TestIntakeUsesTriageGroupWithoutArchivedOrIsTriageFilters(t *testing.T) {
 
 func TestAPIV1ListKeepsSerializerFieldsPaginationAndProjectScope(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{jsonRow(`{"total_count":1,"has_next":false,"results":[{"id":"state-1","name":"Backlog","description":"plain text","color":"#fff","name_id":null,"sequence":10,"project_id":"project-1","workspace_id":"workspace-1"}]}`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	request := APIV1Request{
 		Operation: "list",
 		Params:    map[string]string{"slug": "demo", "project_id": "project-1", "per_page": "1", "fields": "color,name,description,sequence", "expand": "name"},
@@ -175,7 +183,8 @@ func TestAPIV1ListKeepsSerializerFieldsPaginationAndProjectScope(t *testing.T) {
 
 func TestAPIV1DetailUsesPathStateAndAppliesDynamicProjection(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{jsonRow(`{"total_count":1,"has_next":false,"results":[{"id":"state-1","name":"Backlog","color":"#fff","sequence":10,"project_id":"project-1","workspace_id":"workspace-1"}]}`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	request := APIV1Request{
 		Operation: "detail",
 		Params:    map[string]string{"slug": "demo", "project_id": "project-1", "state_id": "path-state", "fields": "name,color", "expand": "name"},

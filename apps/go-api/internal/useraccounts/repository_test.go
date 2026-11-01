@@ -7,6 +7,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -67,7 +69,8 @@ func TestRepositoryGetAndDeleteAreOwnerScoped(t *testing.T) {
 		*dest[0].(*[]byte) = []byte(`{"id":"00000000-0000-4000-8000-000000000021"}`)
 		return nil
 	})}
-	repository, _ := NewRepository(stub)
+	repository, constructorErr := NewRepository(stub)
+	require.NoError(t, constructorErr)
 	if _, err := repository.Get(context.Background(), userID, accountID); err != nil {
 		t.Fatal(err)
 	}
@@ -88,7 +91,8 @@ func TestRepositoryMapsMissingRows(t *testing.T) {
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	accountID := uuid.MustParse("00000000-0000-4000-8000-000000000021")
 	stub := &databaseStub{row: rowFunc(func(...any) error { return pgx.ErrNoRows })}
-	repository, _ := NewRepository(stub)
+	repository, constructorErr := NewRepository(stub)
+	require.NoError(t, constructorErr)
 	if _, err := repository.Get(context.Background(), userID, accountID); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("Get() error = %v", err)
 	}

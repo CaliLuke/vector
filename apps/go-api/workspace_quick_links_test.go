@@ -7,6 +7,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	api "github.com/CaliLuke/go-plane/gen/workspace_quick_links"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/workspacequicklinks"
@@ -95,7 +97,8 @@ func TestWorkspaceQuickLinksForbiddenValidationAndNotFound(t *testing.T) {
 	if _, e := svc.Retrieve(ctx, &api.RetrievePayload{Slug: "demo", Pk: quickID}); e == nil {
 		t.Fatal("expected not found")
 	}
-	bad, _ := NewWorkspaceQuickLinks(r, quickSessionStub{err: errors.New("bad")})
+	bad, constructorErr := NewWorkspaceQuickLinks(r, quickSessionStub{err: errors.New("bad")})
+	require.NoError(t, constructorErr)
 	if _, e := bad.(api.Authorizer).APIKeyAuth(context.Background(), "x", nil); e == nil {
 		t.Fatal("expected auth error")
 	}

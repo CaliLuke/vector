@@ -8,6 +8,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -83,7 +85,8 @@ func TestRepositoryGetPreservesSerializerShapeAndCardinality(t *testing.T) {
 		}
 	}
 
-	duplicate, _ := NewRepository(&databaseStub{rows: []pgx.Row{activeRow(preferenceID, 2)}})
+	duplicate, constructorErr := NewRepository(&databaseStub{rows: []pgx.Row{activeRow(preferenceID, 2)}})
+	require.NoError(t, constructorErr)
 	if _, err := duplicate.Get(context.Background(), userID); !errors.Is(err, ErrDuplicate) {
 		t.Fatalf("duplicate Get() error = %v", err)
 	}
@@ -93,7 +96,8 @@ func TestRepositoryPatchAlwaysUpdatesAuditFieldsAndUsesStableID(t *testing.T) {
 	preferenceID := uuid.MustParse("00000000-0000-4000-8000-000000000011")
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	stub := &databaseStub{rows: []pgx.Row{activeRow(preferenceID, 1)}, tag: pgconn.NewCommandTag("UPDATE 1")}
-	repository, _ := NewRepository(stub)
+	repository, constructorErr := NewRepository(stub)
+	require.NoError(t, constructorErr)
 	got, err := repository.Patch(context.Background(), userID, map[string]any{})
 	if err != nil || got != preferenceID {
 		t.Fatalf("Patch() = %s, %v", got, err)
@@ -112,7 +116,8 @@ func TestRepositoryPatchValidatesRelationsBeforeUpdate(t *testing.T) {
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	workspaceID := uuid.MustParse("00000000-0000-4000-8000-000000000020")
 	stub := &databaseStub{rows: []pgx.Row{activeRow(preferenceID, 1), boolRow(false)}}
-	repository, _ := NewRepository(stub)
+	repository, constructorErr := NewRepository(stub)
+	require.NoError(t, constructorErr)
 	_, err := repository.Patch(context.Background(), userID, map[string]any{"workspace": workspaceID.String()})
 	var fieldError *FieldError
 	if !errors.As(err, &fieldError) || fieldError.Field != "workspace" || !strings.Contains(fieldError.Message, "object does not exist") {
@@ -126,7 +131,8 @@ func TestRepositoryPatchValidatesRelationsBeforeUpdate(t *testing.T) {
 func TestRepositoryGetByIDCanReturnJustSoftDeletedUpdate(t *testing.T) {
 	preferenceID := uuid.MustParse("00000000-0000-4000-8000-000000000011")
 	stub := &databaseStub{rows: []pgx.Row{jsonRow(`{"deleted_at":"2026-08-26T21:00:00Z"}`)}}
-	repository, _ := NewRepository(stub)
+	repository, constructorErr := NewRepository(stub)
+	require.NoError(t, constructorErr)
 	if _, err := repository.GetByID(context.Background(), preferenceID); err != nil {
 		t.Fatal(err)
 	}

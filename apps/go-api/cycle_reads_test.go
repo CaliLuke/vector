@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/cycle_reads"
@@ -168,7 +170,8 @@ func TestCycleReadsReusesTransportSessionPrincipal(t *testing.T) {
 func TestCycleReadsTenMethodsUseDistinctRepositoryPaths(t *testing.T) {
 	repository := &cycleReadsRepositoryStub{}
 	visits := &cycleRecentVisitsStub{}
-	serviceValue, _ := NewCycleReads(repository, cycleReadsSessionsStub{}, visits)
+	serviceValue, constructorErr := NewCycleReads(repository, cycleReadsSessionsStub{}, visits)
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*cycleReadsService)
 	ctx, err := service.APIKeyAuth(context.Background(), "session", &security.APIKeyScheme{})
 	if err != nil {

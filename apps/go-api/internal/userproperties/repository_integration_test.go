@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
@@ -108,7 +110,8 @@ func TestRepositoryFirstAccessAndRepeatUseDjangoDefaultsForEveryKind(t *testing.
 func TestRepositoryPatchesOnlyProvidedFieldsAndIsolatesUsers(t *testing.T) {
 	ctx := context.Background()
 	pool := propertyTestDB(t, ctx)
-	repository, _ := NewRepository(pool)
+	repository, constructorErr := NewRepository(pool)
+	require.NoError(t, constructorErr)
 	user := uuid.MustParse(userID)
 	otherUser := uuid.MustParse(otherUserID)
 	project := uuid.MustParse(projectID)
@@ -213,7 +216,8 @@ func TestRepositoryPatchesOnlyProvidedFieldsAndIsolatesUsers(t *testing.T) {
 func TestRepositoryConcurrentFirstAccessCreatesOneProjectProperty(t *testing.T) {
 	ctx := context.Background()
 	pool := propertyTestDB(t, ctx)
-	repository, _ := NewRepository(pool)
+	repository, constructorErr := NewRepository(pool)
+	require.NoError(t, constructorErr)
 	const calls = 12
 	ids := make(chan string, calls)
 	errs := make(chan error, calls)

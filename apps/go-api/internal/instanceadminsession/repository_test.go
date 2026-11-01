@@ -7,6 +7,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/jackc/pgx/v5"
 )
 
@@ -72,7 +74,8 @@ func TestRepositoryQueries(t *testing.T) {
 	}
 }
 func TestRepositoryError(t *testing.T) {
-	r, _ := NewRepository(&databaseStub{row: rowStub{err: errors.New("boom")}})
+	r, constructorErr := NewRepository(&databaseStub{row: rowStub{err: errors.New("boom")}})
+	require.NoError(t, constructorErr)
 	if _, err := r.IsAdmin(context.Background(), uuid.Nil()); err == nil {
 		t.Fatal("expected error")
 	}

@@ -7,6 +7,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	api "github.com/CaliLuke/go-plane/gen/workspace_home_preferences"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/workspacehomepreferences"
@@ -114,7 +116,8 @@ func TestWorkspaceHomePreferencesAuthForbiddenValidationAndNotFound(t *testing.T
 	if _, err := service.List(context.Background(), &api.ListPayload{Slug: "demo"}); err == nil {
 		t.Fatal("expected unauthenticated error")
 	}
-	badAuth, _ := NewWorkspaceHomePreferences(repository, homeSessionTest{err: errors.New("invalid session")})
+	badAuth, constructorErr := NewWorkspaceHomePreferences(repository, homeSessionTest{err: errors.New("invalid session")})
+	require.NoError(t, constructorErr)
 	if _, err := badAuth.(api.Authorizer).APIKeyAuth(context.Background(), "bad", nil); err == nil {
 		t.Fatal("expected session error")
 	}

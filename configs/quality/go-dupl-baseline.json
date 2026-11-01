@@ -2039,8 +2039,8 @@
       "fingerprint": [
         "internal/cyclereads/api_v1_test.go",
         "internal/modulereads/api_v1_test.go",
-        "b2ca6e70eb9e3abb51648ff769214dc5c4eb51076f644862bafcc79f0e5e5750",
-        "f2f313780871837a5d9e6eb079e90d3661ee360156c5d7f61b2cf0a335f0db67"
+        "2e7ba53c26a8a8fb0983b865632060832f243c268701483218096041fc9e30a4",
+        "7ded83d5cc498500d3cbee62a0a207c8f90e082dcedbb8b2b5846e5807f057ee"
       ],
       "count": 2
     },
@@ -2084,8 +2084,8 @@
       "fingerprint": [
         "internal/pagereads/repository_test.go",
         "internal/pagereads/repository_test.go",
-        "58f7102ba6da11e067833a53f35138a4370b5a106b719123a179df41f2c259ba",
-        "7d28d0f251ddd37194b1bc33d1d3b1faa84728122de167c141f7b8116401a5ac"
+        "1ff937da69126a3ccce2e94f835136226dc2371835fb56d04bd7a4c7c7545dd8",
+        "f1a83eacded86ef64a9b018ae61944e7793039fff2a76162c3dd11d98802df05"
       ],
       "count": 2
     },

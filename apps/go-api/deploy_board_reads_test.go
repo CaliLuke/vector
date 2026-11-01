@@ -6,6 +6,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/deploy_board_reads"
@@ -75,7 +77,8 @@ func TestDeployBoardCollectionPreservesUnsavedDefaultsAndSingleObjectResponses(t
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			repository := &deployBoardReadsRepositoryStub{collection: json.RawMessage(test.body)}
-			serviceValue, _ := NewDeployBoardReads(repository, deployBoardReadsSessionsStub{})
+			serviceValue, constructorErr := NewDeployBoardReads(repository, deployBoardReadsSessionsStub{})
+			require.NoError(t, constructorErr)
 			service := serviceValue.(*deployBoardReadsService)
 			ctx, err := service.APIKeyAuth(context.Background(), "session", &security.APIKeyScheme{})
 			if err != nil {
@@ -96,7 +99,8 @@ func TestDeployBoardCollectionPreservesUnsavedDefaultsAndSingleObjectResponses(t
 
 func TestDeployBoardDetailUsesDistinctScopedRepositoryPath(t *testing.T) {
 	repository := &deployBoardReadsRepositoryStub{detail: json.RawMessage(deployBoardFixture)}
-	serviceValue, _ := NewDeployBoardReads(repository, deployBoardReadsSessionsStub{})
+	serviceValue, constructorErr := NewDeployBoardReads(repository, deployBoardReadsSessionsStub{})
+	require.NoError(t, constructorErr)
 	service := serviceValue.(*deployBoardReadsService)
 	ctx, err := service.APIKeyAuth(context.Background(), "session", &security.APIKeyScheme{})
 	if err != nil {

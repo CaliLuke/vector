@@ -6,6 +6,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/projectpublication"
 )
@@ -55,7 +57,8 @@ func TestProjectPublicationClassPermissionRunsBeforeTimezoneActivation(t *testin
 }
 func TestProjectPublicationAllowedPermissionActivatesTimezoneBeforeHandler(t *testing.T) {
 	repository := &projectPublicationRepositoryStub{}
-	serviceValue, _ := NewProjectPublication(repository, projectPublicationSessionsStub{principal: djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000001", UserTimezone: "Not/A_Timezone"}})
+	serviceValue, constructorErr := NewProjectPublication(repository, projectPublicationSessionsStub{principal: djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000001", UserTimezone: "Not/A_Timezone"}})
+	require.NoError(t, constructorErr)
 	status, _ := serviceValue.(*projectPublicationService).AuthorizeSessionResourceProtocol(context.Background(), "session", SessionProtocolResource{Method: "POST", Slug: "demo", ProjectID: "00000000-0000-4000-8000-000000000100"})
 	if status != 400 {
 		t.Fatalf("allowed permission with invalid timezone status = %d", status)

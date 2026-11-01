@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	api "github.com/CaliLuke/go-plane/customviewcreation/gen/custom_view_creation"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/customviewcreation"
@@ -62,7 +64,8 @@ func TestCustomViewCreationActivatesTimezoneBeforeHandlerLookup(t *testing.T) {
 }
 func TestCustomViewCreationLooksUpMemberBeforeParsingRequest(t *testing.T) {
 	repository := &customViewCreationRepositoryStub{targetErr: customviewcreation.ErrNotFound}
-	serviceValue, _ := NewCustomViewCreation(repository, customViewCreationSessionsStub{})
+	serviceValue, constructorErr := NewCustomViewCreation(repository, customViewCreationSessionsStub{})
+	require.NoError(t, constructorErr)
 	body := io.NopCloser(strings.NewReader("{"))
 	err := serviceValue.(*customViewCreationService).CreateWorkspaceView(customViewContext("UTC"), &api.CreateWorkspaceViewPayload{Slug: "demo"}, body)
 	var failure *api.CustomViewCreationErrorResponse
@@ -75,7 +78,8 @@ func TestCustomViewCreationLooksUpMemberBeforeParsingRequest(t *testing.T) {
 }
 func TestCustomViewCreationPreservesMissingProjectFields(t *testing.T) {
 	repository := &customViewCreationRepositoryStub{}
-	serviceValue, _ := NewCustomViewCreation(repository, customViewCreationSessionsStub{})
+	serviceValue, constructorErr := NewCustomViewCreation(repository, customViewCreationSessionsStub{})
+	require.NoError(t, constructorErr)
 	err := serviceValue.(*customViewCreationService).CreateProjectView(customViewContext("UTC"), &api.CreateProjectViewPayload{Slug: "demo", ProjectID: "00000000-0000-4000-8000-000000000100"}, nil)
 	if err != nil {
 		t.Fatal(err)

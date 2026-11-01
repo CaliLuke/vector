@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -102,7 +104,8 @@ func TestNewRepositoryRequiresDatabase(t *testing.T) {
 
 func TestAuthorizationScopesSessionPrincipalRoleAndTenant(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true), boolRow(true)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID, projectID := uuid.New(), uuid.New()
 	if err := repository.AuthorizeWorkspace(context.Background(), userID, "alpha"); err != nil {
 		t.Fatal(err)
@@ -134,7 +137,8 @@ func TestAuthorizationScopesSessionPrincipalRoleAndTenant(t *testing.T) {
 
 func TestAuthorizationRejectsMissingActiveMembership(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(false), boolRow(false)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if err := repository.AuthorizeWorkspace(context.Background(), uuid.New(), "alpha"); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("workspace err=%v", err)
 	}
@@ -145,7 +149,8 @@ func TestAuthorizationRejectsMissingActiveMembership(t *testing.T) {
 
 func TestWorkspaceListRequiresWorkspaceAndPerProjectMembership(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true), jsonRow(`[]`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	if _, err := repository.WorkspaceList(context.Background(), uuid.New(), "alpha"); err != nil {
 		t.Fatal(err)
 	}
@@ -170,7 +175,8 @@ func TestActiveAndArchivedListsUseDistinctScopesAndNoCurrentFallback(t *testing.
 	database := &databaseStub{rows: []pgx.Row{
 		boolRow(true), jsonRow(`[]`), boolRow(true), jsonRow(`[]`),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID, projectID := uuid.New(), uuid.New()
 	if _, err := repository.List(context.Background(), userID, "alpha", projectID, "current"); err != nil {
 		t.Fatal(err)
@@ -213,7 +219,8 @@ func TestArchiveDetailPathsUseCycleIDAndDistinctArchivedScopes(t *testing.T) {
 		boolRow(true), missing,
 		boolRow(true), jsonRow(`{"id":"00000000-0000-4000-8000-000000000001","archived_at":null}`),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID, projectID, cycleID := uuid.New(), uuid.New(), uuid.New()
 	_, archivedErr := repository.ArchivedDetail(context.Background(), userID, "alpha", projectID, cycleID)
 	if !errors.Is(archivedErr, ErrNotFound) {
@@ -243,7 +250,8 @@ func TestArchiveDetailPathsUseCycleIDAndDistinctArchivedScopes(t *testing.T) {
 
 func TestCycleIssueDetailLooksUpRelationshipForAnyActiveProjectMember(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{jsonRow(`{"id":"00000000-0000-4000-8000-000000000001"}`)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID, projectID, cycleID, issueID := uuid.New(), uuid.New(), uuid.New(), uuid.New()
 	if _, err := repository.IssueDetail(context.Background(), userID, "alpha", projectID, cycleID, issueID); err != nil {
 		t.Fatal(err)
@@ -280,7 +288,8 @@ func TestCycleIssueDetailLooksUpRelationshipForAnyActiveProjectMember(t *testing
 
 func TestCycleIssueDetailReturnsNotFoundForOutsider(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{rowFunc(func(...any) error { return pgx.ErrNoRows })}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.IssueDetail(context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(), uuid.New())
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("err=%v", err)
@@ -291,7 +300,8 @@ func TestIssueListAppliesFiltersOrderingPaginationAndEnvelope(t *testing.T) {
 	issueID := uuid.New()
 	rows := `[{"id":"` + issueID.String() + `","priority":"high","state__group":"started","assignee_ids":[],"label_ids":[],"module_ids":[]}]`
 	database := &databaseStub{rows: []pgx.Row{boolRow(true), pageRow(rows, 3)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Issues(context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(), IssueListOptions{
 		OrderBy: "-priority", Cursor: "1:1:0", PerPage: 1,
 		Filters: map[string]string{"priority": "high,urgent", "name": "login", "sub_issue": "false"},
@@ -472,7 +482,8 @@ func TestIssueListPaginatesEachOuterGroupAndIncludesOnlyExistingSubgroups(t *tes
 	database := &databaseStub{rows: []pgx.Row{
 		boolRow(true), groupedPageRow(results, 4, 3, 3, true),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Issues(context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(), IssueListOptions{
 		GroupBy: "state__group", SubGroupBy: "priority", PerPage: 1,
 	})
@@ -537,7 +548,8 @@ func TestGroupedIssueFollowUpUsesCursorLimitForOffsetAndWindow(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{
 		boolRow(true), groupedPageRow(`{}`, 0, 0, 0, false),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Issues(
 		context.Background(),
 		uuid.New(),
@@ -568,7 +580,8 @@ func TestGroupedPreviousCursorKeepsSQLNextPageResult(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{
 		boolRow(true), groupedPageRow(`{}`, 3, 2, 2, true),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 		IssueListOptions{
@@ -594,7 +607,8 @@ func TestGroupedIssueEmptyPageHasNoBucketsOrTotalPages(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{
 		boolRow(true), groupedPageRow(`{}`, 7, 0, 0, false),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Issues(
 		context.Background(),
 		uuid.New(),
@@ -912,9 +926,10 @@ func TestIssueRelationFiltersPreserveDjangoJoinMultiplicity(t *testing.T) {
 	}
 }
 func TestIssueListRejectsInvalidCursorAndGrouping(t *testing.T) {
-	repository, _ := NewRepository(&databaseStub{rows: []pgx.Row{
+	repository, constructorErr := NewRepository(&databaseStub{rows: []pgx.Row{
 		boolRow(true), boolRow(true), boolRow(true), boolRow(true),
 	}})
+	require.NoError(t, constructorErr)
 	_, err := repository.Issues(context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(), IssueListOptions{Cursor: "bad"})
 	if !errors.Is(err, ErrInvalidPagination) {
 		t.Fatalf("cursor err=%v", err)
@@ -982,7 +997,8 @@ func TestStandaloneManyToManySubgroupPreservesScalarProjectionJoinAndMultiplicit
 	database := &databaseStub{rows: []pgx.Row{
 		boolRow(true), pageRow(`[]`, 0),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 		IssueListOptions{SubGroupBy: "labels__id"},
@@ -1003,7 +1019,8 @@ func TestStandaloneSubgroupUsesDistinctTotalsAndExpandedNextPage(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{
 		boolRow(true), pageRowWithExpanded(`[{"labels__id":"00000000-0000-4000-8000-000000000001"}]`, 1, 2),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 		IssueListOptions{
@@ -1040,7 +1057,8 @@ func TestStandaloneDeletedOnlyAssigneeRelationIsExcludedAfterBaseTotal(t *testin
 	database := &databaseStub{rows: []pgx.Row{
 		boolRow(true), pageRowWithExpanded(`[]`, 1, 0),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 		IssueListOptions{SubGroupBy: "assignees__id", PerPage: 1, PerPageSet: true},
@@ -1101,7 +1119,8 @@ func TestProgressAndAnalyticsQueriesContainAggregatesAndBurndown(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{
 		boolRow(true), analyticsRow(true, analytics), boolRow(true), jsonRow(progress),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	userID, projectID, cycleID := uuid.New(), uuid.New(), uuid.New()
 	if _, err := repository.Analytics(context.Background(), userID, "alpha", projectID, cycleID, "points"); err != nil {
 		t.Fatal(err)
@@ -1210,7 +1229,8 @@ func TestUngroupedOffsetOverflowIsRejectedBeforeReadingIssues(t *testing.T) {
 		t.Fatal("checked product accepted overflowing native int multiplication")
 	}
 	database := &databaseStub{rows: []pgx.Row{boolRow(true)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 		IssueListOptions{
@@ -1249,7 +1269,8 @@ func TestNegativeCursorValueSucceedsUngroupedAndFailsGrouped(t *testing.T) {
 	ungroupedDatabase := &databaseStub{rows: []pgx.Row{
 		boolRow(true), pageRow(`[]`, 0),
 	}}
-	ungroupedRepository, _ := NewRepository(ungroupedDatabase)
+	ungroupedRepository, constructorErr := NewRepository(ungroupedDatabase)
+	require.NoError(t, constructorErr)
 	_, err := ungroupedRepository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 		IssueListOptions{PerPage: 25, PerPageSet: true, Cursor: "-1:1:0", CursorSet: true},
@@ -1264,7 +1285,8 @@ func TestNegativeCursorValueSucceedsUngroupedAndFailsGrouped(t *testing.T) {
 	}
 
 	groupedDatabase := &databaseStub{rows: []pgx.Row{boolRow(true)}}
-	groupedRepository, _ := NewRepository(groupedDatabase)
+	groupedRepository, constructorErr := NewRepository(groupedDatabase)
+	require.NoError(t, constructorErr)
 	_, err = groupedRepository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 		IssueListOptions{GroupBy: "priority", PerPage: 25, PerPageSet: true, Cursor: "-1:1:0", CursorSet: true},
@@ -1281,7 +1303,8 @@ func TestGroupedSignedCursorValidatesComputedOffset(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{
 		boolRow(true), groupedPageRow(`{}`, 0, 0, 0, false),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 		IssueListOptions{
@@ -1310,7 +1333,8 @@ func TestGroupedSignedCursorValidatesComputedOffset(t *testing.T) {
 
 func TestUngroupedPreviousCursorWithDifferentValueIsRejectedBeforeReadingIssues(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true)}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 		IssueListOptions{
@@ -1334,7 +1358,8 @@ func TestArbitraryPreviousIntegerAndInfiniteCursorServeUngroupedFirstPage(t *tes
 		database := &databaseStub{rows: []pgx.Row{
 			boolRow(true), pageRow(`[]`, 0),
 		}}
-		repository, _ := NewRepository(database)
+		repository, constructorErr := NewRepository(database)
+		require.NoError(t, constructorErr)
 		_, err := repository.Issues(
 			context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 			IssueListOptions{PerPage: 1000, PerPageSet: true, Cursor: cursor, CursorSet: true},
@@ -1349,7 +1374,8 @@ func TestArbitraryPreviousIntegerAndInfiniteCursorServeUngroupedFirstPage(t *tes
 }
 func TestNegativePerPageMatchesUngroupedFailureAndGroupedEmptyPage(t *testing.T) {
 	ungroupedDatabase := &databaseStub{rows: []pgx.Row{boolRow(true)}}
-	ungroupedRepository, _ := NewRepository(ungroupedDatabase)
+	ungroupedRepository, constructorErr := NewRepository(ungroupedDatabase)
+	require.NoError(t, constructorErr)
 	_, err := ungroupedRepository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 		IssueListOptions{PerPage: -1, PerPageSet: true},
@@ -1362,7 +1388,8 @@ func TestNegativePerPageMatchesUngroupedFailureAndGroupedEmptyPage(t *testing.T)
 	}
 
 	signedDatabase := &databaseStub{rows: []pgx.Row{boolRow(true)}}
-	signedRepository, _ := NewRepository(signedDatabase)
+	signedRepository, constructorErr := NewRepository(signedDatabase)
+	require.NoError(t, constructorErr)
 	_, err = signedRepository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 		IssueListOptions{
@@ -1380,7 +1407,8 @@ func TestNegativePerPageMatchesUngroupedFailureAndGroupedEmptyPage(t *testing.T)
 	groupedDatabase := &databaseStub{rows: []pgx.Row{
 		boolRow(true), groupedPageRow(`{}`, 4, 0, 0, false),
 	}}
-	groupedRepository, _ := NewRepository(groupedDatabase)
+	groupedRepository, constructorErr := NewRepository(groupedDatabase)
+	require.NoError(t, constructorErr)
 	data, err := groupedRepository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 		IssueListOptions{GroupBy: "priority", PerPage: -1, PerPageSet: true},
@@ -1407,7 +1435,8 @@ func TestNegativePerPageMatchesUngroupedFailureAndGroupedEmptyPage(t *testing.T)
 
 func TestZeroPerPageMatchesUngroupedFailureAndGroupedEmptyPages(t *testing.T) {
 	ungroupedDatabase := &databaseStub{rows: []pgx.Row{boolRow(true)}}
-	ungroupedRepository, _ := NewRepository(ungroupedDatabase)
+	ungroupedRepository, ungroupedConstructorErr := NewRepository(ungroupedDatabase)
+	require.NoError(t, ungroupedConstructorErr)
 	_, err := ungroupedRepository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 		IssueListOptions{PerPage: 0, PerPageSet: true},
@@ -1426,7 +1455,8 @@ func TestZeroPerPageMatchesUngroupedFailureAndGroupedEmptyPages(t *testing.T) {
 		database := &databaseStub{rows: []pgx.Row{
 			boolRow(true), groupedPageRow(`{}`, 4, 0, 0, false),
 		}}
-		repository, _ := NewRepository(database)
+		repository, constructorErr := NewRepository(database)
+		require.NoError(t, constructorErr)
 		data, issuesErr := repository.Issues(
 			context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(), options,
 		)
@@ -1453,7 +1483,8 @@ func TestZeroPerPageMatchesUngroupedFailureAndGroupedEmptyPages(t *testing.T) {
 	selectedDatabase := &databaseStub{rows: []pgx.Row{
 		boolRow(true), groupedPageRow(`{"high":{"results":[]}}`, 4, 1, 0, false),
 	}}
-	selectedRepository, _ := NewRepository(selectedDatabase)
+	selectedRepository, constructorErr := NewRepository(selectedDatabase)
+	require.NoError(t, constructorErr)
 	_, err = selectedRepository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
 		IssueListOptions{
@@ -1470,7 +1501,8 @@ func TestAnalyticsPassesExplicitEmptyTypeToShapeDispatch(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{
 		boolRow(true), analyticsRow(true, `{"assignees":[],"labels":[],"completion_chart":{}}`),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	data, err := repository.Analytics(context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(), "")
 	if err != nil {
 		t.Fatal(err)
@@ -1488,7 +1520,8 @@ func TestAnalyticsMapsMissingCycleAndDates(t *testing.T) {
 		boolRow(true), rowFunc(func(...any) error { return pgx.ErrNoRows }),
 		boolRow(true), analyticsRow(false, `{}`),
 	}}
-	repository, _ := NewRepository(database)
+	repository, constructorErr := NewRepository(database)
+	require.NoError(t, constructorErr)
 	_, err := repository.Analytics(context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(), "issues")
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("missing err=%v", err)

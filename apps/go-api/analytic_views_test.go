@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/analytic_views"
@@ -121,7 +123,8 @@ func TestAnalyticViewsAuthenticationAuthorizationAndNotFound(t *testing.T) {
 	if _, err := service.List(context.Background(), &api.ListPayload{Slug: "demo"}); err == nil {
 		t.Fatal("expected unauthenticated error")
 	}
-	badSession, _ := NewAnalyticViews(repository, analyticSessionTest{err: errors.New("invalid")})
+	badSession, constructorErr := NewAnalyticViews(repository, analyticSessionTest{err: errors.New("invalid")})
+	require.NoError(t, constructorErr)
 	if _, err := badSession.(api.Authorizer).APIKeyAuth(context.Background(), "bad", nil); err == nil {
 		t.Fatal("expected session error")
 	}

@@ -8,6 +8,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
@@ -78,7 +80,8 @@ INSERT INTO labels (id, workspace_id, project_id, parent_id, name, color, sort_o
 			t.Error(closeErr)
 		}
 	}()
-	repository, _ := NewRepository(connection)
+	repository, constructorErr := NewRepository(connection)
+	require.NoError(t, constructorErr)
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000003")
 	projectID := uuid.MustParse("00000000-0000-4000-8000-000000000002")
 	childID := uuid.MustParse("00000000-0000-4000-8000-000000000011")

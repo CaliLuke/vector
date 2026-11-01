@@ -9,6 +9,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
@@ -138,7 +140,8 @@ INSERT INTO sessions VALUES ('invalid-auth-hash-session');
 		t.Fatal(err)
 	}
 	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
-	repository, _ := NewRepository(connection)
+	repository, constructorErr := NewRepository(connection)
+	require.NoError(t, constructorErr)
 	metaData, err := repository.Meta(ctx, "anchor")
 	if err != nil {
 		t.Fatal(err)
