@@ -414,8 +414,8 @@
       "percent": 0
     },
     "github.com/CaliLuke/go-plane/internal/testsupport/postgres": {
-      "statements": 141,
-      "percent": 77.3
+      "statements": 161,
+      "percent": 81.99
     },
     "github.com/CaliLuke/go-plane/internal/useraccounts": {
       "statements": 21,

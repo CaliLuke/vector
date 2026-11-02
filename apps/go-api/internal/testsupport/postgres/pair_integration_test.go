@@ -59,6 +59,37 @@ func TestDatabaseCloseIdentifiesDropFailureAndPreservesServerCause(t *testing.T)
 	}
 }
 
+func TestCloneCreationReusesAuthenticatedAdminConnection(t *testing.T) {
+	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
+	defer cancel()
+	pair, err := StartUncloned(ctx, func(context.Context, string) error { return nil })
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { testsupport.Close(t, pair) })
+	// Existing sessions remain usable, but another login would fail. Cloning
+	// must use the fixture-owned authenticated admin connection.
+	if _, err := pair.adminPool.Exec(ctx, `ALTER ROLE plane NOLOGIN`); err != nil {
+		t.Fatal(err)
+	}
+	var databases []*Database
+	for range 2 {
+		database, err := pair.CloneDatabase(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		databases = append(databases, database)
+	}
+	if _, err := pair.adminPool.Exec(ctx, `ALTER ROLE plane LOGIN`); err != nil {
+		t.Fatal(err)
+	}
+	for _, database := range databases {
+		if err := database.Close(ctx); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func TestSeedMigrationRunsOnceAfterSQLReadinessAndCleansUpOnFailure(t *testing.T) {
 	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
 	defer cancel()

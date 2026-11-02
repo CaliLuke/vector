@@ -262,9 +262,12 @@ to that address alongside `DOCKER_HOST`. The fixture uses the published address 
 readiness checks and connections, and removes the container after the suite.
 
 The work-item type tests, full-schema MCP workflows, and MCP identity tests migrate
-disposable templates per package and clone a separate database for each test. Test data and
-connections are never shared between those clones. Migration-specific tests still
-exercise fresh database installation directly.
+disposable templates per package. Each test gets a separate cloned database.
+Full-schema MCP templates also prepare their common seed rows once.
+Template owners reuse admin connections for clone creation.
+Tests close their application connections before synchronous database cleanup.
+Each clone has separate test data and application connections.
+Migration-specific tests still exercise fresh database installation directly.
 PostgreSQL fixtures check a SQL query through the published port before running
 seed migrations. Only readiness is retried. A failed migration is returned once
 and its container is reclaimed.

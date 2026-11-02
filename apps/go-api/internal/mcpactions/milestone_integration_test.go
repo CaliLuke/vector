@@ -49,12 +49,7 @@ func newMilestoneFixture(t *testing.T) milestoneFixture {
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	require.NoError(t, err)
 	t.Cleanup(pool.Close)
-	_, err = pool.Exec(ctx, testsupport.MilestoneWriteSeed)
-	require.NoError(t, err)
-	_, err = pool.Exec(ctx, `UPDATE workspaces SET slug='workspace-one';
- INSERT INTO api_tokens(id,created_at,updated_at,token,label,user_type,user_id,description,is_active,is_service,allowed_rate_limit)
- VALUES(gen_random_uuid(),now(),now(),'test-one','MCP test',0,'00000000-0000-4000-8000-000000000003','',true,false,'100/minute');`)
-	require.NoError(t, err)
+	require.NoError(t, pool.Ping(ctx))
 	apps := databaseApplications(t, pool)
 	service, err := mcpactions.New(apps, mcpactions.WithOrigin("https://vector.example"))
 	require.NoError(t, err)
@@ -68,6 +63,20 @@ func newMilestoneFixture(t *testing.T) milestoneFixture {
 	issuer.scope = "vector:read vector:write"
 	return milestoneFixture{fixture: fixture{service: service, auth: pat}, pool: pool, oauth: oauth, issuer: issuer}
 }
+func TestMilestoneFixtureSeedAndCredentialsStayIsolated(t *testing.T) {
+	first := newMilestoneFixture(t)
+	_, err := first.pool.Exec(t.Context(), `UPDATE workspaces SET slug='changed'; UPDATE api_tokens SET is_active=false`)
+	require.NoError(t, err)
+
+	second := newMilestoneFixture(t)
+	var slug string
+	var active bool
+	err = second.pool.QueryRow(t.Context(), `SELECT slug, (SELECT is_active FROM api_tokens WHERE token='test-one') FROM workspaces WHERE id=$1`, testsupport.LabelWorkspace).Scan(&slug, &active)
+	require.NoError(t, err)
+	require.Equal(t, "workspace-one", slug)
+	require.True(t, active)
+}
+
 func (f milestoneFixture) call(t *testing.T, mode, version string) func(map[string]any) rpcResult {
 	t.Helper()
 	pat, oauth := f.handler(t, nil), oauthHandler(t, f.fixture, f.oauth.Authenticate)

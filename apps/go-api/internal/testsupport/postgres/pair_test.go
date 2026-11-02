@@ -5,12 +5,19 @@ import (
 	"errors"
 	"strings"
 	"testing"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestCloneDatabaseIdentifiesCanceledAdminConnection(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
-	pair := &Pair{seedURL: "postgresql://127.0.0.1/seed", adminURL: "postgresql://127.0.0.1/postgres"}
+	pool, err := pgxpool.New(t.Context(), "postgresql://127.0.0.1/postgres")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(pool.Close)
+	pair := &Pair{seedURL: "postgresql://127.0.0.1/seed", adminPool: pool}
 	clone, err := pair.CloneDatabase(ctx)
 	if clone != nil || !errors.Is(err, context.Canceled) || !strings.Contains(err.Error(), "connect clone admin database") {
 		t.Fatalf("clone=%v error=%v; want canceled admin connection stage", clone, err)

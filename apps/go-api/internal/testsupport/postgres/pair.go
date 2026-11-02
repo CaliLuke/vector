@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib" // Register pgx for the SQL readiness probe.
 	"github.com/moby/moby/api/types/network"
 	"github.com/testcontainers/testcontainers-go"
@@ -32,6 +33,7 @@ type SeedMigration func(context.Context, string) error
 // Pair owns one disposable PostgreSQL container and two databases cloned from one seed.
 type Pair struct {
 	container *postgrescontainer.PostgresContainer
+	adminPool *pgxpool.Pool
 	adminURL  string
 	seedURL   string
 
@@ -54,15 +56,15 @@ func (pair *Pair) CloneDatabase(ctx context.Context) (result *Database, resultEr
 		return nil, err
 	}
 	database := &Database{URL: cloneURL, adminURL: pair.adminURL, name: name}
-	connection, err := pgx.Connect(ctx, pair.adminURL)
+	connection, err := pair.adminPool.Acquire(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("connect clone admin database: %w", err)
 	}
 	defer func() {
-		resultErr = errors.Join(resultErr, closeConnection(ctx, connection))
+		connection.Release()
 		if resultErr != nil {
 			// Cancellation can obscure whether CREATE DATABASE finished. Reclaim
-			// the owned name before returning an error, including a close error.
+			// the owned name before returning an error.
 			cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
 			defer cancel()
 			resultErr = errors.Join(resultErr, database.Close(cleanup))
@@ -156,11 +158,15 @@ func StartUncloned(ctx context.Context, migrate SeedMigration) (_ *Pair, err err
 	if err != nil {
 		return nil, err
 	}
-	if err := migrate(ctx, seedURL); err != nil {
-		return nil, fmt.Errorf("migrate parity seed: %w", err)
+	if migrationErr := migrate(ctx, seedURL); migrationErr != nil {
+		return nil, fmt.Errorf("migrate parity seed: %w", migrationErr)
+	}
+	adminPool, err := pgxpool.New(ctx, adminURL)
+	if err != nil {
+		return nil, fmt.Errorf("configure fixture admin connections: %w", err)
 	}
 	cleanup = false
-	return &Pair{container: container, adminURL: adminURL, seedURL: seedURL}, nil
+	return &Pair{container: container, adminPool: adminPool, adminURL: adminURL, seedURL: seedURL}, nil
 }
 
 // Reset discards both targets and restores them independently from the unchanged seed database.
@@ -203,7 +209,13 @@ func (pair *Pair) Reset(ctx context.Context) (resultErr error) {
 
 // Close terminates the disposable container and all databases it owns.
 func (pair *Pair) Close() error {
-	if pair == nil || pair.container == nil {
+	if pair == nil {
+		return nil
+	}
+	if pair.adminPool != nil {
+		pair.adminPool.Close()
+	}
+	if pair.container == nil {
 		return nil
 	}
 	return testcontainers.TerminateContainer(pair.container)
