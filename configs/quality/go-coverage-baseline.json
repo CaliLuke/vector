@@ -130,8 +130,8 @@
       "percent": 18.18
     },
     "github.com/CaliLuke/go-plane/internal/authentication/apikey": {
-      "statements": 73,
-      "percent": 91.78
+      "statements": 26,
+      "percent": 92.31
     },
     "github.com/CaliLuke/go-plane/internal/authentication/authworkflow": {
       "statements": 41,
@@ -362,12 +362,16 @@
       "percent": 79.26
     },
     "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads": {
-      "statements": 332,
-      "percent": 89.46
+      "statements": 261,
+      "percent": 93.87
     },
     "github.com/CaliLuke/go-plane/internal/pythoncompat": {
-      "statements": 256,
+      "statements": 223,
       "percent": 90.23
+    },
+    "github.com/CaliLuke/go-plane/internal/ratelimit": {
+      "statements": 52,
+      "percent": 100.0
     },
     "github.com/CaliLuke/go-plane/internal/releases": {
       "statements": 467,
@@ -402,8 +406,8 @@
       "percent": 84.26
     },
     "github.com/CaliLuke/go-plane/internal/testsupport": {
-      "statements": 69,
-      "percent": 85.71
+      "statements": 110,
+      "percent": 91.82
     },
     "github.com/CaliLuke/go-plane/internal/testsupport/mcpstub": {
       "statements": 30,
@@ -418,8 +422,8 @@
       "percent": 85.71
     },
     "github.com/CaliLuke/go-plane/internal/useraccountwrites": {
-      "statements": 169,
-      "percent": 10.65
+      "statements": 193,
+      "percent": 30.05
     },
     "github.com/CaliLuke/go-plane/internal/userapitokens": {
       "statements": 25,
@@ -694,6 +698,10 @@
     "github.com/CaliLuke/go-plane/internal/pagereads/lifecycle_update.go": {
       "statements": 98,
       "percent": 84.69
+    },
+    "github.com/CaliLuke/go-plane/internal/useraccountwrites/cache.go": {
+      "statements": 58,
+      "percent": 100
     }
   }
 }

@@ -172,14 +172,6 @@
     {
       "fingerprint": [
         "staticcheck",
-        "internal/useraccountwrites/cache.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
         "internal/usernotificationpreferences/repository.go",
         "ST1005: error strings should not end with punctuation or newlines"
       ],

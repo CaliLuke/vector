@@ -13,7 +13,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/projectlabelreads"
 	"github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	"github.com/CaliLuke/go-plane/internal/projectstatereads"
-	"github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
+	"github.com/CaliLuke/go-plane/internal/ratelimit"
 	"github.com/stretchr/testify/require"
 )
 
@@ -50,7 +50,7 @@ func TestApplicationRedisCachesRejectUntrustedTLS(t *testing.T) {
 			return func(ctx context.Context) error { return cache.Invalidate(ctx, "tls-proof") }
 		}},
 		{"anonymous throttle", func(t *testing.T, address string) func(context.Context) error {
-			cache, err := publicprojectmetadatareads.NewRedisThrottleCache(address)
+			cache, err := ratelimit.NewRedisStore(address)
 			require.NoError(t, err)
 			t.Cleanup(func() { require.NoError(t, cache.Close()) })
 			return cache.Ping

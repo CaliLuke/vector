@@ -1368,7 +1368,7 @@
     },
     {
       "file": "apps/go-api/user_account_writes.go",
-      "line": 507,
+      "line": 505,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false

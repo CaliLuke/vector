@@ -96,8 +96,8 @@ func oauthAuthError(err error) error {
 
 func throttleCredential(ctx context.Context, throttle rateLimiter, user uuid.UUID, token string) error {
 	digest := sha256.Sum256([]byte(token))
-	for _, key := range []string{":1:mcp:actor:" + user.String(), ":1:mcp:credential:" + hex.EncodeToString(digest[:])} {
-		rate, err := throttle.AllowCacheKey(ctx, key, "MCP")
+	for _, bucket := range [][2]string{{"mcp-actor", user.String()}, {"mcp-credential", hex.EncodeToString(digest[:])}} {
+		rate, err := throttle.AllowScoped(ctx, bucket[0], bucket[1])
 		if err != nil {
 			return err
 		}

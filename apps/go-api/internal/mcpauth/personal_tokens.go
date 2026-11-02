@@ -21,7 +21,7 @@ type membershipReader interface {
 }
 
 type rateLimiter interface {
-	AllowCacheKey(context.Context, string, string) (apikey.Rate, error)
+	AllowScoped(context.Context, string, string) (apikey.Rate, error)
 }
 
 // PersonalTokens authenticates against the application's existing token owner.

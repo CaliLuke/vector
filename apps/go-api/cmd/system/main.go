@@ -128,6 +128,7 @@ import (
 	projectstatereadsstore "github.com/CaliLuke/go-plane/internal/projectstatereads"
 	publicprojectmetadatareadsstore "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/ratelimit"
 	standardviewsstore "github.com/CaliLuke/go-plane/internal/standardviews"
 	stickystore "github.com/CaliLuke/go-plane/internal/stickies"
 	"github.com/CaliLuke/go-plane/internal/telemetry"
@@ -767,7 +768,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	}
 	publicProjectMetadataReadsEndpoints := publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsService)
 	publicProjectMetadataReadsEndpoints.Use(log.Endpoint)
-	publicProjectMetadataReadsCache, err := publicprojectmetadatareadsstore.NewRedisThrottleCache(cfg.redisURL)
+	publicProjectMetadataReadsCache, err := ratelimit.NewRedisStore(cfg.redisURL)
 	if err != nil {
 		return err
 	}
@@ -1276,7 +1277,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	authThrottle, authThrottleCache, err := authredirects.NewAuthenticationDRFThrottle(cfg.redisURL, "")
+	authThrottle, authThrottleCache, err := authredirects.NewAuthenticationThrottle(cfg.redisURL, "")
 	if err != nil {
 		return err
 	}

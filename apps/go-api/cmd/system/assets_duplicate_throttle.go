@@ -43,7 +43,7 @@ func assetDuplicateThrottleMiddleware(throttle *apikey.Throttle) func(http.Handl
 				next.ServeHTTP(response, request)
 				return
 			}
-			rate, err := throttle.AllowCacheKey(request.Context(), ":1:throttle_asset_"+assetID.String(), "asset-ID")
+			rate, err := throttle.AllowScoped(request.Context(), "asset-id", assetID.String())
 			if err != nil {
 				writeReadServiceJSON(response, http.StatusInternalServerError, map[string]string{"detail": "A server error occurred."})
 				return

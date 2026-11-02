@@ -44,8 +44,8 @@ type throttleFake struct {
 	err  error
 }
 
-func (f *throttleFake) AllowCacheKey(_ context.Context, key, _ string) (apikey.Rate, error) {
-	f.keys = append(f.keys, key)
+func (f *throttleFake) AllowScoped(_ context.Context, scope, identity string) (apikey.Rate, error) {
+	f.keys = append(f.keys, scope+":"+identity)
 	return f.rate, f.err
 }
 

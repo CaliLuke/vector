@@ -65,7 +65,7 @@ func (m *memberships) Membership(context.Context, googleuuid.UUID, string) (mcpa
 
 type throttle struct{}
 
-func (throttle) AllowCacheKey(context.Context, string, string) (apikey.Rate, error) {
+func (throttle) AllowScoped(context.Context, string, string) (apikey.Rate, error) {
 	return apikey.Rate{Allowed: true}, nil
 }
 

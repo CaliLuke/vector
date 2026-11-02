@@ -5,32 +5,21 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"math/big"
 	"net"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 	"unicode"
 	"unicode/utf8"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/ratelimit"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/redis/go-redis/v9"
-)
-
-const (
-	anonThrottleLimit  = 30
-	anonThrottleWindow = time.Minute
 )
 
 var ErrSessionInvalidation = errors.New("browser session invalidation failed")
 
-type throttleCache interface {
-	Get(context.Context, string) ([]byte, bool, error)
-	Set(context.Context, string, []byte, time.Duration) error
-}
+type throttleCache = ratelimit.Store
 
 type throttleSessionValidator interface {
 	Inspect(context.Context, string) (browsersession.Principal, browsersession.SessionRefresh, error)
@@ -53,8 +42,7 @@ type AnonymousThrottle struct {
 	adminCookieAge  int64
 	saveEvery       bool
 	scope           string
-	requests        *big.Int
-	window          time.Duration
+	limiter         *ratelimit.Limiter
 	now             func() time.Time
 }
 
@@ -88,7 +76,10 @@ func NewConfiguredAnonymousThrottle(cache throttleCache, sessions throttleSessio
 	if config.Scope == "" {
 		return nil, fmt.Errorf("anonymous throttle scope is required")
 	}
-	requests, window, err := parseAnonymousThrottleRate(config.Rate)
+	if _, err := ratelimit.BucketKey(config.Scope, "anonymous"); err != nil {
+		return nil, err
+	}
+	limiter, err := ratelimit.New(cache, config.Rate)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +98,7 @@ func NewConfiguredAnonymousThrottle(cache throttleCache, sessions throttleSessio
 	return &AnonymousThrottle{
 		cache: cache, sessions: sessions, invalidator: invalidator, cookieName: cookieName,
 		cookieAge: cookieAge, adminCookieName: adminCookieName, adminCookieAge: adminCookieAge,
-		saveEvery: saveEvery, scope: config.Scope, requests: requests, window: window, now: time.Now,
+		saveEvery: saveEvery, scope: config.Scope, limiter: limiter, now: time.Now,
 	}, nil
 }
 
@@ -134,77 +125,10 @@ func (throttle *AnonymousThrottle) allowRequest(ctx context.Context, request *ht
 	return allowed, wait, expireSession, false, rotatedSession, userID, err
 }
 
-// AllowAnonymousRequest applies Django's anonymous throttle bucket without
-// inspecting or refreshing a session. Callers that already ran the shared
-// session middleware can use this to avoid a second session lifecycle pass.
+// AllowAnonymousRequest limits a client without repeating session inspection.
 func (throttle *AnonymousThrottle) AllowAnonymousRequest(ctx context.Context, request *http.Request) (bool, time.Duration, error) {
-	key := ":1:throttle_" + throttle.scope + "_" + anonymousThrottleIdentifier(request)
-	data, found, err := throttle.cache.Get(ctx, key)
-	if err != nil {
-		return false, 0, fmt.Errorf("read Django anonymous throttle: %w", err)
-	}
-	var history []float64
-	if found {
-		history, err = decodeFloatListPickle(data)
-		if err != nil {
-			return false, 0, fmt.Errorf("decode Django anonymous throttle: %w", err)
-		}
-	}
-	now := float64(throttle.now().UnixNano()) / float64(time.Second)
-	cutoff := now - throttle.window.Seconds()
-	for len(history) > 0 && history[len(history)-1] <= cutoff {
-		history = history[:len(history)-1]
-	}
-	historyLength := int64(len(history))
-	requestLimit := int64(0)
-	limitReached := throttle.requests.Sign() < 0
-	if throttle.requests.IsInt64() {
-		requestLimit = throttle.requests.Int64()
-		limitReached = historyLength >= requestLimit
-	}
-	if limitReached {
-		if !throttle.requests.IsInt64() || historyLength != requestLimit {
-			return false, 0, nil
-		}
-		remaining := throttle.window.Seconds()
-		if len(history) > 0 {
-			remaining -= now - history[len(history)-1]
-		}
-		return false, time.Duration(math.Ceil(remaining)) * time.Second, nil
-	}
-	history = append([]float64{now}, history...)
-	if err := throttle.cache.Set(ctx, key, encodeFloatListPickle(history), throttle.window); err != nil {
-		return false, 0, fmt.Errorf("write Django anonymous throttle: %w", err)
-	}
-	return true, 0, nil
-}
-
-func parseAnonymousThrottleRate(rate string) (*big.Int, time.Duration, error) {
-	parts := strings.Split(rate, "/")
-	if len(parts) != 2 {
-		return nil, 0, fmt.Errorf("invalid anonymous throttle rate %q", rate)
-	}
-	requests, err := pythoncompat.DecimalInteger(parts[0])
-	if err != nil {
-		return nil, 0, fmt.Errorf("invalid anonymous throttle rate %q", rate)
-	}
-	if parts[1] == "" {
-		return nil, 0, fmt.Errorf("invalid anonymous throttle rate period %q", parts[1])
-	}
-	var window time.Duration
-	switch parts[1][0] {
-	case 's':
-		window = time.Second
-	case 'm':
-		window = time.Minute
-	case 'h':
-		window = time.Hour
-	case 'd':
-		window = 24 * time.Hour
-	default:
-		return nil, 0, fmt.Errorf("invalid anonymous throttle rate period %q", parts[1])
-	}
-	return requests, window, nil
+	result, err := throttle.limiter.Allow(ctx, throttle.scope, anonymousThrottleIdentifier(request))
+	return result.Allowed, result.Wait, err
 }
 
 func (throttle *AnonymousThrottle) InspectSession(ctx context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, string, error) {
@@ -236,8 +160,7 @@ func (throttle *AnonymousThrottle) inspectSession(ctx context.Context, request *
 	cookieName, _ := throttle.sessionConfig(request)
 	if cookie := lastCookie(request, cookieName); cookie != nil {
 		if principal, prepared, validationErr := throttle.sessions.Inspect(ctx, cookie.Value); validationErr == nil {
-			// Django cycles the session key during authentication only when the
-			// authentication hash used a fallback SECRET_KEY.
+			// Rotate the session key when authentication used a fallback signing secret.
 			var rotatedSession *browsersession.SessionRefresh
 			if principal.AuthHashUsedFallback {
 				rotated, refreshErr := throttle.sessions.RotateFallbackPrepared(ctx, prepared, throttle.cookieAge, throttle.now())
@@ -254,7 +177,7 @@ func (throttle *AnonymousThrottle) inspectSession(ctx context.Context, request *
 					if rotatedSession == nil && throttle.saveEvery {
 						rotatedSession = &prepared
 					}
-					return false, false, rotatedSession, principal, fmt.Errorf("activate Django user timezone: %w", timezoneErr)
+					return false, false, rotatedSession, principal, fmt.Errorf("activate browser user timezone: %w", timezoneErr)
 				}
 			}
 			if rotatedSession != nil {
@@ -265,9 +188,7 @@ func (throttle *AnonymousThrottle) inspectSession(ctx context.Context, request *
 			}
 			return true, false, nil, principal, nil
 		} else if browsersession.IsReadFailure(validationErr) {
-			// BaseAPIView can map the first lazy-authentication exception, but
-			// RequestLogger evaluates the still-unresolved SimpleLazyObject again
-			// outside the view and Django ultimately returns a technical 500.
+			// A failed session read cannot authorize an anonymous fallback.
 			return false, false, nil, browsersession.Principal{}, fmt.Errorf("validate browser session for anonymous throttle: %w", validationErr)
 		} else if sessionCookieMustExpire(validationErr) {
 			expireSession = true
@@ -409,78 +330,4 @@ func anonymousThrottleIdentifier(request *http.Request) string {
 		return host
 	}
 	return request.RemoteAddr
-}
-
-func encodeFloatListPickle(values []float64) []byte {
-	return pythoncompat.EncodeFloatListPickle(values)
-}
-
-func decodeFloatListPickle(data []byte) ([]float64, error) {
-	return pythoncompat.DecodeFloatListPickle(data)
-}
-
-type RedisThrottleCache struct {
-	redisURL string
-	once     sync.Once
-	client   *redis.Client
-	err      error
-}
-
-func NewRedisThrottleCache(redisURL string) (*RedisThrottleCache, error) {
-	return &RedisThrottleCache{redisURL: redisURL}, nil
-}
-
-func redisThrottleOptions(redisURL string) (*redis.Options, error) {
-	options, err := redis.ParseURL(redisURL)
-	if err != nil {
-		return nil, fmt.Errorf("parse Redis URL: %w", err)
-	}
-	return options, nil
-}
-
-func (cache *RedisThrottleCache) Ping(ctx context.Context) error {
-	client, err := cache.clientForUse()
-	if err != nil {
-		return err
-	}
-	return client.Ping(ctx).Err()
-}
-
-func (cache *RedisThrottleCache) Close() error {
-	if cache.client == nil {
-		return nil
-	}
-	return cache.client.Close()
-}
-
-func (cache *RedisThrottleCache) Get(ctx context.Context, key string) ([]byte, bool, error) {
-	client, err := cache.clientForUse()
-	if err != nil {
-		return nil, false, err
-	}
-	data, err := client.Get(ctx, key).Bytes()
-	if errors.Is(err, redis.Nil) {
-		return nil, false, nil
-	}
-	return data, err == nil, err
-}
-
-func (cache *RedisThrottleCache) Set(ctx context.Context, key string, value []byte, expiration time.Duration) error {
-	client, err := cache.clientForUse()
-	if err != nil {
-		return err
-	}
-	return client.Set(ctx, key, value, expiration).Err()
-}
-
-func (cache *RedisThrottleCache) clientForUse() (*redis.Client, error) {
-	cache.once.Do(func() {
-		options, err := redisThrottleOptions(cache.redisURL)
-		if err != nil {
-			cache.err = err
-			return
-		}
-		cache.client = redis.NewClient(options)
-	})
-	return cache.client, cache.err
 }

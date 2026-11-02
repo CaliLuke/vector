@@ -63,6 +63,18 @@ null clears a date. Work-item integers accept decimal form strings or integral
 JSON numbers without float rounding. Field ranges remain enforced. Identifier
 sequences use the stored 32-bit range; API search limits range from 0 to 1,000.
 
+`internal/ratelimit` owns request quotas across API keys, anonymous requests,
+authentication, MCP, assets and email verification. Redis supplies the clock and
+atomically trims each sorted-set window, checks capacity and records admission.
+Bucket keys contain a native version, a scope and a hashed identity. Invalid
+configuration and store errors fail closed. Counts range from 0 to 2,147,483,647;
+zero denies requests. Periods use explicit second, minute, hour or day aliases.
+Email verification codes use strict versioned JSON records and an atomic
+five-guess budget. Issuing a replacement code resets its attempt counter.
+The versioned cache
+cutover starts fresh quota windows and requires resending pending email codes.
+Previous cache entries expire under their existing TTLs.
+
 Draft creation, editing, deletion and publication belong to `draftLifecycle` and
 `draftOperation` in `internal/workitems`. The lifecycle owns standalone transactions;
 reviewed changes bind the operation to their existing savepoint and review state.

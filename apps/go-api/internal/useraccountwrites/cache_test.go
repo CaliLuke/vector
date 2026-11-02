@@ -1,49 +1,44 @@
 package useraccountwrites
 
 import (
-	"bytes"
-	"encoding/hex"
+	"strings"
 	"testing"
 
-	ogorek "github.com/kisielk/og-rek"
+	"github.com/stretchr/testify/require"
 )
 
-func TestEmailVerificationCachePickleInteroperatesWithDjango(t *testing.T) {
-	// Source stores json.dumps({"token": "674219"}) through Django's
-	// RedisCache, which pickles that JSON string using Python pickle protocol 5.
-	pythonValue, err := hex.DecodeString("80059517000000000000008c137b22746f6b656e223a2022363734323139227d942e")
-	if err != nil {
-		t.Fatal(err)
+func TestEmailCodeCacheUsesVersionedNativeJSON(t *testing.T) {
+	for _, code := range []string{"000001", "674219", "999999"} {
+		encoded, err := EncodeEmailVerificationCodeValue(code)
+		require.NoError(t, err)
+		require.JSONEq(t, `{"version":1,"token":"`+code+`"}`, string(encoded))
+		decoded, valid := decodeEmailCode(encoded)
+		require.True(t, valid)
+		require.Equal(t, code, decoded)
 	}
-	decoded, err := DecodeEmailVerificationCodeValue(pythonValue)
-	if err != nil || decoded != "674219" {
-		t.Fatalf("decoded token=%q err=%v", decoded, err)
-	}
-
-	encoded, err := EncodeEmailVerificationCodeValue(decoded)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(encoded) < 2 || encoded[0] != 0x80 || encoded[1] != 4 {
-		t.Fatalf("Django cache value did not use pickle protocol 4: %x", encoded)
-	}
-	decodedValue, err := ogorek.NewDecoder(bytes.NewReader(encoded)).Decode()
-	if err != nil || decodedValue != `{"token":"674219"}` {
-		t.Fatalf("encoded cache value=%#v err=%v, want source JSON string", decodedValue, err)
-	}
-	if roundTrip, err := DecodeEmailVerificationCodeValue(encoded); err != nil || roundTrip != decoded {
-		t.Fatalf("round trip token=%q err=%v", roundTrip, err)
+	for _, code := range []string{"", "1", "1234567", "12a456", "１２３４５６"} {
+		_, err := EncodeEmailVerificationCodeValue(code)
+		require.Error(t, err)
 	}
 }
 
-func TestEmailVerificationCachePickleRejectsUnexpectedValues(t *testing.T) {
-	for _, value := range [][]byte{
-		{},
-		[]byte(`{"token":"674219"}`),
-		[]byte("not a pickle"),
+func TestEmailCodeCacheRejectsCorruptOrUnsupportedRecords(t *testing.T) {
+	for _, value := range []string{
+		"", "not JSON", strings.Repeat("x", 4097), `[]`, `null`,
+		`{"token":"674219"}`, `{"version":2,"token":"674219"}`,
+		`{"version":1,"token":"674219","extra":true}`, `{"Version":1,"token":"674219"}`,
+		`{"version":1,"token":674219}`, `{"version":1.5,"token":"674219"}`,
+		`{"version":1,"token":null}`, `{"version":1,"token":"invalid"}`,
+		`{"version":1,"token":"674219","token":"123456"}`,
+		`{"version":1,"token":"674219"} {}`, string([]byte{0x80, 0x04, 0x95, 0x00}),
 	} {
-		if _, err := DecodeEmailVerificationCodeValue(value); err == nil {
-			t.Fatalf("DecodeEmailVerificationCodeValue(%q) unexpectedly succeeded", value)
-		}
+		_, valid := decodeEmailCode([]byte(value))
+		require.False(t, valid, value)
 	}
+}
+
+func TestInvalidAccountCacheConfigurationKeepsCredentialsOutOfErrors(t *testing.T) {
+	_, err := NewCache("redis://user:synthetic-password@cache.example.test:invalid/")
+	require.Error(t, err)
+	require.NotContains(t, err.Error(), "synthetic-password")
 }

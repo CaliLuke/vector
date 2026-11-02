@@ -10,6 +10,8 @@ import (
 	systemapi "github.com/CaliLuke/go-plane"
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
+	"github.com/CaliLuke/go-plane/internal/ratelimit"
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
 )
@@ -21,7 +23,7 @@ func (validate apiKeyValidatorFunc) Validate(ctx context.Context, token string) 
 }
 
 type apiKeyThrottleCache struct {
-	values map[string][]byte
+	native testsupport.RateStoreFake
 	gets   int
 	sets   int
 }
@@ -38,19 +40,16 @@ func (repository *genericPermissionRepository) WorkspaceMemberBySlug(context.Con
 }
 
 func newAPIKeyThrottleCache() *apiKeyThrottleCache {
-	return &apiKeyThrottleCache{values: make(map[string][]byte)}
+	return &apiKeyThrottleCache{}
 }
 
-func (cache *apiKeyThrottleCache) Get(_ context.Context, key string) ([]byte, bool, error) {
+func (cache *apiKeyThrottleCache) Take(ctx context.Context, key string, limit int64, window time.Duration) (ratelimit.Result, error) {
 	cache.gets++
-	value, ok := cache.values[key]
-	return value, ok, nil
-}
-
-func (cache *apiKeyThrottleCache) Set(_ context.Context, key string, value []byte, _ time.Duration) error {
-	cache.sets++
-	cache.values[key] = append([]byte(nil), value...)
-	return nil
+	result, err := cache.native.Take(ctx, key, limit, window)
+	if result.Allowed {
+		cache.sets++
+	}
+	return result, err
 }
 
 func apiKeyAuthService(t *testing.T, validate apiKeyValidatorFunc, cache *apiKeyThrottleCache, rate string) *Service {

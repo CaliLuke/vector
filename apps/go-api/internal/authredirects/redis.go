@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
+	"github.com/CaliLuke/go-plane/internal/ratelimit"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -33,8 +33,7 @@ func NewRedisMagicCodeVerifier(client redis.UniversalClient) (*RedisMagicCodeVer
 	return &RedisMagicCodeVerifier{client: client}, nil
 }
 
-// Verify consumes a valid Django-issued magic code and preserves the source
-// five-attempt counter and token-expiry behavior for invalid codes.
+// Verify consumes a valid magic code and enforces its five-attempt budget and expiry.
 func (verifier *RedisMagicCodeVerifier) Verify(ctx context.Context, key, code string, emailExists bool) error {
 	encoded, err := verifier.client.Get(ctx, key).Bytes()
 	if errors.Is(err, redis.Nil) {
@@ -88,18 +87,18 @@ func magicCodeFailure(emailExists, exhausted bool, key string) error {
 	return &CodeError{Code: 5092, Message: "INVALID_MAGIC_CODE_SIGN_UP", Email: email}
 }
 
-type AuthenticationDRFThrottle struct {
+type RedisAuthenticationThrottle struct {
 	throttle *apikey.Throttle
 }
 
-func NewAuthenticationDRFThrottle(redisURL, rate string) (*AuthenticationDRFThrottle, *publicprojectmetadatareads.RedisThrottleCache, error) {
+func NewAuthenticationThrottle(redisURL, rate string) (*RedisAuthenticationThrottle, *ratelimit.RedisStore, error) {
 	if rate == "" {
 		rate = os.Getenv("AUTHENTICATION_RATE_LIMIT")
 		if rate == "" {
 			rate = "10/minute"
 		}
 	}
-	cache, err := publicprojectmetadatareads.NewRedisThrottleCache(redisURL)
+	cache, err := ratelimit.NewRedisStore(redisURL)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -107,17 +106,17 @@ func NewAuthenticationDRFThrottle(redisURL, rate string) (*AuthenticationDRFThro
 	if err != nil {
 		return nil, nil, errors.Join(err, cache.Close())
 	}
-	return &AuthenticationDRFThrottle{throttle: throttle}, cache, nil
+	return &RedisAuthenticationThrottle{throttle: throttle}, cache, nil
 }
 
-func (throttle *AuthenticationDRFThrottle) Allow(ctx context.Context, clientIP string) (bool, error) {
+func (throttle *RedisAuthenticationThrottle) Allow(ctx context.Context, clientIP string) (bool, error) {
 	allowed, _, err := throttle.AllowWithWait(ctx, clientIP)
 	return allowed, err
 }
 
-// AllowWithWait retains the shared Django throttle's computed retry interval.
-func (throttle *AuthenticationDRFThrottle) AllowWithWait(ctx context.Context, clientIP string) (bool, time.Duration, error) {
-	rate, err := throttle.throttle.AllowCacheKey(ctx, ":1:throttle_authentication_"+clientIP, "authentication")
+// AllowWithWait reports the native limiter's retry interval.
+func (throttle *RedisAuthenticationThrottle) AllowWithWait(ctx context.Context, clientIP string) (bool, time.Duration, error) {
+	rate, err := throttle.throttle.AllowScoped(ctx, "authentication", clientIP)
 	if err != nil {
 		return false, 0, err
 	}

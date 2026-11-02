@@ -24,6 +24,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/emailvalidation"
+	"github.com/CaliLuke/go-plane/internal/ratelimit"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	store "github.com/CaliLuke/go-plane/internal/useraccountwrites"
 	api "github.com/CaliLuke/go-plane/user_account_writes/gen/user_account_writes"
@@ -49,7 +50,8 @@ type userAccountWritesSessions interface {
 }
 
 type userAccountWritesCache interface {
-	Get(context.Context, string) ([]byte, bool, error)
+	ratelimit.Store
+	VerifyEmailCode(context.Context, string, string) (store.EmailCodeStatus, error)
 	Set(context.Context, string, []byte, time.Duration) error
 	Delete(context.Context, string) error
 }
@@ -168,8 +170,7 @@ func (service *userAccountWritesService) PatchMe(ctx context.Context, payload *a
 			"non_field_errors": []string{"Invalid data. Expected a dictionary, but got " + strings.ToLower(input.Kind) + "."},
 		})
 	}
-	// UserSerializer applies the model CharField validators before saving.
-	// Reuse the shared DRF coercion, Unicode length, and surrogate validation.
+	// Validate profile text with the shared input rules.
 	fieldErrors := make(map[string][]string)
 	for _, field := range []string{"first_name", "last_name", "display_name"} {
 		if value, supplied := input.Fields[field]; supplied {
@@ -226,8 +227,7 @@ func (service *userAccountWritesService) Deactivate(ctx context.Context, _ *api.
 	if err := service.repository.Deactivate(ctx, principal.userID, hash, clientIP); err != nil {
 		return nil, userAccountWritesInternal()
 	}
-	// Django's logout(request) clears the session cookie after deleting every
-	// persisted session for the deactivated user.
+	// Expire the browser cookie after deleting the user's persisted sessions.
 	browsersession.ExpireResponseSession(ctx)
 	if err := service.tasks.Task(ctx, "plane.bgtasks.user_deactivation_email_task.user_deactivation_email", []any{service.appBaseURL, principal.userID.String()}, nil); err != nil {
 		return nil, userAccountWritesInternal()
@@ -260,21 +260,20 @@ func (service *userAccountWritesService) UpdateEmail(ctx context.Context, payloa
 		return nil, nil, userAccountWritesBadRequest(map[string]any{"error": "Verification code is required"})
 	}
 	cacheKey := userEmailCacheKey(principal.userID, newEmail)
-	cached, found, err := service.cache.Get(ctx, cacheKey)
+	status, err := service.cache.VerifyEmailCode(ctx, cacheKey, strings.TrimSpace(code))
 	if err != nil {
 		return nil, nil, userAccountWritesInternal()
 	}
-	if !found {
+	if status == store.EmailCodeMissing || status == store.EmailCodeExhausted {
 		return nil, nil, userAccountWritesBadRequest(map[string]any{"error": "Verification code has expired or is invalid"})
 	}
-	storedCode, err := store.DecodeEmailVerificationCodeValue(cached)
-	if err != nil {
+	if status == store.EmailCodeMalformed {
 		return nil, nil, userAccountWritesBadRequest(map[string]any{"error": "Failed to verify code. Please try again."})
 	}
-	if storedCode != strings.TrimSpace(code) {
+	if status != store.EmailCodeValid {
 		return nil, nil, userAccountWritesBadRequest(map[string]any{"error": "Invalid verification code"})
 	}
-	// The source checks uniqueness again immediately before updating because
+	// Recheck uniqueness immediately before updating because
 	// another account may claim the address after code generation.
 	if validateNewEmailErr := service.validateNewEmail(ctx, principal.userID, newEmail); validateNewEmailErr != nil {
 		return nil, nil, validateNewEmailErr
@@ -289,8 +288,7 @@ func (service *userAccountWritesService) UpdateEmail(ctx context.Context, payloa
 	if logoutErr := service.repository.Logout(ctx, principal.sessionID); logoutErr != nil {
 		return nil, nil, userAccountWritesInternal()
 	}
-	// Django logout() removes the session and expires the browser cookie in
-	// SessionMiddleware's response finalizer.
+	// Remove the session and expire its browser cookie.
 	browsersession.ExpireResponseSession(ctx)
 	if taskErr := service.tasks.Task(ctx, "plane.bgtasks.user_email_update_task.send_email_update_confirmation", []any{newEmail}, nil); taskErr != nil {
 		return nil, nil, userAccountWritesInternal()
@@ -310,9 +308,8 @@ func (service *userAccountWritesService) GenerateEmailCode(ctx context.Context, 
 	if err != nil {
 		return nil, nil, err
 	}
-	// DRF applies UserRateThrottle in APIView.initial before parsing or running
-	// the action body.
-	rate, err := service.throttle.AllowCacheKey(ctx, ":1:throttle_email_verification_"+principal.userID.String(), "email verification")
+	// Charge the verification request before parsing its body.
+	rate, err := service.throttle.AllowScoped(ctx, "email-verification", principal.userID.String())
 	if err != nil {
 		return nil, nil, userAccountWritesInternal()
 	}
@@ -441,7 +438,8 @@ func userAccountStringValue(value any) (string, bool) {
 	return result, ok
 }
 func userEmailCacheKey(userID uuid.UUID, email string) string {
-	return ":1:magic_email_update_" + userID.String() + "_" + email
+	digest := sha256.Sum256([]byte(userID.String() + "\x00" + normalizeUserAccountEmail(email)))
+	return "vector:email-code:v1:" + hex.EncodeToString(digest[:])
 }
 
 func userAccountWritesRaw(body json.RawMessage) (*api.UserAccountWritesResponseMetadata, io.ReadCloser, error) {

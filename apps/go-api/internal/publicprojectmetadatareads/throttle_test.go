@@ -2,12 +2,8 @@ package publicprojectmetadatareads
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -17,31 +13,44 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
+	"github.com/CaliLuke/go-plane/internal/ratelimit"
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type throttleCacheStub struct {
+	native testsupport.RateStoreFake
 	data   map[string][]byte
 	ttl    time.Duration
 	getErr error
 	setErr error
 }
 
-func (cache *throttleCacheStub) Get(_ context.Context, key string) ([]byte, bool, error) {
+func (cache *throttleCacheStub) Take(ctx context.Context, key string, limit int64, window time.Duration) (ratelimit.Result, error) {
 	if cache.getErr != nil {
-		return nil, false, cache.getErr
+		return ratelimit.Result{}, cache.getErr
 	}
-	data, found := cache.data[key]
-	return data, found, nil
-}
-
-func (cache *throttleCacheStub) Set(_ context.Context, key string, value []byte, ttl time.Duration) error {
 	if cache.setErr != nil {
-		return cache.setErr
+		return ratelimit.Result{}, cache.setErr
 	}
-	cache.data[key] = value
-	cache.ttl = ttl
-	return nil
+	result, err := cache.native.Take(ctx, key, limit, window)
+	if err != nil {
+		return ratelimit.Result{}, err
+	}
+	if cache.data == nil {
+		cache.data = map[string][]byte{}
+	}
+	if result.Allowed {
+		cache.data[key] = nil
+	}
+	cache.ttl = window
+	return result, nil
+}
+func bucketForTest(t *testing.T, scope, identity string) string {
+	t.Helper()
+	key, err := ratelimit.BucketKey(scope, identity)
+	require.NoError(t, err)
+	return key
 }
 
 type throttleSessionsStub struct {
@@ -108,38 +117,27 @@ func (sessions *throttleSessionsStub) RotateFallbackPrepared(_ context.Context, 
 	return sessions.refresh, sessions.refreshErr
 }
 
-func TestAnonymousThrottleMatchesDRFWindowAndDjangoCacheFormat(t *testing.T) {
-	cache := &throttleCacheStub{data: map[string][]byte{}}
-	throttle, constructorErr := NewAnonymousThrottle(cache, &throttleSessionsStub{}, &throttleInvalidatorStub{}, browsersession.DefaultCookieName, false, 0)
-	require.NoError(t, constructorErr)
-	now := time.Unix(1_725_220_000, 250_000_000)
-	throttle.now = func() time.Time { return now }
-	request := httptest.NewRequest("GET", "/", nil)
+func TestAnonymousThrottleUsesNativeCapacityAndScope(t *testing.T) {
+	cache := &throttleCacheStub{}
+	throttle, err := NewAnonymousThrottle(cache, &throttleSessionsStub{}, &throttleInvalidatorStub{}, browsersession.DefaultCookieName, false, 0)
+	require.NoError(t, err)
+	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	request.RemoteAddr = "192.0.2.10:1234"
-	for index := 0; index < anonThrottleLimit; index++ {
-		allowed, _, expire, refresh, _, _, err := throttle.AllowRequest(context.Background(), request)
-		if err != nil || !allowed || expire || refresh {
-			t.Fatalf("request %d allowed=%v expire=%v refresh=%v err=%v", index+1, allowed, expire, refresh, err)
-		}
+	for range 30 {
+		allowed, _, expire, refresh, _, _, requestErr := throttle.AllowRequest(t.Context(), request)
+		require.NoError(t, requestErr)
+		require.True(t, allowed)
+		require.False(t, expire)
+		require.False(t, refresh)
 	}
-	allowed, wait, expire, refresh, _, _, err := throttle.AllowRequest(context.Background(), request)
-	if err != nil || allowed || wait != time.Minute || expire || refresh {
-		t.Fatalf("throttled allowed=%v wait=%v expire=%v refresh=%v err=%v", allowed, wait, expire, refresh, err)
-	}
-	key := ":1:throttle_anon_192.0.2.10"
-	data := cache.data[key]
-	history, err := decodeFloatListPickle(data)
-	wantTimestamp := float64(now.UnixNano()) / float64(time.Second)
-	if err != nil || len(history) != anonThrottleLimit || history[0] != wantTimestamp {
-		t.Fatalf("history=%v err=%v pickle=%s", history, err, hex.EncodeToString(data))
-	}
-	if cache.ttl != time.Minute {
-		t.Fatalf("ttl=%v", cache.ttl)
-	}
-	throttle.now = func() time.Time { return now.Add(time.Minute) }
-	if allowed, _, expire, refresh, _, _, err := throttle.AllowRequest(context.Background(), request); err != nil || !allowed || expire || refresh {
-		t.Fatalf("expired window allowed=%v expire=%v refresh=%v err=%v", allowed, expire, refresh, err)
-	}
+	allowed, wait, _, _, _, _, err := throttle.AllowRequest(t.Context(), request)
+	require.NoError(t, err)
+	require.False(t, allowed)
+	require.Equal(t, time.Minute, wait)
+	require.Len(t, cache.native.Calls, 31)
+	require.Equal(t, bucketForTest(t, "anon", "192.0.2.10"), cache.native.Calls[0].Key)
+	require.EqualValues(t, 30, cache.native.Calls[0].Limit)
+	require.Equal(t, time.Minute, cache.native.Calls[0].Window)
 }
 
 func TestConfiguredAnonymousThrottleUsesAuthenticationScopeAndRate(t *testing.T) {
@@ -165,7 +163,7 @@ func TestConfiguredAnonymousThrottleUsesAuthenticationScopeAndRate(t *testing.T)
 	if err != nil || allowed || wait != time.Hour {
 		t.Fatalf("throttled allowed=%v wait=%v err=%v", allowed, wait, err)
 	}
-	if _, found := cache.data[":1:throttle_authentication_192.0.2.44"]; !found || cache.ttl != time.Hour {
+	if _, found := cache.data[bucketForTest(t, "authentication", "192.0.2.44")]; !found || cache.ttl != time.Hour {
 		t.Fatalf("cache=%v ttl=%v", cache.data, cache.ttl)
 	}
 }
@@ -219,7 +217,6 @@ func TestAnonymousThrottleFailsClosedOnCacheErrors(t *testing.T) {
 		wantError error
 	}{
 		{name: "read", cache: &throttleCacheStub{data: map[string][]byte{}, getErr: readErr}, wantError: readErr},
-		{name: "malformed history", cache: &throttleCacheStub{data: map[string][]byte{":1:throttle_anon_192.0.2.20": []byte("not a pickle")}}},
 		{name: "write", cache: &throttleCacheStub{data: map[string][]byte{}, setErr: writeErr}, wantError: writeErr},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -236,102 +233,22 @@ func TestAnonymousThrottleFailsClosedOnCacheErrors(t *testing.T) {
 			if test.wantError != nil && !errors.Is(err, test.wantError) {
 				t.Fatalf("AllowAnonymousRequest() error = %v, want wrapped %v", err, test.wantError)
 			}
-			if test.name == "malformed history" && !strings.Contains(err.Error(), "decode Django anonymous throttle") {
-				t.Fatalf("malformed history error = %v", err)
-			}
-			if test.name == "malformed history" && string(test.cache.data[":1:throttle_anon_192.0.2.20"]) != "not a pickle" {
-				t.Fatal("malformed cached history was unexpectedly replaced")
-			}
 		})
 	}
 }
 
-func TestConfiguredAnonymousThrottleAcceptsNegativeRateAndOmitsWait(t *testing.T) {
-	throttle, err := NewConfiguredAnonymousThrottle(
-		&throttleCacheStub{}, &throttleSessionsStub{}, &throttleInvalidatorStub{}, browsersession.DefaultCookieName, false, 0,
-		AnonymousThrottleConfig{Scope: "authentication", Rate: "-1/minute"},
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	allowed, wait, _, _, _, _, err := throttle.AllowRequestWithoutTimezone(
-		context.Background(), httptest.NewRequest(http.MethodPost, "/auth/email-check/", nil),
-	)
-	if err != nil || allowed || wait != 0 {
-		t.Fatalf("allowed=%v wait=%v err=%v", allowed, wait, err)
-	}
+func TestConfiguredAnonymousThrottleZeroRateDeniesRequests(t *testing.T) {
+	cache := &throttleCacheStub{}
+	throttle, err := NewConfiguredAnonymousThrottle(cache, &throttleSessionsStub{}, &throttleInvalidatorStub{}, browsersession.DefaultCookieName, false, 0, AnonymousThrottleConfig{Scope: "authentication", Rate: "0/minute"})
+	require.NoError(t, err)
+	allowed, wait, _, _, _, _, err := throttle.AllowRequestWithoutTimezone(t.Context(), httptest.NewRequest(http.MethodPost, "/auth/email-check/", nil))
+	require.NoError(t, err)
+	require.False(t, allowed)
+	require.Equal(t, time.Minute, wait)
+	require.EqualValues(t, 0, cache.native.Calls[0].Limit)
 }
 
-func TestConfiguredAnonymousThrottleOmitsWaitForOverfullHistory(t *testing.T) {
-	now := time.Unix(1_725_220_000, 0)
-	key := ":1:throttle_authentication_192.0.2.44"
-	cache := &throttleCacheStub{data: map[string][]byte{
-		key: encodeFloatListPickle([]float64{float64(now.Unix()), float64(now.Unix() - 1), float64(now.Unix() - 2)}),
-	}}
-	throttle, err := NewConfiguredAnonymousThrottle(
-		cache, &throttleSessionsStub{}, &throttleInvalidatorStub{}, browsersession.DefaultCookieName, false, 0,
-		AnonymousThrottleConfig{Scope: "authentication", Rate: "2/hour"},
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	throttle.now = func() time.Time { return now }
-	request := httptest.NewRequest(http.MethodPost, "/auth/email-check/", nil)
-	request.RemoteAddr = "192.0.2.44:1234"
-	allowed, wait, _, _, _, _, err := throttle.AllowRequestWithoutTimezone(context.Background(), request)
-	if err != nil || allowed || wait != 0 {
-		t.Fatalf("allowed=%v wait=%v err=%v", allowed, wait, err)
-	}
-}
-
-func TestConfiguredAnonymousThrottleExtremeNegativeRateCannotOverflowWait(t *testing.T) {
-	now := time.Unix(1_725_220_000, 0)
-	key := ":1:throttle_authentication_192.0.2.44"
-	cache := &throttleCacheStub{data: map[string][]byte{
-		key: encodeFloatListPickle([]float64{float64(now.Unix()), float64(now.Unix() - 1)}),
-	}}
-	throttle, err := NewConfiguredAnonymousThrottle(
-		cache, &throttleSessionsStub{}, &throttleInvalidatorStub{}, browsersession.DefaultCookieName, false, 0,
-		AnonymousThrottleConfig{Scope: "authentication", Rate: "-9223372036854775808/hour"},
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	throttle.now = func() time.Time { return now }
-	request := httptest.NewRequest(http.MethodPost, "/auth/email-check/", nil)
-	request.RemoteAddr = "192.0.2.44:1234"
-	allowed, wait, _, _, _, _, err := throttle.AllowRequestWithoutTimezone(context.Background(), request)
-	if err != nil || allowed || wait != 0 {
-		t.Fatalf("allowed=%v wait=%v err=%v", allowed, wait, err)
-	}
-}
-
-func TestConfiguredAnonymousThrottleZeroRateWaitMatchesDRF(t *testing.T) {
-	now := time.Unix(1_725_220_000, 0)
-	key := ":1:throttle_authentication_192.0.2.44"
-	cache := &throttleCacheStub{data: map[string][]byte{}}
-	throttle, err := NewConfiguredAnonymousThrottle(
-		cache, &throttleSessionsStub{}, &throttleInvalidatorStub{}, browsersession.DefaultCookieName, false, 0,
-		AnonymousThrottleConfig{Scope: "authentication", Rate: "0/minute"},
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	throttle.now = func() time.Time { return now }
-	request := httptest.NewRequest(http.MethodPost, "/auth/email-check/", nil)
-	request.RemoteAddr = "192.0.2.44:1234"
-	allowed, wait, _, _, _, _, err := throttle.AllowRequestWithoutTimezone(context.Background(), request)
-	if err != nil || allowed || wait != time.Minute {
-		t.Fatalf("empty history allowed=%v wait=%v err=%v", allowed, wait, err)
-	}
-	cache.data[key] = encodeFloatListPickle([]float64{float64(now.Unix())})
-	allowed, wait, _, _, _, _, err = throttle.AllowRequestWithoutTimezone(context.Background(), request)
-	if err != nil || allowed || wait != 0 {
-		t.Fatalf("non-empty history allowed=%v wait=%v err=%v", allowed, wait, err)
-	}
-}
-
-func TestAnonymousThrottleUsesDjangoForwardedIdentifierAndExemptsSessions(t *testing.T) {
+func TestAnonymousThrottleScopesForwardedIdentityAndExemptsSessions(t *testing.T) {
 	cache := &throttleCacheStub{data: map[string][]byte{}}
 	sessions := &throttleSessionsStub{valid: true}
 	throttle, constructorErr := NewAnonymousThrottle(cache, sessions, &throttleInvalidatorStub{}, "custom-session", false, 0)
@@ -348,7 +265,7 @@ func TestAnonymousThrottleUsesDjangoForwardedIdentifierAndExemptsSessions(t *tes
 	if allowed, _, expire, refresh, _, _, err := throttle.AllowRequest(context.Background(), request); err != nil || !allowed || expire || refresh {
 		t.Fatalf("anonymous request allowed=%v expire=%v err=%v", allowed, expire, err)
 	}
-	if _, found := cache.data[":1:throttle_anon_192.0.2.1,198.51.100.2"]; !found {
+	if _, found := cache.data[bucketForTest(t, "anon", "192.0.2.1,198.51.100.2")]; !found {
 		t.Fatalf("cache keys=%v", cache.data)
 	}
 }
@@ -516,7 +433,7 @@ func TestAnonymousThrottleDoesNotAuthenticatePublicRequestWithOnlyAdminCookie(t 
 	}
 }
 
-func TestAnonymousThrottleFinalizesUnaccessedSessionsLikeDjango(t *testing.T) {
+func TestAnonymousThrottleFinalizesUnaccessedNativeSessions(t *testing.T) {
 	now := time.Date(2026, time.September, 1, 12, 0, 0, 0, time.UTC)
 	for _, testCase := range []struct {
 		name        string
@@ -575,7 +492,7 @@ func TestAnonymousThrottleJoinsRepeatedForwardedForHeaders(t *testing.T) {
 	if allowed, _, _, _, _, _, err := throttle.AllowRequest(context.Background(), request); err != nil || !allowed {
 		t.Fatalf("allowed=%v err=%v", allowed, err)
 	}
-	if _, found := cache.data[":1:throttle_anon_192.0.2.1,198.51.100.2"]; !found {
+	if _, found := cache.data[bucketForTest(t, "anon", "192.0.2.1,198.51.100.2")]; !found {
 		t.Fatalf("cache keys=%v", cache.data)
 	}
 }
@@ -589,7 +506,7 @@ func TestAnonymousThrottleDecodesForwardedForAsASGILatin1BeforeRemovingWhitespac
 	if allowed, _, _, _, _, _, err := throttle.AllowRequest(context.Background(), request); err != nil || !allowed {
 		t.Fatalf("allowed=%v err=%v", allowed, err)
 	}
-	if _, found := cache.data[":1:throttle_anon_192.0.2.1,198.51.100.2"]; !found {
+	if _, found := cache.data[bucketForTest(t, "anon", "192.0.2.1,198.51.100.2")]; !found {
 		t.Fatalf("cache keys=%v", cache.data)
 	}
 }
@@ -642,7 +559,7 @@ func TestAnonymousThrottleDoesNotTreatXAPIKeyAsSpaceSessionAuthentication(t *tes
 	if err != nil || !allowed || expire || refresh {
 		t.Fatalf("allowed=%v expire=%v refresh=%v err=%v", allowed, expire, refresh, err)
 	}
-	if _, found := cache.data[":1:throttle_anon_192.0.2.20"]; !found {
+	if _, found := cache.data[bucketForTest(t, "anon", "192.0.2.20")]; !found {
 		t.Fatalf("X-Api-Key request did not consume anonymous throttle capacity: %v", cache.data)
 	}
 }
@@ -664,7 +581,7 @@ func TestAllowAnonymousRequestUsesSharedBucketWithoutInspectingSession(t *testin
 	if sessions.validatedKey != "" {
 		t.Fatalf("anonymous throttle re-inspected session %q", sessions.validatedKey)
 	}
-	if _, found := cache.data[":1:throttle_anon_192.0.2.30"]; !found {
+	if _, found := cache.data[bucketForTest(t, "anon", "192.0.2.30")]; !found {
 		t.Fatalf("shared anonymous bucket missing: %v", cache.data)
 	}
 }
@@ -838,7 +755,7 @@ func (database *sessionInvalidationDatabaseStub) Exec(_ context.Context, query s
 	return pgconn.NewCommandTag("DELETE 1"), database.err
 }
 
-func TestPostgreSQLSessionInvalidatorDeletesDjangoSession(t *testing.T) {
+func TestPostgreSQLSessionInvalidatorDeletesNativeSession(t *testing.T) {
 	database := &sessionInvalidationDatabaseStub{}
 	invalidator, err := NewPostgreSQLSessionInvalidator(database)
 	if err != nil {
@@ -849,75 +766,6 @@ func TestPostgreSQLSessionInvalidatorDeletesDjangoSession(t *testing.T) {
 	}
 	if !strings.Contains(database.query, "DELETE FROM sessions") || len(database.args) != 1 || database.args[0] != "session-key" {
 		t.Fatalf("query=%q args=%v", database.query, database.args)
-	}
-}
-
-func TestRedisThrottleOptionsVerifyTLSPeersByDefault(t *testing.T) {
-	options, err := redisThrottleOptions("rediss://cache.example.test:6380/1")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if options.TLSConfig == nil || options.TLSConfig.InsecureSkipVerify || options.TLSConfig.ServerName != "cache.example.test" {
-		t.Fatalf("TLSConfig=%+v", options.TLSConfig)
-	}
-	plainOptions, err := redisThrottleOptions("redis://cache.example.test:6379/1")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if plainOptions.TLSConfig != nil {
-		t.Fatalf("plain Redis TLSConfig=%+v", plainOptions.TLSConfig)
-	}
-}
-
-func TestRedisThrottleTLSRejectsUntrustedCertificates(t *testing.T) {
-	server := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
-	defer server.Close()
-	address := server.Listener.Addr().String()
-	options, err := redisThrottleOptions("rediss://" + address + "/1")
-	if err != nil {
-		t.Fatal(err)
-	}
-	dialer := &net.Dialer{Timeout: 5 * time.Second}
-	connection, err := tls.DialWithDialer(dialer, "tcp", address, options.TLSConfig)
-	if err == nil {
-		if closeErr := connection.Close(); closeErr != nil {
-			t.Error(closeErr)
-		}
-		t.Fatal("Redis TLS accepted a certificate outside the trust store")
-	}
-	var untrusted x509.UnknownAuthorityError
-	if !errors.As(err, &untrusted) {
-		t.Fatalf("TLS error = %v, want an untrusted-certificate failure", err)
-	}
-	// A deployment can trust its private CA without disabling peer verification.
-	trusted := options.TLSConfig.Clone()
-	trusted.RootCAs = x509.NewCertPool()
-	trusted.RootCAs.AddCert(server.Certificate())
-	connection, err = tls.DialWithDialer(dialer, "tcp", address, trusted)
-	if err != nil {
-		t.Fatalf("TLS handshake with a trusted certificate: %v", err)
-	}
-	if closeErr := connection.Close(); closeErr != nil {
-		t.Error(closeErr)
-	}
-}
-
-func TestRedisThrottleCacheDefersConfigurationUntilAThrottleRequest(t *testing.T) {
-	cache, err := NewRedisThrottleCache("")
-	if err != nil {
-		t.Fatalf("startup configured Redis eagerly: %v", err)
-	}
-	if _, _, err := cache.Get(context.Background(), "key"); err == nil || !strings.Contains(err.Error(), "parse Redis URL") {
-		t.Fatalf("lazy cache Get() error = %v", err)
-	}
-	if err := cache.Ping(context.Background()); err == nil || !strings.Contains(err.Error(), "parse Redis URL") {
-		t.Fatalf("lazy cache Ping() error = %v", err)
-	}
-	if err := cache.Set(context.Background(), "key", []byte("value"), time.Minute); err == nil || !strings.Contains(err.Error(), "parse Redis URL") {
-		t.Fatalf("lazy cache Set() error = %v", err)
-	}
-	if err := cache.Close(); err != nil {
-		t.Fatalf("Close() after lazy configuration failure = %v", err)
 	}
 }
 
@@ -936,21 +784,6 @@ func TestAnonymousThrottlePropagatesSessionRefreshFailures(t *testing.T) {
 	request.AddCookie(&http.Cookie{Name: browsersession.DefaultCookieName, Value: "valid-session"})
 	if _, _, err := throttle.FinalizeUnaccessedSession(context.Background(), request, http.StatusRequestEntityTooLarge); !errors.Is(err, refreshErr) {
 		t.Fatalf("FinalizeUnaccessedSession() error = %v, want wrapped %v", err, refreshErr)
-	}
-}
-
-func TestPickleCodecReadsPythonProtocolFour(t *testing.T) {
-	const fixtureHex = "80049520000000000000005d9428474008000000000000474000000000000000473ff0000000000000652e"
-	fixture, err := hex.DecodeString(fixtureHex)
-	if err != nil {
-		t.Fatal(err)
-	}
-	values, err := decodeFloatListPickle(fixture)
-	if err != nil || len(values) != 3 || values[0] != 3 || values[2] != 1 {
-		t.Fatalf("values=%v err=%v", values, err)
-	}
-	if got := hex.EncodeToString(encodeFloatListPickle(values)); got != fixtureHex {
-		t.Fatalf("encoded pickle=%s want=%s", got, fixtureHex)
 	}
 }
 

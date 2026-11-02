@@ -27,6 +27,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	publicprojectmetadatareadsstore "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
+	"github.com/CaliLuke/go-plane/internal/ratelimit"
 	notificationsapi "github.com/CaliLuke/go-plane/notificationreads/gen/notifications"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"github.com/google/uuid"
@@ -231,36 +232,25 @@ func (assetsTransportEffects) Delete(context.Context, string) error {
 
 type assetsTransportThrottleCache struct {
 	mu     sync.Mutex
-	values map[string][]byte
+	native testsupport.RateStoreFake
 	gets   int
 	key    string
 	getErr error
 	setErr error
 }
 
-func (cache *assetsTransportThrottleCache) Get(_ context.Context, key string) ([]byte, bool, error) {
+func (cache *assetsTransportThrottleCache) Take(ctx context.Context, key string, limit int64, window time.Duration) (ratelimit.Result, error) {
 	cache.mu.Lock()
 	defer cache.mu.Unlock()
 	cache.gets++
 	cache.key = key
 	if cache.getErr != nil {
-		return nil, false, cache.getErr
+		return ratelimit.Result{}, cache.getErr
 	}
-	value, ok := cache.values[key]
-	return value, ok, nil
-}
-func (cache *assetsTransportThrottleCache) Set(_ context.Context, key string, value []byte, _ time.Duration) error {
-	cache.mu.Lock()
-	defer cache.mu.Unlock()
-	cache.key = key
 	if cache.setErr != nil {
-		return cache.setErr
+		return ratelimit.Result{}, cache.setErr
 	}
-	if cache.values == nil {
-		cache.values = map[string][]byte{}
-	}
-	cache.values[key] = append([]byte(nil), value...)
-	return nil
+	return cache.native.Take(ctx, key, limit, window)
 }
 
 func assetsTransportHandler(t *testing.T) http.Handler {
@@ -817,7 +807,11 @@ func TestAssetsLifecycleDuplicateAssetThrottlePrecedesPermissionAndDispatch(t *t
 	cache.mu.Lock()
 	key := cache.key
 	cache.mu.Unlock()
-	if key != ":1:throttle_asset_"+assetsTransportAssetID {
+	expectedKey, keyErr := ratelimit.BucketKey("asset-id", assetsTransportAssetID)
+	if keyErr != nil {
+		t.Fatal(keyErr)
+	}
+	if key != expectedKey {
 		t.Fatalf("asset bucket key=%q, want canonical UUID-scoped key", key)
 	}
 	if permissionChecks != 2 {

@@ -10,6 +10,9 @@ import (
 	"time"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/ratelimit"
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	systemapi "github.com/CaliLuke/go-plane"
 	store "github.com/CaliLuke/go-plane/internal/useraccountwrites"
 	api "github.com/CaliLuke/go-plane/user_account_writes/gen/user_account_writes"
@@ -53,18 +56,21 @@ func (r *accountMountRepository) Deactivate(_ context.Context, actor uuid.UUID, 
 }
 
 type accountMountCache struct {
+	rate     testsupport.RateStoreFake
 	values   map[string][]byte
 	accesses int
 }
 
-func (c *accountMountCache) Get(_ context.Context, key string) ([]byte, bool, error) {
+func (c *accountMountCache) Take(ctx context.Context, key string, limit int64, window time.Duration) (ratelimit.Result, error) {
 	c.accesses++
-	if !strings.Contains(key, "throttle_") {
-		value, err := store.EncodeEmailVerificationCodeValue("123456")
-		return value, err == nil, err
+	return c.rate.Take(ctx, key, limit, window)
+}
+func (c *accountMountCache) VerifyEmailCode(_ context.Context, _ string, code string) (store.EmailCodeStatus, error) {
+	c.accesses++
+	if code == "123456" {
+		return store.EmailCodeValid, nil
 	}
-	value, ok := c.values[key]
-	return value, ok, nil
+	return store.EmailCodeInvalid, nil
 }
 func (c *accountMountCache) Set(_ context.Context, key string, value []byte, _ time.Duration) error {
 	c.accesses++
@@ -143,15 +149,12 @@ func TestUserAccountWritesProductionMounts(t *testing.T) {
 						t.Fatalf("unsupported media type reached domain I/O: writes=%d reads=%d tasks=%v", repository.writes, repository.reads, tasks.names)
 					}
 					if tc.path == "/api/users/me/email/generate-code/" {
-						// DRF runs UserRateThrottle before parsing the request body.
-						// The rejected media type may therefore touch only its throttle key.
-						if cache.accesses != 2 || len(cache.values) != 1 {
-							t.Fatalf("unsupported media type cache effects=%d/%v, want only throttle lookup/write", cache.accesses, cache.values)
+						// Charge the native request limit before parsing its body.
+						if cache.accesses != 1 || len(cache.values) != 0 || len(cache.rate.Calls) != 1 {
+							t.Fatalf("unsupported media type effects=%d/%v, want one quota admission", cache.accesses, cache.values)
 						}
-						for key := range cache.values {
-							if !strings.Contains(key, "throttle_email_verification_") {
-								t.Fatalf("unsupported media type wrote non-throttle cache key %q", key)
-							}
+						if !strings.HasPrefix(cache.rate.Calls[0].Key, "vector:rate:v1:email-verification:") {
+							t.Fatal("unsupported media type reached another quota scope")
 						}
 					} else if cache.accesses != 0 || len(cache.values) != 0 {
 						t.Fatalf("unsupported media type reached cache: accesses=%d values=%v", cache.accesses, cache.values)
