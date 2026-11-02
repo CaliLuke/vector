@@ -58,64 +58,63 @@ func cyclePageWire(t *testing.T, result rpcResult) map[string]any {
 	return page
 }
 
-func TestCycleReadsMatchPinnedContractsAcrossCredentialsAndProtocols(t *testing.T) {
+func TestCycleReadsMatchPinnedContractsAcrossCredentials(t *testing.T) {
 	f, pool, auth, _ := oauthFixture(t)
 	addCycleFixture(t, pool)
 	pat, oauth := f.handler(t, nil), oauthHandler(t, f, auth.Authenticate)
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		for _, mode := range []string{"PAT", "OAuth"} {
-			t.Run(version+"/"+mode, func(t *testing.T) {
-				call := func(input string) rpcResult {
-					if mode == "OAuth" {
-						return oauthToolCall(t, oauth, version, "oauth-user", "workspace-one", "cycle", input, 200)
-					}
-					return rpcVersion(t, pat, "test-one", "tools/call", cycleCall(input), version)
+
+	for _, mode := range []string{"PAT", "OAuth"} {
+		t.Run(mode, func(t *testing.T) {
+			call := func(input string) rpcResult {
+				if mode == "OAuth" {
+					return toolCall(t, oauth, "oauth-user", "workspace-one", "cycle", input, 200)
 				}
-				page := cyclePageWire(t, call(`{"action":"list","project_id":"`+cycleProject+`","order_by":"name"}`))
-				require.Equal(t, float64(4), page["total_results"])
-				require.Equal(t, "1000:1:0", page["next_cursor"])
-				row := page["results"].([]any)[0].(map[string]any)
-				require.Equal(t, "A current", row["name"])
-				require.Equal(t, cycleProject, row["project"])
-				require.Contains(t, row, "external_source")
-				require.Nil(t, row["external_source"])
-				require.NotContains(t, row, "total_issues")
-				require.ElementsMatch(t, strings.Fields("id created_at updated_at deleted_at name description start_date end_date view_props sort_order external_source external_id progress_snapshot archived_at logo_props timezone version created_by updated_by project workspace owned_by"), slices.Collect(maps.Keys(row)))
-				zero := cyclePageWire(t, call(`{"action":"list","project_id":"`+cycleProject+`","per_page":0}`))
-				require.Equal(t, "1000:1:0", zero["next_cursor"])
-				next := cyclePageWire(t, call(`{"action":"list","project_id":"`+cycleProject+`","per_page":1,"cursor":"1:1:0","order_by":"name"}`))
-				require.Equal(t, "B upcoming", next["results"].([]any)[0].(map[string]any)["name"])
-				require.Equal(t, true, next["prev_page_results"])
-				for _, tc := range []struct {
-					status string
-					count  float64
-				}{{"current", 1}, {"upcoming", 1}, {"completed", 1}, {"draft", 1}, {"incomplete", 3}} {
-					filtered := cyclePageWire(t, call(`{"action":"list","project_id":"`+cycleProject+`","status":"`+tc.status+`"}`))
-					require.Equal(t, tc.count, filtered["total_results"], tc.status)
-				}
-				detail := cyclePageWire(t, call(`{"action":"retrieve","project_id":"`+cycleProject+`","cycle_id":"`+cycleID+`"}`))
-				require.Equal(t, float64(1), detail["total_issues"])
-				require.Equal(t, float64(1), detail["completed_issues"])
-				require.Contains(t, detail, "total_estimates")
-				require.Nil(t, detail["total_estimates"])
-				require.ElementsMatch(t, strings.Fields("id total_issues cancelled_issues completed_issues started_issues unstarted_issues backlog_issues total_estimates completed_estimates started_estimates created_at updated_at deleted_at name description start_date end_date view_props sort_order external_source external_id progress_snapshot archived_at logo_props timezone version created_by updated_by project workspace owned_by"), slices.Collect(maps.Keys(detail)))
-				archived := cyclePageWire(t, call(`{"action":"list","project_id":"`+cycleProject+`","archived":true,"status":"intentionally ignored"}`))
-				archivedRow := archived["results"].([]any)[0].(map[string]any)
-				require.Equal(t, archivedCycleID, archivedRow["id"])
-				require.Equal(t, float64(3), archivedRow["total_estimates"])
-				require.Equal(t, float64(3), archivedRow["completed_estimates"])
-				require.Nil(t, archivedRow["started_estimates"])
-				require.ElementsMatch(t, slices.Collect(maps.Keys(detail)), slices.Collect(maps.Keys(archivedRow)))
-				for _, id := range []string{archivedCycleID, "50000000-0000-4000-8000-000000000006", "50000000-0000-4000-8000-000000000099"} {
-					denied := call(`{"action":"retrieve","project_id":"` + cycleProject + `","cycle_id":"` + id + `"}`)
-					require.True(t, denied.IsError)
-					require.Contains(t, denied.Content[0].Text, "[not_found]")
-				}
-				invalid := call(`{"action":"list","project_id":"` + cycleProject + `","status":"invalid"}`)
-				require.True(t, invalid.IsError)
-				require.Contains(t, invalid.Content[0].Text, "[invalid_params]")
-			})
-		}
+				return rpc(t, pat, "test-one", "tools/call", cycleCall(input))
+			}
+			page := cyclePageWire(t, call(`{"action":"list","project_id":"`+cycleProject+`","order_by":"name"}`))
+			require.Equal(t, float64(4), page["total_results"])
+			require.Equal(t, "1000:1:0", page["next_cursor"])
+			row := page["results"].([]any)[0].(map[string]any)
+			require.Equal(t, "A current", row["name"])
+			require.Equal(t, cycleProject, row["project"])
+			require.Contains(t, row, "external_source")
+			require.Nil(t, row["external_source"])
+			require.NotContains(t, row, "total_issues")
+			require.ElementsMatch(t, strings.Fields("id created_at updated_at deleted_at name description start_date end_date view_props sort_order external_source external_id progress_snapshot archived_at logo_props timezone version created_by updated_by project workspace owned_by"), slices.Collect(maps.Keys(row)))
+			zero := cyclePageWire(t, call(`{"action":"list","project_id":"`+cycleProject+`","per_page":0}`))
+			require.Equal(t, "1000:1:0", zero["next_cursor"])
+			next := cyclePageWire(t, call(`{"action":"list","project_id":"`+cycleProject+`","per_page":1,"cursor":"1:1:0","order_by":"name"}`))
+			require.Equal(t, "B upcoming", next["results"].([]any)[0].(map[string]any)["name"])
+			require.Equal(t, true, next["prev_page_results"])
+			for _, tc := range []struct {
+				status string
+				count  float64
+			}{{"current", 1}, {"upcoming", 1}, {"completed", 1}, {"draft", 1}, {"incomplete", 3}} {
+				filtered := cyclePageWire(t, call(`{"action":"list","project_id":"`+cycleProject+`","status":"`+tc.status+`"}`))
+				require.Equal(t, tc.count, filtered["total_results"], tc.status)
+			}
+			detail := cyclePageWire(t, call(`{"action":"retrieve","project_id":"`+cycleProject+`","cycle_id":"`+cycleID+`"}`))
+			require.Equal(t, float64(1), detail["total_issues"])
+			require.Equal(t, float64(1), detail["completed_issues"])
+			require.Contains(t, detail, "total_estimates")
+			require.Nil(t, detail["total_estimates"])
+			require.ElementsMatch(t, strings.Fields("id total_issues cancelled_issues completed_issues started_issues unstarted_issues backlog_issues total_estimates completed_estimates started_estimates created_at updated_at deleted_at name description start_date end_date view_props sort_order external_source external_id progress_snapshot archived_at logo_props timezone version created_by updated_by project workspace owned_by"), slices.Collect(maps.Keys(detail)))
+			archived := cyclePageWire(t, call(`{"action":"list","project_id":"`+cycleProject+`","archived":true,"status":"intentionally ignored"}`))
+			archivedRow := archived["results"].([]any)[0].(map[string]any)
+			require.Equal(t, archivedCycleID, archivedRow["id"])
+			require.Equal(t, float64(3), archivedRow["total_estimates"])
+			require.Equal(t, float64(3), archivedRow["completed_estimates"])
+			require.Nil(t, archivedRow["started_estimates"])
+			require.ElementsMatch(t, slices.Collect(maps.Keys(detail)), slices.Collect(maps.Keys(archivedRow)))
+			for _, id := range []string{archivedCycleID, "50000000-0000-4000-8000-000000000006", "50000000-0000-4000-8000-000000000099"} {
+				denied := call(`{"action":"retrieve","project_id":"` + cycleProject + `","cycle_id":"` + id + `"}`)
+				require.True(t, denied.IsError)
+				require.Contains(t, denied.Content[0].Text, "[not_found]")
+			}
+			invalid := call(`{"action":"list","project_id":"` + cycleProject + `","status":"invalid"}`)
+			require.True(t, invalid.IsError)
+			require.Contains(t, invalid.Content[0].Text, "[invalid_params]")
+		})
 	}
 }
 
@@ -149,7 +148,7 @@ func TestCycleDataRechecksScopeAfterActionAdmission(t *testing.T) {
 			addCycleFixture(t, pool)
 			f.service = databaseService(t, pool, func() { _, err := pool.Exec(t.Context(), mutation); require.NoError(t, err) })
 			h := oauthHandler(t, f, auth.Authenticate)
-			result := oauthToolCall(t, h, "2026-07-28", "oauth-user", "workspace-one", "cycle", `{"action":"list","project_id":"`+cycleProject+`"}`, 200)
+			result := toolCall(t, h, "oauth-user", "workspace-one", "cycle", `{"action":"list","project_id":"`+cycleProject+`"}`, 200)
 			require.True(t, result.IsError, result.Content)
 			require.Contains(t, result.Content[0].Text, "[forbidden]")
 			require.Empty(t, result.StructuredContent)
@@ -181,18 +180,18 @@ func TestCycleWorkspaceSelectionAndEmptyPageRemainDistinctFromDenial(t *testing.
 	f, pool, auth, _ := oauthFixture(t)
 	addCycleFixture(t, pool)
 	h := oauthHandler(t, f, auth.Authenticate)
-	missing := oauthToolCall(t, h, "2026-07-28", "oauth-user", "", "cycle", `{"action":"list","project_id":"`+cycleProject+`"}`, 200)
+	missing := toolCall(t, h, "oauth-user", "", "cycle", `{"action":"list","project_id":"`+cycleProject+`"}`, 200)
 	require.True(t, missing.IsError)
 	require.Contains(t, missing.Content[0].Text, "[invalid_params]")
-	selected := oauthToolCall(t, h, "2026-07-28", "oauth-user", "", "cycle", `{"action":"list","project_id":"`+cycleProject+`","workspace_slug":"workspace-one"}`, 200)
+	selected := toolCall(t, h, "oauth-user", "", "cycle", `{"action":"list","project_id":"`+cycleProject+`","workspace_slug":"workspace-one"}`, 200)
 	require.False(t, selected.IsError, selected.Content)
-	foreign := oauthToolCall(t, h, "2026-07-28", "oauth-user", "workspace-one", "cycle", `{"action":"list","project_id":"30000000-0000-4000-8000-000000000003"}`, 200)
+	foreign := toolCall(t, h, "oauth-user", "workspace-one", "cycle", `{"action":"list","project_id":"30000000-0000-4000-8000-000000000003"}`, 200)
 	require.True(t, foreign.IsError)
 	require.Contains(t, foreign.Content[0].Text, "[forbidden]")
 	_, err := pool.Exec(t.Context(), `DELETE FROM cycles`)
 	require.NoError(t, err)
 	for _, archived := range []string{"false", "true"} {
-		result := oauthToolCall(t, h, "2026-07-28", "oauth-user", "workspace-one", "cycle", `{"action":"list","project_id":"`+cycleProject+`","archived":`+archived+`}`, 200)
+		result := toolCall(t, h, "oauth-user", "workspace-one", "cycle", `{"action":"list","project_id":"`+cycleProject+`","archived":`+archived+`}`, 200)
 		page := cyclePageWire(t, result)
 		require.Equal(t, float64(0), page["total_results"])
 		require.Equal(t, []any{}, page["results"])
@@ -246,7 +245,7 @@ func TestCycleTimestampsFollowUserTimezoneWithoutChangingSnapshots(t *testing.T)
 	require.NoError(t, err)
 	pat, oauth := f.handler(t, nil), oauthHandler(t, f, auth.Authenticate)
 	input := `{"action":"retrieve","project_id":"` + cycleProject + `","cycle_id":"` + cycleID + `"}`
-	for _, result := range []rpcResult{rpc(t, pat, "test-one", "tools/call", cycleCall(input)), oauthToolCall(t, oauth, "2026-07-28", "oauth-user", "workspace-one", "cycle", input, 200)} {
+	for _, result := range []rpcResult{rpc(t, pat, "test-one", "tools/call", cycleCall(input)), toolCall(t, oauth, "oauth-user", "workspace-one", "cycle", input, 200)} {
 		record := cyclePageWire(t, result)
 		require.Equal(t, "2024-01-01T05:30:00+05:30", record["created_at"])
 		require.Equal(t, map[string]any{"created_at": "2024-01-01T00:00:00Z"}, record["progress_snapshot"])

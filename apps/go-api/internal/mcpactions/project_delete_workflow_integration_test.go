@@ -36,7 +36,7 @@ func TestMCPProjectDeleteReceiptSurvivesWorkerCascade(t *testing.T) {
 		defer cancel()
 		require.NoError(t, app.Shutdown(ctx))
 	})
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		created := milestoneObject(t, call("project", map[string]any{"action": "create", "name": "Delete recovery", "identifier": strings.ToUpper(uuid.NewString()[:8])}))
 		id := created["id"].(string)
 		input := map[string]any{"action": "delete", "project_id": id, "request_id": uuid.NewString()}

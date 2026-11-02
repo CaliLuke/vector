@@ -45,7 +45,7 @@ func templateSnapshotQuery(t *testing.T, ctx context.Context, query func(context
 }
 
 func TestMCPTemplateReceiptsRetainAcceptedTimezone(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, scope := range templateScopes() {
 			t.Run(scope.kind+"/"+scope.project, func(t *testing.T) {
 				input := map[string]any{"action": "create", "kind": scope.kind, "name": "Receipt template", "template_data": `{"created_at":"2026-10-01T12:00:00+05:30","nested":{"updated_at":"unchanged"},"serial":9007199254740993}`, "request_id": uuid.NewString()}

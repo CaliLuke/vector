@@ -17,7 +17,7 @@ func TestMCPCustomerReceiptsRetainAcceptedTimezone(t *testing.T) {
 		{"customer_property", "create"}, {"customer_property", "update"},
 	} {
 		t.Run(scenario.tool+"/"+scenario.action, func(t *testing.T) {
-			runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+			runCatalogue(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 				input := customerMutationWriteInput(t, f, call, scenario)
 				_, err := f.pool.Exec(t.Context(), `UPDATE users SET user_timezone='Asia/Kolkata' WHERE id=$1`, testsupport.LabelActor)
 				require.NoError(t, err)

@@ -12,7 +12,7 @@ import (
 )
 
 func TestMCPWorkLogReceiptsAndNativeRevisions(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		input := map[string]any{"action": "create", "duration": 30, "description": "Initial", "request_id": uuid.NewString()}

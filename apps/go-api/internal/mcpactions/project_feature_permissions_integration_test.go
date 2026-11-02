@@ -12,7 +12,7 @@ import (
 )
 
 func TestMCPProjectFeaturePermissionsUseCurrentProjectMembership(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, access := range []struct {
 			name, change string
 			read, write  bool
@@ -57,7 +57,7 @@ func TestMCPProjectFeaturePermissionsUseCurrentProjectMembership(t *testing.T) {
 }
 
 func TestMCPProjectFeatureAuditFailureRollsBackDefaultIntake(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		_, err := f.pool.Exec(t.Context(), `DELETE FROM intakes; UPDATE projects SET intake_view=false`)
 		require.NoError(t, err)
 		before := featureMutationSnapshot(t, f)

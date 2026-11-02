@@ -16,39 +16,37 @@ import (
 // Pinned toolkit envelope: count, total_count, cursors, page-presence flags,
 // results. The native HTTP envelope has five additional fields.
 func TestMilestonePinnedPageEnvelopeAndEntryShapes(t *testing.T) {
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		f := newFixture(t)
-		check := func(scope milestones.Scope, q apicontract.Query) {
-			require.Equal(t, readProject, scope.ProjectID.String())
-			require.Equal(t, "20000000-0000-4000-8000-000000000001", scope.WorkspaceID.String())
-			require.Equal(t, "2", q.Params["per_page"])
-			require.Equal(t, "2:1:0", q.Params["cursor"])
-			require.True(t, q.Present["cursor"])
+	f := newFixture(t)
+	check := func(scope milestones.Scope, q apicontract.Query) {
+		require.Equal(t, readProject, scope.ProjectID.String())
+		require.Equal(t, "20000000-0000-4000-8000-000000000001", scope.WorkspaceID.String())
+		require.Equal(t, "2", q.Params["per_page"])
+		require.Equal(t, "2:1:0", q.Params["cursor"])
+		require.True(t, q.Present["cursor"])
+	}
+	f.milestones.list = func(scope milestones.Scope, q apicontract.Query) (milestones.Page[milestones.Record], error) {
+		check(scope, q)
+		return milestones.Page[milestones.Record]{Results: []milestones.Record{{ID: milestoneTestID, Title: "Ship", CreatedAt: "2026-01-02T03:04:05Z", UpdatedAt: "2026-01-02T03:04:05Z"}}, Total: 3, Limit: 2, Index: 1}, nil
+	}
+	f.milestones.links = func(scope milestones.Scope, id uuid.UUID, q apicontract.Query) (milestones.Page[milestones.Link], error) {
+		check(scope, q)
+		require.Equal(t, milestoneTestID, id.String())
+		return milestones.Page[milestones.Link]{Results: []milestones.Link{{ID: milestoneTestID, Issue: readProject, Milestone: milestoneTestID}}, Total: 3, Limit: 2, Index: 1}, nil
+	}
+	h := f.handler(t, nil)
+	for _, tc := range []struct{ action, entry string }{
+		{"list", `{"id":"` + milestoneTestID + `","title":"Ship","target_date":null,"external_source":null,"external_id":null,"created_at":"2026-01-02T03:04:05Z","updated_at":"2026-01-02T03:04:05Z"}`},
+		{"list_workitems", `{"id":"` + milestoneTestID + `","issue":"` + readProject + `","milestone":"` + milestoneTestID + `"}`},
+	} {
+		input := map[string]any{"action": tc.action, "project_id": readProject, "per_page": 2, "cursor": "2:1:0"}
+		if tc.action == "list_workitems" {
+			input["milestone_id"] = milestoneTestID
 		}
-		f.milestones.list = func(scope milestones.Scope, q apicontract.Query) (milestones.Page[milestones.Record], error) {
-			check(scope, q)
-			return milestones.Page[milestones.Record]{Results: []milestones.Record{{ID: milestoneTestID, Title: "Ship", CreatedAt: "2026-01-02T03:04:05Z", UpdatedAt: "2026-01-02T03:04:05Z"}}, Total: 3, Limit: 2, Index: 1}, nil
-		}
-		f.milestones.links = func(scope milestones.Scope, id uuid.UUID, q apicontract.Query) (milestones.Page[milestones.Link], error) {
-			check(scope, q)
-			require.Equal(t, milestoneTestID, id.String())
-			return milestones.Page[milestones.Link]{Results: []milestones.Link{{ID: milestoneTestID, Issue: readProject, Milestone: milestoneTestID}}, Total: 3, Limit: 2, Index: 1}, nil
-		}
-		h := f.handler(t, nil)
-		for _, tc := range []struct{ action, entry string }{
-			{"list", `{"id":"` + milestoneTestID + `","title":"Ship","target_date":null,"external_source":null,"external_id":null,"created_at":"2026-01-02T03:04:05Z","updated_at":"2026-01-02T03:04:05Z"}`},
-			{"list_workitems", `{"id":"` + milestoneTestID + `","issue":"` + readProject + `","milestone":"` + milestoneTestID + `"}`},
-		} {
-			input := map[string]any{"action": tc.action, "project_id": readProject, "per_page": 2, "cursor": "2:1:0"}
-			if tc.action == "list_workitems" {
-				input["milestone_id"] = milestoneTestID
-			}
-			body, err := json.Marshal(input)
-			require.NoError(t, err)
-			result := rpcVersion(t, h, "test-one", "tools/call", milestoneCall(string(body)), version)
-			require.False(t, result.IsError, result.Content)
-			require.JSONEq(t, `{"results":[`+tc.entry+`],"count":1,"total_count":3,"next_cursor":"2:2:0","prev_cursor":"2:0:1","next_page_results":false,"prev_page_results":true}`, string(result.StructuredContent))
-		}
+		body, err := json.Marshal(input)
+		require.NoError(t, err)
+		result := rpc(t, h, "test-one", "tools/call", milestoneCall(string(body)))
+		require.False(t, result.IsError, result.Content)
+		require.JSONEq(t, `{"results":[`+tc.entry+`],"count":1,"total_count":3,"next_cursor":"2:2:0","prev_cursor":"2:0:1","next_page_results":false,"prev_page_results":true}`, string(result.StructuredContent))
 	}
 }
 

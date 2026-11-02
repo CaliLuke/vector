@@ -11,7 +11,7 @@ import (
 )
 
 func TestMCPArchivedProjectFeaturesRemainReadable(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		_, err := f.pool.Exec(t.Context(), `UPDATE projects SET archived_at=NULL,cycle_view=true WHERE id=$1`, testsupport.LabelProject)
 		require.NoError(t, err)
 		expected := milestoneObject(t, call("project", map[string]any{"action": "get_features", "project_id": testsupport.LabelProject}))
@@ -34,7 +34,7 @@ func TestMCPArchivedProjectFeaturesRemainReadable(t *testing.T) {
 }
 
 func TestMCPArchivedProjectFeaturesRejectWritesAndReplayUntilRestored(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		key := uuid.NewString()
 		input := map[string]any{"action": "update_features", "project_id": testsupport.LabelProject, "cycles": true, "request_id": key}
 		original := milestoneObject(t, call("project", input))

@@ -12,7 +12,7 @@ import (
 )
 
 func TestMCPCustomerPropertyKindsPreserveValidatedValues(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "customers": true}))
 		for _, tc := range []struct {
 			kind, relation, initial, replacement, invalid string
@@ -53,7 +53,7 @@ func setCustomerValues(t *testing.T, call catalogueCall, customerID string, valu
 }
 
 func TestMCPCustomerPropertyInactiveValuesAreRetained(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "customers": true}))
 		property := milestoneObject(t, call("customer_property", map[string]any{"action": "create", "display_name": "Active " + uuid.NewString(), "property_type": "TEXT", "default_value": "retained"}))
 		propertyID := property["id"].(string)
@@ -73,7 +73,7 @@ func TestMCPCustomerPropertyInactiveValuesAreRetained(t *testing.T) {
 }
 
 func TestMCPCustomerPropertyReadonlyDefaultsCannotBeOverwritten(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "customers": true}))
 		property := milestoneObject(t, call("customer_property", map[string]any{"action": "create", "display_name": "Readonly " + uuid.NewString(), "property_type": "TEXT", "display_format": "readonly", "default_value": "retained"}))
 		propertyID := property["id"].(string)
@@ -89,7 +89,7 @@ func TestMCPCustomerPropertyReadonlyDefaultsCannotBeOverwritten(t *testing.T) {
 }
 
 func TestMCPCustomerRequiredPropertyRejectsAtomicClear(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "customers": true}))
 		required := milestoneObject(t, call("customer_property", map[string]any{"action": "create", "display_name": "Required " + uuid.NewString(), "property_type": "TEXT", "is_required": true}))
 		optional := milestoneObject(t, call("customer_property", map[string]any{"action": "create", "display_name": "Optional " + uuid.NewString(), "property_type": "TEXT", "default_value": "retained"}))

@@ -19,7 +19,7 @@ own native domain before they can be advertised as supported.
 
 The native reads, mutations, receipts, revisions and generated five-action MCP
 projection are implemented. Real PostgreSQL tests exercise both credential types
-and protocol revisions. The full gates passed at `87a791d9`, and local
+on protocol revision `2026-07-28`. The full gates passed at `87a791d9`, and local
 browser/proxy verification passed on 2026-10-30. The
 [state acceptance evidence](mcp-parity.md#state-acceptance-mcp-01-mcp-02) records
 the reviewed tests, native/MCP edit sequence, stale-revision rejection and deletion
@@ -285,7 +285,7 @@ through the existing foreign keys. Existing HTTP fixtures retain their
 ordinary shapes and policies, with explicit regressions for the reserved name,
 source-only identity collision and live-draft deletion corrections. Full MCP
 completion additionally requires generated action contracts, permission-filtered
-discovery, sanitized telemetry, both authentication modes/protocol revisions,
+discovery, sanitized telemetry, both authentication modes on protocol revision `2026-07-28`,
 full quality gates and live proof; native mutation success alone is insufficient.
 
 ## MCP contract and projection
@@ -332,7 +332,7 @@ workspace membership, even with zero accessible projects; project mutations
 require at least one active role-15/20 membership in a live unarchived project.
 OAuth read/write scopes further restrict those actions. Each invocation still
 checks its actual target and current credential; advertisement is not authority.
-Both supported MCP protocol revisions and PAT/OAuth use identical schemas and
+MCP revision `2026-07-28` and PAT/OAuth use identical schemas and
 result semantics after filtering. No second discovery catalogue is introduced.
 
 Errors map to the existing unauthorized, forbidden, invalid_params, not_found,
@@ -346,6 +346,6 @@ request ID, revision, credentials or request body is recorded.
 
 Transport proof must compare actual JSON records/pages with the native API
 projection and pinned model behavior; exercise all five actions through real
-PAT and OAuth authentication on both supported protocol revisions; and verify
+PAT and OAuth authentication on protocol revision `2026-07-28`; and verify
 closed schemas, empty content, receipt replay, CAS conflicts, workspace rejection,
 current permission-filtered discovery and secret-free mutation telemetry.

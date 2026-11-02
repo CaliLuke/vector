@@ -20,13 +20,11 @@ import (
 
 func TestMCPAttachmentFetchRechecksCurrentCredential(t *testing.T) {
 	for _, mode := range []string{"personal token revoked", "OAuth token revoked", "OAuth scope removed"} {
-		for _, version := range []string{"2025-11-25", "2026-07-28"} {
-			t.Run(mode+"/"+version, func(t *testing.T) { attachmentFetchRevocation(t, mode, version) })
-		}
+		t.Run(mode, func(t *testing.T) { attachmentFetchRevocation(t, mode) })
 	}
 }
 
-func attachmentFetchRevocation(t *testing.T, mode, version string) {
+func attachmentFetchRevocation(t *testing.T, mode string) {
 	t.Helper()
 	h := attachmentRecoveryFixture(t)
 	f := h.milestoneFixture
@@ -63,7 +61,7 @@ func attachmentFetchRevocation(t *testing.T, mode, version string) {
 	arguments, err := json.Marshal(input)
 	require.NoError(t, err)
 	before := attachmentStorageSnapshot(t, f)
-	request := oauthRequest(t, version, token, "", "tools/call", map[string]any{"name": "workitem_attachment", "arguments": json.RawMessage(arguments)}).WithContext(ctx)
+	request := mcpRequest(t, token, "", "tools/call", map[string]any{"name": "workitem_attachment", "arguments": json.RawMessage(arguments)}).WithContext(ctx)
 	response := httptest.NewRecorder()
 	done := make(chan struct{})
 	go func() { handler.ServeHTTP(response, request); close(done) }()
@@ -108,7 +106,7 @@ func attachmentFetchRevocation(t *testing.T, mode, version string) {
 	f.issuer.mu.Unlock()
 	_, err = f.pool.Exec(ctx, `UPDATE api_tokens SET is_active=true WHERE token='test-one'`)
 	require.NoError(t, err)
-	retry := milestoneObject(t, oauthToolCall(t, handler, version, token, "", "workitem_attachment", string(arguments), http.StatusOK))
+	retry := milestoneObject(t, toolCall(t, handler, token, "", "workitem_attachment", string(arguments), http.StatusOK))
 	require.Equal(t, false, retry["replayed"])
 	require.Equal(t, int64(2), downloads.Load())
 }

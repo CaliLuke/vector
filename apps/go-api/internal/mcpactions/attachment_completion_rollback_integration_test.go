@@ -14,7 +14,7 @@ import (
 // source must survive a failed completion transaction so retry can safely finish.
 func TestMCPAttachmentRecoveryAfterCompletionRollback(t *testing.T) {
 	h := attachmentRecoveryFixture(t)
-	runCatalogueFixtureMatrix(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		before := h.fetched.Load()

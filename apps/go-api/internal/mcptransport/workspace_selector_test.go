@@ -36,11 +36,13 @@ func TestWorkspaceInspectionReportsCleanupWithoutChangingBoundedRequest(t *testi
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
 			h := handler(t, config("both"), options())
-			body := &workspaceCleanupBody{Reader: strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"member","arguments":{"action":"me","workspace_slug":"` + scenario.selector + `"}}}`)}
+			body := &workspaceCleanupBody{Reader: strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"member","arguments":{"action":"me","workspace_slug":"` + scenario.selector + `"},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/clientCapabilities":{}}}}`)}
 			r := httptest.NewRequest(http.MethodPost, "https://vector.example/mcp/api-key", nil)
 			r.Body = body
 			r.Header.Set("X-Workspace-Slug", "current")
-			r.Header.Set("Mcp-Protocol-Version", "2025-11-25")
+			r.Header.Set("Mcp-Protocol-Version", "2026-07-28")
+			r.Header.Set("Mcp-Method", "tools/call")
+			r.Header.Set("Mcp-Name", "member")
 			r.Header.Set("Content-Type", "application/json")
 			r.Header.Set("Accept", "application/json, text/event-stream")
 			var output bytes.Buffer
@@ -62,7 +64,7 @@ func TestWorkspaceSelectorConflictsFailAtTheTransportBoundary(t *testing.T) {
 		for _, selector := range []string{`"other"`, `""`} {
 			h := handler(t, config("both"), options())
 			response := call(h, path, `{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"member","arguments":{"action":"me","workspace_slug":`+selector+`}}}`, http.Header{
-				"X-Workspace-Slug": []string{"current"}, "Mcp-Protocol-Version": []string{"2025-11-25"},
+				"X-Workspace-Slug": []string{"current"}, "Mcp-Protocol-Version": []string{"2026-07-28"},
 			})
 			assert.Equal(t, http.StatusBadRequest, response.Code)
 			assert.Equal(t, "invalid_request\n", response.Body.String())
@@ -73,7 +75,7 @@ func TestWorkspaceSelectorConflictsFailAtTheTransportBoundary(t *testing.T) {
 
 func TestCurrentProtocolWorkspaceConflictReturnsInvalidRequest(t *testing.T) {
 	h := handler(t, config("both"), options())
-	response := call(h, "/mcp", `{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"member","arguments":{"action":"me","workspace_slug":"other"},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/clientCapabilities":{}}}}`, http.Header{
+	response := call(h, "/mcp", `{"id":1,"jsonrpc":"2.0","method":"tools/call","params":{"_meta":{"io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/protocolVersion":"2026-07-28"},"arguments":{"action":"me","workspace_slug":"other"},"name":"member"}}`, http.Header{
 		"X-Workspace-Slug": []string{"current"}, "Mcp-Protocol-Version": []string{"2026-07-28"},
 		"Mcp-Method": []string{"tools/call"}, "Mcp-Name": []string{"member"},
 	})
@@ -90,15 +92,15 @@ func TestWorkspaceInspectionLeavesProtocolAndActionValidationToGeneratedServer(t
 		name, body string
 		status     int
 	}{
-		{"matching selector", `{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"member","arguments":{"action":"me","workspace_slug":"current"}}}`, 200},
-		{"omitted selector", `{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"member","arguments":{"action":"me"}}}`, 200},
-		{"null selector", `{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"member","arguments":{"action":"me","workspace_slug":null}}}`, 200},
-		{"number selector", `{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"member","arguments":{"action":"me","workspace_slug":123}}}`, 200},
-		{"ping", `{"jsonrpc":"2.0","id":1,"method":"ping"}`, 200},
+		{"matching selector", `{"id":1,"jsonrpc":"2.0","method":"tools/call","params":{"_meta":{"io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/protocolVersion":"2026-07-28"},"arguments":{"action":"me","workspace_slug":"current"},"name":"member"}}`, 200},
+		{"omitted selector", `{"id":1,"jsonrpc":"2.0","method":"tools/call","params":{"_meta":{"io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/protocolVersion":"2026-07-28"},"arguments":{"action":"me"},"name":"member"}}`, 200},
+		{"null selector", `{"id":1,"jsonrpc":"2.0","method":"tools/call","params":{"_meta":{"io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/protocolVersion":"2026-07-28"},"arguments":{"action":"me","workspace_slug":null},"name":"member"}}`, 200},
+		{"number selector", `{"id":1,"jsonrpc":"2.0","method":"tools/call","params":{"_meta":{"io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/protocolVersion":"2026-07-28"},"arguments":{"action":"me","workspace_slug":123},"name":"member"}}`, 200},
+		{"discovery", `{"id":1,"jsonrpc":"2.0","method":"server/discover","params":{"_meta":{"io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/protocolVersion":"2026-07-28"}}}`, 200},
 		{"invalid JSON", `{`, 400},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			response := call(h, "/mcp/api-key", tc.body, http.Header{"X-Workspace-Slug": []string{"current"}, "Mcp-Protocol-Version": []string{"2025-11-25"}})
+			response := call(h, "/mcp/api-key", tc.body, http.Header{"X-Workspace-Slug": []string{"current"}, "Mcp-Protocol-Version": []string{"2026-07-28"}})
 			assert.Equal(t, tc.status, response.Code, response.Body.String())
 			assert.NotEqual(t, "invalid_request\n", response.Body.String())
 			if tc.name == "null selector" || tc.name == "number selector" {

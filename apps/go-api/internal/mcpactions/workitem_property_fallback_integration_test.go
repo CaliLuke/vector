@@ -13,7 +13,7 @@ import (
 // The pinned handler returns the fallback response directly. It must be the
 // same representation as requesting that successful scope on its own.
 func TestMCPPropertyEmptyTypeListReturnsProjectFlatRepresentation(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		enableTypeCatalogue(t, f, "workspace-one")
 		linked := milestoneObject(t, root("workitem_type", map[string]any{"action": "resolve", "project_id": testsupport.LabelProject, "name": uuid.NewString()}))
 		empty := milestoneObject(t, root("workitem_type", map[string]any{"action": "resolve", "project_id": testsupport.LabelProject, "name": uuid.NewString()}))
@@ -30,7 +30,7 @@ func TestMCPPropertyEmptyTypeListReturnsProjectFlatRepresentation(t *testing.T) 
 }
 
 func TestMCPPropertyUnimportedTypeListReturnsWorkspaceRepresentation(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		enableTypeCatalogue(t, f, "workspace-one")
 		workspaceType := milestoneObject(t, root("workitem_type", map[string]any{"action": "create", "name": uuid.NewString()}))
 		created := milestoneObject(t, root("workitem_property", map[string]any{"action": "create", "workitem_type_id": workspaceType["id"], "display_name": uuid.NewString(), "property_type": "TEXT"}))
@@ -54,7 +54,7 @@ func TestMCPPropertyUnimportedTypeListReturnsWorkspaceRepresentation(t *testing.
 }
 
 func TestMCPPropertyEmptyPageUsesFallbackResponse(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		enableTypeCatalogue(t, f, "workspace-one")
 		selected := milestoneObject(t, root("workitem_type", map[string]any{"action": "resolve", "project_id": testsupport.LabelProject, "name": uuid.NewString()}))
 		other := milestoneObject(t, root("workitem_type", map[string]any{"action": "resolve", "project_id": testsupport.LabelProject, "name": uuid.NewString()}))

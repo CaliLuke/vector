@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"net/http/httptest"
-	"strings"
 	"sync/atomic"
 	"testing"
 	"uuid"
@@ -164,47 +162,6 @@ func discoveredTool(t *testing.T, result rpcResult, name string) rpcTool {
 	}
 	t.Fatalf("tool %s missing", name)
 	return rpcTool{}
-}
-
-func rpc(t *testing.T, handler http.Handler, token, method string, params any) rpcResult {
-	t.Helper()
-	return rpcVersion(t, handler, token, method, params, "2025-11-25")
-}
-
-func rpcVersion(t *testing.T, handler http.Handler, token, method string, params any, version string) rpcResult {
-	t.Helper()
-	if version == "2026-07-28" {
-		params.(map[string]any)["_meta"] = map[string]any{
-			"io.modelcontextprotocol/protocolVersion":    version,
-			"io.modelcontextprotocol/clientInfo":         map[string]string{"name": "test", "version": "1"},
-			"io.modelcontextprotocol/clientCapabilities": map[string]any{},
-		}
-	}
-	body, err := json.Marshal(map[string]any{"jsonrpc": "2.0", "id": 1, "method": method, "params": params})
-	require.NoError(t, err)
-	r := httptest.NewRequest(http.MethodPost, "https://vector.example/mcp/api-key", strings.NewReader(string(body)))
-	r.Header.Set("Content-Type", "application/json")
-	r.Header.Set("Accept", "application/json, text/event-stream")
-	r.Header.Set("Mcp-Protocol-Version", version)
-	if version == "2026-07-28" {
-		r.Header.Set("Mcp-Method", method)
-		if method == "tools/call" {
-			r.Header.Set("Mcp-Name", params.(map[string]any)["name"].(string))
-		}
-	}
-	r.Header.Set("Authorization", "Bearer "+token)
-	r.Header.Set("X-Workspace-Slug", "workspace-one")
-	w := httptest.NewRecorder()
-	handler.ServeHTTP(w, r)
-	require.Equal(t, http.StatusOK, w.Code, w.Body.String())
-	require.Equal(t, "no-store", w.Header().Get("Cache-Control"))
-	var response struct {
-		Result rpcResult
-		Error  json.RawMessage
-	}
-	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &response))
-	require.Empty(t, response.Error, w.Body.String())
-	return response.Result
 }
 
 func memberCall(input string) map[string]any {

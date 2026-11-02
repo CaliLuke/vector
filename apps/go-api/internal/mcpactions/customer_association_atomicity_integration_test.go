@@ -20,7 +20,7 @@ func customerAssociationSnapshot(t *testing.T, f milestoneFixture) [][]byte {
 }
 
 func TestMCPCustomerAssociationFailureRollsBackLinksActivityAndRevisions(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		customer := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))
 		item, unlinked := f.item(t), f.item(t)
 		input := map[string]any{"action": "manage_workitems", "customer_id": customer["id"], "link_ids": item, "unlink_ids": unlinked, "request_id": uuid.NewString()}
@@ -55,7 +55,7 @@ func TestMCPCustomerAssociationFailureRollsBackLinksActivityAndRevisions(t *test
 }
 
 func TestMCPCustomerAssociationFiltersPreserveOtherRequestsAndCustomers(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		owner := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))
 		other := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))
 		item := f.item(t)

@@ -58,7 +58,7 @@ func TestMCPAttachmentStorageBatch(t *testing.T) {
 	apps.Attachments = application
 	f.service, err = mcpactions.New(apps, mcpactions.WithOrigin("https://vector.example"))
 	require.NoError(t, err)
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		before := fetched.Load()

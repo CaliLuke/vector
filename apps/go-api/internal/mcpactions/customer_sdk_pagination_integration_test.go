@@ -20,7 +20,7 @@ func TestMCPCustomerSDKPagesRetainShapeNavigationAndWorkspace(t *testing.T) {
 			require.NoError(t, err)
 			_, err = f.pool.Exec(t.Context(), `INSERT INTO customer_properties(workspace_id,name,display_name,property_type) VALUES($1,'foreign','Catalogue foreign property','TEXT')`, foreign)
 			require.NoError(t, err)
-			runCatalogueFixtureMatrix(t, f, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+			runCatalogue(t, f, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 				input := map[string]any{"action": "create", "name": "Catalogue " + uuid.NewString()}
 				idField := "customer_id"
 				if tool == "customer_property" {

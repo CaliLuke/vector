@@ -50,18 +50,16 @@ func (s *projectWriteStub) VisibleProjectWrites(context.Context, uuid.UUID, uuid
 }
 
 func TestProjectArchivePreservesEmptyResultWithoutExtensions(t *testing.T) {
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		for _, action := range []string{"archive", "unarchive"} {
-			t.Run(version+"/"+action, func(t *testing.T) {
-				f := newFixture(t)
-				result := rpcVersion(t, f.handler(t, nil), "test-one", "tools/call", projectCall(`{"action":"`+action+`","project_id":"30000000-0000-4000-8000-000000000001"}`), version)
-				require.False(t, result.IsError, result.Content)
-				require.Empty(t, result.Content)
-				require.Empty(t, result.StructuredContent)
-				require.Equal(t, 1, f.projectWrites.writes)
-				require.Equal(t, action == "archive", f.projectWrites.command.Archive)
-			})
-		}
+	for _, action := range []string{"archive", "unarchive"} {
+		t.Run(action, func(t *testing.T) {
+			f := newFixture(t)
+			result := rpc(t, f.handler(t, nil), "test-one", "tools/call", projectCall(`{"action":"`+action+`","project_id":"30000000-0000-4000-8000-000000000001"}`))
+			require.False(t, result.IsError, result.Content)
+			require.Empty(t, result.Content)
+			require.Empty(t, result.StructuredContent)
+			require.Equal(t, 1, f.projectWrites.writes)
+			require.Equal(t, action == "archive", f.projectWrites.command.Archive)
+		})
 	}
 }
 

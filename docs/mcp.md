@@ -3,7 +3,7 @@
 VEC-2 is **in progress**. The Go API exposes 30 tools and 208 actions through a
 generated, stateless MCP server. Personal-token and generic external-issuer OAuth
 authentication are implemented. All actions have generated-server workflow tests
-under both authentication modes and both supported protocol revisions. The
+under both authentication modes on protocol revision `2026-07-28`. The
 [parity tracker](mcp-parity.md) records the remaining authorization, concurrency,
 durability and quality-gate review, alongside the completed local browser evidence.
 
@@ -86,11 +86,15 @@ PQL reference work without a selector. Discovery combines the actions available
 in each accessible workspace; each invocation still checks its target permissions.
 See the [multi-workspace client example](self-hosting.md#remote-mcp). Archive/restore receipt replay and revision checks are described in [write recovery](mcp-writes.md).
 
-The supported revisions are `2026-07-28` and `2025-11-25`. The former uses
-stateless `server/discover` and per-request protocol metadata; the latter uses
-the legacy initialize handshake. A legacy initialize request cannot negotiate
-the new lifecycle. The server does not issue session IDs or advertise
-unimplemented tools, prompts, or resources.
+The supported revision is `2026-07-28`. Clients use stateless `server/discover`
+and per-request protocol metadata. Older revisions and the initialize handshake
+are rejected. The server does not issue session IDs or advertise unimplemented
+tools, prompts, or resources.
+
+Generated action smoke tests exercise both authentication modes. Credential-neutral
+shape, input, timestamp, storage, and worker checks run once through a personal
+token. Separate matrices cover authentication, current permissions, revocation,
+and their interactions with writes and replay.
 
 ## OAuth authentication and account linking
 
@@ -180,7 +184,7 @@ reference the same API identity field declaration.
 
 The generated contract declares stable member and project request/result unions, typed identities, pages, role and project records, and safe named errors.
 Tests use the generated HTTP server and real PostgreSQL-backed token, membership,
-and identity readers. They cover both protocol revisions, actor isolation, fresh
+and identity readers. They cover protocol revision `2026-07-28`, actor isolation, fresh
 profile data, and revocation between request authentication and action execution.
 OAuth integration tests use a real TLS issuer and PostgreSQL, including scope
 reduction and revocation between HTTP
@@ -195,7 +199,7 @@ existing UserLite array. The MCP projection fills the SDK's absent role fields
 with null; it does not infer role metadata absent from the HTTP contract. The
 operation is unpaginated, as in the pinned tool. Its nonempty result is a JSON
 text block without `structuredContent`; an empty result has no content blocks.
-This matches the pinned FastMCP list response on both protocol revisions.
+This matches the pinned FastMCP list response on protocol revision `2026-07-28`.
 
 `list_workspace`, `list_roles` and `retrieve_role` use the same primary-backed
 `DirectoryReader` as the members-lite and new role HTTP endpoints. Directory
@@ -217,15 +221,14 @@ size and legacy cursor/errors remain unchanged.
   [loom-mcp #381](https://github.com/CaliLuke/loom-mcp/issues/381) are fixed in
   alpha.48. Vector consumes the released module without a replacement or retained
   workaround for #381. Vector's generated-server tests verify closed multi-action
-  inputs and object/array result-union dispatch through both protocol revisions.
-  All 207 action contracts are generated and exercised by the generated-server workflow batches under both authentication modes and protocol revisions.
-- **Array result compatibility:** [loom-mcp #383](https://github.com/CaliLuke/loom-mcp/issues/383)
-  tracks generated non-object `structuredContent` being sent to 2025-11-25 clients,
-  whose protocol requires an object. The generated interceptor hook now applies
-  the pinned list content contract for every tool without editing generated code. Remove
-  this interceptor when the minimum upstream version can produce that content-only
-  list shape, including empty lists, for both revisions. Identity results retain
-  their object-valued structured content.
+  inputs and object/array result-union dispatch through protocol revision `2026-07-28`.
+  All 208 action contracts are generated and exercised by the generated-server workflow batches under both authentication modes on protocol revision `2026-07-28`.
+- **List result content:** the generated interceptor hook applies the pinned
+  content-only list contract, including empty lists, without editing generated
+  code. [loom-mcp #383](https://github.com/CaliLuke/loom-mcp/issues/383) tracks
+  upstream output shaping. Remove this interceptor when the minimum upstream
+  version produces that shape. Identity results retain object-valued structured
+  content.
 - **Nested result unions:** [Loom #1036](https://github.com/CaliLuke/loom/issues/1036)
   tracks the unsupported nested untagged-union composition. Member directory and cycle
   results use one page with a concrete typed entry carrier, preserving exact
@@ -263,24 +266,24 @@ The nine `project_estimate` actions pass the generated-server configuration work
 
 All seven `workitem_type` actions pass the generated-server configuration workflow batch. Vector owns type definitions at workspace scope: project-scoped definition changes return `workspace_owned`. Workspace administrators manage definitions; project administrators import or resume them. `resolve` returns an already available exact name, or atomically performs the authorized native creation, activation and import. Types must first be enabled in workspace settings. New definitions remain inactive unless explicitly activated. Optional receipts and workspace catalogue revisions cover definition, import, and settings changes. Project IDs in responses include only currently accessible projects.
 
-Six core `workitem` mutation actions are wired: create, update, delete, archive, manage_assignee, and manage_label. They reuse native item validation, model hooks and durable effects. The two set-edit actions remove first and add second under the same item/schema locks as PATCH. Null dates clear values; omitted dates and zero numeric sentinels remain unchanged. Revisions include issue-row and assignee/label-link writes. The core workflow batch exercises these mutations and the core read actions under both authentication modes and protocol revisions. The generated custom-property result field temporarily uses a JSON value carrier because [Loom #1041](https://github.com/CaliLuke/loom/issues/1041) rejects maps inside untagged result branches; restore the string-keyed map schema when a release supports it.
+Six core `workitem` mutation actions are wired: create, update, delete, archive, manage_assignee, and manage_label. They reuse native item validation, model hooks and durable effects. The two set-edit actions remove first and add second under the same item/schema locks as PATCH. Null dates clear values; omitted dates and zero numeric sentinels remain unchanged. Revisions include issue-row and assignee/label-link writes. The core workflow batch exercises these mutations and the core read actions under both authentication modes on protocol revision `2026-07-28`. The generated custom-property result field temporarily uses a JSON value carrier because [Loom #1041](https://github.com/CaliLuke/loom/issues/1041) rejects maps inside untagged result branches; restore the string-keyed map schema when a release supports it.
 
 Core work-item listing, archived listing, retrieval, identifier lookup and search are wired, together with cycle/module item lists and `get_pql_reference` (`detail=brief|full`, no action parameter). Lists retain cursor metadata and sparse fields. The core workflow batch exercises these eight actions; the generated catalogue has 208 actions across 30 tools. Grouped counts support all fourteen SDK dimensions, including release associations; the core workflow batch exercises nested grouping.
 
 The five `workitem_attachment` actions are wired. URL imports allow public HTTP(S) addresses, validate each redirect, pin connections to validated addresses, and cap imports at 5 MB or the lower configured asset limit. Images up to 5 MB and supported text up to 1 MB return inline MCP content. Other types use `download_url`. Optional `request_id` recovers interrupted imports; uploaded bytes are staged in the database before object creation and erased after completion. `include_revision` on list/download reads supplies current asset revisions for guarded deletion. Upload completion and later metadata updates can advance the revision returned by the original mutation. The attachment workflow batch verifies real object storage, private-address rejection, receipt replay and native MCP content under both credentials and revisions. Local browser checks also verified an imported attachment and its downloaded bytes.
 
-The four `work_log` actions are wired through the [native work-log domain](mcp-work-logs.md). Durations are positive integer minutes. Lists return the pinned flat array shape; `include_revision` supplies current tokens. Updates omit zero durations and empty descriptions. Creation, edits and deletion retain durable activity snapshots. The generated-server core workflow batch covers this lifecycle under both authentication modes and protocol revisions.
+The four `work_log` actions are wired through the [native work-log domain](mcp-work-logs.md). Durations are positive integer minutes. Lists return the pinned flat array shape; `include_revision` supplies current tokens. Updates omit zero durations and empty descriptions. Creation, edits and deletion retain durable activity snapshots. The generated-server core workflow batch covers this lifecycle under both authentication modes on protocol revision `2026-07-28`.
 
-The seven `workitem_relation` actions implement dependency directions, custom edges and workspace definition management through the [native relation contract](mcp-work-item-relations.md). Both lists support `include_revision`; all mutations accept receipts and workspace relation revision guards. The generated-server core workflow batch covers all seven actions under both authentication modes and protocol revisions. The parity tracker records the remaining permission and concurrency checks.
+The seven `workitem_relation` actions implement dependency directions, custom edges and workspace definition management through the [native relation contract](mcp-work-item-relations.md). Both lists support `include_revision`; all mutations accept receipts and workspace relation revision guards. The generated-server core workflow batch covers all seven actions under both authentication modes on protocol revision `2026-07-28`. The parity tracker records the remaining permission and concurrency checks.
 
-`project.worklog_summary` returns each visible work item's live logged duration in seconds, using the native work-log repository and one authorized read snapshot. The core workflow batch verifies this summary under both authentication modes and protocol revisions.
+`project.worklog_summary` returns each visible work item's live logged duration in seconds, using the native work-log repository and one authorized read snapshot. The core workflow batch verifies this summary under both authentication modes on protocol revision `2026-07-28`.
 
 All fourteen `workitem_property` actions now use the [native property catalogue and item mutations](mcp-work-item-properties.md). Value reads, writes and clearing preserve native validation, history and asset ownership. SDK kind compatibility and the combined scope, preservation, revision and transport checks are still open; this is a wiring checkpoint, not a complete property-parity claim.
 
 The five [intake actions](mcp-intake.md) reuse native submission and triage operations. Reads use one authorized snapshot; mutations retain native activity and deletion behavior with optional receipts and item revisions. The generated-server core workflow batch covers all five intake actions.
 
-All twenty [workspace release, label and tag actions](mcp-releases.md) are wired. Workspace releases extend the native release catalogue, with changelogs, current item visibility, durable association activity and optional receipts. `workitem.count` shares the native filtered item query and supports distinct parent and nested group counts. The content and core workflow batches cover these actions under both authentication modes and protocol revisions.
+All twenty [workspace release, label and tag actions](mcp-releases.md) are wired. Workspace releases extend the native release catalogue, with changelogs, current item visibility, durable association activity and optional receipts. `workitem.count` shares the native filtered item query and supports distinct parent and nested group counts. The content and core workflow batches cover these actions under both authentication modes on protocol revision `2026-07-28`.
 
 The `page` and `collection` tools add 23 actions for workspace/project pages, collection membership and work-item links. Their [contracts](mcp-pages-collections.md) describe visibility, hierarchy, archive-before-delete, optional receipts/revisions and transactional body-history effects. The content workflow batch covers all 23 actions. Local browser checks additionally verify page edits in both directions and rejection of stale collaboration sessions.
 
-The initiative and template tools, plus project/workspace feature settings, add eighteen wired actions. [Initiatives](mcp-features-initiatives.md) require their workspace feature to be enabled; [templates](mcp-templates.md) preserve scope, merge semantics and governance. The workspace catalogue workflow batch covers these actions under both authentication modes and protocol revisions.
+The initiative and template tools, plus project/workspace feature settings, add eighteen wired actions. [Initiatives](mcp-features-initiatives.md) require their workspace feature to be enabled; [templates](mcp-templates.md) preserve scope, merge semantics and governance. The workspace catalogue workflow batch covers these actions under both authentication modes on protocol revision `2026-07-28`.

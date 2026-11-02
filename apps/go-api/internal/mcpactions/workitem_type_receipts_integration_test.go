@@ -13,7 +13,7 @@ import (
 )
 
 func TestMCPWorkitemTypeReceiptsAndNativeRevisions(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		repository := enableTypeCatalogue(t, f, "workspace-one")
 		create := map[string]any{"action": "create", "name": uuid.NewString(), "is_active": true, "request_id": uuid.NewString()}
 		created := milestoneObject(t, call("workitem_type", create))
@@ -82,7 +82,7 @@ func assertTypeReceiptReplay(t *testing.T, f milestoneFixture, call catalogueCal
 }
 
 func TestMCPWorkitemTypeProjectLinkReplayRechecksProjectAuthority(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		enableTypeCatalogue(t, f, "workspace-one")
 		for _, action := range []string{"create", "update"} {
 			input := map[string]any{"action": "create", "name": uuid.NewString(), "is_active": true, "project_ids": testsupport.LabelProject, "request_id": uuid.NewString()}
@@ -105,7 +105,7 @@ func TestMCPWorkitemTypeProjectLinkReplayRechecksProjectAuthority(t *testing.T) 
 }
 
 func TestMCPWorkitemTypeResolveReplayRechecksCurrentAvailability(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		repository := enableTypeCatalogue(t, f, "workspace-one")
 		input := map[string]any{"action": "resolve", "name": uuid.NewString(), "project_id": testsupport.LabelProject, "request_id": uuid.NewString()}
 		created := milestoneObject(t, call("workitem_type", input))

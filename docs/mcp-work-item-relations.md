@@ -26,7 +26,7 @@ replay, and mutation transactions retain current memberships and endpoint locks.
 Edge changes enqueue immutable per-endpoint activity snapshots in the same transaction.
 
 The generated-server core workflow batch covers all seven actions under both
-authentication modes and protocol revisions. The [parity tracker](mcp-parity.md)
+authentication modes on protocol revision `2026-07-28`. The [parity tracker](mcp-parity.md)
 records the remaining acceptance checks. This MCP batch adds no browser editor
 or independent HTTP route.
 

@@ -18,7 +18,7 @@ Typed generated records and pages own the wire contract. A concrete entry carrie
 
 HTTP and MCP share timezone conversion. Modeled timestamps use the user's current timezone and preserve microsecond precision; arbitrary JSON such as `progress_snapshot` is unchanged.
 
-Generated-server PostgreSQL tests cover both credentials and protocol revisions,
+Generated-server PostgreSQL tests cover both credentials on protocol revision `2026-07-28`,
 exact SDK field sets, filters and pagination, archived estimates, hidden/absent
 targets, empty pages, late authorization changes, cross-workspace relationships,
 and timezone behavior. Acceptance status is tracked in
@@ -36,7 +36,7 @@ including writes outside MCP.
 
 The [core workflow batch](../apps/go-api/internal/mcpactions/core_batch_integration_test.go)
 covers create replay, update, association, transfer, completion, archive, restore
-and deletion under both credentials and protocols. Deleting planning resources
+and deletion under protocol revision `2026-07-28`. Deleting planning resources
 preserves their work items. Those workflows passed in the full gate at `1be8fcd5`.
 The [planning receipt regressions](../apps/go-api/internal/mcpactions/planning_receipt_integration_test.go)
 add changed-input conflicts, direct-writer revision invalidation, preservation of
@@ -53,7 +53,7 @@ add 72 cases for denied scope, allowed member/admin writes and owned-delete repl
 [Lock-wait cases](../apps/go-api/internal/mcpactions/planning_authorization_wait_integration_test.go)
 add 40 cases that revoke credentials, OAuth write scope or project membership after
 the request waits on a project lock, before a new write or receipt replay.
-These transport cases cover both credentials and protocol revisions. Both full gates passed at `97660842`, including all 13,814 Go test events.
+These transport cases cover protocol revision `2026-07-28`. Both full gates passed at `97660842`, including all 13,814 Go test events.
 Further isolation and contention checks and completed browser acceptance are
 described below.
 
@@ -103,7 +103,7 @@ request succeeds.
 reject parents from another accessible project or workspace, reject a mismatched
 workspace/project pair, and distinguish an authorized empty page from revoked
 project membership. Access to the other authorized workspace remains available.
-All three behaviors cover both credentials and both supported protocol revisions,
+All three behaviors cover both credentials and protocol revision `2026-07-28`,
 with explicit per-call workspace selection in the query and scope cases.
 
 [Custom-property cases](../apps/go-api/internal/mcpactions/planning_property_query_integration_test.go)
@@ -120,7 +120,7 @@ unrelated action acceptance requirement.
 
 The [PQL reference transport cases](../apps/go-api/internal/mcpactions/pql_reference_integration_test.go)
 verify exact default/full/brief responses and invalid-detail rejection without a
-workspace selector, for both credentials and protocols. Four additional applied-source
+workspace selector, for both credentials on protocol revision `2026-07-28`. Four additional applied-source
 cases pass, giving 36 leaf cases and 57 test events in the combined run. These supplement the existing language semantics tests; they do not
 change the accepted teamspace deferral or unsupported property mappings.
 

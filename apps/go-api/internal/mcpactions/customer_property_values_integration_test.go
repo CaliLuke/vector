@@ -11,7 +11,7 @@ import (
 )
 
 func TestMCPCustomerPropertyDefaultStrings(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "customers": true}))
 		for _, tc := range []struct {
 			name, input string
@@ -49,7 +49,7 @@ func assertCustomerPropertyDefault(t *testing.T, call catalogueCall, propertyID 
 }
 
 func TestMCPCustomerPropertyRejectsNonStringArrays(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "customers": true}))
 		property := milestoneObject(t, call("customer_property", map[string]any{"action": "create", "display_name": "Validation " + uuid.NewString(), "property_type": "TEXT", "is_multi": true, "default_value": "retained"}))
 		propertyID := property["id"].(string)
@@ -78,7 +78,7 @@ func TestMCPCustomerPropertyRejectsNonStringArrays(t *testing.T) {
 }
 
 func TestMCPCustomerPropertyClearPreservesOtherValues(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "customers": true}))
 		first := milestoneObject(t, call("customer_property", map[string]any{"action": "create", "display_name": "First " + uuid.NewString(), "property_type": "TEXT", "default_value": "first default"}))
 		second := milestoneObject(t, call("customer_property", map[string]any{"action": "create", "display_name": "Second " + uuid.NewString(), "property_type": "TEXT", "default_value": "second default"}))

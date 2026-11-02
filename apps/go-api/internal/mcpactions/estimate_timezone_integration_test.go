@@ -14,7 +14,7 @@ func TestMCPEstimateTimestampsFollowUserTimezone(t *testing.T) {
 	f := newMilestoneFixture(t)
 	_, err := f.pool.Exec(t.Context(), `UPDATE users SET user_timezone='Asia/Kolkata'`)
 	require.NoError(t, err)
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		input := map[string]any{"action": "create", "name": uuid.NewString(), "request_id": uuid.NewString()}
 		receipt := milestoneObject(t, call("project_estimate", input))

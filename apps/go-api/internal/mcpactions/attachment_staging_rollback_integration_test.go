@@ -27,7 +27,7 @@ func TestMCPAttachmentStagingAndDeletionRollBackWithStorage(t *testing.T) {
 		options.UsePathStyle = config.PathStyle
 		options.RetryMaxAttempts = 1
 	})
-	runCatalogueFixtureMatrix(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		for _, scenario := range []struct {
 			action string
 			tables []string

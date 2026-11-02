@@ -50,11 +50,11 @@ catalogue edit; no current write can silently bypass the revision.
 Consolidated proof must establish tenant isolation, guest item visibility,
 cross-project batch atomicity, current rights on retry, all-writer CAS, durable
 activity, catalogue audit retention, native picker compatibility, HTML/JSON
-semantics, both authentication modes and both MCP protocol revisions. Rollback
+semantics, both authentication modes and MCP revision `2026-07-28`. Rollback
 must refuse workspace release data that cannot fit the old project-only schema.
 
 The shared generated-server content batch passes all 20 actions under both
-authentication modes and protocol revisions. It exercises release/tag/label CRUD,
+authentication modes on protocol revision `2026-07-28`. It exercises release/tag/label CRUD,
 receipt replay, latest-release selection, escaped changelog text, label assignment,
 item linking and remove-wins behavior, and preservation of linked work items.
 The broader permission, concurrency, worker-delivery and picker cases remain open.

@@ -15,7 +15,7 @@ import (
 // Field sets follow plane-sdk 0.3.1 CustomerRequest and PaginatedResponse.
 // The source archive checksum is recorded in docs/mcp-parity.md.
 func TestMCPCustomerRequestSDKRecordProjection(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		parent := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))
 		input := map[string]any{"action": "create", "customer_id": parent["id"], "name": "Export request", "description_html": "<p>Requested export</p>", "link": "https://example.test/requests/export", "workitem_ids": f.item(t)}
 		created := milestoneObject(t, call("customer_request", input))
@@ -50,7 +50,7 @@ func assertCustomerRequestSDKRecord(t *testing.T, record, input map[string]any) 
 }
 
 func TestMCPCustomerRequestSDKPagesKeepSearchAndParentScope(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, customerIdentityFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		parent := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))
 		other := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))
 		matching := []any{}

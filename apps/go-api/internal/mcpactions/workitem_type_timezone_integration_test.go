@@ -13,7 +13,7 @@ func TestMCPWorkitemTypeTimestampsAndReplayKeepUserTimezone(t *testing.T) {
 	f := newMilestoneFixture(t)
 	_, err := f.pool.Exec(t.Context(), `UPDATE users SET user_timezone='Asia/Kolkata'`)
 	require.NoError(t, err)
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		enableTypeCatalogue(t, f, "workspace-one")
 		input := map[string]any{"action": "create", "name": uuid.NewString(), "request_id": uuid.NewString()}
 		receipt := milestoneObject(t, call("workitem_type", input))

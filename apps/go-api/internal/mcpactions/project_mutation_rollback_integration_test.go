@@ -13,7 +13,7 @@ import (
 )
 
 func TestMCPProjectMutationStorageFailureRollsBack(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, action := range []string{"create", "update", "delete"} {
 			for _, table := range []string{"mutation_receipts", "work_item_effects"} {
 				t.Run(action+"/"+table, func(t *testing.T) { projectMutationStorageFailure(t, f, call, action, table) })

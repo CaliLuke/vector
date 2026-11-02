@@ -11,7 +11,7 @@ import (
 )
 
 func TestMCPWorkitemTypePreservesDefaultAndHistoricalUsage(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		repository := enableTypeCatalogue(t, f, "workspace-one")
 		catalogue, err := repository.Catalog(t.Context(), testsupport.LabelActor, "workspace-one")
 		require.NoError(t, err)

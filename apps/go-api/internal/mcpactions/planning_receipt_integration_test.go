@@ -44,7 +44,7 @@ func createPlanningReceipt(t *testing.T, call catalogueCall, kind string) (map[s
 
 func runPlanningMatrix(t *testing.T, exercise func(*testing.T, milestoneFixture, catalogueCall, string)) {
 	t.Helper()
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		milestoneObject(t, call("project", map[string]any{"action": "update_features", "cycles": true, "modules": true}))
 		for _, kind := range []string{"cycle", "module"} {

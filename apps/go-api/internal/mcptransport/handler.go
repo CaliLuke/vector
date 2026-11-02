@@ -87,7 +87,7 @@ func New(config Config, options Options, fallback http.Handler) (http.Handler, e
 		server, err := generated.NewSDKServer(options.Service, &generated.SDKServerOptions{
 			Adapter: &generated.MCPAdapterOptions{ToolCallInterceptors: []generated.ToolCallInterceptor{memberContent, attachmentContent}},
 			Server: &mcpsdk.ServerOptions{
-				SupportedProtocolVersions: []string{"2026-07-28", "2025-11-25"},
+				SupportedProtocolVersions: []string{"2026-07-28"},
 				SetCacheable: func(_ context.Context, _ mcpsdk.Request, result *mcpsdk.Cacheable) {
 					result.TTLMs, result.CacheScope = 0, "private"
 				},

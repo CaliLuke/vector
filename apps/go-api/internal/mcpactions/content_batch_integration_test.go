@@ -11,7 +11,7 @@ import (
 )
 
 func TestMCPContentCatalogueBatch(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		t.Run("pages and collections", func(t *testing.T) { cataloguePages(t, f, call) })
 		t.Run("releases labels and tags", func(t *testing.T) { catalogueReleases(t, f, call) })
 	})

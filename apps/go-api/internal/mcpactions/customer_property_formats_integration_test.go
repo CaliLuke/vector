@@ -11,7 +11,7 @@ import (
 
 // Formats follow plane-sdk 0.3.1's TextDisplayFormat and DateDisplayFormat.
 func TestMCPCustomerPropertyDisplayFormatsPreserveValueRules(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, format := range []struct{ kind, input, expected, alternative, initial, replacement string }{
 			{"TEXT", "", "single-line", "multi-line", "Initial", "Replacement"},
 			{"TEXT", "single-line", "single-line", "multi-line", "Initial", "Replacement"},
@@ -59,7 +59,7 @@ func TestMCPCustomerPropertyDisplayFormatsPreserveValueRules(t *testing.T) {
 }
 
 func TestMCPCustomerPropertyInvalidFormatsLeaveNoState(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, format := range []struct{ kind, display, relation string }{
 			{"TEXT", "unknown", ""}, {"TEXT", "MMM dd, yyyy", ""},
 			{"DATETIME", "unknown", ""}, {"DATETIME", "single-line", ""},

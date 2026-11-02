@@ -17,7 +17,7 @@ func TestMCPCustomerRequestResourcesStayInSelectedWorkspace(t *testing.T) {
 	require.NoError(t, err)
 	_, err = f.pool.Exec(t.Context(), `INSERT INTO customer_requests(id,workspace_id,customer_id,name) VALUES($1,$2,$3,'Foreign request')`, foreignRequest, foreignWorkspace, foreignCustomer)
 	require.NoError(t, err)
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		local := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))
 		item := f.item(t)
 		before := customerStorageSnapshot(t, f)

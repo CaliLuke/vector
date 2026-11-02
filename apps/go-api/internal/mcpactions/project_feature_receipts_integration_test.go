@@ -12,7 +12,7 @@ import (
 )
 
 func TestMCPProjectFeatureReceiptsBindProjectAndRespectNativeRevisions(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		_, err := f.pool.Exec(t.Context(), `UPDATE projects SET cycle_view=false,module_view=false WHERE id=$1`, testsupport.LabelProject)
 		require.NoError(t, err)
 		other := uuid.NewString()

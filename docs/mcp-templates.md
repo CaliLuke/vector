@@ -47,7 +47,7 @@ verify rejected writes leave records, audits, revisions and retry keys unchanged
 [Role and governance checks](../apps/go-api/internal/mcpactions/template_authorization_integration_test.go)
 cover new writes and receipt replay. [Authorization after waiting](../apps/go-api/internal/mcpactions/template_recovery_integration_test.go)
 and [project scope changes](../apps/go-api/internal/mcpactions/template_scope_wait_integration_test.go)
-exercise revocation after admission under both credentials and MCP revisions.
+exercise revocation after admission under both credentials on protocol revision `2026-07-28`.
 [Competing writes](../apps/go-api/internal/mcpactions/template_concurrency_integration_test.go)
 verify same-key replay, changed-input conflicts and one winner for a shared revision.
 The recovery tests also verify cancellation and commit rejection preserve state and

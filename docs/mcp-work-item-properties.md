@@ -68,7 +68,7 @@ proofs. Value writes share the native item transaction and durable outbox.
 The [native-worker regression](../apps/go-api/internal/mcpactions/workitem_property_worker_integration_test.go)
 runs the durable activity and webhook workflows to completion. It checks retained
 native activity history and actual HTTP delivery of the committed value changes
-under both authentication modes and protocol revisions. Request replay and
+under both authentication modes on protocol revision `2026-07-28`. Request replay and
 re-admission of completed outbox identities leave history, storage, and delivery
 counts unchanged.
 
@@ -96,7 +96,7 @@ Caller-supplied identities let children reference parents in the same request.
 Read-only text accepts `configuration.content`, including an empty string.
 Updates preserve omitted configuration fields and replace supplied arrays.
 Retrieve/list expose these settings in `settings`, so clients can edit them
-without losing identities. The generated-server configuration batch verifies these additions with both authentication modes and protocol revisions, including empty versus omitted inputs and preservation of stored cascading paths.
+without losing identities. The generated-server configuration batch verifies these additions with both authentication modes on protocol revision `2026-07-28`, including empty versus omitted inputs and preservation of stored cascading paths.
 
 Native defaults remain limited to optional number, dropdown and member properties.
 Used dropdown structures and destructive cascading edits retain native preservation

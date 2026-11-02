@@ -10,7 +10,7 @@ import (
 )
 
 func TestMCPCustomerUpdatesPreserveOmittedFields(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "customers": true}))
 		name := uuid.NewString()
 		customer := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": name, "email": "retained@example.test", "employees": 5}))

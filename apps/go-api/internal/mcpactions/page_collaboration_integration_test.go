@@ -16,7 +16,7 @@ import (
 )
 
 func TestMCPPageReplacementRejectsOldCollaborationWrites(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		page := milestoneObject(t, call("page", map[string]any{"action": "create", "name": "Before", "description_html": "<p>Before</p>"}))
 		id := page["id"].(string)

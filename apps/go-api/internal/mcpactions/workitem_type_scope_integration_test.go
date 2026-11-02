@@ -43,7 +43,7 @@ func TestMCPWorkitemTypeWorkspaceBinding(t *testing.T) {
 }
 
 func TestMCPWorkitemTypeCurrentWorkspaceAndProjectPermissions(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		enableTypeCatalogue(t, f, "workspace-one")
 		available := milestoneObject(t, call("workitem_type", map[string]any{"action": "resolve", "project_id": testsupport.LabelProject, "name": uuid.NewString()}))
 		unlinked := milestoneObject(t, call("workitem_type", map[string]any{"action": "create", "name": uuid.NewString(), "is_active": true}))
@@ -72,7 +72,7 @@ func TestMCPWorkitemTypeCurrentWorkspaceAndProjectPermissions(t *testing.T) {
 }
 
 func TestMCPWorkitemTypeProjectVisibility(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		enableTypeCatalogue(t, f, "workspace-one")
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		created := milestoneObject(t, call("workitem_type", map[string]any{"action": "resolve", "name": uuid.NewString()}))

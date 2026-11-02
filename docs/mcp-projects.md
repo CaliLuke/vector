@@ -50,7 +50,7 @@ collection's behavior.
 
 ## Verification
 
-Generated-server tests cover both supported protocol revisions with personal
+Generated-server tests cover protocol revision `2026-07-28` with personal
 tokens and OAuth, using PostgreSQL and a TLS issuer. They verify exact SDK detail
 projection, paging, archive inclusion, private and foreign-project isolation,
 fresh primary data, selectors, narrowed scopes, and revocation after HTTP
@@ -104,7 +104,7 @@ have no MCP credential callback.
 The [generated-server regression](../apps/go-api/internal/mcpactions/project_archive_wait_integration_test.go)
 holds the project lock, waits for the request to block, changes the credential,
 and releases the lock. Its 24 cases cover PAT revocation, OAuth revocation and
-OAuth write-scope removal, both protocols, archive/restore, and writes/replays.
+OAuth write-scope removal, protocol revision `2026-07-28`, archive/restore, and writes/replays.
 Each returns a safe error without structured content and preserves the exact
 project, favorite, revision and receipt snapshot. The
 [update/delete lock-wait tests](../apps/go-api/internal/mcpactions/project_record_authorization_wait_integration_test.go)

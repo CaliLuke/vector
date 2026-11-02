@@ -11,7 +11,7 @@ import (
 )
 
 func TestMCPCustomerValueReceiptsRespectCurrentPropertyDefinition(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, remove := range []bool{false, true} {
 			name, code := "inactive definition", "invalid_params"
 			if remove {

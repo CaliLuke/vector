@@ -55,47 +55,46 @@ func TestWorkitemChildReadsMatchPinnedContracts(t *testing.T) {
 	f, pool, auth, _ := oauthFixture(t)
 	addChildReadFixture(t, pool)
 	pat, oauth := f.handler(t, nil), oauthHandler(t, f, auth.Authenticate)
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		for _, mode := range []string{"PAT", "OAuth"} {
-			t.Run(version+"/"+mode, func(t *testing.T) {
-				call := func(tool, input string) rpcResult {
-					if mode == "OAuth" {
-						return oauthToolCall(t, oauth, version, "oauth-user", "workspace-one", tool, input, 200)
-					}
-					return rpcVersion(t, pat, "test-one", "tools/call", resourceCall(tool, input), version)
+
+	for _, mode := range []string{"PAT", "OAuth"} {
+		t.Run(mode, func(t *testing.T) {
+			call := func(tool, input string) rpcResult {
+				if mode == "OAuth" {
+					return toolCall(t, oauth, "oauth-user", "workspace-one", tool, input, 200)
 				}
-				for _, tc := range []struct {
-					tool                     string
-					pageFields, recordFields int
-				}{
-					{"workitem_comment", 12, 20}, {"workitem_link", 12, 12}, {"workitem_activity", 7, 18},
-				} {
-					t.Run(tc.tool, func(t *testing.T) {
-						page := cyclePageWire(t, call(tc.tool, strings.TrimSuffix(itemReadInput(t, tc.tool, "list"), "}")+`,"per_page":1}`))
-						require.Len(t, page, tc.pageFields)
-						require.Equal(t, float64(2), page["total_count"])
-						require.Equal(t, "1:1:0", page["next_cursor"])
-						require.Equal(t, true, page["next_page_results"])
-						row := page["results"].([]any)[0].(map[string]any)
-						require.Len(t, row, tc.recordFields)
-						require.Equal(t, readChild, row["id"])
-						detail := cyclePageWire(t, call(tc.tool, itemReadInput(t, tc.tool, "retrieve")))
-						require.Equal(t, row, detail)
-						next := cyclePageWire(t, call(tc.tool, strings.TrimSuffix(itemReadInput(t, tc.tool, "list"), "}")+`,"per_page":1,"cursor":"1:1:0"}`))
-						require.Equal(t, "90000000-0000-4000-8000-000000000002", next["results"].([]any)[0].(map[string]any)["id"])
-						require.Equal(t, true, next["prev_page_results"])
-						zero := cyclePageWire(t, call(tc.tool, strings.TrimSuffix(itemReadInput(t, tc.tool, "list"), "}")+`,"per_page":0,"cursor":""}`))
-						require.Equal(t, "1000:1:0", zero["next_cursor"])
-					})
-				}
-				comment := cyclePageWire(t, call("workitem_comment", itemReadInput(t, "workitem_comment", "retrieve")))
-				require.Equal(t, "<p>Hello @[10000000-0000-4000-8000-000000000001]</p>", comment["comment_html"])
-				require.Nil(t, comment["comment_stripped"])
-				require.Equal(t, true, comment["is_member"])
-				activity := cyclePageWire(t, call("workitem_activity", itemReadInput(t, "workitem_activity", "retrieve")))
-				require.Equal(t, float64(1704153600), activity["epoch"])
-			})
-		}
+				return rpc(t, pat, "test-one", "tools/call", resourceCall(tool, input))
+			}
+			for _, tc := range []struct {
+				tool                     string
+				pageFields, recordFields int
+			}{
+				{"workitem_comment", 12, 20}, {"workitem_link", 12, 12}, {"workitem_activity", 7, 18},
+			} {
+				t.Run(tc.tool, func(t *testing.T) {
+					page := cyclePageWire(t, call(tc.tool, strings.TrimSuffix(itemReadInput(t, tc.tool, "list"), "}")+`,"per_page":1}`))
+					require.Len(t, page, tc.pageFields)
+					require.Equal(t, float64(2), page["total_count"])
+					require.Equal(t, "1:1:0", page["next_cursor"])
+					require.Equal(t, true, page["next_page_results"])
+					row := page["results"].([]any)[0].(map[string]any)
+					require.Len(t, row, tc.recordFields)
+					require.Equal(t, readChild, row["id"])
+					detail := cyclePageWire(t, call(tc.tool, itemReadInput(t, tc.tool, "retrieve")))
+					require.Equal(t, row, detail)
+					next := cyclePageWire(t, call(tc.tool, strings.TrimSuffix(itemReadInput(t, tc.tool, "list"), "}")+`,"per_page":1,"cursor":"1:1:0"}`))
+					require.Equal(t, "90000000-0000-4000-8000-000000000002", next["results"].([]any)[0].(map[string]any)["id"])
+					require.Equal(t, true, next["prev_page_results"])
+					zero := cyclePageWire(t, call(tc.tool, strings.TrimSuffix(itemReadInput(t, tc.tool, "list"), "}")+`,"per_page":0,"cursor":""}`))
+					require.Equal(t, "1000:1:0", zero["next_cursor"])
+				})
+			}
+			comment := cyclePageWire(t, call("workitem_comment", itemReadInput(t, "workitem_comment", "retrieve")))
+			require.Equal(t, "<p>Hello @[10000000-0000-4000-8000-000000000001]</p>", comment["comment_html"])
+			require.Nil(t, comment["comment_stripped"])
+			require.Equal(t, true, comment["is_member"])
+			activity := cyclePageWire(t, call("workitem_activity", itemReadInput(t, "workitem_activity", "retrieve")))
+			require.Equal(t, float64(1704153600), activity["epoch"])
+		})
 	}
 }
 
@@ -148,7 +147,7 @@ func TestWorkitemChildReadsRecheckVisibilityInDataSnapshot(t *testing.T) {
 					f.service, err = mcpactions.New(apps)
 					require.NoError(t, err)
 					h := oauthHandler(t, f, auth.Authenticate)
-					result := oauthToolCall(t, h, "2026-07-28", "oauth-user", "workspace-one", tool, itemReadInput(t, tool, action), 200)
+					result := toolCall(t, h, "oauth-user", "workspace-one", tool, itemReadInput(t, tool, action), 200)
 					require.True(t, result.IsError, result.Content)
 					require.Empty(t, result.StructuredContent)
 					require.NotContains(t, result.Content[0].Text, "[internal_error]")
@@ -173,7 +172,7 @@ func TestWorkitemChildReadsHideForeignRelationsAndPreserveOpaqueMetadata(t *test
 	require.NoError(t, err)
 	h := oauthHandler(t, f, auth.Authenticate)
 	call := func(tool, input string) rpcResult {
-		return oauthToolCall(t, h, "2026-07-28", "oauth-user", "workspace-one", tool, input, 200)
+		return toolCall(t, h, "oauth-user", "workspace-one", tool, input, 200)
 	}
 	comment := cyclePageWire(t, call("workitem_comment", itemReadInput(t, "workitem_comment", "retrieve")))
 	require.Nil(t, comment["parent"])
@@ -198,7 +197,7 @@ func TestWorkitemChildReadsAllowEligibleGuestsAndDistinguishEmptyParents(t *test
 	addChildReadFixture(t, pool)
 	h := oauthHandler(t, f, auth.Authenticate)
 	call := func(tool, input string) rpcResult {
-		return oauthToolCall(t, h, "2026-07-28", "oauth-user", "workspace-one", tool, input, 200)
+		return toolCall(t, h, "oauth-user", "workspace-one", tool, input, 200)
 	}
 	for _, mutation := range []string{
 		`UPDATE project_members SET role=5; UPDATE issues SET created_by_id='10000000-0000-4000-8000-000000000001'`,

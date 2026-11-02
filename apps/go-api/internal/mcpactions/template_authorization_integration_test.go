@@ -31,7 +31,7 @@ func TestMCPTemplateWritesAndReplayRecheckScopeRoleAndGovernance(t *testing.T) {
 	for _, scope := range templateScopes() {
 		for _, action := range []string{"create", "update", "delete"} {
 			t.Run(scope.kind+"/"+scope.project+"/"+action, func(t *testing.T) {
-				runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+				runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 					input := templateWriteInput(t, call, scope, action)
 					accepted := milestoneObject(t, call("template", input))
 					fresh := maps.Clone(input)

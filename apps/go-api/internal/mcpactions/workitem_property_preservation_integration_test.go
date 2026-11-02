@@ -11,7 +11,7 @@ import (
 )
 
 func TestMCPPropertyDestructiveMutationsPreserveUsedValuesAndHistory(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		fixture := newPropertyReadFixture(t, f, root, "workspace-one", testsupport.LabelProject)
 		kind, property, option := fixture.typeID, fixture.propertyID, fixture.optionID
 		value := fixture.valueRead()

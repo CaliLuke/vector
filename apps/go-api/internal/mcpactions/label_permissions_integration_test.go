@@ -13,7 +13,7 @@ import (
 )
 
 func TestMCPLabelMutationsRequireCurrentProjectMembership(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		for _, access := range []struct {
 			name, change string

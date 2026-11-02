@@ -68,10 +68,11 @@ func TestPersonalTokenGeneratedHTTPUsesCurrentDatabaseAuthorization(t *testing.T
 	require.NoError(t, err)
 	call := func(t *testing.T, token, workspace string) *httptest.ResponseRecorder {
 		t.Helper()
-		r := httptest.NewRequest(http.MethodPost, cfg.ResourceURL+"/api-key", strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"ping"}`))
+		r := httptest.NewRequest(http.MethodPost, cfg.ResourceURL+"/api-key", strings.NewReader(`{"id":1,"jsonrpc":"2.0","method":"server/discover","params":{"_meta":{"io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/protocolVersion":"2026-07-28"}}}`))
 		r.Header.Set("Content-Type", "application/json")
 		r.Header.Set("Accept", "application/json, text/event-stream")
-		r.Header.Set("Mcp-Protocol-Version", "2025-11-25")
+		r.Header.Set("Mcp-Protocol-Version", "2026-07-28")
+		r.Header.Set("Mcp-Method", "server/discover")
 		r.Header.Set("Authorization", "Bearer "+token)
 		r.Header.Set("X-Workspace-Slug", workspace)
 		w := httptest.NewRecorder()

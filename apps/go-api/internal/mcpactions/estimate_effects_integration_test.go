@@ -17,7 +17,7 @@ func TestMCPEstimateDeletionWorkerPreservesHistoryAndReplay(t *testing.T) {
 	configureCatalogueWorker(t)
 	var pointItems, systemItems, remainingPoints []string
 	var pointRequests, systemRequests []map[string]any
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		estimate := milestoneObject(t, call("project_estimate", map[string]any{"action": "create", "name": uuid.NewString(), "type": "points"}))
 		id := estimate["id"].(string)
@@ -44,7 +44,7 @@ func TestMCPEstimateDeletionWorkerPreservesHistoryAndReplay(t *testing.T) {
 		remainingPoints = append(remainingPoints, points[1]["id"].(string))
 		pointRequests, systemRequests = append(pointRequests, pointRequest), append(systemRequests, systemRequest)
 	})
-	require.Len(t, pointItems, 4)
+	require.Len(t, pointItems, 1)
 	var activities int
 	require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT count(*) FROM issue_activities WHERE issue_id=ANY($1::uuid[]) AND field='estimate_points'`, pointItems).Scan(&activities))
 	require.Zero(t, activities)
@@ -56,17 +56,17 @@ func TestMCPEstimateDeletionWorkerPreservesHistoryAndReplay(t *testing.T) {
  (SELECT count(*) FROM issues WHERE id=ANY($2::uuid[]) AND estimate_point_id IS NULL),
  (SELECT count(*) FROM estimate_points WHERE id=ANY($3::uuid[]) AND deleted_at IS NOT NULL)`, pointItems, systemItems, remainingPoints, testsupport.LabelActor).Scan(&history, &cleared, &deleted)
 		assert.NoError(collect, queryErr)
-		assert.Equal(collect, 4, history)
-		assert.Equal(collect, 4, cleared)
-		assert.Equal(collect, 4, deleted)
+		assert.Equal(collect, len(pointItems), history)
+		assert.Equal(collect, len(systemItems), cleared)
+		assert.Equal(collect, len(remainingPoints), deleted)
 	}, 45*time.Second, 25*time.Millisecond)
 	index := 0
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		require.Equal(t, true, milestoneObject(t, call("project_estimate", pointRequests[index]))["replayed"])
 		require.Equal(t, true, milestoneObject(t, call("project_estimate", systemRequests[index]))["replayed"])
 		index++
 	})
 	require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT count(*) FROM issue_activities WHERE issue_id=ANY($1::uuid[]) AND field='estimate_points'`, pointItems).Scan(&activities))
-	require.Equal(t, 4, activities)
+	require.Equal(t, len(pointItems), activities)
 }

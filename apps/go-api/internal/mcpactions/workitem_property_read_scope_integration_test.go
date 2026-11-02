@@ -26,7 +26,7 @@ func TestMCPPropertyReadsRecheckScopeAfterAdmission(t *testing.T) {
 	service, err := mcpactions.New(apps)
 	require.NoError(t, err)
 	f.service = service
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		fixture := newPropertyReadFixture(t, f, call, "workspace-one", testsupport.LabelProject)
 		for _, input := range fixture.requests() {
 			require.False(t, call("workitem_property", input).IsError, "the initial scope must be authorized")

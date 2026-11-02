@@ -25,10 +25,10 @@ func TestMCPPropertyValueWorkerDeliversCommittedEffectsOnce(t *testing.T) {
 	configureCatalogueWorker(t)
 	receiver := newPropertyWebhookReceiver(t, f)
 	var cases []propertyWorkerCase
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		cases = append(cases, preparePropertyWorkerCase(t, f, call))
 	})
-	require.Len(t, cases, 4)
+	require.Len(t, cases, 1)
 	events := propertyWorkerEvents(t, f, cases)
 	runtime := startCatalogueWorker(t, f)
 	ctx, cancel := context.WithTimeout(t.Context(), 45*time.Second)
@@ -40,7 +40,7 @@ func TestMCPPropertyValueWorkerDeliversCommittedEffectsOnce(t *testing.T) {
 		receiver.assertChanges(t, value)
 	}
 	index := 0
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		value := cases[index]
 		index++
 		for i, input := range value.inputs {

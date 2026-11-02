@@ -119,7 +119,7 @@ fields. The carrier uses no Any or raw-map result fields.
 [Loom #1036](https://github.com/CaliLuke/loom/issues/1036) tracks the generator's
 nested untagged-union restriction. Replace the carrier with an entry union when
 the minimum released generator supports that composition and generated tests
-preserve exact empty and nonempty page output on both protocol revisions. It must not contain two page
+preserve exact empty and nonempty page output on protocol revision `2026-07-28`. It must not contain two page
 branches distinguished only by their item type: their empty arrays have the same
 wire shape and would make union serialization ambiguous. Wire authentication is not passed
 into the domain reader. Neither transport calls an unscoped repository directly.
@@ -207,14 +207,14 @@ requires vector:read under its separate contract. No role or action aliases are
 added. The generated root input remains a typed object with closed action
 branches. Unknown actions, cross-action fields, invalid types and nonadvertised
 branches fail invalid_params. Object results preserve the pinned object text and
-structured-content shape on both supported protocol revisions.
+structured-content shape on protocol revision `2026-07-28`.
 
 ## Proof obligations
 
 Real PostgreSQL and generated-transport evidence must show primary reads,
 revocation after request authentication, actor/account/workspace deletion,
 cross-tenant isolation, all role mappings, stable IDs after workspace rename,
-exact list/retrieve equivalence, and both MCP protocol revisions. Directory
+exact list/retrieve equivalence, and MCP revision `2026-07-28`. Directory
 fixtures must distinguish each filter, literal wildcard input, false from absent,
 ties, empty pages and filtered totals. HTTP regressions must preserve existing
 unfiltered field values, auth/throttle order, default pagination and legacy errors.

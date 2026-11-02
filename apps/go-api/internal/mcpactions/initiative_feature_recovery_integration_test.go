@@ -10,7 +10,7 @@ import (
 )
 
 func TestMCPInitiativeFeatureGatePreservesReceiptRecovery(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		input := map[string]any{"action": "create", "name": uuid.NewString(), "request_id": uuid.NewString()}
 		setEnabled := func(enabled bool) {
 			_, err := f.pool.Exec(t.Context(), `UPDATE workspace_features SET initiatives=$1`, enabled)

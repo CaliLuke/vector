@@ -13,7 +13,7 @@ import (
 func TestMCPPropertyReceiptsRetainAcceptedTimezone(t *testing.T) {
 	for _, action := range []string{"create", "update", "create_option", "update_option"} {
 		t.Run(action, func(t *testing.T) {
-			runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+			runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 				enableTypeCatalogue(t, f, "workspace-one")
 				input := propertyRecordMutationInput(t, call, action)
 				assertPropertyTimezoneReplay(t, f, call, input)
@@ -29,7 +29,7 @@ func TestMCPPropertyValueReceiptsRetainAcceptedTimezone(t *testing.T) {
 			name = "multiple"
 		}
 		t.Run(name, func(t *testing.T) {
-			runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+			runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 				enableTypeCatalogue(t, f, "workspace-one")
 				typeRow := milestoneObject(t, call("workitem_type", map[string]any{"action": "resolve", "project_id": testsupport.LabelProject, "name": uuid.NewString()}))
 				property := milestoneObject(t, call("workitem_property", map[string]any{"action": "create", "display_name": uuid.NewString(), "property_type": "OPTION", "workitem_type_id": typeRow["id"], "is_multi": multiple, "options": `[{"name":"First"},{"name":"Second"}]`}))

@@ -75,7 +75,7 @@ func TestMCPAttachmentImportNamesTypesAndLimits(t *testing.T) {
 	apps.Attachments = probe
 	h.service, err = mcpactions.New(apps, mcpactions.WithOrigin("https://vector.example"))
 	require.NoError(t, err)
-	runCatalogueFixtureMatrix(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": f.item(t)})
 		for _, tc := range cases {
 			t.Run(tc.name, func(t *testing.T) {

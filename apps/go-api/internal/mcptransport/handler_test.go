@@ -47,6 +47,22 @@ func call(h http.Handler, path, body string, headers http.Header) *httptest.Resp
 	if r.Header == nil {
 		r.Header = make(http.Header)
 	}
+	var request struct {
+		Method string
+		Params struct {
+			Name string
+			Meta map[string]any `json:"_meta"`
+		}
+	}
+	if json.Unmarshal([]byte(body), &request) == nil && request.Params.Meta != nil {
+		if r.Header.Get("Mcp-Protocol-Version") == "" {
+			r.Header.Set("Mcp-Protocol-Version", "2026-07-28")
+		}
+		r.Header.Set("Mcp-Method", request.Method)
+		if request.Params.Name != "" {
+			r.Header.Set("Mcp-Name", request.Params.Name)
+		}
+	}
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Accept", "application/json, text/event-stream")
 	w := httptest.NewRecorder()
@@ -54,8 +70,8 @@ func call(h http.Handler, path, body string, headers http.Header) *httptest.Resp
 	return w
 }
 
-func initialize(version string) string {
-	return `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"` + version + `","capabilities":{},"clientInfo":{"name":"test","version":"1"}}}`
+func discover() string {
+	return `{"id":1,"jsonrpc":"2.0","method":"server/discover","params":{"_meta":{"io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/protocolVersion":"2026-07-28"}}}`
 }
 
 func TestDisabledRoutesDoNotFallThroughToFrontend(t *testing.T) {
@@ -72,61 +88,47 @@ func TestOnlySelectedAuthenticationRoutesAreMounted(t *testing.T) {
 	} {
 		t.Run(tc.mode, func(t *testing.T) {
 			h := handler(t, config(tc.mode), options())
-			require.Equal(t, http.StatusOK, call(h, tc.present, initialize("2026-07-28"), nil).Code)
-			require.Equal(t, http.StatusNotFound, call(h, tc.absent, initialize("2026-07-28"), nil).Code)
+			require.Equal(t, http.StatusOK, call(h, tc.present, discover(), nil).Code)
+			require.Equal(t, http.StatusNotFound, call(h, tc.absent, discover(), nil).Code)
 		})
 	}
 }
 
 func TestPersonalTokenCanonicalEndpointAuthenticatesWithoutOAuthFallback(t *testing.T) {
-	for _, version := range []string{"2026-07-28", "2025-11-25"} {
-		t.Run(version, func(t *testing.T) {
-			var revoked atomic.Bool
-			var calls atomic.Int64
-			opts := options()
-			opts.HeaderAuth = func(ctx context.Context, _ *http.Request) (context.Context, error) {
-				calls.Add(1)
-				if revoked.Load() {
-					return nil, mcptransport.ErrInvalidCredential
-				}
-				return ctx, nil
-			}
-			opts.OAuthAuth = func(context.Context, *http.Request) (context.Context, error) {
-				t.Error("personal-token mode must not authenticate through OAuth")
-				return nil, mcptransport.ErrInvalidCredential
-			}
-			h := handler(t, config("header"), opts)
-			response := call(h, "/mcp", initialize(version), nil)
-			require.Equal(t, http.StatusOK, response.Code, response.Body.String())
-			require.Empty(t, response.Header().Get("Mcp-Session-Id"))
-			require.EqualValues(t, 1, calls.Load())
-			revoked.Store(true)
-			require.Equal(t, http.StatusUnauthorized, call(h, "/mcp", initialize(version), nil).Code)
-			require.EqualValues(t, 2, calls.Load())
-		})
+	var revoked atomic.Bool
+	var calls atomic.Int64
+	opts := options()
+	opts.HeaderAuth = func(ctx context.Context, _ *http.Request) (context.Context, error) {
+		calls.Add(1)
+		if revoked.Load() {
+			return nil, mcptransport.ErrInvalidCredential
+		}
+		return ctx, nil
 	}
+	opts.OAuthAuth = func(context.Context, *http.Request) (context.Context, error) {
+		t.Error("personal-token mode must not authenticate through OAuth")
+		return nil, mcptransport.ErrInvalidCredential
+	}
+	h := handler(t, config("header"), opts)
+	response := call(h, "/mcp", discover(), nil)
+	require.Equal(t, http.StatusOK, response.Code, response.Body.String())
+	require.Empty(t, response.Header().Get("Mcp-Session-Id"))
+	require.EqualValues(t, 1, calls.Load())
+	revoked.Store(true)
+	require.Equal(t, http.StatusUnauthorized, call(h, "/mcp", discover(), nil).Code)
+	require.EqualValues(t, 2, calls.Load())
 }
 
-func TestGeneratedHandlerNegotiatesLegacyRevisionWithoutSessions(t *testing.T) {
+func TestGeneratedHandlerRejectsLegacyRevisionAndHandshake(t *testing.T) {
 	h := handler(t, config("both"), options())
 	for _, path := range []string{"/mcp", "/mcp/api-key"} {
 		t.Run(path, func(t *testing.T) {
-			const version = "2025-11-25"
-			w := call(h, path, initialize(version), nil)
-			require.Equal(t, http.StatusOK, w.Code, w.Body.String())
-			require.Empty(t, w.Header().Get("Mcp-Session-Id"))
-			require.Equal(t, "no-store", w.Header().Get("Cache-Control"))
-			var response struct {
-				Result struct {
-					ProtocolVersion string
-					Capabilities    map[string]json.RawMessage
-				}
+			body := `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"test","version":"1"}}}`
+			for _, headers := range []http.Header{nil, {"Mcp-Protocol-Version": {"2025-11-25"}}} {
+				response := call(h, path, body, headers)
+				require.Equal(t, http.StatusBadRequest, response.Code, response.Body.String())
+				require.Empty(t, response.Header().Get("Mcp-Session-Id"))
 			}
-			require.NoError(t, json.Unmarshal(w.Body.Bytes(), &response))
-			require.Equal(t, version, response.Result.ProtocolVersion)
-			require.Contains(t, response.Result.Capabilities, "tools")
-			require.NotContains(t, response.Result.Capabilities, "prompts")
-			require.NotContains(t, response.Result.Capabilities, "resources")
 		})
 	}
 }
@@ -135,31 +137,29 @@ func TestGeneratedHandlerSupportsStatelessDiscovery(t *testing.T) {
 	h := handler(t, config("both"), options())
 	for _, path := range []string{"/mcp", "/mcp/api-key"} {
 		t.Run(path, func(t *testing.T) {
-			w := call(h, path, `{"jsonrpc":"2.0","id":1,"method":"server/discover","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/clientCapabilities":{}}}}`, http.Header{
+			w := call(h, path, `{"id":1,"jsonrpc":"2.0","method":"server/discover","params":{"_meta":{"io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/protocolVersion":"2026-07-28"}}}`, http.Header{
 				"Mcp-Protocol-Version": []string{"2026-07-28"}, "Mcp-Method": []string{"server/discover"},
 			})
 			require.Equal(t, http.StatusOK, w.Code, w.Body.String())
 			var response struct {
 				Result struct {
 					SupportedVersions []string
+					Capabilities      map[string]json.RawMessage
 					CacheScope        string
 					TTLMs             *int
 				}
 			}
 			require.NoError(t, json.Unmarshal(w.Body.Bytes(), &response))
-			require.ElementsMatch(t, []string{"2026-07-28", "2025-11-25"}, response.Result.SupportedVersions)
+			require.Equal(t, []string{"2026-07-28"}, response.Result.SupportedVersions)
+			require.Contains(t, response.Result.Capabilities, "tools")
+			require.NotContains(t, response.Result.Capabilities, "prompts")
+			require.NotContains(t, response.Result.Capabilities, "resources")
 			require.Equal(t, "private", response.Result.CacheScope)
 			require.NotNil(t, response.Result.TTLMs)
 			require.Zero(t, *response.Result.TTLMs)
 			require.Empty(t, w.Header().Get("Mcp-Session-Id"))
 		})
 	}
-}
-
-func TestGeneratedHandlerRejectsUnsupportedProtocolHeader(t *testing.T) {
-	h := handler(t, config("header"), options())
-	w := call(h, "/mcp/api-key", `{"jsonrpc":"2.0","id":1,"method":"ping"}`, http.Header{"Mcp-Protocol-Version": []string{"2025-03-26"}})
-	require.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestAuthenticationDoesNotFallBackAcrossRoutes(t *testing.T) {
@@ -172,9 +172,9 @@ func TestAuthenticationDoesNotFallBackAcrossRoutes(t *testing.T) {
 		OAuthAuth: func(ctx context.Context, _ *http.Request) (context.Context, error) { calls.Add(1); return ctx, nil },
 	}
 	h := handler(t, config("both"), opts)
-	require.Equal(t, http.StatusUnauthorized, call(h, "/mcp/api-key", initialize("2026-07-28"), nil).Code)
+	require.Equal(t, http.StatusUnauthorized, call(h, "/mcp/api-key", discover(), nil).Code)
 	require.Zero(t, calls.Load())
-	require.Equal(t, http.StatusOK, call(h, "/mcp", initialize("2026-07-28"), nil).Code)
+	require.Equal(t, http.StatusOK, call(h, "/mcp", discover(), nil).Code)
 	require.EqualValues(t, 1, calls.Load())
 }
 
@@ -188,9 +188,9 @@ func TestAuthenticationRunsOnEveryRequestAndFailsClosed(t *testing.T) {
 		return ctx, nil
 	}
 	h := handler(t, config("header"), opts)
-	require.Equal(t, http.StatusOK, call(h, "/mcp/api-key", initialize("2026-07-28"), nil).Code)
+	require.Equal(t, http.StatusOK, call(h, "/mcp/api-key", discover(), nil).Code)
 	revoked.Store(true)
-	w := call(h, "/mcp/api-key", `{"jsonrpc":"2.0","id":2,"method":"ping"}`, nil)
+	w := call(h, "/mcp/api-key", `{"id":2,"jsonrpc":"2.0","method":"ping","params":{"_meta":{"io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/protocolVersion":"2026-07-28"}}}`, nil)
 	require.Equal(t, http.StatusServiceUnavailable, w.Code)
 	require.NotContains(t, w.Body.String(), "secret")
 }
@@ -202,7 +202,7 @@ func TestIngressRejectsUntrustedTargetsBeforeAuthentication(t *testing.T) {
 	h := handler(t, config("header"), opts)
 	for _, origin := range []string{"https://evil.example", "http://vector.example", "null", ""} {
 		t.Run("origin "+origin, func(t *testing.T) {
-			w := call(h, "/mcp/api-key", initialize("2026-07-28"), http.Header{"Origin": []string{origin}})
+			w := call(h, "/mcp/api-key", discover(), http.Header{"Origin": []string{origin}})
 			require.Equal(t, http.StatusForbidden, w.Code)
 		})
 	}
@@ -220,7 +220,7 @@ func TestTrustedOriginUsesGeneratedOriginProtection(t *testing.T) {
 	h := handler(t, c, options())
 	for _, origin := range []string{"https://vector.example", "https://agent.example"} {
 		t.Run(origin, func(t *testing.T) {
-			require.Equal(t, http.StatusOK, call(h, "/mcp/api-key", initialize("2026-07-28"), http.Header{"Origin": []string{origin}}).Code)
+			require.Equal(t, http.StatusOK, call(h, "/mcp/api-key", discover(), http.Header{"Origin": []string{origin}}).Code)
 		})
 	}
 }
@@ -229,14 +229,14 @@ func TestRequestBodyBound(t *testing.T) {
 	c := config("header")
 	c.MaxRequestBytes = 32
 	h := handler(t, c, options())
-	require.Equal(t, http.StatusRequestEntityTooLarge, call(h, "/mcp/api-key", initialize("2026-07-28"), nil).Code)
+	require.Equal(t, http.StatusRequestEntityTooLarge, call(h, "/mcp/api-key", discover(), nil).Code)
 }
 
 func TestUnknownLengthRequestBodyIsAlsoBounded(t *testing.T) {
 	c := config("header")
 	c.MaxRequestBytes = 32
 	h := handler(t, c, options())
-	r := httptest.NewRequest(http.MethodPost, "https://vector.example/mcp/api-key", strings.NewReader(initialize("2025-11-25")))
+	r := httptest.NewRequest(http.MethodPost, "https://vector.example/mcp/api-key", strings.NewReader(discover()))
 	r.ContentLength = -1
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Accept", "application/json, text/event-stream")
@@ -249,7 +249,7 @@ func TestMissingAuthenticatedContextFailsClosed(t *testing.T) {
 	opts := options()
 	opts.HeaderAuth = func(context.Context, *http.Request) (context.Context, error) { return nil, nil }
 	h := handler(t, config("header"), opts)
-	require.Equal(t, http.StatusServiceUnavailable, call(h, "/mcp/api-key", initialize("2025-11-25"), nil).Code)
+	require.Equal(t, http.StatusServiceUnavailable, call(h, "/mcp/api-key", discover(), nil).Code)
 }
 
 func TestAuthenticationRateLimitHasSafeRetryAndNoOAuthChallenge(t *testing.T) {
@@ -263,7 +263,7 @@ func TestAuthenticationRateLimitHasSafeRetryAndNoOAuthChallenge(t *testing.T) {
 		opts.HeaderAuth = func(context.Context, *http.Request) (context.Context, error) {
 			return nil, limited
 		}
-		w := call(handler(t, config("header"), opts), "/mcp/api-key", initialize("2025-11-25"), nil)
+		w := call(handler(t, config("header"), opts), "/mcp/api-key", discover(), nil)
 		require.Equal(t, http.StatusTooManyRequests, w.Code)
 		require.Equal(t, tc.want, w.Header().Get("Retry-After"))
 		require.Equal(t, "no-store", w.Header().Get("Cache-Control"))
@@ -281,7 +281,7 @@ func TestAuthenticationFailureRetainsRequestCorrelation(t *testing.T) {
 				received, _ = platform.RequestID(ctx)
 				return nil, mcptransport.ErrInvalidCredential
 			}
-			w := call(handler(t, config("header"), opts), "/mcp/api-key", initialize("2025-11-25"), http.Header{
+			w := call(handler(t, config("header"), opts), "/mcp/api-key", discover(), http.Header{
 				"X-Request-Id": []string{incoming},
 			})
 			require.Equal(t, http.StatusUnauthorized, w.Code)
@@ -311,14 +311,14 @@ func TestAuthenticationFailureClassifications(t *testing.T) {
 			opts := options()
 			opts.HeaderAuth = func(context.Context, *http.Request) (context.Context, error) { return nil, tc.err }
 			h := handler(t, config("header"), opts)
-			require.Equal(t, tc.status, call(h, "/mcp/api-key", initialize("2025-11-25"), nil).Code)
+			require.Equal(t, tc.status, call(h, "/mcp/api-key", discover(), nil).Code)
 		})
 	}
 }
 
 func TestDuplicateOriginIsRejected(t *testing.T) {
 	h := handler(t, config("header"), options())
-	w := call(h, "/mcp/api-key", initialize("2025-11-25"), http.Header{"Origin": []string{"https://vector.example", "https://vector.example"}})
+	w := call(h, "/mcp/api-key", discover(), http.Header{"Origin": []string{"https://vector.example", "https://vector.example"}})
 	require.Equal(t, http.StatusForbidden, w.Code)
 }
 
@@ -332,7 +332,7 @@ func TestRequestTimeoutCancelsAuthentication(t *testing.T) {
 		close(cancelled)
 		return nil, ctx.Err()
 	}
-	w := call(handler(t, c, opts), "/mcp/api-key", initialize("2026-07-28"), nil)
+	w := call(handler(t, c, opts), "/mcp/api-key", discover(), nil)
 	require.Equal(t, http.StatusServiceUnavailable, w.Code)
 	select {
 	case <-cancelled:

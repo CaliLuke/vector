@@ -21,7 +21,7 @@ type catalogueSafetyCase struct {
 // Exercise each domain's own revision triggers and authorization callback. The
 // shared receipt engine's contention and commit-uncertainty tests are separate.
 func TestMCPCatalogueReceiptsRespectNativeEditsAndCurrentPermissions(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		_, err := f.pool.Exec(t.Context(), `UPDATE workspace_features SET customers=true,initiatives=true`)
 		require.NoError(t, err)
 		for _, tc := range []catalogueSafetyCase{

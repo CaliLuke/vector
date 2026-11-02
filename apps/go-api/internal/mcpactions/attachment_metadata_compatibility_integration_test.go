@@ -20,7 +20,7 @@ func TestMCPAttachmentMetadataMatchesSDKShapeAndTimezone(t *testing.T) {
 	h := attachmentRecoveryFixture(t)
 	_, setupErr := h.pool.Exec(t.Context(), `UPDATE users SET user_timezone='Asia/Kolkata'`)
 	require.NoError(t, setupErr)
-	runCatalogueFixtureMatrix(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		created := milestoneObject(t, call("workitem_attachment", map[string]any{"action": "upload_from_url", "url": "https://files.example.test/report.txt"}))

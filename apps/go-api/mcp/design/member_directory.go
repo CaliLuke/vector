@@ -45,9 +45,8 @@ var memberRetrieveRole = Type("MemberRetrieveRole", func() {
 // only id/name/slug/namespace. Unset nullable fields remain absent on the wire.
 // https://github.com/CaliLuke/loom/issues/1036 tracks nested untagged unions.
 // Replace this carrier with an entry union when the minimum released generator
-// supports that composition and both-protocol empty/nonempty page tests pass.
+// supports that composition and empty/nonempty page tests pass.
 var memberDirectoryEntry = Type("MemberDirectoryEntry", func() {
-
 	Attribute("id", String, func() { Nullable(); Format(FormatUUID) })
 	for _, name := range []string{"first_name", "last_name", "email", "avatar", "avatar_url", "display_name", "role_slug", "name", "slug"} {
 		Attribute(name, String, func() { Nullable() })

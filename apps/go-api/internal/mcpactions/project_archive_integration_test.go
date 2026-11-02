@@ -41,102 +41,100 @@ func addArchiveFixture(t *testing.T, pool *pgxpool.Pool) {
 	}
 }
 
-func TestProjectArchiveRecoveryAcrossCredentialsAndProtocols(t *testing.T) {
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		for _, mode := range []string{"personal token", "personal token selector", "OAuth"} {
-			t.Run(version+"/"+mode, func(t *testing.T) {
-				f, pool, auth, issuer := oauthFixture(t)
-				addArchiveFixture(t, pool)
-				issuer.mu.Lock()
-				issuer.scope = "vector:read vector:write"
-				issuer.mu.Unlock()
-				pat, oauth := f.handler(t, nil), oauthHandler(t, f, auth.Authenticate)
-				call := func(input string) rpcResult {
-					if mode == "OAuth" {
-						return oauthToolCall(t, oauth, version, "oauth-user", "workspace-one", "project", input, 200)
-					}
-					if mode == "personal token selector" {
-						input = strings.TrimSuffix(input, "}") + `,"workspace_slug":"workspace-one"}`
-						return oauthToolCall(t, pat, version, "test-one", "", "project", input, 200)
-					}
-					return rpcVersion(t, pat, "test-one", "tools/call", projectCall(input), version)
+func TestProjectArchiveRecoveryAcrossCredentials(t *testing.T) {
+	for _, mode := range []string{"personal token", "personal token selector", "OAuth"} {
+		t.Run(mode, func(t *testing.T) {
+			f, pool, auth, issuer := oauthFixture(t)
+			addArchiveFixture(t, pool)
+			issuer.mu.Lock()
+			issuer.scope = "vector:read vector:write"
+			issuer.mu.Unlock()
+			pat, oauth := f.handler(t, nil), oauthHandler(t, f, auth.Authenticate)
+			call := func(input string) rpcResult {
+				if mode == "OAuth" {
+					return toolCall(t, oauth, "oauth-user", "workspace-one", "project", input, 200)
 				}
-				const projectID = "30000000-0000-4000-8000-000000000001"
-				for _, target := range []string{"30000000-0000-4000-8000-000000000003", "30000000-0000-4000-8000-000000000099"} {
-					for _, action := range []string{"archive", "unarchive"} {
-						denied := call(fmt.Sprintf(`{"action":%q,"project_id":%q,"request_id":%q}`, action, target, uuid.NewString()))
-						require.True(t, denied.IsError)
-						require.Contains(t, denied.Content[0].Text, "[not_found]")
-						require.Empty(t, denied.StructuredContent)
-					}
+				if mode == "personal token selector" {
+					input = strings.TrimSuffix(input, "}") + `,"workspace_slug":"workspace-one"}`
+					return toolCall(t, pat, "test-one", "", "project", input, 200)
 				}
-				detail := call(`{"action":"retrieve","project_id":"` + projectID + `"}`)
-				require.False(t, detail.IsError, detail.Content)
-				require.NotContains(t, string(detail.StructuredContent), `"revision"`)
-				readRevision := func() string {
-					result := call(`{"action":"retrieve","project_id":"` + projectID + `","include_revision":true}`)
-					require.False(t, result.IsError, result.Content)
-					var body struct{ Revision string }
-					require.NoError(t, json.Unmarshal(result.StructuredContent, &body))
-					require.NotEmpty(t, body.Revision)
-					return body.Revision
+				return rpc(t, pat, "test-one", "tools/call", projectCall(input))
+			}
+			const projectID = "30000000-0000-4000-8000-000000000001"
+			for _, target := range []string{"30000000-0000-4000-8000-000000000003", "30000000-0000-4000-8000-000000000099"} {
+				for _, action := range []string{"archive", "unarchive"} {
+					denied := call(fmt.Sprintf(`{"action":%q,"project_id":%q,"request_id":%q}`, action, target, uuid.NewString()))
+					require.True(t, denied.IsError)
+					require.Contains(t, denied.Content[0].Text, "[not_found]")
+					require.Empty(t, denied.StructuredContent)
 				}
-				initial := readRevision()
-				requestID := uuid.NewString()
-				input := fmt.Sprintf(`{"action":"archive","project_id":%q,"request_id":%q,"expected_revision":%q}`, projectID, requestID, initial)
-				first := call(input)
-				require.False(t, first.IsError, first.Content)
-				var receipt struct {
-					ProjectID       string `json:"project_id"`
-					RequestID       string `json:"request_id"`
-					Revision        string
-					ReplayExpiresAt time.Time `json:"replay_expires_at"`
-					Replayed        bool
-				}
-				require.NoError(t, json.Unmarshal(first.StructuredContent, &receipt))
-				require.Equal(t, projectID, receipt.ProjectID)
-				require.Equal(t, requestID, receipt.RequestID)
-				require.False(t, receipt.Replayed)
-				require.Greater(t, time.Until(receipt.ReplayExpiresAt), 24*time.Hour)
-				require.NotEqual(t, initial, receipt.Revision)
-				after := readRevision()
-				require.Equal(t, receipt.Revision, after)
-				replay := call(input)
-				require.False(t, replay.IsError, replay.Content)
-				originalExpiry := receipt.ReplayExpiresAt
-				require.NoError(t, json.Unmarshal(replay.StructuredContent, &receipt))
-				require.True(t, receipt.Replayed)
-				require.Equal(t, originalExpiry, receipt.ReplayExpiresAt)
-				require.Equal(t, after, readRevision())
-				changed := call(fmt.Sprintf(`{"action":"archive","project_id":%q,"request_id":%q}`, projectID, requestID))
-				require.True(t, changed.IsError)
-				require.Contains(t, changed.Content[0].Text, "[request_conflict]")
-				stale := call(fmt.Sprintf(`{"action":"unarchive","project_id":%q,"expected_revision":%q}`, projectID, initial))
-				require.True(t, stale.IsError)
-				require.Contains(t, stale.Content[0].Text, "[revision_conflict]")
-				require.Equal(t, after, readRevision())
-				var archived, favoriteDeleted bool
-				require.NoError(t, pool.QueryRow(t.Context(), `SELECT archived_at IS NOT NULL FROM projects WHERE id=$1`, projectID).Scan(&archived))
-				require.True(t, archived)
-				require.NoError(t, pool.QueryRow(t.Context(), `SELECT deleted_at IS NOT NULL FROM user_favorites WHERE project_id=$1`, projectID).Scan(&favoriteDeleted))
-				require.True(t, favoriteDeleted)
-				for _, action := range []string{"unarchive", "archive", "unarchive"} {
-					result := call(fmt.Sprintf(`{"action":%q,"project_id":%q}`, action, projectID))
-					require.False(t, result.IsError, result.Content)
-					require.Empty(t, result.Content)
-					require.Empty(t, result.StructuredContent)
-				}
-				require.NoError(t, pool.QueryRow(t.Context(), `SELECT archived_at IS NOT NULL FROM projects WHERE id=$1`, projectID).Scan(&archived))
-				require.False(t, archived)
-				// A receipt never bypasses fresh authorization.
-				_, err := pool.Exec(t.Context(), `UPDATE workspace_members SET role=5 WHERE member_id='10000000-0000-4000-8000-000000000001'`)
-				require.NoError(t, err)
-				denied := call(input)
-				require.True(t, denied.IsError)
-				require.Contains(t, denied.Content[0].Text, "[forbidden]")
-				require.Empty(t, denied.StructuredContent)
-			})
-		}
+			}
+			detail := call(`{"action":"retrieve","project_id":"` + projectID + `"}`)
+			require.False(t, detail.IsError, detail.Content)
+			require.NotContains(t, string(detail.StructuredContent), `"revision"`)
+			readRevision := func() string {
+				result := call(`{"action":"retrieve","project_id":"` + projectID + `","include_revision":true}`)
+				require.False(t, result.IsError, result.Content)
+				var body struct{ Revision string }
+				require.NoError(t, json.Unmarshal(result.StructuredContent, &body))
+				require.NotEmpty(t, body.Revision)
+				return body.Revision
+			}
+			initial := readRevision()
+			requestID := uuid.NewString()
+			input := fmt.Sprintf(`{"action":"archive","project_id":%q,"request_id":%q,"expected_revision":%q}`, projectID, requestID, initial)
+			first := call(input)
+			require.False(t, first.IsError, first.Content)
+			var receipt struct {
+				ProjectID       string `json:"project_id"`
+				RequestID       string `json:"request_id"`
+				Revision        string
+				ReplayExpiresAt time.Time `json:"replay_expires_at"`
+				Replayed        bool
+			}
+			require.NoError(t, json.Unmarshal(first.StructuredContent, &receipt))
+			require.Equal(t, projectID, receipt.ProjectID)
+			require.Equal(t, requestID, receipt.RequestID)
+			require.False(t, receipt.Replayed)
+			require.Greater(t, time.Until(receipt.ReplayExpiresAt), 24*time.Hour)
+			require.NotEqual(t, initial, receipt.Revision)
+			after := readRevision()
+			require.Equal(t, receipt.Revision, after)
+			replay := call(input)
+			require.False(t, replay.IsError, replay.Content)
+			originalExpiry := receipt.ReplayExpiresAt
+			require.NoError(t, json.Unmarshal(replay.StructuredContent, &receipt))
+			require.True(t, receipt.Replayed)
+			require.Equal(t, originalExpiry, receipt.ReplayExpiresAt)
+			require.Equal(t, after, readRevision())
+			changed := call(fmt.Sprintf(`{"action":"archive","project_id":%q,"request_id":%q}`, projectID, requestID))
+			require.True(t, changed.IsError)
+			require.Contains(t, changed.Content[0].Text, "[request_conflict]")
+			stale := call(fmt.Sprintf(`{"action":"unarchive","project_id":%q,"expected_revision":%q}`, projectID, initial))
+			require.True(t, stale.IsError)
+			require.Contains(t, stale.Content[0].Text, "[revision_conflict]")
+			require.Equal(t, after, readRevision())
+			var archived, favoriteDeleted bool
+			require.NoError(t, pool.QueryRow(t.Context(), `SELECT archived_at IS NOT NULL FROM projects WHERE id=$1`, projectID).Scan(&archived))
+			require.True(t, archived)
+			require.NoError(t, pool.QueryRow(t.Context(), `SELECT deleted_at IS NOT NULL FROM user_favorites WHERE project_id=$1`, projectID).Scan(&favoriteDeleted))
+			require.True(t, favoriteDeleted)
+			for _, action := range []string{"unarchive", "archive", "unarchive"} {
+				result := call(fmt.Sprintf(`{"action":%q,"project_id":%q}`, action, projectID))
+				require.False(t, result.IsError, result.Content)
+				require.Empty(t, result.Content)
+				require.Empty(t, result.StructuredContent)
+			}
+			require.NoError(t, pool.QueryRow(t.Context(), `SELECT archived_at IS NOT NULL FROM projects WHERE id=$1`, projectID).Scan(&archived))
+			require.False(t, archived)
+			// A receipt never bypasses fresh authorization.
+			_, err := pool.Exec(t.Context(), `UPDATE workspace_members SET role=5 WHERE member_id='10000000-0000-4000-8000-000000000001'`)
+			require.NoError(t, err)
+			denied := call(input)
+			require.True(t, denied.IsError)
+			require.Contains(t, denied.Content[0].Text, "[forbidden]")
+			require.Empty(t, denied.StructuredContent)
+		})
 	}
 }
 
@@ -166,27 +164,27 @@ func TestProjectDiscoveryTracksScopesAndDomainPermissionsWithoutSharedMutation(t
 			require.Contains(t, schema.Properties, "request_id")
 		}
 	}
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		for _, writable := range []bool{false, true, false, true} {
-			issuer.mu.Lock()
-			issuer.scope = "vector:read"
-			if writable {
-				issuer.scope += " vector:write"
-			}
-			issuer.mu.Unlock()
-			listed := oauthRPC(t, oauth, version, "oauth-user", "workspace-one", "tools/list", map[string]any{}, 200)
-			assertActions(listed, writable, writable)
-			if !writable {
-				denied := oauthToolCall(t, oauth, version, "oauth-user", "workspace-one", "project", `{"action":"archive","project_id":"30000000-0000-4000-8000-000000000001"}`, 200)
-				require.True(t, denied.IsError)
-				require.Contains(t, denied.Content[0].Text, "[forbidden]")
-			}
+
+	for _, writable := range []bool{false, true, false, true} {
+		issuer.mu.Lock()
+		issuer.scope = "vector:read"
+		if writable {
+			issuer.scope += " vector:write"
 		}
-		for _, token := range []string{"test-one", "test-two", "test-one"} {
-			listed := rpcVersion(t, pat, token, "tools/list", map[string]any{}, version)
-			assertActions(listed, true, token == "test-one")
+		issuer.mu.Unlock()
+		listed := mcpRPC(t, oauth, "oauth-user", "workspace-one", "tools/list", map[string]any{}, 200)
+		assertActions(listed, writable, writable)
+		if !writable {
+			denied := toolCall(t, oauth, "oauth-user", "workspace-one", "project", `{"action":"archive","project_id":"30000000-0000-4000-8000-000000000001"}`, 200)
+			require.True(t, denied.IsError)
+			require.Contains(t, denied.Content[0].Text, "[forbidden]")
 		}
 	}
+	for _, token := range []string{"test-one", "test-two", "test-one"} {
+		listed := rpc(t, pat, token, "tools/list", map[string]any{})
+		assertActions(listed, true, token == "test-one")
+	}
+
 	_, err := pool.Exec(t.Context(), `UPDATE workspace_members SET role=5 WHERE member_id='10000000-0000-4000-8000-000000000002'`)
 	require.NoError(t, err)
 	assertActions(rpc(t, pat, "test-two", "tools/list", map[string]any{}), false, false)
@@ -199,7 +197,7 @@ func TestProjectOAuthMutationRequiresWorkspaceAndDiscoveryRechecksReadScope(t *t
 	issuer.mu.Lock()
 	issuer.scope = "vector:read vector:write"
 	issuer.mu.Unlock()
-	result := oauthToolCall(t, oauthHandler(t, f, auth.Authenticate), "2026-07-28", "oauth-user", "", "project", `{"action":"archive","project_id":"30000000-0000-4000-8000-000000000001"}`, 200)
+	result := toolCall(t, oauthHandler(t, f, auth.Authenticate), "oauth-user", "", "project", `{"action":"archive","project_id":"30000000-0000-4000-8000-000000000001"}`, 200)
 	require.True(t, result.IsError)
 	require.Contains(t, result.Content[0].Text, "[invalid_params]")
 	h := oauthHandler(t, f, func(ctx context.Context, r *http.Request) (context.Context, error) {
@@ -209,6 +207,6 @@ func TestProjectOAuthMutationRequiresWorkspaceAndDiscoveryRechecksReadScope(t *t
 		issuer.mu.Unlock()
 		return verified, err
 	})
-	listed := oauthRPC(t, h, "2026-07-28", "oauth-user", "workspace-one", "tools/list", map[string]any{}, 200)
+	listed := mcpRPC(t, h, "oauth-user", "workspace-one", "tools/list", map[string]any{}, 200)
 	require.Empty(t, listed.Tools)
 }

@@ -56,7 +56,7 @@ asset behavior, both authentication modes and both MCP revisions. Workspace page
 and collection data must prevent a lossy rollback to the older project-only model.
 
 The shared generated-server content batch passes all 23 actions under both
-authentication modes and protocol revisions. It exercises workspace page CRUD,
+authentication modes on protocol revision `2026-07-28`. It exercises workspace page CRUD,
 receipt replay, subtree filing/removal, collection candidate search, membership
 changes, item linking, archive/restore and transactional body/version admission.
 Private cross-actor and project-page scope cases, concurrency, worker delivery and

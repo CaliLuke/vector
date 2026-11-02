@@ -29,7 +29,7 @@ func customerForeignReferenceTargets(t *testing.T, f milestoneFixture) map[strin
 func TestMCPCustomerReferencesKeepSelectedWorkspaceScope(t *testing.T) {
 	f := customerIdentityFixture(t)
 	foreign := customerForeignReferenceTargets(t, f)
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, kind := range []string{"ISSUE", "USER", "OPTION"} {
 			t.Run(kind, func(t *testing.T) {
 				input := customerValueReferenceInput(t, f, call, kind)

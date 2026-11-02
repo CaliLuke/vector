@@ -13,7 +13,7 @@ import (
 )
 
 func TestMCPCustomerUpsertsUseCompleteExternalIdentityBeforeName(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, customerIdentityFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		name, external := "ACME "+uuid.NewString(), uuid.NewString()
 		first := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": name, "email": "retained@example.test", "employees": 12, "external_source": "crm", "external_id": external}))
 		second := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": name, "external_source": "crm", "external_id": uuid.NewString()}))
@@ -30,7 +30,7 @@ func TestMCPCustomerUpsertsUseCompleteExternalIdentityBeforeName(t *testing.T) {
 }
 
 func TestMCPCustomerUpsertsMatchExactNameWithoutCompleteExternalPair(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, customerIdentityFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		for _, partial := range []string{"none", "external_source", "external_id"} {
 			t.Run(partial, func(t *testing.T) {
 				name := "EXACT " + uuid.NewString()
@@ -52,7 +52,7 @@ func TestMCPCustomerUpsertsMatchExactNameWithoutCompleteExternalPair(t *testing.
 }
 
 func TestMCPCustomerAmbiguousNamesAndIdentityCollisionsAreAtomic(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		name := uuid.NewString()
 		first := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": name, "external_source": "crm", "external_id": uuid.NewString()}))
 		second := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": name, "external_source": "crm", "external_id": uuid.NewString()}))
@@ -70,7 +70,7 @@ func TestMCPCustomerAmbiguousNamesAndIdentityCollisionsAreAtomic(t *testing.T) {
 }
 
 func TestMCPCustomerIdentityReuseAfterDeletionPreservesOldReceipt(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, customerIdentityFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		input := map[string]any{"action": "create", "name": uuid.NewString(), "external_source": "crm", "external_id": uuid.NewString(), "request_id": uuid.NewString()}
 		first := milestoneObject(t, call("customer", input))
 		remove := map[string]any{"action": "delete", "external_source": input["external_source"], "external_id": input["external_id"], "request_id": uuid.NewString()}
@@ -93,7 +93,7 @@ func TestMCPCustomerIdentityReuseAfterDeletionPreservesOldReceipt(t *testing.T) 
 func TestMCPCustomerIdentityMatchingIsWorkspaceBound(t *testing.T) {
 	f := customerIdentityFixture(t)
 	otherWorkspace, _ := addPrivateProjectInOtherWorkspace(t, f)
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		name, external, foreignID := uuid.NewString(), uuid.NewString(), uuid.NewString()
 		_, err := f.pool.Exec(t.Context(), `INSERT INTO customers(id,workspace_id,name,external_source,external_id,email) VALUES($1,$2,$3,'crm',$4,'foreign@example.test')`, foreignID, otherWorkspace, name, external)
 		require.NoError(t, err)

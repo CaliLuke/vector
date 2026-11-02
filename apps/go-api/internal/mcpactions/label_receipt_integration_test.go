@@ -27,7 +27,7 @@ func labelMutationSnapshot(t *testing.T, f milestoneFixture) []byte {
 }
 
 func TestMCPLabelReceiptInputNormalization(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		input := map[string]any{"action": "create", "name": uuid.NewString(), "request_id": uuid.NewString()}
 		created := milestoneObject(t, call("label", input))
@@ -54,7 +54,7 @@ func TestMCPLabelReceiptInputNormalization(t *testing.T) {
 }
 
 func TestMCPLabelReceiptsPreserveNativeEdits(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		input := map[string]any{"action": "create", "name": uuid.NewString(), "request_id": uuid.NewString()}
 		created := milestoneObject(t, call("label", input))
@@ -92,7 +92,7 @@ func TestMCPLabelReceiptsPreserveNativeEdits(t *testing.T) {
 }
 
 func TestMCPLabelCascadeFailurePreservesRevisionAndReceipt(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		parent := milestoneObject(t, call("label", map[string]any{"action": "create", "name": uuid.NewString(), "request_id": uuid.NewString()}))
 		id := parent["label_id"].(string)

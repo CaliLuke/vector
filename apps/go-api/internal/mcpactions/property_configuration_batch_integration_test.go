@@ -11,7 +11,7 @@ import (
 )
 
 func TestMCPPropertyConfigurationBatch(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		enableTypeCatalogue(t, f, "workspace-one")
 		typeRow := milestoneObject(t, root("workitem_type", map[string]any{"action": "resolve", "project_id": testsupport.LabelProject, "name": "Configured " + uuid.NewString()}))
 		create := func(kind string, fields map[string]any) map[string]any {

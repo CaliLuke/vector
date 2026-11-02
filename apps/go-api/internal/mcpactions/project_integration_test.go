@@ -40,63 +40,63 @@ func addMCPProjectFixture(t *testing.T, pool *pgxpool.Pool) {
 	require.NoError(t, err)
 }
 
-func TestProjectReadsUsePrimaryDataAcrossCredentialsAndProtocols(t *testing.T) {
+func TestProjectReadsUsePrimaryDataAcrossCredentials(t *testing.T) {
 	f, pool, auth, _ := oauthFixture(t)
 	addMCPProjectFixture(t, pool)
 	pat := f.handler(t, nil)
 	oauth := oauthHandler(t, f, auth.Authenticate)
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		for _, mode := range []string{"personal token", "OAuth"} {
-			t.Run(version+"/"+mode, func(t *testing.T) {
-				call := func(input string) rpcResult {
-					if mode == "OAuth" {
-						return oauthToolCall(t, oauth, version, "oauth-user", "workspace-one", "project", input, 200)
-					}
-					return rpcVersion(t, pat, "test-one", "tools/call", projectCall(input), version)
+
+	for _, mode := range []string{"personal token", "OAuth"} {
+		t.Run(mode, func(t *testing.T) {
+			call := func(input string) rpcResult {
+				if mode == "OAuth" {
+					return toolCall(t, oauth, "oauth-user", "workspace-one", "project", input, 200)
 				}
-				first := call(`{"action":"list","per_page":1,"order_by":"name"}`)
-				require.False(t, first.IsError, first.Content)
-				require.NotContains(t, string(first.StructuredContent), "Hidden private")
-				require.NotContains(t, string(first.StructuredContent), "Foreign workspace")
-				// Explicit tags keep the wire names independent of Go field spelling.
-				var wire struct {
-					TotalResults int    `json:"total_results"`
-					Count        int    `json:"count"`
-					NextCursor   string `json:"next_cursor"`
-					Results      []struct {
-						ID, Name   string
-						ArchivedAt *string `json:"archived_at"`
-					}
+				return rpc(t, pat, "test-one", "tools/call", projectCall(input))
+			}
+			first := call(`{"action":"list","per_page":1,"order_by":"name"}`)
+			require.False(t, first.IsError, first.Content)
+			require.NotContains(t, string(first.StructuredContent), "Hidden private")
+			require.NotContains(t, string(first.StructuredContent), "Foreign workspace")
+			// Explicit tags keep the wire names independent of Go field spelling.
+			var wire struct {
+				TotalResults int    `json:"total_results"`
+				Count        int    `json:"count"`
+				NextCursor   string `json:"next_cursor"`
+				Results      []struct {
+					ID, Name   string
+					ArchivedAt *string `json:"archived_at"`
 				}
-				require.NoError(t, json.Unmarshal(first.StructuredContent, &wire))
-				require.Equal(t, 2, wire.TotalResults)
-				require.Equal(t, 1, wire.Count)
-				require.Equal(t, "1:1:0", wire.NextCursor)
-				require.Equal(t, "Archived project", wire.Results[0].Name)
-				require.NotNil(t, wire.Results[0].ArchivedAt)
-				next := call(`{"action":"list","per_page":1,"order_by":"name","cursor":"1:1:0"}`)
-				require.False(t, next.IsError, next.Content)
-				require.NoError(t, json.Unmarshal(next.StructuredContent, &wire))
-				require.Equal(t, "SDK project", wire.Results[0].Name)
-				detail := call(`{"action":"retrieve","project_id":"30000000-0000-4000-8000-000000000001"}`)
-				require.False(t, detail.IsError, detail.Content)
-				var expected map[string]any
-				require.NoError(t, json.Unmarshal([]byte(projectDetailJSON), &expected))
-				expected["total_cycles"], expected["total_modules"] = 0, 0
-				expected["member_role"], expected["is_deployed"] = 15, false
-				expected["workspace"] = "20000000-0000-4000-8000-000000000001"
-				body, err := json.Marshal(expected)
-				require.NoError(t, err)
-				require.JSONEq(t, string(body), string(detail.StructuredContent))
-				for _, id := range []string{"30000000-0000-4000-8000-000000000002", "30000000-0000-4000-8000-000000000003", "30000000-0000-4000-8000-000000000099"} {
-					hidden := call(`{"action":"retrieve","project_id":"` + id + `"}`)
-					require.True(t, hidden.IsError)
-					require.Contains(t, hidden.Content[0].Text, "[not_found]")
-					require.Empty(t, hidden.StructuredContent)
-				}
-			})
-		}
+			}
+			require.NoError(t, json.Unmarshal(first.StructuredContent, &wire))
+			require.Equal(t, 2, wire.TotalResults)
+			require.Equal(t, 1, wire.Count)
+			require.Equal(t, "1:1:0", wire.NextCursor)
+			require.Equal(t, "Archived project", wire.Results[0].Name)
+			require.NotNil(t, wire.Results[0].ArchivedAt)
+			next := call(`{"action":"list","per_page":1,"order_by":"name","cursor":"1:1:0"}`)
+			require.False(t, next.IsError, next.Content)
+			require.NoError(t, json.Unmarshal(next.StructuredContent, &wire))
+			require.Equal(t, "SDK project", wire.Results[0].Name)
+			detail := call(`{"action":"retrieve","project_id":"30000000-0000-4000-8000-000000000001"}`)
+			require.False(t, detail.IsError, detail.Content)
+			var expected map[string]any
+			require.NoError(t, json.Unmarshal([]byte(projectDetailJSON), &expected))
+			expected["total_cycles"], expected["total_modules"] = 0, 0
+			expected["member_role"], expected["is_deployed"] = 15, false
+			expected["workspace"] = "20000000-0000-4000-8000-000000000001"
+			body, err := json.Marshal(expected)
+			require.NoError(t, err)
+			require.JSONEq(t, string(body), string(detail.StructuredContent))
+			for _, id := range []string{"30000000-0000-4000-8000-000000000002", "30000000-0000-4000-8000-000000000003", "30000000-0000-4000-8000-000000000099"} {
+				hidden := call(`{"action":"retrieve","project_id":"` + id + `"}`)
+				require.True(t, hidden.IsError)
+				require.Contains(t, hidden.Content[0].Text, "[not_found]")
+				require.Empty(t, hidden.StructuredContent)
+			}
+		})
 	}
+
 	_, err := pool.Exec(t.Context(), `UPDATE projects SET name='Changed on primary' WHERE id='30000000-0000-4000-8000-000000000001'`)
 	require.NoError(t, err)
 	changed := rpc(t, pat, "test-one", "tools/call", projectCall(`{"action":"retrieve","project_id":"30000000-0000-4000-8000-000000000001"}`))
@@ -108,12 +108,12 @@ func TestProjectOAuthRequiresWorkspaceAndRechecksNarrowedScopes(t *testing.T) {
 	f, pool, auth, issuer := oauthFixture(t)
 	addMCPProjectFixture(t, pool)
 	h := oauthHandler(t, f, auth.Authenticate)
-	missing := oauthToolCall(t, h, "2026-07-28", "oauth-user", "", "project", `{"action":"list"}`, 200)
+	missing := toolCall(t, h, "oauth-user", "", "project", `{"action":"list"}`, 200)
 	require.True(t, missing.IsError)
 	require.Contains(t, missing.Content[0].Text, "[invalid_params]")
-	selected := oauthToolCall(t, h, "2026-07-28", "oauth-user", "", "project", `{"action":"list","workspace_slug":"workspace-one"}`, 200)
+	selected := toolCall(t, h, "oauth-user", "", "project", `{"action":"list","workspace_slug":"workspace-one"}`, 200)
 	require.False(t, selected.IsError, selected.Content)
-	oauthToolCall(t, h, "2026-07-28", "oauth-user", "workspace-one", "project", `{"action":"list","workspace_slug":"workspace-two"}`, 400)
+	toolCall(t, h, "oauth-user", "workspace-one", "project", `{"action":"list","workspace_slug":"workspace-two"}`, 400)
 	narrowed := oauthHandler(t, f, func(ctx context.Context, r *http.Request) (context.Context, error) {
 		verified, err := auth.Authenticate(ctx, r)
 		issuer.mu.Lock()
@@ -121,7 +121,7 @@ func TestProjectOAuthRequiresWorkspaceAndRechecksNarrowedScopes(t *testing.T) {
 		issuer.mu.Unlock()
 		return verified, err
 	})
-	result := oauthToolCall(t, narrowed, "2026-07-28", "oauth-user", "workspace-one", "project", `{"action":"list"}`, 200)
+	result := toolCall(t, narrowed, "oauth-user", "workspace-one", "project", `{"action":"list"}`, 200)
 	require.True(t, result.IsError)
 	require.Contains(t, result.Content[0].Text, "[forbidden]")
 	require.Empty(t, result.StructuredContent)
@@ -143,7 +143,7 @@ func TestProjectActionsRejectRevocationAfterHTTPAuthentication(t *testing.T) {
 						revoke()
 						return verified, err
 					})
-					result = oauthToolCall(t, h, "2026-07-28", "oauth-user", "workspace-one", "project", input, 200)
+					result = toolCall(t, h, "oauth-user", "workspace-one", "project", input, 200)
 				} else {
 					h := f.handler(t, func(ctx context.Context, r *http.Request) (context.Context, error) {
 						verified, err := f.auth.Authenticate(ctx, r)

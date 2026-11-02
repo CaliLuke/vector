@@ -17,7 +17,7 @@ func TestMCPAttachmentReceiptsAndNativeRevisions(t *testing.T) {
 	f := h.milestoneFixture
 	repository, err := assets.NewPostgresRepository(f.pool)
 	require.NoError(t, err)
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		input := map[string]any{"action": "upload_from_url", "url": "https://files.example.test/receipt.txt", "request_id": uuid.NewString()}

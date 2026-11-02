@@ -11,7 +11,7 @@ import (
 )
 
 func TestMCPPropertyScalarValuesKeepTheirWireTypes(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		enableTypeCatalogue(t, f, "workspace-one")
 		typeRow := milestoneObject(t, root("workitem_type", map[string]any{"action": "resolve", "project_id": testsupport.LabelProject, "name": uuid.NewString()}))
 		item := milestoneObject(t, root("workitem", map[string]any{"action": "create", "project_id": testsupport.LabelProject, "name": "Scalar property values", "type_id": typeRow["id"]}))
@@ -39,7 +39,7 @@ func TestMCPPropertyScalarValuesKeepTheirWireTypes(t *testing.T) {
 }
 
 func TestMCPPropertyMultiValueReplacementRetainsSurvivingIdentity(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		enableTypeCatalogue(t, f, "workspace-one")
 		typeRow := milestoneObject(t, root("workitem_type", map[string]any{"action": "resolve", "project_id": testsupport.LabelProject, "name": uuid.NewString()}))
 		property := milestoneObject(t, root("workitem_property", map[string]any{"action": "create", "workitem_type_id": typeRow["id"], "display_name": uuid.NewString(), "property_type": "OPTION", "is_multi": true, "options": `[{"name":"First"},{"name":"Second"},{"name":"Third"}]`}))

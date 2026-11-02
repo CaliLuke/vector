@@ -14,7 +14,7 @@ import (
 )
 
 func TestMCPCustomerDefaultReferencesReauthorizeReplay(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "customers": true}))
 		for _, action := range []string{"create", "update"} {
 			for _, relation := range []string{"ISSUE", "USER"} {
@@ -93,7 +93,7 @@ func customerReferenceTarget(t *testing.T, f milestoneFixture, relation string) 
 }
 
 func TestMCPCustomerDefaultOptionsReauthorizeReplay(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "customers": true}))
 		property := milestoneObject(t, call("customer_property", map[string]any{"action": "create", "display_name": "Option reference " + uuid.NewString(), "property_type": "OPTION", "options": `[{"name":"Choice"}]`}))
 		optionID := property["options"].([]any)[0].(map[string]any)["id"].(string)
@@ -129,7 +129,7 @@ func TestMCPCustomerDefaultUpdateKeepsWorkspaceBinding(t *testing.T) {
 	otherWorkspace, _ := addPrivateProjectInOtherWorkspace(t, f)
 	_, err := f.pool.Exec(t.Context(), `UPDATE workspace_features SET customers=true WHERE workspace_id=$1`, otherWorkspace)
 	require.NoError(t, err)
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, f, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "customers": true}))
 		propertyID := uuid.NewString()
 		_, insertErr := f.pool.Exec(t.Context(), `INSERT INTO customer_properties(id,workspace_id,name,display_name,property_type,relation_type) VALUES($1,$2,$3,$3,'RELATION','USER')`, propertyID, otherWorkspace, "Foreign "+uuid.NewString())

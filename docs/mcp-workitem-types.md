@@ -63,7 +63,7 @@ also drop a real PostgreSQL commit acknowledgement and prove keyed recovery.
 
 [Authorization-wait tests](../apps/go-api/internal/mcpactions/workitem_type_authorization_wait_integration_test.go)
 revoke credentials, OAuth write scope, or membership while each mutation or
-receipt replay waits for the schema lock. They exercise both protocol revisions
+receipt replay waits for the schema lock. They exercise protocol revision `2026-07-28`
 through the generated server.
 [Native parent-scope tests](../apps/go-api/internal/mcpactions/workitem_type_native_parent_integration_test.go)
 prove that workspace/project deletion and project membership revocation wait

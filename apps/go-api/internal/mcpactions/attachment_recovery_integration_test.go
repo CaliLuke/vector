@@ -89,7 +89,7 @@ func attachmentRecoveryFixture(t *testing.T) attachmentRecoveryHarness {
 
 func TestMCPAttachmentRecoveryUsesDurableSourceBytes(t *testing.T) {
 	h := attachmentRecoveryFixture(t)
-	runCatalogueFixtureMatrix(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		before := h.fetched.Load()
@@ -138,7 +138,7 @@ func TestMCPAttachmentNativeWorkerRecoversPendingUpload(t *testing.T) {
 	h := attachmentRecoveryFixture(t)
 	redis := testsupport.StartRedis(t)
 	t.Setenv("REDIS_URL", "redis://"+redis.Options().Addr)
-	runCatalogueFixtureMatrix(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		before := h.fetched.Load()
@@ -202,7 +202,7 @@ func TestMCPAttachmentNativeWorkerRecoversPendingUpload(t *testing.T) {
 
 func TestMCPAttachmentDeletionCancelsPendingUpload(t *testing.T) {
 	h := attachmentRecoveryFixture(t)
-	runCatalogueFixtureMatrix(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		before := h.fetched.Load()

@@ -12,7 +12,7 @@ import (
 )
 
 func TestMCPCatalogueRecordReceiptsRetainAcceptedTimezone(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		_, err := f.pool.Exec(t.Context(), `UPDATE workspace_features SET initiatives=true`)
 		require.NoError(t, err)
 		for _, scenario := range []struct{ tool, action string }{
@@ -54,7 +54,7 @@ func TestMCPCatalogueRecordReceiptsRetainAcceptedTimezone(t *testing.T) {
 }
 
 func TestMCPReleaseResultsPreserveOpaqueDescriptionJSON(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		_, err := f.pool.Exec(t.Context(), `UPDATE users SET user_timezone='Asia/Kolkata' WHERE id=$1`, testsupport.LabelActor)
 		require.NoError(t, err)
 		created := milestoneObject(t, call("release", map[string]any{"action": "create", "name": uuid.NewString()}))
@@ -80,7 +80,7 @@ func TestMCPReleaseResultsPreserveOpaqueDescriptionJSON(t *testing.T) {
 }
 
 func TestMCPRelationAndIntakeReceiptsRetainAcceptedTimezone(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		enableTypeCatalogue(t, f, "workspace-one")
 		for _, action := range []string{"create_definition", "update_definition"} {
 			t.Run("relation/"+action, func(t *testing.T) {

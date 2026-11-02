@@ -12,7 +12,7 @@ import (
 )
 
 func TestMCPCustomerSDKRecordPreservesFieldsAndLiveRequestCount(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, customerIdentityFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		input := map[string]any{"action": "create", "name": uuid.NewString(), "description_html": "<p>Original buyer</p>", "email": "buyer@example.test", "website_url": "https://example.test", "domain": "Retail", "employees": 23, "stage": "Negotiation", "contract_status": "Pending", "revenue": "USD 123.45", "external_source": "crm", "external_id": uuid.NewString()}
 		created := milestoneObject(t, call("customer", input))
 		assertCustomerSDKMetadata(t, "Customer", created)
@@ -43,7 +43,7 @@ func TestMCPCustomerSDKRecordPreservesFieldsAndLiveRequestCount(t *testing.T) {
 }
 
 func TestMCPCustomerPropertySDKRecordIncludesOptionMetadata(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, customerIdentityFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		input := map[string]any{"action": "create", "display_name": "Market " + uuid.NewString(), "description": "Market segment", "property_type": "OPTION", "is_multi": true, "options": `[{"name":"Retail","description":"Retail buyer","is_default":true},{"name":"Enterprise"}]`}
 		created := milestoneObject(t, call("customer_property", input))
 		assertCustomerSDKMetadata(t, "CustomerProperty", created)

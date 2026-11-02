@@ -12,7 +12,7 @@ import (
 )
 
 func TestMCPConfigurationCatalogueBatch(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		enableTypeCatalogue(t, f, "workspace-one")
 		t.Run("estimates", func(t *testing.T) { catalogueEstimates(t, call) })
 		t.Run("types and properties", func(t *testing.T) { catalogueTypesAndProperties(t, call) })

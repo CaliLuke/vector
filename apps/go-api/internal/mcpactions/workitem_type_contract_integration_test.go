@@ -17,7 +17,7 @@ import (
 // SDK 0.3.1 fields and the pinned handler's omitted-string semantics coexist
 // with Vector's native rule that new definitions start inactive.
 func TestMCPWorkitemTypeSDKFieldsAndOmittedValues(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		enableTypeCatalogue(t, f, "workspace-one")
 		created := milestoneObject(t, call("workitem_type", map[string]any{"action": "create", "name": "  Type " + uuid.NewString() + "  ", "description": "Retained description", "external_source": "fixture", "external_id": "external"}))
 		require.ElementsMatch(t, strings.Fields("id deleted_at project_ids created_at updated_at name description logo_props is_epic is_default is_active level external_source external_id created_by updated_by workspace"), slices.Collect(maps.Keys(created)))
@@ -42,7 +42,7 @@ func TestMCPWorkitemTypeSDKFieldsAndOmittedValues(t *testing.T) {
 }
 
 func TestMCPWorkitemTypeProjectListsAndResolve(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		repository := enableTypeCatalogue(t, f, "workspace-one")
 		name := "Resolved " + uuid.NewString()
 		created := milestoneObject(t, call("workitem_type", map[string]any{"action": "create", "name": name}))
@@ -74,7 +74,7 @@ func TestMCPWorkitemTypeProjectListsAndResolve(t *testing.T) {
 }
 
 func TestMCPWorkitemTypeImportAndProjectReplacementAreAtomic(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		enableTypeCatalogue(t, f, "workspace-one")
 		created := milestoneObject(t, call("workitem_type", map[string]any{"action": "create", "name": uuid.NewString(), "is_active": true}))
 		id := created["id"].(string)

@@ -69,7 +69,7 @@ func customerReferenceArguments(t *testing.T, input map[string]any) pgx.NamedArg
 }
 
 func TestMCPCustomerValueReferencesRequireCurrentAccessOnReplay(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, change := range customerValueReferenceChanges {
 			t.Run(change.kind+"/"+change.name, func(t *testing.T) {
 				input := customerValueReferenceInput(t, f, call, change.kind)

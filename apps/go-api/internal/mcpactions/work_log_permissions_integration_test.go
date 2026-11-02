@@ -12,7 +12,7 @@ import (
 )
 
 func TestMCPWorkLogAuthorAndCurrentAdministrator(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		setRole := func(role int) {
@@ -56,7 +56,7 @@ func TestMCPWorkLogAuthorAndCurrentAdministrator(t *testing.T) {
 }
 
 func TestMCPWorkLogReadsAndReplayRequireCurrentMembership(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		input := map[string]any{"action": "create", "duration": 10, "request_id": uuid.NewString()}

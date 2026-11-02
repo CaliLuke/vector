@@ -47,8 +47,8 @@ Open `http://localhost:8000/`. Instance administration uses `/god-mode/`, and pu
 The [remote MCP transport](mcp.md) is disabled by default. Its 30 tools expose
 208 actions through personal tokens or generic external-issuer OAuth. OAuth
 requires the [issuer profile and account linking](mcp-oauth.md). Generated-server
-workflow tests cover all actions under both authentication modes and protocol
-revisions. The [parity tracker](mcp-parity.md) records the remaining acceptance
+workflow tests cover all actions under both authentication modes on protocol
+revision `2026-07-28`. The [parity tracker](mcp-parity.md) records the remaining acceptance
 checks. Mutations support optional [receipt and revision extensions](mcp-writes.md).
 Teamspaces are deferred until native support exists.
 The proxy serves all browser entry points. Frontend ports 3000–3100 are internal development upstreams.
@@ -268,6 +268,12 @@ Template owners reuse admin connections for clone creation.
 Tests close their application connections before synchronous database cleanup.
 Each clone has separate test data and application connections.
 Migration-specific tests still exercise fresh database installation directly.
+MCP supports only protocol revision `2026-07-28`. Shared transport tests verify
+discovery, required metadata, and rejection of older revisions and handshakes.
+Credential revocation, scope or membership changes, and replay remain separate
+behavior cases. Use matrices when these cases interact with the operation.
+Credential-neutral shape, validation, timestamp, storage and worker checks run
+once through `runCatalogue`; credential interactions use `runCatalogueCredentials`.
 PostgreSQL fixtures check a SQL query through the published port before running
 seed migrations. Only readiness is retried. A failed migration is returned once
 and its container is reclaimed.

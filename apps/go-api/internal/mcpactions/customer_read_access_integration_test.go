@@ -14,7 +14,7 @@ import (
 )
 
 func TestMCPCustomerReadsRequireCurrentMembershipAndFeature(t *testing.T) {
-	runCatalogueStatusFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, callStatus catalogueStatusCall) {
+	runCatalogueStatusCredentials(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, callStatus catalogueStatusCall) {
 		call := catalogueCall(func(tool string, input map[string]any) rpcResult { return callStatus(tool, input, http.StatusOK) })
 		property := milestoneObject(t, call("customer_property", map[string]any{"action": "create", "display_name": uuid.NewString(), "property_type": "TEXT", "default_value": "Seeded value"}))
 		customer := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))

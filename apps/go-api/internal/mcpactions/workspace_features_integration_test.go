@@ -14,7 +14,7 @@ import (
 )
 
 func TestMCPWorkspaceFeaturesPreserveOmittedFlagsAndAuditChanges(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		_, err := f.pool.Exec(t.Context(), `UPDATE workspace_features SET project_grouping=true,initiatives=true,teams=true,customers=true,wiki=true,pi=true WHERE workspace_id=$1`, testsupport.LabelWorkspace)
 		require.NoError(t, err)
 		before := milestoneObject(t, call("workspace", map[string]any{"action": "get_features"}))
@@ -42,7 +42,7 @@ func TestMCPWorkspaceFeaturesPreserveOmittedFlagsAndAuditChanges(t *testing.T) {
 }
 
 func TestMCPWorkspaceFeatureReceiptsPreserveNativeEditsAndAuditOnce(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		_, err := f.pool.Exec(t.Context(), `UPDATE workspace_features SET customers=true,wiki=true WHERE workspace_id=$1`, testsupport.LabelWorkspace)
 		require.NoError(t, err)
 		before := milestoneObject(t, call("workspace", map[string]any{"action": "get_features", "include_revision": true}))
@@ -86,7 +86,7 @@ func TestMCPWorkspaceFeatureReceiptsPreserveNativeEditsAndAuditOnce(t *testing.T
 }
 
 func TestMCPWorkspaceFeatureAuditFailureRollsBackFlagsRevisionAndReceipt(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		_, err := f.pool.Exec(t.Context(), `UPDATE workspace_features SET customers=false WHERE workspace_id=$1`, testsupport.LabelWorkspace)
 		require.NoError(t, err)
 		before := milestoneObject(t, call("workspace", map[string]any{"action": "get_features", "include_revision": true}))
@@ -123,7 +123,7 @@ func workspaceFeatureAuditCount(t *testing.T, f milestoneFixture) int {
 }
 
 func TestMCPWorkspaceFeatureReadsDoNotGrantWritePermission(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, role := range []struct {
 			name  string
 			value int
@@ -146,7 +146,7 @@ func TestMCPWorkspaceFeatureReadsDoNotGrantWritePermission(t *testing.T) {
 }
 
 func TestMCPFeatureNullFlagsMatchOmittedOnReceiptReplay(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, target := range []struct {
 			tool, seed string
 			flags      []string
@@ -186,7 +186,7 @@ func TestMCPFeatureNullFlagsMatchOmittedOnReceiptReplay(t *testing.T) {
 }
 
 func TestMCPProjectFeatureFalseAndNullPreserveNativeMapping(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		_, err := f.pool.Exec(t.Context(), `UPDATE projects SET module_view=true,cycle_view=true,issue_views_view=true,page_view=true,intake_view=true,is_issue_type_enabled=true,epics_enabled=true,parallel_cycles_enabled=true,project_updates_enabled=true,workflows_enabled=true WHERE id=$1`, testsupport.LabelProject)
 		require.NoError(t, err)
 		updated := milestoneObject(t, call("project", map[string]any{"action": "update_features", "project_id": testsupport.LabelProject, "cycles": false, "workitem_types": false, "modules": nil}))
@@ -207,34 +207,32 @@ func TestMCPWorkspaceFeaturesRejectForeignAndRevokedWorkspaceAccess(t *testing.T
 	_, err = f.pool.Exec(t.Context(), `INSERT INTO workspaces(id,name,owner_id,slug,timezone,background_color,created_at,updated_at) VALUES('00000000-0000-4000-8000-000000000099','Other',$1,'other','UTC','',now(),now())`, testsupport.LabelActor)
 	require.NoError(t, err)
 	for _, mode := range []string{"personal token", "OAuth"} {
-		for _, version := range []string{"2025-11-25", "2026-07-28"} {
-			t.Run(mode+"/"+version, func(t *testing.T) {
-				handler, token := f.handler(t, nil), "test-one"
-				if mode == "OAuth" {
-					handler, token = oauthHandler(t, f.fixture, f.oauth.Authenticate), "oauth-user"
-				}
-				call := func(input string) rpcResult {
-					return oauthToolCall(t, handler, version, token, "", "workspace", input, 200)
-				}
-				milestoneObject(t, call(`{"action":"get_features","workspace_slug":"workspace-one"}`))
-				var before, after []byte
-				require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT jsonb_agg(to_jsonb(f) ORDER BY workspace_id) FROM workspace_features f`).Scan(&before))
-				milestoneFailure(t, call(`{"action":"get_features","workspace_slug":"other"}`), "forbidden")
-				milestoneFailure(t, call(`{"action":"update_features","workspace_slug":"other","customers":true}`), "forbidden")
-				_, err := f.pool.Exec(t.Context(), `UPDATE workspace_members SET is_active=false WHERE member_id=$1`, testsupport.LabelActor)
-				require.NoError(t, err)
-				t.Cleanup(func() {
-					_, restoreErr := f.pool.Exec(context.WithoutCancel(t.Context()), `UPDATE workspace_members SET is_active=true WHERE member_id=$1`, testsupport.LabelActor)
-					require.NoError(t, restoreErr)
-				})
-				milestoneFailure(t, call(`{"action":"get_features","workspace_slug":"workspace-one"}`), "forbidden")
-				milestoneFailure(t, call(`{"action":"update_features","workspace_slug":"workspace-one","customers":true}`), "forbidden")
-				require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT jsonb_agg(to_jsonb(f) ORDER BY workspace_id) FROM workspace_features f`).Scan(&after))
-				require.JSONEq(t, string(before), string(after))
-				var events int
-				require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT count(*) FROM feature_events`).Scan(&events))
-				require.Zero(t, events)
+		t.Run(mode, func(t *testing.T) {
+			handler, token := f.handler(t, nil), "test-one"
+			if mode == "OAuth" {
+				handler, token = oauthHandler(t, f.fixture, f.oauth.Authenticate), "oauth-user"
+			}
+			call := func(input string) rpcResult {
+				return toolCall(t, handler, token, "", "workspace", input, 200)
+			}
+			milestoneObject(t, call(`{"action":"get_features","workspace_slug":"workspace-one"}`))
+			var before, after []byte
+			require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT jsonb_agg(to_jsonb(f) ORDER BY workspace_id) FROM workspace_features f`).Scan(&before))
+			milestoneFailure(t, call(`{"action":"get_features","workspace_slug":"other"}`), "forbidden")
+			milestoneFailure(t, call(`{"action":"update_features","workspace_slug":"other","customers":true}`), "forbidden")
+			_, err := f.pool.Exec(t.Context(), `UPDATE workspace_members SET is_active=false WHERE member_id=$1`, testsupport.LabelActor)
+			require.NoError(t, err)
+			t.Cleanup(func() {
+				_, restoreErr := f.pool.Exec(context.WithoutCancel(t.Context()), `UPDATE workspace_members SET is_active=true WHERE member_id=$1`, testsupport.LabelActor)
+				require.NoError(t, restoreErr)
 			})
-		}
+			milestoneFailure(t, call(`{"action":"get_features","workspace_slug":"workspace-one"}`), "forbidden")
+			milestoneFailure(t, call(`{"action":"update_features","workspace_slug":"workspace-one","customers":true}`), "forbidden")
+			require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT jsonb_agg(to_jsonb(f) ORDER BY workspace_id) FROM workspace_features f`).Scan(&after))
+			require.JSONEq(t, string(before), string(after))
+			var events int
+			require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT count(*) FROM feature_events`).Scan(&events))
+			require.Zero(t, events)
+		})
 	}
 }

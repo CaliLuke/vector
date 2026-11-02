@@ -101,18 +101,16 @@ func TestMCPPlanningBindsWorkspaceProjectResourceAndReceipt(t *testing.T) {
 func runSelectedWorkspaceMatrix(t *testing.T, f milestoneFixture, exercise func(*testing.T, catalogueCall)) {
 	t.Helper()
 	for _, mode := range []string{"personal token", "OAuth"} {
-		for _, version := range []string{"2025-11-25", "2026-07-28"} {
-			t.Run(mode+"/"+version, func(t *testing.T) {
-				handler, token := f.handler(t, nil), "test-one"
-				if mode == "OAuth" {
-					handler, token = oauthHandler(t, f.fixture, f.oauth.Authenticate), "oauth-user"
-				}
-				exercise(t, func(tool string, input map[string]any) rpcResult {
-					raw, err := json.Marshal(input)
-					require.NoError(t, err)
-					return oauthToolCall(t, handler, version, token, "", tool, string(raw), http.StatusOK)
-				})
+		t.Run(mode, func(t *testing.T) {
+			handler, token := f.handler(t, nil), "test-one"
+			if mode == "OAuth" {
+				handler, token = oauthHandler(t, f.fixture, f.oauth.Authenticate), "oauth-user"
+			}
+			exercise(t, func(tool string, input map[string]any) rpcResult {
+				raw, err := json.Marshal(input)
+				require.NoError(t, err)
+				return toolCall(t, handler, token, "", tool, string(raw), http.StatusOK)
 			})
-		}
+		})
 	}
 }

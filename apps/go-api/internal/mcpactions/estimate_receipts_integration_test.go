@@ -14,7 +14,7 @@ import (
 )
 
 func TestMCPEstimateReceiptsAndNativePointRevisions(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		input := map[string]any{"action": "create", "name": "Receipt sizing", "request_id": uuid.NewString()}
 		created := milestoneObject(t, call("project_estimate", input))

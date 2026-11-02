@@ -14,21 +14,19 @@ import (
 func TestGeneratedProjectMemberActionReadsRealAuthorizedRows(t *testing.T) {
 	f, pool := databaseFixture(t)
 	h := f.handler(t, nil)
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		t.Run(version, func(t *testing.T) {
-			result := rpcVersion(t, h, "test-one", "tools/call", memberCall(`{"action":"list_project","project_id":"`+projectOne+`"}`), version)
-			require.False(t, result.IsError, result.Content)
-			require.Len(t, result.Content, 1)
-			assert.Empty(t, result.StructuredContent)
-			assert.JSONEq(t, `[{"id":"10000000-0000-4000-8000-000000000001","first_name":"Zoë","last_name":"First","email":null,"avatar":"","avatar_url":null,"display_name":"first","role":null,"role_slug":null,"is_active":null,"is_bot":null}]`, result.Content[0].Text)
-			for _, project := range []string{projectTwo, "30000000-0000-4000-8000-000000000003"} {
-				denied := rpcVersion(t, h, "test-one", "tools/call", memberCall(`{"action":"list_project","project_id":"`+project+`"}`), version)
-				require.True(t, denied.IsError)
-				assert.Contains(t, denied.Content[0].Text, "[forbidden]")
-				assert.NotContains(t, denied.Content[0].Text, "second@example.test")
-			}
-		})
+
+	result := rpc(t, h, "test-one", "tools/call", memberCall(`{"action":"list_project","project_id":"`+projectOne+`"}`))
+	require.False(t, result.IsError, result.Content)
+	require.Len(t, result.Content, 1)
+	assert.Empty(t, result.StructuredContent)
+	assert.JSONEq(t, `[{"id":"10000000-0000-4000-8000-000000000001","first_name":"Zoë","last_name":"First","email":null,"avatar":"","avatar_url":null,"display_name":"first","role":null,"role_slug":null,"is_active":null,"is_bot":null}]`, result.Content[0].Text)
+	for _, project := range []string{projectTwo, "30000000-0000-4000-8000-000000000003"} {
+		denied := rpc(t, h, "test-one", "tools/call", memberCall(`{"action":"list_project","project_id":"`+project+`"}`))
+		require.True(t, denied.IsError)
+		assert.Contains(t, denied.Content[0].Text, "[forbidden]")
+		assert.NotContains(t, denied.Content[0].Text, "second@example.test")
 	}
+
 	_, err := pool.Exec(t.Context(), `UPDATE users SET first_name='Updated roster' WHERE id='10000000-0000-4000-8000-000000000001'`)
 	require.NoError(t, err)
 	updated := rpc(t, h, "test-one", "tools/call", memberCall(`{"action":"list_project","project_id":"`+projectOne+`"}`))

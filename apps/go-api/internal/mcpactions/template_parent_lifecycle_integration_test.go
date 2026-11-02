@@ -79,17 +79,17 @@ func TestMCPTemplateParentDeletionUsesDurableCascadeAndPreservesDefinitions(t *t
 	configureCatalogueWorker(t)
 	controlItem := f.item(t)
 	var cases []templateParentCase
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		cases = append(cases, queueTemplateParentDeletion(t, f, call))
 	})
-	require.Len(t, cases, 4)
+	require.Len(t, cases, 1)
 	runtime := startCatalogueWorker(t, f)
 	for _, value := range cases {
 		waitTemplateParentDeletion(t, f, runtime, value)
 	}
 	before := templateStorageSnapshot(t, f)
 	index := 0
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		require.Equal(t, true, milestoneObject(t, call("project", cases[index].deletion))["replayed"])
 		index++
 	})

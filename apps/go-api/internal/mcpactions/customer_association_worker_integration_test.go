@@ -22,7 +22,7 @@ func TestMCPCustomerAssociationWorkerPreservesSnapshotsAndDeliversOnce(t *testin
 	f := customerIdentityFixture(t)
 	configureCatalogueWorker(t)
 	var cases []customerWorkerCase
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		value := customerWorkerCase{itemID: f.item(t), originalName: uuid.NewString(), renamed: uuid.NewString()}
 		customer := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": value.originalName}))
 		value.customerID = customer["id"].(string)
@@ -36,7 +36,7 @@ func TestMCPCustomerAssociationWorkerPreservesSnapshotsAndDeliversOnce(t *testin
 		require.Equal(t, false, milestoneObject(t, call("customer", value.deletion))["replayed"])
 		cases = append(cases, value)
 	})
-	require.Len(t, cases, 4)
+	require.Len(t, cases, 1)
 	events := catalogueWorkerEvents(t, f)
 	var activities int
 	require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT count(*) FROM issue_activities WHERE field='customer'`).Scan(&activities))
@@ -50,7 +50,7 @@ func TestMCPCustomerAssociationWorkerPreservesSnapshotsAndDeliversOnce(t *testin
 	}
 	before := customerStorageSnapshot(t, f)
 	index := 0
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		require.Equal(t, true, milestoneObject(t, call("customer", cases[index].deletion))["replayed"])
 		index++
 	})

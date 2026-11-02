@@ -12,7 +12,7 @@ import (
 )
 
 func TestMCPEstimateLinkUsesProjectReceiptsAndRevisions(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		first := milestoneObject(t, call("project_estimate", map[string]any{"action": "create", "name": "First sizing " + uuid.NewString()}))
 		second := milestoneObject(t, call("project_estimate", map[string]any{"action": "create", "name": "Second sizing " + uuid.NewString()}))

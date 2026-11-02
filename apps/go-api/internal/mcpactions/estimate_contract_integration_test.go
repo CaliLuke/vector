@@ -17,7 +17,7 @@ import (
 // empty optional strings as omitted, preserves a zero point key and false
 // last_used, and creates a catalogue separately from selecting it on a project.
 func TestMCPEstimateSDKFieldsAndSelection(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		created := milestoneObject(t, call("project_estimate", map[string]any{"action": "create", "name": "Sizing", "last_used": false, "description": "Description", "external_source": "fixture", "external_id": uuid.NewString()}))
 		require.ElementsMatch(t, strings.Fields("id name description type last_used external_id external_source created_at updated_at created_by updated_by project workspace"), slices.Collect(maps.Keys(created)))
@@ -66,7 +66,7 @@ func TestMCPEstimateSDKFieldsAndSelection(t *testing.T) {
 }
 
 func TestMCPEstimatePointBatchValidationIsAtomic(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		created := milestoneObject(t, call("project_estimate", map[string]any{"action": "create", "name": "Validated points " + uuid.NewString(), "type": "points"}))
 		call = catalogueScoped(call, map[string]any{"estimate_id": created["id"]})

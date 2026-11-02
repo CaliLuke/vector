@@ -18,10 +18,10 @@ type catalogueCall func(string, map[string]any) rpcResult
 
 type catalogueStatusCall func(string, map[string]any, int) rpcResult
 
-// Share one migrated database across the protocol/credential matrix. Each case
+// Share one migrated database across the credential matrix. Each case
 // owns its records and exercises the actual generated transport and repositories.
 func TestMCPWorkspaceCatalogueBatch(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		t.Run("feature receipts and current authorization", func(t *testing.T) { catalogueFeatures(t, f, call) })
 		t.Run("customer identities and request binding", func(t *testing.T) { catalogueCustomers(t, f, call) })
 		t.Run("property cardinality and atomic values", func(t *testing.T) { catalogueCustomerProperties(t, call) })
@@ -30,43 +30,47 @@ func TestMCPWorkspaceCatalogueBatch(t *testing.T) {
 	})
 }
 
-func runCatalogueMatrix(t *testing.T, exercise func(*testing.T, milestoneFixture, catalogueCall)) {
+// runCatalogue exercises credential-neutral domain behavior once. Credential
+// matrices belong to transport, permissions, and current-authorization tests.
+func runCatalogue(t *testing.T, f milestoneFixture, exercise func(*testing.T, milestoneFixture, catalogueCall)) {
 	t.Helper()
-	runCatalogueFixtureMatrix(t, newMilestoneFixture(t), exercise)
+	_, err := f.pool.Exec(t.Context(), `UPDATE workspace_members SET role=20; UPDATE project_members SET role=20`)
+	require.NoError(t, err)
+	call := catalogueCaller(t, f, "personal token")
+	exercise(t, f, func(tool string, input map[string]any) rpcResult { return call(tool, input, http.StatusOK) })
 }
 
-func runCatalogueFixtureMatrix(t *testing.T, f milestoneFixture, exercise func(*testing.T, milestoneFixture, catalogueCall)) {
+func runCatalogueCredentials(t *testing.T, f milestoneFixture, exercise func(*testing.T, milestoneFixture, catalogueCall)) {
 	t.Helper()
-	runCatalogueStatusFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, call catalogueStatusCall) {
+	runCatalogueStatusCredentials(t, f, func(t *testing.T, f milestoneFixture, call catalogueStatusCall) {
 		exercise(t, f, func(tool string, input map[string]any) rpcResult { return call(tool, input, http.StatusOK) })
 	})
 }
 
-func runCatalogueStatusFixtureMatrix(t *testing.T, f milestoneFixture, exercise func(*testing.T, milestoneFixture, catalogueStatusCall)) {
+func runCatalogueStatusCredentials(t *testing.T, f milestoneFixture, exercise func(*testing.T, milestoneFixture, catalogueStatusCall)) {
 	t.Helper()
 	_, err := f.pool.Exec(t.Context(), `UPDATE workspace_members SET role=20; UPDATE project_members SET role=20`)
 	require.NoError(t, err)
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		for _, mode := range []string{"personal token", "OAuth"} {
-			passed := t.Run(version+"/"+mode, func(t *testing.T) {
-				pat, oauth := f.handler(t, nil), oauthHandler(t, f.fixture, f.oauth.Authenticate)
-				call := catalogueStatusCall(func(tool string, input map[string]any, status int) rpcResult {
-					body, marshalErr := json.Marshal(input)
-					require.NoError(t, marshalErr)
-					if mode == "OAuth" {
-						return oauthToolCall(t, oauth, version, "oauth-user", "workspace-one", tool, string(body), status)
-					}
-					if status != http.StatusOK {
-						return oauthToolCall(t, pat, version, "test-one", "workspace-one", tool, string(body), status)
-					}
-					return rpcVersion(t, pat, "test-one", "tools/call", resourceCall(tool, string(body)), version)
-				})
-				exercise(t, f, call)
-			})
-			if !passed {
-				return
-			}
+	for _, mode := range []string{"personal token", "OAuth"} {
+		if !t.Run(mode, func(t *testing.T) { exercise(t, f, catalogueCaller(t, f, mode)) }) {
+			return
 		}
+	}
+}
+
+func catalogueCaller(t *testing.T, f milestoneFixture, mode string) catalogueStatusCall {
+	t.Helper()
+	var h http.Handler
+	var token string
+	if mode == "OAuth" {
+		h, token = oauthHandler(t, f.fixture, f.oauth.Authenticate), "oauth-user"
+	} else {
+		h, token = f.handler(t, nil), "test-one"
+	}
+	return func(tool string, input map[string]any, status int) rpcResult {
+		body, err := json.Marshal(input)
+		require.NoError(t, err)
+		return toolCall(t, h, token, "workspace-one", tool, string(body), status)
 	}
 }
 

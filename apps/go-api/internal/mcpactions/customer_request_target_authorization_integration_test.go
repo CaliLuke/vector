@@ -57,7 +57,7 @@ func TestMCPCustomerRequestLinkReceiptsRequireCurrentTargetAccess(t *testing.T) 
 
 func runCustomerLinkTargetReplay(t *testing.T, tool string, prepare func(*testing.T, milestoneFixture, catalogueCall) map[string]any, changes []customerRequestLinkChange) {
 	t.Helper()
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, change := range changes {
 			t.Run(change.name, func(t *testing.T) {
 				input := prepare(t, f, call)

@@ -23,7 +23,7 @@ func TestMCPPlanningPropertyQueriesUseBoundDiscoverySnapshot(t *testing.T) {
 	require.False(t, catalog.Enabled)
 	_, err = repo.Mutate(t.Context(), testsupport.LabelActor, "workspace-one", "enable", "", workitemtypes.Input{Revision: catalog.Revision})
 	require.NoError(t, err)
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, fixture milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, f, func(t *testing.T, fixture milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		milestoneObject(t, call("project", map[string]any{"action": "update_features", "cycles": true, "modules": true}))
 		for _, kind := range []string{"cycle", "module"} {

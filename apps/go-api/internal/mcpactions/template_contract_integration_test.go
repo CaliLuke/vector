@@ -47,7 +47,7 @@ func assertTemplateSDKRecord(t *testing.T, scope templateScope, record map[strin
 }
 
 func TestMCPTemplateSDKRecordsPreserveBodyAndMergeFields(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, scope := range templateScopes() {
 			t.Run(scope.kind+"/"+scope.project, func(t *testing.T) {
 				input := templateScopedInput(scope, "create")

@@ -12,7 +12,7 @@ import (
 )
 
 func TestMCPTemplateInvalidWritesLeaveNoReceiptOrAudit(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		created := milestoneObject(t, call("template", map[string]any{"action": "create", "kind": "workitem", "name": "Validation target", "template_data": `{}`}))
 		for _, invalid := range []struct {
 			name   string

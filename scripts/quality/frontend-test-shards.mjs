@@ -3,6 +3,10 @@ import path from "node:path";
 
 // Source size is a stable cost estimate. Spread larger tests first rather than
 // letting alternating filenames put most expensive files in the same shard.
+/**
+ * @param {string[]} files
+ * @returns {string[][]}
+ */
 export function partitionTestFiles(files) {
   const shards = [[], []];
   const sizes = [0, 0];

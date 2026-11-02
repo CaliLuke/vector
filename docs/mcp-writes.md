@@ -26,7 +26,7 @@ are excluded from normalized request identity. Replay returns the stored result
 without applying the caller's current timezone. Ordinary reads still use the
 current preference. Audit and durable-effect snapshots retain their native
 representation. The [catalogue receipt regressions](../apps/go-api/internal/mcpactions/catalogue_receipt_timezone_integration_test.go)
-cover timezone changes across 17 mutation scenarios under both protocols and
+cover timezone changes across 17 mutation scenarios under protocol revision `2026-07-28` and
 credentials. They also verify that release descriptions retain opaque JSON
 values while modeled timestamps use the caller's timezone.
 
@@ -56,9 +56,9 @@ Mutation logs and spans contain the validated action, authenticated actor/client
 
 Real PostgreSQL tests cover every receipt key dimension, canonical input, large integer conflicts, duplicate commits and rollback recovery, cancellation while waiting, late authorization revocation, deleted-target replay, expiration, and atomic rollback of receipt/domain/outbox failures. A TCP fixture drops PostgreSQL's successful COMMIT response before the driver receives it, proving both keyed recovery and truthful unkeyed uncertainty. Bootstrap tests install the migration in a fresh database and repeat the complete migration sequence.
 
-Generated-server archive tests exercise real PostgreSQL with PAT and OAuth under both revisions: empty default results, opt-in revisions, replay before CAS, changed-input conflicts, stale-write rejection, permission loss on replay, and discovery isolation. Domain tests additionally prove authorization policies, favorite rollback, concurrent CAS, and revision advancement by other writers. Telemetry tests verify matching log/span correlation and redaction.
+Generated-server archive tests exercise real PostgreSQL with PAT and OAuth on revision `2026-07-28`: empty default results, opt-in revisions, replay before CAS, changed-input conflicts, stale-write rejection, permission loss on replay, and discovery isolation. Domain tests additionally prove authorization policies, favorite rollback, concurrent CAS, and revision advancement by other writers. Telemetry tests verify matching log/span correlation and redaction.
 
-[Property receipt tests](../apps/go-api/internal/mcpactions/workitem_property_timezone_integration_test.go) cover timestamp stability after timezone changes, including nested options and multi-value results, under both protocols and authentication modes. [Queued property authorization tests](../apps/go-api/internal/mcpactions/workitem_property_authorization_wait_integration_test.go) exercise all nine mutations when credentials, OAuth write scope, or membership are revoked while waiting for the schema lock. Rejected writes and replays leave domain storage, receipts, revisions, subscriptions and durable effects unchanged.
+[Property receipt tests](../apps/go-api/internal/mcpactions/workitem_property_timezone_integration_test.go) cover timestamp stability after timezone changes, including nested options and multi-value results, under protocol revision `2026-07-28` . [Queued property authorization tests](../apps/go-api/internal/mcpactions/workitem_property_authorization_wait_integration_test.go) exercise all nine mutations when credentials, OAuth write scope, or membership are revoked while waiting for the schema lock. Rejected writes and replays leave domain storage, receipts, revisions, subscriptions and durable effects unchanged.
 
 [Property storage-failure tests](../apps/go-api/internal/mcpactions/workitem_property_storage_failure_integration_test.go) reject receipt writes for all nine mutations and outbox writes for value changes. They verify rollback of the domain changes and effects, reuse of the failed request ID, and replay without repeating the accepted mutation.
 
@@ -68,9 +68,9 @@ Generated-server archive tests exercise real PostgreSQL with PAT and OAuth under
 
 The receipt foundation alone does not establish resource parity. The [cleanup regression](../apps/go-api/internal/backgroundtasks/mutation_receipt_cleanup_integration_test.go) covers bounded deletion, future-cutoff protection, concurrent renewal, durable admission and timer registration against PostgreSQL. Local browser checks passed for work-item revision conflicts and page collaboration replacement. The [parity tracker](mcp-parity.md) records those checks and the six-domain receipt batch. Full gates passed at `17d1afdb`; the remaining coverage inventory and resource acceptance still require separate evidence.
 
-Page and collection writes support the same optional receipt/revision extensions. Workspace revisions include all native page, project-link, collection, membership and item-page-link writers. Page body changes enqueue native transaction/version work atomically. See [page and collection contracts](mcp-pages-collections.md). Content workflows and the six-domain receipt batch pass under both authentication modes and protocol revisions; remaining acceptance is tracked in [MCP parity](mcp-parity.md).
+Page and collection writes support the same optional receipt/revision extensions. Workspace revisions include all native page, project-link, collection, membership and item-page-link writers. Page body changes enqueue native transaction/version work atomically. See [page and collection contracts](mcp-pages-collections.md). Content workflows and the six-domain receipt batch pass under both authentication modes on protocol revision `2026-07-28`; remaining acceptance is tracked in [MCP parity](mcp-parity.md).
 
-Template, initiative and feature-setting mutations support optional receipt/revision extensions, current authorization before replay and transactional audit events. Initiative work-item link changes enqueue native association history. Catalogue workflows and receipt checks pass under both authentication modes and protocol revisions; the parity tracker records remaining acceptance.
+Template, initiative and feature-setting mutations support optional receipt/revision extensions, current authorization before replay and transactional audit events. Initiative work-item link changes enqueue native association history. Catalogue workflows and receipt checks pass under both authentication modes on protocol revision `2026-07-28`; the parity tracker records remaining acceptance.
 
 Cycle and module delete receipts check current owner-or-project-administrator
 authority before replay. Active project members retain owner-based delete rights;
@@ -105,5 +105,5 @@ that every deletion target has a UUID.
 The [worker regressions](../apps/go-api/internal/backgroundtasks/project_deletion_receipt_integration_test.go)
 exercise retention, expiry, explicit revocation, and committed cascade retries.
 The [MCP workflow regression](../apps/go-api/internal/mcpactions/project_delete_workflow_integration_test.go)
-creates and deletes projects through both credentials and protocol revisions,
+creates and deletes projects through protocol revision `2026-07-28`,
 runs the durable cascade, and checks receipt recovery and hidden-project reads.

@@ -15,7 +15,7 @@ import (
 )
 
 func TestMCPCustomerIdentityReceiptsRequireCurrentRoleAndFeature(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, scenario := range customerMutationScenarios {
 			for _, change := range []struct {
 				name, statement, code string

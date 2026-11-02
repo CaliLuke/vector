@@ -18,7 +18,7 @@ import (
 
 func TestMCPAttachmentInlineTypesAndSizeBoundaries(t *testing.T) {
 	h := attachmentRecoveryFixture(t)
-	runCatalogueFixtureMatrix(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		for _, tc := range []struct {
 			name, mime, filename, kind string
 			size                       int

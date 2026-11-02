@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -89,103 +88,54 @@ func oauthHandler(t *testing.T, f fixture, authenticate mcptransport.Authenticat
 	return h
 }
 
-func oauthCall(t *testing.T, h http.Handler, version, token, workspace, input string, status int) rpcResult {
+func oauthCall(t *testing.T, h http.Handler, token, workspace, input string, status int) rpcResult {
 	t.Helper()
-	return oauthToolCall(t, h, version, token, workspace, "member", input, status)
-}
-
-func oauthToolCall(t *testing.T, h http.Handler, version, token, workspace, tool, input string, status int) rpcResult {
-	t.Helper()
-	return oauthRPC(t, h, version, token, workspace, "tools/call", map[string]any{"name": tool, "arguments": json.RawMessage(input)}, status)
-}
-
-func oauthRPC(t *testing.T, h http.Handler, version, token, workspace, method string, params map[string]any, status int) rpcResult {
-	t.Helper()
-	r := oauthRequest(t, version, token, workspace, method, params)
-	w := httptest.NewRecorder()
-	h.ServeHTTP(w, r)
-	require.Equal(t, status, w.Code, w.Body.String())
-	if status != http.StatusOK {
-		return rpcResult{}
-	}
-	var response struct {
-		Result rpcResult
-		Error  json.RawMessage
-	}
-	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &response))
-	require.Empty(t, response.Error, w.Body.String())
-	return response.Result
-}
-
-func oauthRequest(t *testing.T, version, token, workspace, method string, params map[string]any) *http.Request {
-	t.Helper()
-	if version == "2026-07-28" {
-		params["_meta"] = map[string]any{"io.modelcontextprotocol/protocolVersion": version, "io.modelcontextprotocol/clientInfo": map[string]string{"name": "test", "version": "1"}, "io.modelcontextprotocol/clientCapabilities": map[string]any{}}
-	}
-	body, err := json.Marshal(map[string]any{"jsonrpc": "2.0", "id": 1, "method": method, "params": params})
-	require.NoError(t, err)
-	r := httptest.NewRequest("POST", "https://vector.example/mcp", strings.NewReader(string(body)))
-	r.Header.Set("Content-Type", "application/json")
-	r.Header.Set("Accept", "application/json, text/event-stream")
-	r.Header.Set("Mcp-Protocol-Version", version)
-	if version == "2026-07-28" {
-		r.Header.Set("Mcp-Method", method)
-		if method == "tools/call" {
-			r.Header.Set("Mcp-Name", params["name"].(string))
-		}
-	}
-	r.Header.Set("Authorization", "Bearer "+token)
-	if workspace != "" {
-		r.Header.Set("X-Workspace-Slug", workspace)
-	}
-	return r
+	return toolCall(t, h, token, workspace, "member", input, status)
 }
 
 func TestOAuthGeneratedMembersUseOptionalWorkspaceAndCurrentIssuer(t *testing.T) {
 	f, _, auth, issuer := oauthFixture(t)
 	h := oauthHandler(t, f, auth.Authenticate)
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		t.Run(version, func(t *testing.T) {
-			me := oauthCall(t, h, version, "oauth-user", "", `{"action":"me"}`, 200)
-			require.False(t, me.IsError, me.Content)
-			require.Contains(t, string(me.StructuredContent), "10000000-0000-4000-8000-000000000001")
-			roles := oauthCall(t, h, version, "oauth-user", "", `{"action":"list_roles","workspace_slug":"workspace-one"}`, 200)
-			require.False(t, roles.IsError, roles.Content)
-			require.Contains(t, string(roles.StructuredContent), `"total_count":7`)
-			var catalogue struct {
-				Results []struct {
-					ID string `json:"id"`
-				} `json:"results"`
-			}
-			require.NoError(t, json.Unmarshal(roles.StructuredContent, &catalogue))
-			require.Len(t, catalogue.Results, 7)
-			role := oauthCall(t, h, version, "oauth-user", "workspace-one", fmt.Sprintf(`{"action":"retrieve_role","role_id":%q}`, catalogue.Results[0].ID), 200)
-			require.False(t, role.IsError, role.Content)
-			require.Contains(t, string(role.StructuredContent), catalogue.Results[0].ID)
-			workspace := oauthCall(t, h, version, "oauth-user", "workspace-one", `{"action":"list_workspace","first_name":"zo"}`, 200)
-			require.False(t, workspace.IsError, workspace.Content)
-			require.Contains(t, string(workspace.StructuredContent), `"total_count":1`)
-			project := oauthCall(t, h, version, "oauth-user", "", `{"action":"list_project","workspace_slug":"workspace-one","project_id":"30000000-0000-4000-8000-000000000001"}`, 200)
-			require.False(t, project.IsError, project.Content)
-			require.Len(t, project.Content, 1)
-			require.Contains(t, project.Content[0].Text, "10000000-0000-4000-8000-000000000001")
 
-			missing := oauthCall(t, h, version, "oauth-user", "", `{"action":"list_roles"}`, 200)
-			require.True(t, missing.IsError)
-			denied := oauthCall(t, h, version, "oauth-user", "", `{"action":"list_roles","workspace_slug":"workspace-two"}`, 200)
-			require.True(t, denied.IsError)
-			oauthCall(t, h, version, "oauth-user", "workspace-one", `{"action":"me","workspace_slug":"workspace-two"}`, 400)
-			oauthCall(t, h, version, "test-one", "", `{"action":"me"}`, 401)
-		})
+	me := oauthCall(t, h, "oauth-user", "", `{"action":"me"}`, 200)
+	require.False(t, me.IsError, me.Content)
+	require.Contains(t, string(me.StructuredContent), "10000000-0000-4000-8000-000000000001")
+	roles := oauthCall(t, h, "oauth-user", "", `{"action":"list_roles","workspace_slug":"workspace-one"}`, 200)
+	require.False(t, roles.IsError, roles.Content)
+	require.Contains(t, string(roles.StructuredContent), `"total_count":7`)
+	var catalogue struct {
+		Results []struct {
+			ID string `json:"id"`
+		} `json:"results"`
 	}
+	require.NoError(t, json.Unmarshal(roles.StructuredContent, &catalogue))
+	require.Len(t, catalogue.Results, 7)
+	role := oauthCall(t, h, "oauth-user", "workspace-one", fmt.Sprintf(`{"action":"retrieve_role","role_id":%q}`, catalogue.Results[0].ID), 200)
+	require.False(t, role.IsError, role.Content)
+	require.Contains(t, string(role.StructuredContent), catalogue.Results[0].ID)
+	workspace := oauthCall(t, h, "oauth-user", "workspace-one", `{"action":"list_workspace","first_name":"zo"}`, 200)
+	require.False(t, workspace.IsError, workspace.Content)
+	require.Contains(t, string(workspace.StructuredContent), `"total_count":1`)
+	project := oauthCall(t, h, "oauth-user", "", `{"action":"list_project","workspace_slug":"workspace-one","project_id":"30000000-0000-4000-8000-000000000001"}`, 200)
+	require.False(t, project.IsError, project.Content)
+	require.Len(t, project.Content, 1)
+	require.Contains(t, project.Content[0].Text, "10000000-0000-4000-8000-000000000001")
+
+	missing := oauthCall(t, h, "oauth-user", "", `{"action":"list_roles"}`, 200)
+	require.True(t, missing.IsError)
+	denied := oauthCall(t, h, "oauth-user", "", `{"action":"list_roles","workspace_slug":"workspace-two"}`, 200)
+	require.True(t, denied.IsError)
+	oauthCall(t, h, "oauth-user", "workspace-one", `{"action":"me","workspace_slug":"workspace-two"}`, 400)
+	oauthCall(t, h, "test-one", "", `{"action":"me"}`, 401)
+
 	issuer.mu.Lock()
 	issuer.scope = "vector:write"
 	issuer.mu.Unlock()
-	oauthCall(t, h, "2025-11-25", "oauth-user", "", `{"action":"me"}`, 403)
+	oauthCall(t, h, "oauth-user", "", `{"action":"me"}`, 403)
 	issuer.mu.Lock()
 	issuer.status = 503
 	issuer.mu.Unlock()
-	oauthCall(t, h, "2025-11-25", "oauth-user", "", `{"action":"me"}`, 503)
+	oauthCall(t, h, "oauth-user", "", `{"action":"me"}`, 503)
 }
 
 func TestOAuthGeneratedReadsRevalidateBetweenAuthenticationAndCall(t *testing.T) {
@@ -194,57 +144,55 @@ func TestOAuthGeneratedReadsRevalidateBetweenAuthenticationAndCall(t *testing.T)
 			{"member", "workspace-one", `{"action":"list_roles"}`},
 			{"workspace", "", `{"action":"list"}`},
 		} {
-			for _, version := range []string{"2025-11-25", "2026-07-28"} {
-				t.Run(change+"/"+target.tool+"/"+version, func(t *testing.T) {
-					f, pool, auth, issuer := oauthFixture(t)
-					h := oauthHandler(t, f, func(ctx context.Context, r *http.Request) (context.Context, error) {
-						verified, err := auth.Authenticate(ctx, r)
-						if err != nil {
-							return nil, err
-						}
-						switch change {
-						case "client":
-							issuer.mu.Lock()
-							issuer.client = "other-client"
-							issuer.mu.Unlock()
-						case "link reassigned":
-							_, err = pool.Exec(ctx, `UPDATE mcp_oauth_links SET user_id='10000000-0000-4000-8000-000000000002'`)
-						case "token":
-							issuer.mu.Lock()
-							issuer.active = false
-							issuer.mu.Unlock()
-						case "scope":
-							issuer.mu.Lock()
-							issuer.scope = ""
-							issuer.mu.Unlock()
-						case "issuer outage":
-							issuer.mu.Lock()
-							issuer.status = 503
-							issuer.mu.Unlock()
-						case "unlink":
-							_, err = pool.Exec(ctx, `DELETE FROM mcp_oauth_links`)
-						case "account":
-							_, err = pool.Exec(ctx, `UPDATE users SET is_active=false WHERE id='10000000-0000-4000-8000-000000000001'`)
-						case "membership":
-							_, err = pool.Exec(ctx, `UPDATE workspace_members SET is_active=false WHERE member_id='10000000-0000-4000-8000-000000000001'`)
-						}
-						require.NoError(t, err)
-						return verified, nil
-					})
-					result := oauthToolCall(t, h, version, "oauth-user", target.workspace, target.tool, target.input, 200)
-					if change == "membership" && target.tool == "workspace" {
-						require.False(t, result.IsError, result.Content)
-						require.JSONEq(t, `{"results":[]}`, string(result.StructuredContent))
-					} else {
-						require.True(t, result.IsError, result.Content)
-						require.Empty(t, result.StructuredContent)
+			t.Run(change+"/"+target.tool, func(t *testing.T) {
+				f, pool, auth, issuer := oauthFixture(t)
+				h := oauthHandler(t, f, func(ctx context.Context, r *http.Request) (context.Context, error) {
+					verified, err := auth.Authenticate(ctx, r)
+					if err != nil {
+						return nil, err
 					}
-					issuer.mu.Lock()
-					calls := issuer.calls
-					issuer.mu.Unlock()
-					require.Equal(t, 2, calls)
+					switch change {
+					case "client":
+						issuer.mu.Lock()
+						issuer.client = "other-client"
+						issuer.mu.Unlock()
+					case "link reassigned":
+						_, err = pool.Exec(ctx, `UPDATE mcp_oauth_links SET user_id='10000000-0000-4000-8000-000000000002'`)
+					case "token":
+						issuer.mu.Lock()
+						issuer.active = false
+						issuer.mu.Unlock()
+					case "scope":
+						issuer.mu.Lock()
+						issuer.scope = ""
+						issuer.mu.Unlock()
+					case "issuer outage":
+						issuer.mu.Lock()
+						issuer.status = 503
+						issuer.mu.Unlock()
+					case "unlink":
+						_, err = pool.Exec(ctx, `DELETE FROM mcp_oauth_links`)
+					case "account":
+						_, err = pool.Exec(ctx, `UPDATE users SET is_active=false WHERE id='10000000-0000-4000-8000-000000000001'`)
+					case "membership":
+						_, err = pool.Exec(ctx, `UPDATE workspace_members SET is_active=false WHERE member_id='10000000-0000-4000-8000-000000000001'`)
+					}
+					require.NoError(t, err)
+					return verified, nil
 				})
-			}
+				result := toolCall(t, h, "oauth-user", target.workspace, target.tool, target.input, 200)
+				if change == "membership" && target.tool == "workspace" {
+					require.False(t, result.IsError, result.Content)
+					require.JSONEq(t, `{"results":[]}`, string(result.StructuredContent))
+				} else {
+					require.True(t, result.IsError, result.Content)
+					require.Empty(t, result.StructuredContent)
+				}
+				issuer.mu.Lock()
+				calls := issuer.calls
+				issuer.mu.Unlock()
+				require.Equal(t, 2, calls)
+			})
 		}
 	}
 }

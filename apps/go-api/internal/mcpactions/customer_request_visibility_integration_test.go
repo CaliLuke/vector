@@ -13,7 +13,7 @@ import (
 )
 
 func TestMCPCustomerRequestLinksRespectCurrentItemVisibility(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		customer := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))
 		item := f.item(t)
 		request := milestoneObject(t, call("customer_request", map[string]any{"action": "create", "customer_id": customer["id"], "name": "Linked request", "workitem_ids": item}))
@@ -54,7 +54,7 @@ func TestMCPCustomerRequestsRejectMixedWorkspaceLinksAtomically(t *testing.T) {
 	f := customerIdentityFixture(t)
 	foreignWorkspace, foreignProject := addPrivateProjectInOtherWorkspace(t, f)
 	foreignItem := f.itemInScope(t, foreignWorkspace, foreignProject)
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		customer := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))
 		localItem := f.item(t)
 		input := map[string]any{"action": "create", "customer_id": customer["id"], "name": "Scoped request", "workitem_ids": localItem + "," + foreignItem, "mutation_id": uuid.NewString()}

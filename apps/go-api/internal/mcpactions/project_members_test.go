@@ -55,38 +55,33 @@ func (s *projectStore) ExecuteLifecycle(ctx context.Context, command projectmemb
 }
 
 func TestProjectMemberCallsPreserveSDKShapeAndActorScope(t *testing.T) {
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		t.Run(version, func(t *testing.T) {
-			f := newFixture(t)
-			h := f.handler(t, nil)
-			first := rpcVersion(t, h, "test-one", "tools/call", memberCall(`{"action":"list_project","project_id":"`+projectOne+`"}`), version)
-			require.False(t, first.IsError, first.Content)
-			require.Len(t, first.Content, 1)
-			assert.Empty(t, first.StructuredContent)
-			assert.JSONEq(t, `[{"id":"10000000-0000-4000-8000-000000000001","first_name":"First project","last_name":null,"email":"first@example.test","avatar":null,"avatar_url":null,"display_name":null,"role":null,"role_slug":null,"is_active":null,"is_bot":null}]`, first.Content[0].Text)
-			second := rpcVersion(t, h, "test-two", "tools/call", memberCall(`{"action":"list_project","project_id":"`+projectTwo+`","workspace_slug":"workspace-one"}`), version)
-			require.False(t, second.IsError, second.Content)
-			require.Len(t, second.Content, 1)
-			assert.Contains(t, second.Content[0].Text, "second@example.test")
-			assert.NotContains(t, second.Content[0].Text, "first@example.test")
-			denied := rpcVersion(t, h, "test-two", "tools/call", memberCall(`{"action":"list_project","project_id":"`+projectOne+`"}`), version)
-			require.True(t, denied.IsError)
-			assert.Contains(t, denied.Content[0].Text, "[forbidden]")
-			assert.NotContains(t, denied.Content[0].Text, "private permission")
-			assert.EqualValues(t, 2, f.projects.reads.Load())
-		})
-	}
+	f := newFixture(t)
+	h := f.handler(t, nil)
+	first := rpc(t, h, "test-one", "tools/call", memberCall(`{"action":"list_project","project_id":"`+projectOne+`"}`))
+	require.False(t, first.IsError, first.Content)
+	require.Len(t, first.Content, 1)
+	assert.Empty(t, first.StructuredContent)
+	assert.JSONEq(t, `[{"id":"10000000-0000-4000-8000-000000000001","first_name":"First project","last_name":null,"email":"first@example.test","avatar":null,"avatar_url":null,"display_name":null,"role":null,"role_slug":null,"is_active":null,"is_bot":null}]`, first.Content[0].Text)
+	second := rpc(t, h, "test-two", "tools/call", memberCall(`{"action":"list_project","project_id":"`+projectTwo+`","workspace_slug":"workspace-one"}`))
+	require.False(t, second.IsError, second.Content)
+	require.Len(t, second.Content, 1)
+	assert.Contains(t, second.Content[0].Text, "second@example.test")
+	assert.NotContains(t, second.Content[0].Text, "first@example.test")
+	denied := rpc(t, h, "test-two", "tools/call", memberCall(`{"action":"list_project","project_id":"`+projectOne+`"}`))
+	require.True(t, denied.IsError)
+	assert.Contains(t, denied.Content[0].Text, "[forbidden]")
+	assert.NotContains(t, denied.Content[0].Text, "private permission")
+	assert.EqualValues(t, 2, f.projects.reads.Load())
 }
 
 func TestEmptyProjectMemberResultHasNoContent(t *testing.T) {
 	f := newFixture(t)
 	f.projects.rows[firstProjectScope] = []any{}
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		result := rpcVersion(t, f.handler(t, nil), "test-one", "tools/call", memberCall(`{"action":"list_project","project_id":"`+projectOne+`"}`), version)
-		require.False(t, result.IsError, result.Content)
-		assert.Empty(t, result.Content)
-		assert.Empty(t, result.StructuredContent)
-	}
+
+	result := rpc(t, f.handler(t, nil), "test-one", "tools/call", memberCall(`{"action":"list_project","project_id":"`+projectOne+`"}`))
+	require.False(t, result.IsError, result.Content)
+	assert.Empty(t, result.Content)
+	assert.Empty(t, result.StructuredContent)
 }
 
 func TestProjectMemberRejectsOtherActionFieldsBeforeReading(t *testing.T) {
@@ -106,12 +101,14 @@ func TestConflictingWorkspaceSelectorsNeverReadApplicationData(t *testing.T) {
 		`{"action":"me","workspace_slug":""}`,
 		`{"action":"list_project","project_id":"` + projectOne + `","workspace_slug":"workspace-two"}`,
 	} {
-		request := httptest.NewRequest(http.MethodPost, "https://vector.example/mcp/api-key", strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"member","arguments":`+input+`}}`))
+		request := httptest.NewRequest(http.MethodPost, "https://vector.example/mcp/api-key", strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"member","arguments":`+input+`,"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/clientCapabilities":{}}}}`))
 		request.Header.Set("Authorization", "Bearer test-one")
 		request.Header.Set("X-Workspace-Slug", "workspace-one")
 		request.Header.Set("Content-Type", "application/json")
 		request.Header.Set("Accept", "application/json, text/event-stream")
-		request.Header.Set("Mcp-Protocol-Version", "2025-11-25")
+		request.Header.Set("Mcp-Protocol-Version", "2026-07-28")
+		request.Header.Set("Mcp-Method", "tools/call")
+		request.Header.Set("Mcp-Name", "member")
 		response := httptest.NewRecorder()
 		f.handler(t, nil).ServeHTTP(response, request)
 		assert.Equal(t, http.StatusBadRequest, response.Code)

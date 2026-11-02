@@ -31,7 +31,7 @@ func TestMCPTemplateListsBindKindWorkspaceAndProjectVisibility(t *testing.T) {
 			})
 			require.NoError(t, err)
 			foreignID := foreign.ID
-			runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+			runCatalogueCredentials(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
 				create := func(project string) string {
 					input := templateScopedInput(templateScope{kind, project}, "create")
 					input["name"], input["template_data"] = uuid.NewString(), `{}`

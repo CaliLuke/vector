@@ -71,7 +71,7 @@ narrowing cardinality. [Upstream issue #254](https://github.com/makeplane/plane-
 tracks the omitted field. Remove this compatibility note when the pinned helper
 forwards is_multi to its SDK update model.
 Generated-server tests exercise all nineteen actions under both authentication modes
-and protocol revisions. Customer property checks cover defaults, replacement values
+on protocol revision `2026-07-28`. Customer property checks cover defaults, replacement values
 and invalid-value preservation for all nine kinds; literal and JSON defaults;
 option identity, omitted options and default changes; inactive and readonly values;
 required-field clearing, cardinality narrowing and atomic bulk rejection. Clearing
@@ -83,15 +83,14 @@ soft-deleted definitions and cross-workspace property rejection.
 [Identity acceptance](../apps/go-api/internal/mcpactions/customer_identity_integration_test.go)
 covers exact names, partial and complete external identities, ambiguity, collision
 rollback, workspace binding and receipt replay across identity replacement under
-both credentials and protocols. [Concurrent mutation tests](../apps/go-api/internal/mcpactions/customer_concurrency_integration_test.go)
+protocol revision `2026-07-28`. [Concurrent mutation tests](../apps/go-api/internal/mcpactions/customer_concurrency_integration_test.go)
 verify one identity with disjoint field preservation, receipt conflicts and competing
 revisions. [Recovery and authorization tests](../apps/go-api/internal/mcpactions/customer_identity_recovery_integration_test.go)
 cover customer create, upsert, update and delete; request create, update and delete;
 and property create, update, delete and value replacement. They exercise cancelled
 waits, rejected commits, reusable receipts, and current token, scope and membership
 after lock waits before
-new writes or replay. The latter generated-server matrix covers both credentials
-and protocols; concurrency and rollback use the same native repository. The
+new writes or replay. The latter generated-server matrix covers protocol revision `2026-07-28`; concurrency and rollback use the same native repository. The
 [current role and feature checks](../apps/go-api/internal/mcpactions/customer_identity_access_integration_test.go)
 reject fresh customer, request and property writes and receipt replay for guests,
 members and a disabled customers feature. Restoring administrator access and the feature replays the original result
@@ -104,22 +103,21 @@ reject redirected retry receipts without changing stored state.
 hide draft and deleted items, archived projects and private projects after membership
 revocation. Mixed-workspace request creation leaves no request, association, effect
 or receipt; its mutation key remains reusable. These generated-server checks cover
-both credentials and protocol revisions. Request projections omit linked IDs;
+both credentials on protocol revision `2026-07-28`. Request projections omit linked IDs;
 clients read current visible links through `customer.list_workitems`.
 [Request-link authorization checks](../apps/go-api/internal/mcpactions/customer_request_target_authorization_integration_test.go)
 reject new writes and receipt replay after project membership loss, a guest-role
 change, project archival or deletion, and item draft or deletion. The same changes
 committed by a lock-holding writer reject waiting requests without customer data,
 receipt, revision or activity changes. Restoring target access replays the original
-result without duplicating effects. These checks cover both credentials and protocols.
+result without duplicating effects. These checks cover both credentials on protocol revision `2026-07-28`.
 [Workspace binding checks](../apps/go-api/internal/mcpactions/customer_request_workspace_integration_test.go)
 reject foreign customer and request IDs for every request action and association
 filters, even when the actor has administrator membership in both workspaces.
 
 [Request SDK projection checks](../apps/go-api/internal/mcpactions/customer_request_contract_integration_test.go)
 verify the eight request fields and twelve pagination fields in
-[plane-sdk 0.3.1](https://pypi.org/project/plane-sdk/0.3.1/) under both credentials
-and protocols. They cover create/update/retrieve equivalence,
+[plane-sdk 0.3.1](https://pypi.org/project/plane-sdk/0.3.1/) under protocol revision `2026-07-28`. They cover create/update/retrieve equivalence,
 retained associations after metadata edits, next/previous cursor navigation,
 default and empty pages, and search that excludes deleted and other customers'
 requests.
@@ -129,7 +127,7 @@ cover all three text and four date display formats declared by the pinned SDK,
 including omitted defaults, multiline values and readonly protection. Type and
 format changes are rejected without stored effects, even when the replacement is
 valid for creation. Metadata edits preserve the format. Unsupported formats are
-rejected for every property kind. These checks use both credentials and protocols.
+rejected for every property kind. These checks use protocol revision `2026-07-28`.
 
 [Native revision checks](../apps/go-api/internal/mcpactions/customer_native_revision_integration_test.go)
 cover direct inserts, updates and deletes in customer, request, association,
@@ -145,7 +143,7 @@ receipt replay reject them without changing customer state; restoring access
 replays the original result without another mutation. The same changes committed
 by a lock holder reject queued writes and replay. Expected state is read inside
 that transaction so legitimate option and revision changes remain accounted for.
-These checks use both credentials and protocol revisions.
+These checks use both credentials on protocol revision `2026-07-28`.
 
 [Definition retry checks](../apps/go-api/internal/mcpactions/customer_value_definition_authorization_integration_test.go)
 use native property updates and deletion to reject fresh value writes and accepted
@@ -157,14 +155,13 @@ reject foreign items, members and options on value writes and default selection,
 even when the actor administers both workspaces. Rejected writes leave their retry
 keys usable. Reads mask imported foreign values and relation defaults; replay and
 read masking preserve the imported stored state. Both definition and workspace
-checks cover both credentials and protocol revisions.
+checks cover both credentials on protocol revision `2026-07-28`.
 
 [Default-reference wait checks](../apps/go-api/internal/mcpactions/customer_default_reference_wait_integration_test.go)
 cover item/member selection on property creation and updates, and existing option
 selection on updates. Access changes committed by the lock holder reject queued
 new writes and receipt replay without changing customer state. Inline options on
-creation have no pre-existing reference IDs. The checks use both credentials and
-protocol revisions.
+creation have no pre-existing reference IDs. The checks use both credentials on protocol revision `2026-07-28`.
 
 [Association transaction checks](../apps/go-api/internal/mcpactions/customer_association_atomicity_integration_test.go)
 verify that a failed unlink rolls back earlier additions, activity, receipts and
@@ -173,7 +170,7 @@ adds preserve item revisions and enqueue no additional activity. Direct and
 request-specific links project each item once; filtered removals and request
 or customer deletion preserve other owners' links. Unfiltered unlink removes all
 links for that customer, including links added in the same call. These checks
-cover both credentials and protocol revisions.
+cover protocol revision `2026-07-28`.
 
 [Durable customer activity checks](../apps/go-api/internal/mcpactions/customer_association_worker_integration_test.go)
 queue direct and request-associated additions and removals while the worker is
@@ -189,7 +186,7 @@ soft-deleted requests.
 [SDK page checks](../apps/go-api/internal/mcpactions/customer_sdk_pagination_integration_test.go)
 verify all twelve envelope fields, forward/backward cursor navigation, default and
 empty pages, case-insensitive customer search and exclusion of deleted or foreign
-workspace rows. Both record and page checks use both credentials and protocols.
+workspace rows. Both record and page checks use protocol revision `2026-07-28`.
 
 [Association mutation recovery](../apps/go-api/internal/mcpactions/customer_association_mutation_fixture_integration_test.go)
 extends the shared contention, cancellation and rejected-commit tests to a mutation
@@ -208,7 +205,7 @@ reject reads, and inactive workspace membership is rejected before tool dispatch
 Restoring scope restores the same results without rewriting customer data.
 [Linked-item SDK checks](../apps/go-api/internal/mcpactions/customer_linked_item_contract_integration_test.go)
 verify the nine-field array projection and search by name, sequence number and
-project identifier. Both sets cover both credentials and protocol revisions.
+project identifier. Both sets cover protocol revision `2026-07-28`.
 
 [Receipt timezone checks](../apps/go-api/internal/mcpactions/customer_timezone_integration_test.go)
 cover customer create/upsert/update, request create/update and property

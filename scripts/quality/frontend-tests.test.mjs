@@ -88,7 +88,7 @@ await test("frontend shards balance large files and preserve paths with spaces",
     return file;
   });
   const shards = partitionTestFiles(files);
-  assert.deepEqual(shards.flat().toSorted(), files.toSorted());
+  assert.deepEqual(new Set(shards.flat()), new Set(files));
   assert.ok(shards.every((shard) => shard.length === 2));
   assert.ok(shards.every((shard) => !(shard.includes(files[0]) && shard.includes(files[2]))));
   assert.deepEqual(partitionTestFiles(files.toReversed()), shards, "discovery order must not affect the split");

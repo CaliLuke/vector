@@ -48,7 +48,7 @@ func catalogueCreatedWithReceipt(t *testing.T, call catalogueCall, tool string, 
 }
 
 func TestMCPCoreCatalogueBatch(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		t.Run("project and workspace", func(t *testing.T) { catalogueProjectWrites(t, call) })
 		t.Run("work items and queries", func(t *testing.T) { catalogueWorkitems(t, call) })
 		t.Run("planning", func(t *testing.T) { cataloguePlanning(t, f, call) })

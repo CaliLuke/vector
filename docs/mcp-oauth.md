@@ -259,7 +259,7 @@ admin bypass exists. Database ownership follows the application migrations.
 ## Proof obligations
 
 - Header-only behavior, generated member schemas/results and HTTP roster
-  behavior remain unchanged on both supported protocol revisions.
+  behavior remain unchanged on protocol revision `2026-07-28`.
 - OAuth metadata/route registration matches disabled/header/oauth/both exactly;
   wrong token classes never fall back. Strict headers, scope loss, missing scope,
   canonical audiences, current membership and tenant isolation are exercised.

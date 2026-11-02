@@ -37,6 +37,6 @@ generated enum when a released fix makes record and union validation agree.
 No dependency source is patched.
 
 Regression tests cover the generated MCP server under PAT and generic OAuth,
-both supported protocol revisions, pagination, mention output, current
+protocol revision `2026-07-28`, pagination, mention output, current
 permissions, foreign relationships, and empty versus missing results. Local
 browser/proxy verification and the rest of the accepted catalogue remain open.

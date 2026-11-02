@@ -11,7 +11,7 @@ import (
 )
 
 func TestMCPCustomerRequestsRejectAnotherCustomersRequest(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		owner := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))
 		other := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))
 		item := f.item(t)
@@ -50,7 +50,7 @@ func TestMCPCustomerRequestsRejectAnotherCustomersRequest(t *testing.T) {
 }
 
 func TestMCPCustomerRequestReceiptCannotBeRedirectedToAnotherCustomer(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogueCredentials(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		owner := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))
 		other := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))
 		for _, action := range []string{"create", "update", "delete"} {

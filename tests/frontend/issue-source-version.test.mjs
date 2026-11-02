@@ -6,9 +6,16 @@ import { setup, issueProps, state } from "./helpers/issue-form-harness.mjs";
 import { enableTypeFields, propertyDefinition, customControl } from "./helpers/issue-custom-fields.mjs";
 
 await test("saved source refresh cannot upgrade the version underneath local edits", async (t) => {
+  const started = performance.now();
+  /** @param {string} phase */
+  const mark = (phase) =>
+    t.diagnostic(`source-version phase=${phase} elapsed=${Math.round(performance.now() - started)}ms`);
+  mark("start");
   const env = await setup(t);
+  mark("environment-ready");
   enableTypeFields([propertyDefinition("effort", "Number")]);
   const { IssueFormRoot } = await import("../../apps/web/core/components/issues/issue-modal/form.tsx");
+  mark("component-imported");
   const calls = [];
   const render = (version, name, effort) =>
     env.render(
@@ -29,12 +36,15 @@ await test("saved source refresh cannot upgrade the version underneath local edi
       )
     );
   await render("v1", "Saved title", 1);
+  mark("initial-render");
   await change(env.container.querySelector('[name="name"]'), "Local title");
   await change(customControl(env.container, "effort"), "2");
   await render("v2", "Concurrent title", 9);
+  mark("source-refreshed");
   assert.equal(env.container.querySelector('[name="name"]').value, "Local title");
   assert.equal(customControl(env.container, "effort").value, "2");
   await submit(env.container);
+  mark("submitted");
   assert.equal(calls[0][5], "v1");
   assert.equal(calls[0][0].name, "Local title");
   assert.deepEqual(calls[0][0].custom_properties, { effort: 2 });

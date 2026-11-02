@@ -11,7 +11,7 @@ import (
 )
 
 func TestMCPPropertyRichTextRecordsHistoryOncePerChange(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		value := newRichPropertyValue(t, f, root)
 		call := value.call
 		input := map[string]any{"action": "set_value", "description_html": "<p>First note</p>", "request_id": uuid.NewString()}

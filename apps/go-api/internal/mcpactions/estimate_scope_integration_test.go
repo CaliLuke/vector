@@ -55,7 +55,7 @@ func TestMCPEstimateWorkspaceAndPointParentScope(t *testing.T) {
 }
 
 func TestMCPEstimateCurrentProjectVisibilityAndReplay(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject})
 		request := map[string]any{"action": "create", "name": uuid.NewString(), "request_id": uuid.NewString()}
 		receipt := milestoneObject(t, call("project_estimate", request))

@@ -37,7 +37,7 @@ existing identifier. Existing HTTP calls retain their prior policy through the
 optional workspace binding. HTTP and MCP share timestamp conversion.
 
 [PostgreSQL transport tests](../apps/go-api/internal/mcpactions/resource_read_integration_test.go)
-cover both credentials and protocol revisions, exact response fields, pagination,
+cover both credentials on protocol revision `2026-07-28`, exact response fields, pagination,
 archive policies, scope changes after admission, every query projection, empty
 pages, and foreign relationships. [Discovery tests](../apps/go-api/internal/mcpactions/discovery_integration_test.go)
 verify current project-membership filtering. [Label repository regressions](../apps/go-api/internal/projectlabelreads/scoped_read_integration_test.go)
@@ -73,7 +73,7 @@ The [concurrency cases](../apps/go-api/internal/mcpactions/label_concurrency_int
 prove one commit for identical requests, conflicts for changed inputs sharing a
 request ID, and one successful update for competing revisions.
 The combined run passes 75 label cases and four related feature cases, with no
-failures or skips. Transport cases cover both credentials and protocols;
+failures or skips. Transport cases cover both credentials on protocol revision `2026-07-28`;
 concurrency cases exercise the repository directly.
 
 Local browser/proxy checks on 2026-10-30 used the rebuilt application at
@@ -100,7 +100,7 @@ all writers. Optional receipt and revision extensions follow the
 
 The [core workflow batch](../apps/go-api/internal/mcpactions/core_batch_integration_test.go)
 covers create replay, update, association, archive, restore and deletion under
-both credentials and protocols. It passed in the full gate at `1be8fcd5`.
+protocol revision `2026-07-28`. It passed in the full gate at `1be8fcd5`.
 The [planning receipt regressions](../apps/go-api/internal/mcpactions/planning_receipt_integration_test.go)
 add changed-input conflicts, direct-writer revision invalidation, preservation of
 later edits on replay, and atomic association/effect rollback with retry.
@@ -116,7 +116,7 @@ add 72 cases for denied scope, allowed member/admin writes and owned-delete repl
 [Lock-wait cases](../apps/go-api/internal/mcpactions/planning_authorization_wait_integration_test.go)
 add 40 cases that revoke credentials, OAuth write scope or project membership after
 the request waits on a project lock, before a new write or receipt replay.
-These transport cases cover both credentials and protocol revisions.
+These transport cases cover protocol revision `2026-07-28`.
 Eight [native module-delete authorization cases](../apps/go-api/internal/mcpactions/module_native_delete_authorization_integration_test.go)
 also preserve the distinct app and API rules for creators, members and project or
 workspace administrators. Both full gates passed at `97660842`, including all 13,814 Go test events.

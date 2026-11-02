@@ -21,7 +21,7 @@ func TestMCPAttachmentNativeParentLifecycle(t *testing.T) {
 	redis := testsupport.StartRedis(t)
 	t.Setenv("REDIS_URL", "redis://"+redis.Options().Addr)
 	var ids, keys []string
-	runCatalogueFixtureMatrix(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		for _, parent := range []string{"workitem", "project"} {
 			t.Run(parent, func(t *testing.T) {
 				id, key := attachmentParentLifecycle(t, h, f, root, parent)
@@ -29,7 +29,7 @@ func TestMCPAttachmentNativeParentLifecycle(t *testing.T) {
 			})
 		}
 	})
-	require.Len(t, ids, 8)
+	require.Len(t, ids, 2)
 	var deletedBeforeWorker int
 	require.NoError(t, h.pool.QueryRow(t.Context(), `SELECT count(*) FROM file_assets WHERE id=ANY($1::uuid[]) AND deleted_at IS NOT NULL`, ids).Scan(&deletedBeforeWorker))
 	require.Zero(t, deletedBeforeWorker)

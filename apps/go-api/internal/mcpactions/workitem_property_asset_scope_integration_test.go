@@ -17,7 +17,7 @@ func TestMCPPropertyRichTextRejectsUnavailableImageWithoutReservingReceipt(t *te
 	otherOwner := uuid.NewString()
 	_, err := f.pool.Exec(t.Context(), `INSERT INTO users SELECT (jsonb_populate_record(NULL::users,to_jsonb(u)||jsonb_build_object('id',$1::text,'username',$1::text,'email',$1::text||'@example.test'))).* FROM users u WHERE id=$2`, otherOwner, testsupport.LabelActor)
 	require.NoError(t, err)
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		value := newRichPropertyValue(t, f, root)
 		otherItem := milestoneObject(t, root("workitem", map[string]any{"action": "create", "project_id": testsupport.LabelProject, "name": "Other image scope", "type_id": value.typeID}))["id"]
 		otherProject := milestoneObject(t, root("project", map[string]any{"action": "create", "name": "Image scope " + strings.ReplaceAll(uuid.NewString(), "-", ""), "identifier": strings.ToUpper(uuid.NewString()[:8])}))["id"]
@@ -60,7 +60,7 @@ func TestMCPPropertyRichTextRejectsUnavailableImageWithoutReservingReceipt(t *te
 }
 
 func TestMCPPropertyRichTextStorageFailureRollsBackImageAndHistory(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		for _, table := range []string{"work_item_property_versions", "work_item_effects", "mutation_receipts"} {
 			t.Run(table, func(t *testing.T) {
 				value := newRichPropertyValue(t, f, root)

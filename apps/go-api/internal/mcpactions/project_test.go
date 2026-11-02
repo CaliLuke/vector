@@ -44,21 +44,19 @@ func projectCall(input string) map[string]any {
 }
 
 func TestProjectReadsPreservePinnedSDKResults(t *testing.T) {
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		for _, test := range []struct{ name, input, want string }{
-			{"list", `{"action":"list"}`, projectPageJSON},
-			{"zero page size", `{"action":"list","per_page":0,"cursor":""}`, projectPageJSON},
-			{"retrieve", `{"action":"retrieve","project_id":"30000000-0000-4000-8000-000000000001"}`, projectDetailJSON},
-		} {
-			t.Run(version+"/"+test.name, func(t *testing.T) {
-				f := newFixture(t)
-				result := rpcVersion(t, f.handler(t, nil), "test-one", "tools/call", projectCall(test.input), version)
-				require.False(t, result.IsError, result.Content)
-				require.JSONEq(t, test.want, string(result.StructuredContent))
-				require.NotNil(t, f.projectReads.expectedWorkspace)
-				require.Equal(t, "20000000-0000-4000-8000-000000000001", f.projectReads.expectedWorkspace.String())
-			})
-		}
+	for _, test := range []struct{ name, input, want string }{
+		{"list", `{"action":"list"}`, projectPageJSON},
+		{"zero page size", `{"action":"list","per_page":0,"cursor":""}`, projectPageJSON},
+		{"retrieve", `{"action":"retrieve","project_id":"30000000-0000-4000-8000-000000000001"}`, projectDetailJSON},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			f := newFixture(t)
+			result := rpc(t, f.handler(t, nil), "test-one", "tools/call", projectCall(test.input))
+			require.False(t, result.IsError, result.Content)
+			require.JSONEq(t, test.want, string(result.StructuredContent))
+			require.NotNil(t, f.projectReads.expectedWorkspace)
+			require.Equal(t, "20000000-0000-4000-8000-000000000001", f.projectReads.expectedWorkspace.String())
+		})
 	}
 }
 
@@ -153,24 +151,20 @@ func TestDirectProjectCallsRequireIdentityAndValidInputs(t *testing.T) {
 }
 
 func TestProjectDiscoveryOmitsWritesWhenTheyAreUnavailable(t *testing.T) {
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		t.Run(version, func(t *testing.T) {
-			f := newFixture(t)
-			f.projectWrites.visibility = projects.ProjectWriteVisibility{}
-			discovery := rpcVersion(t, f.handler(t, nil), "test-one", "tools/list", map[string]any{}, version)
-			project := discoveredTool(t, discovery, "project")
-			require.Equal(t, "project", project.Name)
-			require.False(t, project.Annotations["readOnlyHint"])
-			require.True(t, project.Annotations["destructiveHint"])
-			require.False(t, project.Annotations["openWorldHint"])
-			require.JSONEq(t, `{"anyOf":[{"type":"string","enum":["list"]},{"type":"string","enum":["retrieve"]},{"type":"string","enum":["worklog_summary"]},{"type":"string","enum":["get_features"]}]}`, string(project.InputSchema.Properties["action"]))
-			require.Len(t, project.InputSchema.OneOf, 4)
-			for _, branch := range project.InputSchema.OneOf {
-				var schema struct{ AdditionalProperties *bool }
-				require.NoError(t, json.Unmarshal(branch, &schema))
-				require.NotNil(t, schema.AdditionalProperties)
-				require.False(t, *schema.AdditionalProperties)
-			}
-		})
+	f := newFixture(t)
+	f.projectWrites.visibility = projects.ProjectWriteVisibility{}
+	discovery := rpc(t, f.handler(t, nil), "test-one", "tools/list", map[string]any{})
+	project := discoveredTool(t, discovery, "project")
+	require.Equal(t, "project", project.Name)
+	require.False(t, project.Annotations["readOnlyHint"])
+	require.True(t, project.Annotations["destructiveHint"])
+	require.False(t, project.Annotations["openWorldHint"])
+	require.JSONEq(t, `{"anyOf":[{"type":"string","enum":["list"]},{"type":"string","enum":["retrieve"]},{"type":"string","enum":["worklog_summary"]},{"type":"string","enum":["get_features"]}]}`, string(project.InputSchema.Properties["action"]))
+	require.Len(t, project.InputSchema.OneOf, 4)
+	for _, branch := range project.InputSchema.OneOf {
+		var schema struct{ AdditionalProperties *bool }
+		require.NoError(t, json.Unmarshal(branch, &schema))
+		require.NotNil(t, schema.AdditionalProperties)
+		require.False(t, *schema.AdditionalProperties)
 	}
 }

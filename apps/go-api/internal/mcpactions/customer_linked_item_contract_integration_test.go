@@ -18,7 +18,7 @@ import (
 // plane-sdk 0.3.1 CustomerWorkItem accepts project_identifier by field name,
 // in addition to its project__identifier alias. The endpoint returns an array.
 func TestMCPCustomerLinkedItemSDKRecordsAndSearch(t *testing.T) {
-	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		customer := milestoneObject(t, call("customer", map[string]any{"action": "create", "name": uuid.NewString()}))
 		export, importItem := f.item(t), f.item(t)
 		_, err := f.pool.Exec(t.Context(), `UPDATE issues SET name=CASE WHEN id=$1 THEN 'Export report' ELSE 'Import data' END,sequence_id=CASE WHEN id=$1 THEN 1001 ELSE 2002 END WHERE id IN($1,$2)`, export, importItem)

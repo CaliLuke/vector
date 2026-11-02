@@ -126,16 +126,14 @@ func (rosterPublisher) Task(context.Context, string, []any, map[string]any) erro
 func TestMemberReadsRealIdentityThroughBothProtocolRevisions(t *testing.T) {
 	f, pool := databaseFixture(t)
 	h := f.handler(t, nil)
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		t.Run(version, func(t *testing.T) {
-			result := rpcVersion(t, h, "test-one", "tools/call", memberCall(`{"action":"me"}`), version)
-			require.False(t, result.IsError, result.Content)
-			assert.JSONEq(t, `{"id":"10000000-0000-4000-8000-000000000001","first_name":"Zoë","last_name":"First","email":null,"avatar":"","avatar_url":null,"display_name":"first"}`, string(result.StructuredContent))
-			second := rpcVersion(t, h, "test-two", "tools/call", memberCall(`{"action":"me"}`), version)
-			require.False(t, second.IsError, second.Content)
-			assert.Contains(t, string(second.StructuredContent), "second@example.test")
-		})
-	}
+
+	result := rpc(t, h, "test-one", "tools/call", memberCall(`{"action":"me"}`))
+	require.False(t, result.IsError, result.Content)
+	assert.JSONEq(t, `{"id":"10000000-0000-4000-8000-000000000001","first_name":"Zoë","last_name":"First","email":null,"avatar":"","avatar_url":null,"display_name":"first"}`, string(result.StructuredContent))
+	second := rpc(t, h, "test-two", "tools/call", memberCall(`{"action":"me"}`))
+	require.False(t, second.IsError, second.Content)
+	assert.Contains(t, string(second.StructuredContent), "second@example.test")
+
 	_, err := pool.Exec(t.Context(), `UPDATE users SET first_name='Renamed' WHERE id='10000000-0000-4000-8000-000000000001'`)
 	require.NoError(t, err)
 	updated := rpc(t, h, "test-one", "tools/call", memberCall(`{"action":"me"}`))

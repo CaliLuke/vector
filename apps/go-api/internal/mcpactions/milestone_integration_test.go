@@ -77,7 +77,7 @@ func TestMilestoneFixtureSeedAndCredentialsStayIsolated(t *testing.T) {
 	require.True(t, active)
 }
 
-func (f milestoneFixture) call(t *testing.T, mode, version string) func(map[string]any) rpcResult {
+func (f milestoneFixture) call(t *testing.T, mode string) func(map[string]any) rpcResult {
 	t.Helper()
 	pat, oauth := f.handler(t, nil), oauthHandler(t, f.fixture, f.oauth.Authenticate)
 	return func(input map[string]any) rpcResult {
@@ -85,9 +85,9 @@ func (f milestoneFixture) call(t *testing.T, mode, version string) func(map[stri
 		body, err := json.Marshal(input)
 		require.NoError(t, err)
 		if mode == "OAuth" {
-			return oauthToolCall(t, oauth, version, "oauth-user", "workspace-one", "milestone", string(body), http.StatusOK)
+			return toolCall(t, oauth, "oauth-user", "workspace-one", "milestone", string(body), http.StatusOK)
 		}
-		return rpcVersion(t, pat, "test-one", "tools/call", milestoneCall(string(body)), version)
+		return rpc(t, pat, "test-one", "tools/call", milestoneCall(string(body)))
 	}
 }
 func milestoneObject(t *testing.T, result rpcResult) map[string]any {
@@ -119,120 +119,118 @@ func milestoneFailure(t *testing.T, result rpcResult, code string) {
 	require.Contains(t, result.Content[0].Text, "["+code+"]")
 }
 
-func TestMilestoneMCPShapesAcrossCredentialsAndProtocols(t *testing.T) {
+func TestMilestoneMCPShapesAcrossCredentials(t *testing.T) {
 	f := newMilestoneFixture(t)
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		for _, mode := range []string{"personal token", "OAuth"} {
-			t.Run(version+"/"+mode, func(t *testing.T) {
-				call := f.call(t, mode, version)
-				record := milestoneObject(t, call(map[string]any{"action": "create", "title": "Delivery", "target_date": "", "external_source": "", "external_id": ""}))
-				require.Len(t, record, 7)
-				require.Nil(t, record["target_date"])
-				require.Nil(t, record["external_source"])
-				require.Nil(t, record["external_id"])
-				id := record["id"].(string)
-				detail := milestoneObject(t, call(map[string]any{"action": "retrieve", "milestone_id": id}))
-				require.Equal(t, record, detail)
-				page := milestoneObject(t, call(map[string]any{"action": "list", "per_page": 0, "cursor": ""}))
-				require.Len(t, page, 7)
-				require.Equal(t, float64(1), page["count"])
-				require.Equal(t, float64(1), page["total_count"])
-				require.Equal(t, []any{record}, page["results"])
-				require.Equal(t, "1000:1:0", page["next_cursor"])
-				updated := milestoneObject(t, call(map[string]any{"action": "update", "milestone_id": id, "title": "", "target_date": "2028-02-29", "external_source": "  source  "}))
-				require.Equal(t, "Delivery", updated["title"])
-				require.Equal(t, "2028-02-29", updated["target_date"])
-				require.Equal(t, "  source  ", updated["external_source"])
-				item, removed := f.item(t), f.item(t)
-				result := call(map[string]any{"action": "manage_workitems", "milestone_id": id, "add_ids": item + "," + removed + "," + item, "remove_ids": "[\"" + removed + "\"]"})
-				require.False(t, result.IsError, result.Content)
-				require.Empty(t, result.Content)
-				require.Empty(t, result.StructuredContent)
-				links := milestoneObject(t, call(map[string]any{"action": "list_workitems", "milestone_id": id, "per_page": 1}))
-				require.Len(t, links, 7)
-				require.Len(t, links["results"], 1)
-				link := links["results"].([]any)[0].(map[string]any)
-				require.Len(t, link, 3)
-				require.Equal(t, item, link["issue"])
-				require.Equal(t, id, link["milestone"])
-				result = call(map[string]any{"action": "delete", "milestone_id": id})
-				require.False(t, result.IsError, result.Content)
-				require.Empty(t, result.Content)
-				require.Empty(t, result.StructuredContent)
-				empty := milestoneObject(t, call(map[string]any{"action": "list"}))
-				require.Len(t, empty, 7)
-				require.Empty(t, empty["results"])
-				var alive bool
-				require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT deleted_at IS NULL FROM issues WHERE id=$1`, item).Scan(&alive))
-				require.True(t, alive)
-			})
-		}
+
+	for _, mode := range []string{"personal token", "OAuth"} {
+		t.Run(mode, func(t *testing.T) {
+			call := f.call(t, mode)
+			record := milestoneObject(t, call(map[string]any{"action": "create", "title": "Delivery", "target_date": "", "external_source": "", "external_id": ""}))
+			require.Len(t, record, 7)
+			require.Nil(t, record["target_date"])
+			require.Nil(t, record["external_source"])
+			require.Nil(t, record["external_id"])
+			id := record["id"].(string)
+			detail := milestoneObject(t, call(map[string]any{"action": "retrieve", "milestone_id": id}))
+			require.Equal(t, record, detail)
+			page := milestoneObject(t, call(map[string]any{"action": "list", "per_page": 0, "cursor": ""}))
+			require.Len(t, page, 7)
+			require.Equal(t, float64(1), page["count"])
+			require.Equal(t, float64(1), page["total_count"])
+			require.Equal(t, []any{record}, page["results"])
+			require.Equal(t, "1000:1:0", page["next_cursor"])
+			updated := milestoneObject(t, call(map[string]any{"action": "update", "milestone_id": id, "title": "", "target_date": "2028-02-29", "external_source": "  source  "}))
+			require.Equal(t, "Delivery", updated["title"])
+			require.Equal(t, "2028-02-29", updated["target_date"])
+			require.Equal(t, "  source  ", updated["external_source"])
+			item, removed := f.item(t), f.item(t)
+			result := call(map[string]any{"action": "manage_workitems", "milestone_id": id, "add_ids": item + "," + removed + "," + item, "remove_ids": "[\"" + removed + "\"]"})
+			require.False(t, result.IsError, result.Content)
+			require.Empty(t, result.Content)
+			require.Empty(t, result.StructuredContent)
+			links := milestoneObject(t, call(map[string]any{"action": "list_workitems", "milestone_id": id, "per_page": 1}))
+			require.Len(t, links, 7)
+			require.Len(t, links["results"], 1)
+			link := links["results"].([]any)[0].(map[string]any)
+			require.Len(t, link, 3)
+			require.Equal(t, item, link["issue"])
+			require.Equal(t, id, link["milestone"])
+			result = call(map[string]any{"action": "delete", "milestone_id": id})
+			require.False(t, result.IsError, result.Content)
+			require.Empty(t, result.Content)
+			require.Empty(t, result.StructuredContent)
+			empty := milestoneObject(t, call(map[string]any{"action": "list"}))
+			require.Len(t, empty, 7)
+			require.Empty(t, empty["results"])
+			var alive bool
+			require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT deleted_at IS NULL FROM issues WHERE id=$1`, item).Scan(&alive))
+			require.True(t, alive)
+		})
 	}
 }
 
-func TestMilestoneMCPReceiptsAndCASAcrossCredentialsAndProtocols(t *testing.T) {
+func TestMilestoneMCPReceiptsAndCASAcrossCredentials(t *testing.T) {
 	f := newMilestoneFixture(t)
-	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		for _, mode := range []string{"personal token", "OAuth"} {
-			t.Run(version+"/"+mode, func(t *testing.T) {
-				call := f.call(t, mode, version)
-				create := map[string]any{"action": "create", "title": uuid.NewString(), "request_id": uuid.NewString()}
-				receipt := milestoneObject(t, call(create))
-				require.Len(t, receipt, 6)
-				require.False(t, receipt["replayed"].(bool))
-				require.Len(t, receipt["result"], 7)
-				expires, err := time.Parse(time.RFC3339Nano, receipt["replay_expires_at"].(string))
-				require.NoError(t, err)
-				require.True(t, time.Until(expires) > 23*time.Hour)
-				id, revision := receipt["milestone_id"].(string), receipt["revision"].(string)
-				create["external_source"] = "" // Exact empty optional strings normalize to omission for replay.
-				replay := milestoneObject(t, call(create))
-				require.Equal(t, receipt["result"], replay["result"])
-				require.True(t, replay["replayed"].(bool))
-				create["title"] = "changed"
-				milestoneFailure(t, call(create), "request_conflict")
-				detail := milestoneObject(t, call(map[string]any{"action": "retrieve", "milestone_id": id, "include_revision": true}))
-				require.Len(t, detail, 8)
-				require.Equal(t, revision, detail["revision"])
-				update := map[string]any{"action": "update", "milestone_id": id, "title": uuid.NewString(), "expected_revision": revision, "request_id": uuid.NewString()}
-				changed := milestoneObject(t, call(update))
-				require.NotEqual(t, revision, changed["revision"])
-				require.True(t, milestoneObject(t, call(update))["replayed"].(bool))
-				update["request_id"] = uuid.NewString()
-				milestoneFailure(t, call(update), "revision_conflict")
-				item := f.item(t)
-				manage := map[string]any{"action": "manage_workitems", "milestone_id": id, "add_ids": item, "request_id": uuid.NewString(), "expected_revision": changed["revision"]}
-				linked := milestoneObject(t, call(manage))
-				require.Nil(t, linked["result"])
-				manage["add_ids"] = fmt.Sprintf("[%q,%q]", item, item)
-				require.True(t, milestoneObject(t, call(manage))["replayed"].(bool))
-				var before int
-				require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT count(*) FROM work_item_effects`).Scan(&before))
-				deletion := map[string]any{"action": "delete", "milestone_id": id, "request_id": uuid.NewString(), "expected_revision": linked["revision"]}
-				deleted := milestoneObject(t, call(deletion))
-				require.Nil(t, deleted["result"])
-				var after int
-				require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT count(*) FROM work_item_effects`).Scan(&after))
-				require.Greater(t, after, before)
-				require.True(t, milestoneObject(t, call(deletion))["replayed"].(bool))
-				var replayed int
-				require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT count(*) FROM work_item_effects`).Scan(&replayed))
-				require.Equal(t, after, replayed)
-				milestoneFailure(t, call(map[string]any{"action": "retrieve", "milestone_id": id}), "not_found")
-				// Membership is checked before replay, even when the target is deleted.
-				_, err = f.pool.Exec(t.Context(), `UPDATE project_members SET is_active=false`)
-				require.NoError(t, err)
-				milestoneFailure(t, call(deletion), "forbidden")
-				_, err = f.pool.Exec(t.Context(), `UPDATE project_members SET is_active=true`)
-				require.NoError(t, err)
-			})
-		}
+
+	for _, mode := range []string{"personal token", "OAuth"} {
+		t.Run(mode, func(t *testing.T) {
+			call := f.call(t, mode)
+			create := map[string]any{"action": "create", "title": uuid.NewString(), "request_id": uuid.NewString()}
+			receipt := milestoneObject(t, call(create))
+			require.Len(t, receipt, 6)
+			require.False(t, receipt["replayed"].(bool))
+			require.Len(t, receipt["result"], 7)
+			expires, err := time.Parse(time.RFC3339Nano, receipt["replay_expires_at"].(string))
+			require.NoError(t, err)
+			require.True(t, time.Until(expires) > 23*time.Hour)
+			id, revision := receipt["milestone_id"].(string), receipt["revision"].(string)
+			create["external_source"] = "" // Exact empty optional strings normalize to omission for replay.
+			replay := milestoneObject(t, call(create))
+			require.Equal(t, receipt["result"], replay["result"])
+			require.True(t, replay["replayed"].(bool))
+			create["title"] = "changed"
+			milestoneFailure(t, call(create), "request_conflict")
+			detail := milestoneObject(t, call(map[string]any{"action": "retrieve", "milestone_id": id, "include_revision": true}))
+			require.Len(t, detail, 8)
+			require.Equal(t, revision, detail["revision"])
+			update := map[string]any{"action": "update", "milestone_id": id, "title": uuid.NewString(), "expected_revision": revision, "request_id": uuid.NewString()}
+			changed := milestoneObject(t, call(update))
+			require.NotEqual(t, revision, changed["revision"])
+			require.True(t, milestoneObject(t, call(update))["replayed"].(bool))
+			update["request_id"] = uuid.NewString()
+			milestoneFailure(t, call(update), "revision_conflict")
+			item := f.item(t)
+			manage := map[string]any{"action": "manage_workitems", "milestone_id": id, "add_ids": item, "request_id": uuid.NewString(), "expected_revision": changed["revision"]}
+			linked := milestoneObject(t, call(manage))
+			require.Nil(t, linked["result"])
+			manage["add_ids"] = fmt.Sprintf("[%q,%q]", item, item)
+			require.True(t, milestoneObject(t, call(manage))["replayed"].(bool))
+			var before int
+			require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT count(*) FROM work_item_effects`).Scan(&before))
+			deletion := map[string]any{"action": "delete", "milestone_id": id, "request_id": uuid.NewString(), "expected_revision": linked["revision"]}
+			deleted := milestoneObject(t, call(deletion))
+			require.Nil(t, deleted["result"])
+			var after int
+			require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT count(*) FROM work_item_effects`).Scan(&after))
+			require.Greater(t, after, before)
+			require.True(t, milestoneObject(t, call(deletion))["replayed"].(bool))
+			var replayed int
+			require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT count(*) FROM work_item_effects`).Scan(&replayed))
+			require.Equal(t, after, replayed)
+			milestoneFailure(t, call(map[string]any{"action": "retrieve", "milestone_id": id}), "not_found")
+			// Membership is checked before replay, even when the target is deleted.
+			_, err = f.pool.Exec(t.Context(), `UPDATE project_members SET is_active=false`)
+			require.NoError(t, err)
+			milestoneFailure(t, call(deletion), "forbidden")
+			_, err = f.pool.Exec(t.Context(), `UPDATE project_members SET is_active=true`)
+			require.NoError(t, err)
+		})
 	}
 }
 
 func TestMilestoneMCPInvalidInputIsAtomic(t *testing.T) {
 	f := newMilestoneFixture(t)
-	call := f.call(t, "personal token", "2026-07-28")
+	call := f.call(t, "personal token")
 	record := milestoneObject(t, call(map[string]any{"action": "create", "title": "Atomic"}))
 	id := record["id"].(string)
 	for _, input := range []map[string]any{

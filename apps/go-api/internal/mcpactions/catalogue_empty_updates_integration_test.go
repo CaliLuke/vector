@@ -10,7 +10,7 @@ import (
 )
 
 func TestMCPCatalogueUpdatesWithoutFieldsPreserveRecords(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "initiatives": true}))
 		for _, tc := range []struct{ tool, selector, name string }{
 			{"initiative", "initiative_id", "name"},

@@ -39,7 +39,7 @@ func TestMCPWorkLogActivitiesUseCommittedSnapshots(t *testing.T) {
 		defer cancel()
 		require.NoError(t, app.Shutdown(ctx))
 	})
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		created := milestoneObject(t, call("work_log", map[string]any{"action": "create", "duration": 30, "description": "Before"}))

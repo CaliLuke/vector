@@ -24,7 +24,7 @@ func TestMCPAttachmentListKeepsSizeNumeric(t *testing.T) {
 	apps.Attachments = app
 	f.service, err = mcpactions.New(apps, mcpactions.WithOrigin("https://vector.example"))
 	require.NoError(t, err)
-	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item, id := f.item(t), uuid.NewString()
 		_, err := f.pool.Exec(t.Context(), `INSERT INTO file_assets(id,created_at,updated_at,workspace_id,project_id,issue_id,attributes,asset,entity_type,size,is_uploaded,is_deleted,is_archived,storage_metadata)
  VALUES($1,now(),now(),$2,$3,$4,'{"name":"notes.txt","type":"text/plain"}','notes.txt','ISSUE_ATTACHMENT',38,true,false,false,'{}')`, id, testsupport.LabelWorkspace, testsupport.LabelProject, item)

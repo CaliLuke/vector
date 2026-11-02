@@ -5,7 +5,7 @@ package mcpactions_test
 import "testing"
 
 func TestMCPPropertyReceiptStorageFailureRollsBack(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, action := range []string{"create", "update", "delete", "manage_type_properties", "create_option", "update_option", "delete_option", "set_value", "delete_value"} {
 			t.Run(action, func(t *testing.T) {
 				input := preparePropertyMutationInput(t, f, call, action)
@@ -16,7 +16,7 @@ func TestMCPPropertyReceiptStorageFailureRollsBack(t *testing.T) {
 }
 
 func TestMCPPropertyValueEffectStorageFailureRollsBack(t *testing.T) {
-	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		for _, action := range []string{"set_value", "delete_value"} {
 			t.Run(action, func(t *testing.T) {
 				input := preparePropertyMutationInput(t, f, call, action)

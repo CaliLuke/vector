@@ -64,7 +64,7 @@ count and page those candidates through the existing list path
 project through the existing HTTP serializer
 ```
 
-The MCP core read adapter now wraps the shared list path in a repeatable-read, read-only transaction. It binds the credential workspace UUID and checks current active known-role memberships before reading. Candidate ownership and visibility apply before counts and page limits. Property predicates reuse the property discovery transaction. The core workflow batch exercises this adapter under both authentication modes and protocol revisions; broader acceptance remains tracked separately. Domain resolvers for relationships and custom properties must use that same snapshot and mask foreign or invisible references under both positive and negative predicates. The existing property-filter true/false/unknown model is the relevant boundary; this design does not replace it.
+The MCP core read adapter now wraps the shared list path in a repeatable-read, read-only transaction. It binds the credential workspace UUID and checks current active known-role memberships before reading. Candidate ownership and visibility apply before counts and page limits. Property predicates reuse the property discovery transaction. The core workflow batch exercises this adapter under both authentication modes on protocol revision `2026-07-28`; broader acceptance remains tracked separately. Domain resolvers for relationships and custom properties must use that same snapshot and mask foreign or invisible references under both positive and negative predicates. The existing property-filter true/false/unknown model is the relevant boundary; this design does not replace it.
 
 ## Proof obligations
 
