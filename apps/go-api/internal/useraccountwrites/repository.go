@@ -8,6 +8,7 @@ import (
 	"strings"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/useridentity"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -21,6 +22,7 @@ var (
 )
 
 type Database interface {
+	Begin(context.Context) (pgx.Tx, error)
 	Query(context.Context, string, ...any) (pgx.Rows, error)
 	QueryRow(context.Context, string, ...any) pgx.Row
 	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
@@ -28,6 +30,7 @@ type Database interface {
 
 type Repository struct {
 	db       Database
+	sessions *browsersession.Validator
 	identity interface {
 		SessionUser(context.Context, uuid.UUID) (json.RawMessage, error)
 	}
@@ -35,14 +38,17 @@ type Repository struct {
 
 func NewRepository(db Database, identity interface {
 	SessionUser(context.Context, uuid.UUID) (json.RawMessage, error)
-}) (*Repository, error) {
+}, sessions *browsersession.Validator) (*Repository, error) {
 	if db == nil {
 		return nil, fmt.Errorf("user account writes database is required")
 	}
 	if identity == nil {
 		return nil, fmt.Errorf("user identity repository is required")
 	}
-	return &Repository{db: db, identity: identity}, nil
+	if sessions == nil {
+		return nil, errors.New("account session validator is required")
+	}
+	return &Repository{db: db, identity: identity, sessions: sessions}, nil
 }
 
 const userSerializerJSON = `json_build_object(
@@ -123,36 +129,6 @@ func (repository *Repository) Me(ctx context.Context, userID uuid.UUID) (json.Ra
 		return nil, ErrNotFound
 	}
 	return body, err
-}
-
-func (repository *Repository) EmailExists(ctx context.Context, userID uuid.UUID, email string) (bool, error) {
-	var exists bool
-	err := repository.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM users WHERE email=$1 AND id<>$2)`, email, userID).Scan(&exists)
-	return exists, err
-}
-
-func (repository *Repository) UpdateEmail(ctx context.Context, userID uuid.UUID, email string) (string, error) {
-	var oldEmail string
-	if err := repository.db.QueryRow(ctx, `SELECT email FROM users WHERE id=$1`, userID).Scan(&oldEmail); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return "", ErrNotFound
-		}
-		return "", err
-	}
-	_, err := repository.db.Exec(ctx, `UPDATE users SET email=$2,is_email_verified=false,updated_at=NOW() WHERE id=$1`, userID, email)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return "", ErrEmailTaken
-		}
-		return "", err
-	}
-	return oldEmail, nil
-}
-
-func (repository *Repository) Logout(ctx context.Context, sessionID string) error {
-	_, err := repository.db.Exec(ctx, `DELETE FROM sessions WHERE session_key=$1`, sessionID)
-	return err
 }
 
 func (repository *Repository) DeactivationBlocker(ctx context.Context, userID uuid.UUID) (string, error) {

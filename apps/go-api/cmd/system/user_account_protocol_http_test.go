@@ -9,15 +9,16 @@ import (
 	"testing"
 
 	systemapi "github.com/CaliLuke/go-plane"
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	useraccountwritesapi "github.com/CaliLuke/go-plane/user_account_writes/gen/user_account_writes"
 )
 
 func TestUserAccountProtocolMetadataAndAppendSlash(t *testing.T) {
 	repository := &accountMountRepository{}
-	cache := &accountMountCache{values: map[string][]byte{}}
+	quota := &testsupport.RateStoreFake{}
 	tasks := &accountMountTasks{}
 	sessions := &cycleMiddlewareSessions{recorder: &cycleMiddlewareRecorder{}, userTimezone: "UTC"}
-	service, err := systemapi.NewUserAccountWrites(repository, sessions, cache, tasks, "http://localhost:8000")
+	service, err := systemapi.NewUserAccountWrites(repository, sessions, quota, tasks, "http://localhost:8000")
 	if err != nil {
 		t.Fatal(err)
 	}

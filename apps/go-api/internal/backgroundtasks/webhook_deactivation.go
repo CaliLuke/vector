@@ -22,7 +22,7 @@ func (store *PostgresWebhookTaskStore) deactivate(ctx context.Context, webhook w
 	}
 	if changed.RowsAffected() == 1 && webhook.CreatorID != nil {
 		effects := projectmutations.Effects{Tx: tx}
-		if err := effects.Task(ctx, webhookDeactivationEmailTask, []any{webhook.ID, *webhook.CreatorID, currentSite, cause.Error()}, nil); err != nil {
+		if err := effects.Email(ctx, webhookDeactivationEmailTask, []any{webhook.ID, *webhook.CreatorID, currentSite, cause.Error()}); err != nil {
 			return fmt.Errorf("queue webhook deactivation email: %w", err)
 		}
 	}

@@ -121,6 +121,15 @@ func (s *PostgresWorkItemEffectStore) admitNext(ctx context.Context) (_ bool, re
 
 func (s *PostgresWorkItemEffectStore) admit(ctx context.Context, id, kind string, raw []byte) error {
 	switch kind {
+	case "email_task":
+		var payload struct {
+			Name string `json:"name"`
+			Args []any  `json:"args"`
+		}
+		if err := json.Unmarshal(raw, &payload); err != nil {
+			return err
+		}
+		return s.emails.AdmitTemplatedEmailTask(ctx, id, payload.Name, payload.Args)
 	case "page_transaction", "page_version":
 		if s.pages == nil {
 			return errors.New("page effect admission is not configured")
@@ -213,9 +222,6 @@ func (s *PostgresWorkItemEffectStore) admitWebhookEffect(ctx context.Context, id
 	}
 	if err := json.Unmarshal(raw, &payload); err != nil {
 		return err
-	}
-	if payload.Name == webhookDeactivationEmailTask {
-		return s.emails.AdmitTemplatedEmailTask(ctx, id, payload.Name, payload.Args)
 	}
 	return s.webhooks.AdmitWebhookTask(ctx, id, payload.Name, payload.Args, payload.Kwargs)
 }

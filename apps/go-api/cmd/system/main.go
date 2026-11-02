@@ -1350,16 +1350,16 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	userAccountWritesRepository, err := useraccountwritesstore.NewRepository(pool, userIdentityRepository)
+	userAccountWritesRepository, err := useraccountwritesstore.NewRepository(pool, userIdentityRepository, sessionValidator)
 	if err != nil {
 		return err
 	}
-	userAccountWritesCache, err := useraccountwritesstore.NewCache(cfg.redisURL)
+	userAccountWritesQuota, err := ratelimit.NewRedisStore(cfg.redisURL)
 	if err != nil {
 		return err
 	}
-	defer closeResource(&runErr, "user account write cache", userAccountWritesCache)
-	userAccountWritesService, err := systemapi.NewUserAccountWrites(userAccountWritesRepository, sessionValidator, userAccountWritesCache, activityTaskPublisher, assetAppBaseURL)
+	defer closeResource(&runErr, "user account request quota", userAccountWritesQuota)
+	userAccountWritesService, err := systemapi.NewUserAccountWrites(userAccountWritesRepository, sessionValidator, userAccountWritesQuota, activityTaskPublisher, assetAppBaseURL)
 	if err != nil {
 		return err
 	}

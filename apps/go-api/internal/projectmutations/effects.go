@@ -15,6 +15,11 @@ import (
 // work-item effect worker. It never dispatches externally before commit.
 type Effects struct{ Tx pgx.Tx }
 
+// Email records a templated email for durable admission after commit.
+func (e Effects) Email(ctx context.Context, name string, args []any) error {
+	return e.insert(ctx, "email_task", map[string]any{"name": name, "args": args})
+}
+
 func (e Effects) Task(ctx context.Context, name string, args []any, kwargs map[string]any) error {
 	if name == "plane.bgtasks.page_transaction_task.page_transaction" {
 		return e.insert(ctx, "page_transaction", kwargs)

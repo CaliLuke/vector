@@ -49,9 +49,10 @@ coverage does not retire the uncovered behavior.
 - Email contracts: replace the framework-specific normalization and validation
   in `internal/emailvalidation/email.go` and migrate authentication, invitation,
   and account callers. Preserve access to existing account identities.
-- Account changes: make email updates, session invalidation, code consumption
-  and notification admission recover atomically after failures or concurrent
-  submissions. The current service completes these steps separately.
+- Account deactivation: make membership updates, invitation cleanup, profile
+  reset, credential/session invalidation and notification admission atomic.
+  Preserve the last-administrator checks under concurrent membership changes.
+  The current deactivation service performs these steps separately.
 - Dates and serialization: retire remaining per-service date grammars and
   Python-style serializer branches. Preserve stored values and durable receipt
   identities when changing a format.

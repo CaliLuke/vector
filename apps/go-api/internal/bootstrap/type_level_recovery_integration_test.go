@@ -17,6 +17,8 @@ const retryTypeLevelMigration = `UPDATE public.plane_schema_migrations SET versi
 
 func TestTypeLevelUpgradeFailurePreservesDataAndSupportsReviewedRetry(t *testing.T) {
 	f := newMilestoneSchemaFixture(t)
+	// Restore the older schema before rewinding its migration journal.
+	f.exec(t, accountEmailDown)
 	h := seedNumericHierarchy(t, f)
 	f.exec(t, validTypeLevelsDown)
 	f.exec(t, `UPDATE public.plane_schema_migrations SET version=45,dirty=false`)
@@ -44,7 +46,8 @@ func TestTypeLevelUpgradeFailurePreservesDataAndSupportsReviewedRetry(t *testing
 	require.Equal(t, reviewed.nativeRevision+1, after.nativeRevision)
 	require.Equal(t, reviewed.apiRevision+3, after.apiRevision)
 	// A lost journal acknowledgement can leave a completed migration dirty.
-	f.exec(t, `UPDATE public.plane_schema_migrations SET dirty=true WHERE version=46`)
+	f.exec(t, accountEmailDown)
+	f.exec(t, `UPDATE public.plane_schema_migrations SET version=46,dirty=true`)
 	result, err = f.db.Exec(f.ctx, retryTypeLevelMigration)
 	require.NoError(t, err)
 	require.Zero(t, result.RowsAffected())

@@ -69,11 +69,13 @@ atomically trims each sorted-set window, checks capacity and records admission.
 Bucket keys contain a native version, a scope and a hashed identity. Invalid
 configuration and store errors fail closed. Counts range from 0 to 2,147,483,647;
 zero denies requests. Periods use explicit second, minute, hour or day aliases.
-Email verification codes use strict versioned JSON records and an atomic
-five-guess budget. Issuing a replacement code resets its attempt counter.
-The versioned cache
-cutover starts fresh quota windows and requires resending pending email codes.
-Previous cache entries expire under their existing TTLs.
+Email-change challenges live in PostgreSQL as salted password hashes. Each account
+has one active challenge, a ten-minute expiry, and a five-guess budget. Replacing
+a challenge resets its budget. Code issuance and its delivery intent commit
+together. Email changes consume the code, mark the new address verified and deliverable,
+revoke all account sessions, prepare
+the response, and record confirmation emails to both addresses in one transaction.
+The shared effect worker admits these emails using their immutable outbox IDs.
 
 Draft creation, editing, deletion and publication belong to `draftLifecycle` and
 `draftOperation` in `internal/workitems`. The lifecycle owns standalone transactions;

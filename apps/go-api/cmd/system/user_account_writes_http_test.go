@@ -3,14 +3,13 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/ratelimit"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 
 	systemapi "github.com/CaliLuke/go-plane"
@@ -19,8 +18,10 @@ import (
 )
 
 type accountMountRepository struct {
+	emailError             error
 	writes, reads, logouts int
 	deactivationChecks     int
+	emails                 int
 	actor                  uuid.UUID
 }
 
@@ -33,15 +34,23 @@ func (r *accountMountRepository) Me(context.Context, uuid.UUID) (json.RawMessage
 	r.reads++
 	return json.RawMessage(`{"email":"original@example.com"}`), nil
 }
-func (r *accountMountRepository) EmailExists(context.Context, uuid.UUID, string) (bool, error) {
-	return false, nil
+func (r *accountMountRepository) QueueEmailCode(context.Context, uuid.UUID, string, string, string) error {
+	if r.emailError != nil {
+		return r.emailError
+	}
+	r.emails++
+	return nil
 }
-func (r *accountMountRepository) UpdateEmail(_ context.Context, actor uuid.UUID, _ string) (string, error) {
+func (r *accountMountRepository) ChangeEmail(_ context.Context, actor uuid.UUID, _, email, _ string) (json.RawMessage, error) {
+	if r.emailError != nil {
+		return nil, r.emailError
+	}
 	r.actor = actor
 	r.writes++
-	return "original@example.com", nil
+	r.logouts++
+	r.emails += 2
+	return json.Marshal(map[string]string{"email": email})
 }
-func (r *accountMountRepository) Logout(context.Context, string) error { r.logouts++; return nil }
 func (r *accountMountRepository) DeactivationBlocker(context.Context, uuid.UUID) (string, error) {
 	r.deactivationChecks++
 	return "", nil
@@ -52,34 +61,6 @@ func (r *accountMountRepository) Deactivate(_ context.Context, actor uuid.UUID, 
 	if !strings.HasPrefix(hash, "pbkdf2_sha256$") {
 		panic("deactivation password was not hashed")
 	}
-	return nil
-}
-
-type accountMountCache struct {
-	rate     testsupport.RateStoreFake
-	values   map[string][]byte
-	accesses int
-}
-
-func (c *accountMountCache) Take(ctx context.Context, key string, limit int64, window time.Duration) (ratelimit.Result, error) {
-	c.accesses++
-	return c.rate.Take(ctx, key, limit, window)
-}
-func (c *accountMountCache) VerifyEmailCode(_ context.Context, _ string, code string) (store.EmailCodeStatus, error) {
-	c.accesses++
-	if code == "123456" {
-		return store.EmailCodeValid, nil
-	}
-	return store.EmailCodeInvalid, nil
-}
-func (c *accountMountCache) Set(_ context.Context, key string, value []byte, _ time.Duration) error {
-	c.accesses++
-	c.values[key] = value
-	return nil
-}
-func (c *accountMountCache) Delete(_ context.Context, key string) error {
-	c.accesses++
-	delete(c.values, key)
 	return nil
 }
 
@@ -106,20 +87,17 @@ func TestUserAccountWritesProductionMounts(t *testing.T) {
 		{method: "PATCH", path: "/api/users/me/email/", body: `{"email":"new@example.com","code":"123456"}`, status: 200, writes: 1, tasks: 2},
 		{method: "PATCH", path: "/api/users/me/email/", body: `{"email":"new@example.com","code":"123456"}`, contentType: "text/plain", status: 415},
 		{method: "POST", path: "/api/users/me/email/generate-code/", body: `[]`, status: 400},
+		{method: "POST", path: "/api/users/me/email/generate-code/", body: `{"email":"` + strings.Repeat("a", 244) + `@example.com"}`, status: 400},
 		{method: "POST", path: "/api/users/me/email/generate-code/", body: `{"email":"new@example.com"}`, status: 200, tasks: 1},
 		{method: "POST", path: "/api/users/me/email/generate-code/", body: `{"email":"new@example.com"}`, contentType: "text/plain", status: 415},
 	} {
 		t.Run(tc.method+tc.path+"/"+tc.contentType, func(t *testing.T) {
 			for _, authenticated := range []bool{false, true} {
 				repository := &accountMountRepository{}
-				cache := &accountMountCache{values: map[string][]byte{}}
+				quota := &testsupport.RateStoreFake{}
 				tasks := &accountMountTasks{}
 				sessions := &cycleMiddlewareSessions{recorder: &cycleMiddlewareRecorder{}, userTimezone: "UTC"}
-				service, err := systemapi.NewUserAccountWrites(repository, sessions, cache, tasks, "http://localhost:8000")
-				if err != nil {
-					t.Fatal(err)
-				}
-				handler := extensionHTTPHandler(pendingReplacementEndpoints{userAccountWrites: api.NewEndpoints(service), userAccountWritesMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
+				handler := newAccountWriteHandler(t, repository, sessions, quota, tasks)
 				request := httptest.NewRequest(tc.method, tc.path, strings.NewReader(tc.body))
 				contentType := tc.contentType
 				if contentType == "" {
@@ -150,14 +128,14 @@ func TestUserAccountWritesProductionMounts(t *testing.T) {
 					}
 					if tc.path == "/api/users/me/email/generate-code/" {
 						// Charge the native request limit before parsing its body.
-						if cache.accesses != 1 || len(cache.values) != 0 || len(cache.rate.Calls) != 1 {
-							t.Fatalf("unsupported media type effects=%d/%v, want one quota admission", cache.accesses, cache.values)
+						if len(quota.Calls) != 1 {
+							t.Fatalf("unsupported media type effects=%d, want one quota admission", len(quota.Calls))
 						}
-						if !strings.HasPrefix(cache.rate.Calls[0].Key, "vector:rate:v1:email-verification:") {
+						if !strings.HasPrefix(quota.Calls[0].Key, "vector:rate:v1:email-verification:") {
 							t.Fatal("unsupported media type reached another quota scope")
 						}
-					} else if cache.accesses != 0 || len(cache.values) != 0 {
-						t.Fatalf("unsupported media type reached cache: accesses=%d values=%v", cache.accesses, cache.values)
+					} else if len(quota.Calls) != 0 {
+						t.Fatalf("unsupported media type reached quota: accesses=%d", len(quota.Calls))
 					}
 				}
 				if authenticated && tc.body == `[]` {
@@ -179,12 +157,12 @@ func TestUserAccountWritesProductionMounts(t *testing.T) {
 					t.Fatalf("profile validation body=%s", response.Body.String())
 				}
 				if !authenticated {
-					if repository.writes+repository.reads+cache.accesses+len(tasks.names) != 0 {
+					if repository.writes+repository.reads+len(quota.Calls)+len(tasks.names) != 0 {
 						t.Fatal("anonymous request reached domain I/O")
 					}
 					continue
 				}
-				if repository.writes != tc.writes || len(tasks.names) != tc.tasks {
+				if repository.writes != tc.writes || len(tasks.names)+repository.emails != tc.tasks {
 					t.Fatalf("writes=%d tasks=%v want=%d/%d", repository.writes, tasks.names, tc.writes, tc.tasks)
 				}
 				if tc.writes != 0 && repository.actor == uuid.Nil() {
@@ -216,12 +194,12 @@ func TestUserAccountWritesProductionMounts(t *testing.T) {
 // audit record.
 func TestUserAccountWritesProductionMiddlewareEvidence(t *testing.T) {
 	repository := &accountMountRepository{}
-	cache := &accountMountCache{values: map[string][]byte{}}
+	quota := &testsupport.RateStoreFake{}
 	tasks := &accountMountTasks{}
 	recorder := &cycleMiddlewareRecorder{}
 	sessions := &cycleMiddlewareSessions{recorder: recorder, userTimezone: "UTC"}
 	activity := &cycleMiddlewareActivity{recorder: recorder}
-	service, err := systemapi.NewUserAccountWrites(repository, sessions, cache, tasks, "http://localhost:8000")
+	service, err := systemapi.NewUserAccountWrites(repository, sessions, quota, tasks, "http://localhost:8000")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -260,10 +238,10 @@ func TestUserAccountWritesProductionMiddlewareEvidence(t *testing.T) {
 
 func TestEmailVerificationThrottlePrecedesTimezone(t *testing.T) {
 	repository := &accountMountRepository{}
-	cache := &accountMountCache{values: map[string][]byte{}}
+	quota := &testsupport.RateStoreFake{}
 	tasks := &accountMountTasks{}
 	sessions := searchMountSessions{&cycleMiddlewareSessions{recorder: &cycleMiddlewareRecorder{}, invalidZone: true}}
-	service, err := systemapi.NewUserAccountWrites(repository, sessions, cache, tasks, "http://localhost:8000")
+	service, err := systemapi.NewUserAccountWrites(repository, sessions, quota, tasks, "http://localhost:8000")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -282,15 +260,60 @@ func TestEmailVerificationThrottlePrecedesTimezone(t *testing.T) {
 			t.Fatalf("attempt %d: status=%d body=%s", attempt, response.Code, response.Body.String())
 		}
 	}
-	if repository.writes+repository.reads+len(tasks.names) != 0 || cache.accesses == 0 {
-		t.Fatalf("writes=%d reads=%d tasks=%v cache accesses=%d", repository.writes, repository.reads, tasks.names, cache.accesses)
+	if repository.writes+repository.reads+len(tasks.names) != 0 || len(quota.Calls) == 0 {
+		t.Fatalf("writes=%d reads=%d tasks=%v quota accesses=%d", repository.writes, repository.reads, tasks.names, len(quota.Calls))
 	}
-	accesses := cache.accesses
+	accesses := len(quota.Calls)
 	request := httptest.NewRequest(http.MethodOptions, "/api/users/me/email/generate-code/", nil)
 	request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
-	if response.Code != 400 || cache.accesses != accesses {
-		t.Fatalf("OPTIONS must validate timezone without action throttle: status=%d accesses=%d want=%d", response.Code, cache.accesses, accesses)
+	if response.Code != 400 || len(quota.Calls) != accesses {
+		t.Fatalf("OPTIONS must validate timezone without action throttle: status=%d accesses=%d want=%d", response.Code, len(quota.Calls), accesses)
+	}
+}
+
+func newAccountWriteHandler(t *testing.T, repository *accountMountRepository, sessions *cycleMiddlewareSessions, quota *testsupport.RateStoreFake, tasks *accountMountTasks) http.Handler {
+	t.Helper()
+	service, err := systemapi.NewUserAccountWrites(repository, sessions, quota, tasks, "http://localhost:8000")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return extensionHTTPHandler(pendingReplacementEndpoints{userAccountWrites: api.NewEndpoints(service), userAccountWritesMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
+}
+
+func TestEmailChangeDomainFailuresUseSafeHTTPResponses(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		err     error
+		status  int
+		message string
+	}{
+		{"taken", store.ErrEmailTaken, 400, "An account with this email already exists"},
+		{"unchanged", store.ErrEmailUnchanged, 400, "New email must be different from current email"},
+		{"invalid code", store.ErrCodeInvalid, 400, "Invalid verification code"},
+		{"expired code", store.ErrCodeExpired, 400, "Verification code has expired or is invalid"},
+		{"revoked session", store.ErrUnauthenticated, 401, "Authentication credentials were not provided."},
+		{"storage failure", errors.New("private database detail"), 500, "Something went wrong please try again later"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			repository := &accountMountRepository{emailError: tc.err}
+			sessions := &cycleMiddlewareSessions{recorder: &cycleMiddlewareRecorder{}, userTimezone: "UTC"}
+			handler := newAccountWriteHandler(t, repository, sessions, &testsupport.RateStoreFake{}, &accountMountTasks{})
+			request := httptest.NewRequest("PATCH", "/api/users/me/email/", strings.NewReader(`{"email":"new@example.com","code":"123456"}`))
+			request.Header.Set("Content-Type", "application/json")
+			request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, request)
+			if response.Code != tc.status || !strings.Contains(response.Body.String(), tc.message) {
+				t.Fatalf("status=%d body=%s", response.Code, response.Body)
+			}
+			if strings.Contains(response.Body.String(), "private database detail") {
+				t.Fatal("private storage error was exposed")
+			}
+			if repository.writes != 0 || repository.logouts != 0 || len(response.Header().Values("Set-Cookie")) != 0 {
+				t.Fatal("failed change admitted writes or expired the cookie")
+			}
+		})
 	}
 }

@@ -155,6 +155,14 @@ func (validator *Validator) Validate(ctx context.Context, sessionKey string) (Pr
 	return principal, err
 }
 
+// ValidateInDatabase uses the caller's transaction snapshot and locks while
+// retaining the same signing keys and password-hash validation as HTTP requests.
+func (validator *Validator) ValidateInDatabase(ctx context.Context, database QueryRower, sessionKey string) (Principal, error) {
+	bound := *validator
+	bound.reader = NewPostgreSQLReader(database)
+	return bound.Validate(ctx, sessionKey)
+}
+
 // Inspect authenticates a session and retains the request-local session data
 // even when the data represents an anonymous user. AuthenticationMiddleware
 // can leave that data unchanged while SessionMiddleware saves it later.
