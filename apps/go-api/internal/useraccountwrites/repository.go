@@ -11,21 +11,17 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/useridentity"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 var (
-	ErrNotFound      = errors.New("user account not found")
-	ErrEmailTaken    = errors.New("email already exists")
-	ErrInvalid       = errors.New("invalid account input")
-	ErrCannotDisable = errors.New("account cannot be deactivated")
+	ErrNotFound   = errors.New("user account not found")
+	ErrEmailTaken = errors.New("email already exists")
+	ErrInvalid    = errors.New("invalid account input")
 )
 
 type Database interface {
 	Begin(context.Context) (pgx.Tx, error)
-	Query(context.Context, string, ...any) (pgx.Rows, error)
 	QueryRow(context.Context, string, ...any) pgx.Row
-	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
 }
 
 type Repository struct {
@@ -129,93 +125,6 @@ func (repository *Repository) Me(ctx context.Context, userID uuid.UUID) (json.Ra
 		return nil, ErrNotFound
 	}
 	return body, err
-}
-
-func (repository *Repository) DeactivationBlocker(ctx context.Context, userID uuid.UUID) (string, error) {
-	var isInstanceAdmin bool
-	if err := repository.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM instance_admins WHERE user_id=$1)`, userID).Scan(&isInstanceAdmin); err != nil {
-		return "", err
-	}
-	if isInstanceAdmin {
-		return "You cannot deactivate your account since you are an instance admin", nil
-	}
-	rows, err := repository.db.Query(ctx, `
-SELECT mine.role, COUNT(all_members.id), COUNT(all_members.id) FILTER (WHERE all_members.role=20 AND all_members.member_id<>mine.member_id)
-FROM project_members mine
-JOIN project_members all_members ON all_members.project_id=mine.project_id AND all_members.is_active=true AND all_members.deleted_at IS NULL
-WHERE mine.member_id=$1 AND mine.is_active=true AND mine.deleted_at IS NULL
-GROUP BY mine.id,mine.role,mine.member_id`, userID)
-	if err != nil {
-		return "", err
-	}
-	for rows.Next() {
-		var role int
-		var members, otherAdmins int
-		if scanErr := rows.Scan(&role, &members, &otherAdmins); scanErr != nil {
-			rows.Close()
-			return "", scanErr
-		}
-		if role == 20 && otherAdmins == 0 && members > 1 {
-			rows.Close()
-			return "You cannot deactivate account as you are the only admin in some projects.", nil
-		}
-	}
-	if rowsErr := rows.Err(); rowsErr != nil {
-		rows.Close()
-		return "", rowsErr
-	}
-	rows.Close()
-	rows, err = repository.db.Query(ctx, `
-SELECT mine.role, COUNT(all_members.id), COUNT(all_members.id) FILTER (WHERE all_members.role=20 AND all_members.member_id<>mine.member_id)
-FROM workspace_members mine
-JOIN workspace_members all_members ON all_members.workspace_id=mine.workspace_id AND all_members.is_active=true AND all_members.deleted_at IS NULL
-WHERE mine.member_id=$1 AND mine.is_active=true AND mine.deleted_at IS NULL
-GROUP BY mine.id,mine.role,mine.member_id`, userID)
-	if err != nil {
-		return "", err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var role int
-		var members, otherAdmins int
-		if err := rows.Scan(&role, &members, &otherAdmins); err != nil {
-			return "", err
-		}
-		if role == 20 && otherAdmins == 0 && members > 1 {
-			return "You cannot deactivate account as you are the only admin in some workspaces.", nil
-		}
-	}
-	return "", rows.Err()
-}
-
-func (repository *Repository) Deactivate(ctx context.Context, userID uuid.UUID, passwordHash, lastLogoutIP string) error {
-	if _, err := repository.db.Exec(ctx, `UPDATE project_members SET is_active=false WHERE member_id=$1 AND is_active=true AND deleted_at IS NULL`, userID); err != nil {
-		return err
-	}
-	if _, err := repository.db.Exec(ctx, `UPDATE workspace_members SET is_active=false WHERE member_id=$1 AND is_active=true AND deleted_at IS NULL`, userID); err != nil {
-		return err
-	}
-	if _, err := repository.db.Exec(ctx, `UPDATE workspace_member_invites SET deleted_at=NOW(),updated_at=NOW() WHERE email=(SELECT email FROM users WHERE id=$1) AND deleted_at IS NULL`, userID); err != nil {
-		return err
-	}
-	if _, err := repository.db.Exec(ctx, `DELETE FROM sessions WHERE user_id=$1`, userID.String()); err != nil {
-		return err
-	}
-	profile, err := repository.db.Exec(ctx, `UPDATE profiles SET last_workspace_id=NULL,is_tour_completed=false,is_onboarded=false,onboarding_step='{"workspace_join":false,"profile_complete":false,"workspace_create":false,"workspace_invite":false}'::jsonb,updated_at=NOW() WHERE user_id=$1`, userID)
-	if err != nil {
-		return err
-	}
-	if profile.RowsAffected() == 0 {
-		return ErrNotFound
-	}
-	user, err := repository.db.Exec(ctx, `UPDATE users SET password=$2,is_password_autoset=true,is_active=false,last_logout_ip=$3,last_logout_time=NOW(),updated_at=NOW() WHERE id=$1`, userID, passwordHash, lastLogoutIP)
-	if err != nil {
-		return err
-	}
-	if user.RowsAffected() == 0 {
-		return ErrNotFound
-	}
-	return nil
 }
 
 func dbValue(raw json.RawMessage) (any, error) {

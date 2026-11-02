@@ -131,7 +131,7 @@ func (repository *Repository) ChangeEmail(ctx context.Context, userID uuid.UUID,
 	return result, tx.Commit(ctx)
 }
 
-func (repository *Repository) lockEmailAccount(ctx context.Context, tx pgx.Tx, userID uuid.UUID, sessionID, email string) (string, error) {
+func (repository *Repository) lockAccountSession(ctx context.Context, tx pgx.Tx, userID uuid.UUID, sessionID string) (string, error) {
 	var current string
 	if err := tx.QueryRow(ctx, `SELECT email FROM users WHERE id=$1 AND is_active FOR UPDATE`, userID).Scan(&current); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -156,6 +156,15 @@ func (repository *Repository) lockEmailAccount(ctx context.Context, tx pgx.Tx, u
 	}
 	if !active {
 		return "", ErrUnauthenticated
+	}
+
+	return current, nil
+}
+
+func (repository *Repository) lockEmailAccount(ctx context.Context, tx pgx.Tx, userID uuid.UUID, sessionID, email string) (string, error) {
+	current, err := repository.lockAccountSession(ctx, tx, userID, sessionID)
+	if err != nil {
+		return "", err
 	}
 
 	if current == email {

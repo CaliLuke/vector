@@ -414,8 +414,8 @@
       "percent": 85.71
     },
     "github.com/CaliLuke/go-plane/internal/useraccountwrites": {
-      "statements": 229,
-      "percent": 40.61
+      "statements": 214,
+      "percent": 57.48
     },
     "github.com/CaliLuke/go-plane/internal/userapitokens": {
       "statements": 25,
@@ -691,9 +691,13 @@
       "statements": 98,
       "percent": 84.69
     },
+    "github.com/CaliLuke/go-plane/internal/useraccountwrites/deactivation.go": {
+      "statements": 33,
+      "percent": 78.79
+    },
     "github.com/CaliLuke/go-plane/internal/useraccountwrites/email.go": {
-      "statements": 109,
-      "percent": 81.65
+      "statements": 113,
+      "percent": 82.3
     }
   }
 }

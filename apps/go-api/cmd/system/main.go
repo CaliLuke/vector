@@ -1359,7 +1359,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 		return err
 	}
 	defer closeResource(&runErr, "user account request quota", userAccountWritesQuota)
-	userAccountWritesService, err := systemapi.NewUserAccountWrites(userAccountWritesRepository, sessionValidator, userAccountWritesQuota, activityTaskPublisher, assetAppBaseURL)
+	userAccountWritesService, err := systemapi.NewUserAccountWrites(userAccountWritesRepository, sessionValidator, userAccountWritesQuota, assetAppBaseURL)
 	if err != nil {
 		return err
 	}

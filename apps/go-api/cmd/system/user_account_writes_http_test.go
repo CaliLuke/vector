@@ -20,7 +20,7 @@ import (
 type accountMountRepository struct {
 	emailError             error
 	writes, reads, logouts int
-	deactivationChecks     int
+	deactivationError      error
 	emails                 int
 	actor                  uuid.UUID
 }
@@ -51,53 +51,45 @@ func (r *accountMountRepository) ChangeEmail(_ context.Context, actor uuid.UUID,
 	r.emails += 2
 	return json.Marshal(map[string]string{"email": email})
 }
-func (r *accountMountRepository) DeactivationBlocker(context.Context, uuid.UUID) (string, error) {
-	r.deactivationChecks++
-	return "", nil
-}
-func (r *accountMountRepository) Deactivate(_ context.Context, actor uuid.UUID, hash, _ string) error {
+func (r *accountMountRepository) Deactivate(_ context.Context, actor uuid.UUID, session, baseURL, _ string) error {
+	if r.deactivationError != nil {
+		return r.deactivationError
+	}
+	if session == "" || baseURL != "http://localhost:8000" {
+		panic("deactivation lost session or application origin")
+	}
 	r.actor = actor
 	r.writes++
-	if !strings.HasPrefix(hash, "pbkdf2_sha256$") {
-		panic("deactivation password was not hashed")
-	}
-	return nil
-}
-
-type accountMountTasks struct{ names []string }
-
-func (q *accountMountTasks) Task(_ context.Context, name string, _ []any, _ map[string]any) error {
-	q.names = append(q.names, name)
+	r.emails++
 	return nil
 }
 
 func TestUserAccountWritesProductionMounts(t *testing.T) {
 	for _, tc := range []struct {
-		method, path, body    string
-		status, writes, tasks int
-		contentType           string
+		method, path, body     string
+		status, writes, emails int
+		contentType            string
 	}{
 		{method: "PATCH", path: "/api/users/me/", body: `{"display_name":"Renamed user"}`, status: 200, writes: 1},
 		{method: "PATCH", path: "/api/users/me/", body: `{"display_name":"Renamed user"}`, contentType: "text/plain", status: 415},
 		{method: "PATCH", path: "/api/users/me/", body: `[]`, status: 400},
 		{method: "PATCH", path: "/api/users/me/", body: `{"first_name":"` + strings.Repeat("é", 256) + `"}`, status: 400},
 		{method: "PATCH", path: "/api/users/me/", body: `{"first_name":"` + strings.Repeat("é", 255) + `"}`, status: 200, writes: 1},
-		{method: "DELETE", path: "/api/users/me/", body: `{`, status: 204, writes: 1, tasks: 1},
+		{method: "DELETE", path: "/api/users/me/", body: `{`, status: 204, writes: 1, emails: 1},
 		{method: "PATCH", path: "/api/users/me/email/", body: `[]`, status: 400},
-		{method: "PATCH", path: "/api/users/me/email/", body: `{"email":"new@example.com","code":"123456"}`, status: 200, writes: 1, tasks: 2},
+		{method: "PATCH", path: "/api/users/me/email/", body: `{"email":"new@example.com","code":"123456"}`, status: 200, writes: 1, emails: 2},
 		{method: "PATCH", path: "/api/users/me/email/", body: `{"email":"new@example.com","code":"123456"}`, contentType: "text/plain", status: 415},
 		{method: "POST", path: "/api/users/me/email/generate-code/", body: `[]`, status: 400},
 		{method: "POST", path: "/api/users/me/email/generate-code/", body: `{"email":"` + strings.Repeat("a", 244) + `@example.com"}`, status: 400},
-		{method: "POST", path: "/api/users/me/email/generate-code/", body: `{"email":"new@example.com"}`, status: 200, tasks: 1},
+		{method: "POST", path: "/api/users/me/email/generate-code/", body: `{"email":"new@example.com"}`, status: 200, emails: 1},
 		{method: "POST", path: "/api/users/me/email/generate-code/", body: `{"email":"new@example.com"}`, contentType: "text/plain", status: 415},
 	} {
 		t.Run(tc.method+tc.path+"/"+tc.contentType, func(t *testing.T) {
 			for _, authenticated := range []bool{false, true} {
 				repository := &accountMountRepository{}
 				quota := &testsupport.RateStoreFake{}
-				tasks := &accountMountTasks{}
 				sessions := &cycleMiddlewareSessions{recorder: &cycleMiddlewareRecorder{}, userTimezone: "UTC"}
-				handler := newAccountWriteHandler(t, repository, sessions, quota, tasks)
+				handler := newAccountWriteHandler(t, repository, sessions, quota)
 				request := httptest.NewRequest(tc.method, tc.path, strings.NewReader(tc.body))
 				contentType := tc.contentType
 				if contentType == "" {
@@ -123,8 +115,8 @@ func TestUserAccountWritesProductionMounts(t *testing.T) {
 					}
 				}
 				if authenticated && tc.contentType == "text/plain" {
-					if repository.writes+repository.reads+len(tasks.names) != 0 {
-						t.Fatalf("unsupported media type reached domain I/O: writes=%d reads=%d tasks=%v", repository.writes, repository.reads, tasks.names)
+					if repository.writes+repository.reads != 0 {
+						t.Fatalf("unsupported media type reached domain I/O: writes=%d reads=%d emails=%v", repository.writes, repository.reads, repository.emails)
 					}
 					if tc.path == "/api/users/me/email/generate-code/" {
 						// Charge the native request limit before parsing its body.
@@ -157,13 +149,13 @@ func TestUserAccountWritesProductionMounts(t *testing.T) {
 					t.Fatalf("profile validation body=%s", response.Body.String())
 				}
 				if !authenticated {
-					if repository.writes+repository.reads+len(quota.Calls)+len(tasks.names) != 0 {
+					if repository.writes+repository.reads+len(quota.Calls) != 0 {
 						t.Fatal("anonymous request reached domain I/O")
 					}
 					continue
 				}
-				if repository.writes != tc.writes || len(tasks.names)+repository.emails != tc.tasks {
-					t.Fatalf("writes=%d tasks=%v want=%d/%d", repository.writes, tasks.names, tc.writes, tc.tasks)
+				if repository.writes != tc.writes || repository.emails != tc.emails {
+					t.Fatalf("writes=%d emails=%v want=%d/%d", repository.writes, repository.emails, tc.writes, tc.emails)
 				}
 				if tc.writes != 0 && repository.actor == uuid.Nil() {
 					t.Fatal("write lost authenticated principal")
@@ -195,11 +187,10 @@ func TestUserAccountWritesProductionMounts(t *testing.T) {
 func TestUserAccountWritesProductionMiddlewareEvidence(t *testing.T) {
 	repository := &accountMountRepository{}
 	quota := &testsupport.RateStoreFake{}
-	tasks := &accountMountTasks{}
 	recorder := &cycleMiddlewareRecorder{}
 	sessions := &cycleMiddlewareSessions{recorder: recorder, userTimezone: "UTC"}
 	activity := &cycleMiddlewareActivity{recorder: recorder}
-	service, err := systemapi.NewUserAccountWrites(repository, sessions, quota, tasks, "http://localhost:8000")
+	service, err := systemapi.NewUserAccountWrites(repository, sessions, quota, "http://localhost:8000")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -228,20 +219,16 @@ func TestUserAccountWritesProductionMiddlewareEvidence(t *testing.T) {
 	if len(recorder.events) == 0 || !strings.Contains(strings.Join(recorder.events, ","), "session-inspection") {
 		t.Fatalf("authentication middleware did not inspect session: %v", recorder.events)
 	}
-	if repository.deactivationChecks != 1 || repository.writes != 1 || len(tasks.names) != 1 {
-		t.Fatalf("authorization/dispatch effects checks=%d writes=%d tasks=%v", repository.deactivationChecks, repository.writes, tasks.names)
-	}
-	if len(activity.records) != 0 {
-		t.Fatalf("browser session request unexpectedly entered API-key audit fallback: %#v", activity.records)
+	if repository.writes != 1 || repository.emails != 1 {
+		t.Fatalf("writes=%d emails=%d", repository.writes, repository.emails)
 	}
 }
 
 func TestEmailVerificationThrottlePrecedesTimezone(t *testing.T) {
 	repository := &accountMountRepository{}
 	quota := &testsupport.RateStoreFake{}
-	tasks := &accountMountTasks{}
 	sessions := searchMountSessions{&cycleMiddlewareSessions{recorder: &cycleMiddlewareRecorder{}, invalidZone: true}}
-	service, err := systemapi.NewUserAccountWrites(repository, sessions, quota, tasks, "http://localhost:8000")
+	service, err := systemapi.NewUserAccountWrites(repository, sessions, quota, "http://localhost:8000")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -260,8 +247,8 @@ func TestEmailVerificationThrottlePrecedesTimezone(t *testing.T) {
 			t.Fatalf("attempt %d: status=%d body=%s", attempt, response.Code, response.Body.String())
 		}
 	}
-	if repository.writes+repository.reads+len(tasks.names) != 0 || len(quota.Calls) == 0 {
-		t.Fatalf("writes=%d reads=%d tasks=%v quota accesses=%d", repository.writes, repository.reads, tasks.names, len(quota.Calls))
+	if repository.writes+repository.reads != 0 || len(quota.Calls) == 0 {
+		t.Fatalf("writes=%d reads=%d emails=%v quota accesses=%d", repository.writes, repository.reads, repository.emails, len(quota.Calls))
 	}
 	accesses := len(quota.Calls)
 	request := httptest.NewRequest(http.MethodOptions, "/api/users/me/email/generate-code/", nil)
@@ -273,9 +260,9 @@ func TestEmailVerificationThrottlePrecedesTimezone(t *testing.T) {
 	}
 }
 
-func newAccountWriteHandler(t *testing.T, repository *accountMountRepository, sessions *cycleMiddlewareSessions, quota *testsupport.RateStoreFake, tasks *accountMountTasks) http.Handler {
+func newAccountWriteHandler(t *testing.T, repository *accountMountRepository, sessions *cycleMiddlewareSessions, quota *testsupport.RateStoreFake) http.Handler {
 	t.Helper()
-	service, err := systemapi.NewUserAccountWrites(repository, sessions, quota, tasks, "http://localhost:8000")
+	service, err := systemapi.NewUserAccountWrites(repository, sessions, quota, "http://localhost:8000")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -299,7 +286,7 @@ func TestEmailChangeDomainFailuresUseSafeHTTPResponses(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			repository := &accountMountRepository{emailError: tc.err}
 			sessions := &cycleMiddlewareSessions{recorder: &cycleMiddlewareRecorder{}, userTimezone: "UTC"}
-			handler := newAccountWriteHandler(t, repository, sessions, &testsupport.RateStoreFake{}, &accountMountTasks{})
+			handler := newAccountWriteHandler(t, repository, sessions, &testsupport.RateStoreFake{})
 			request := httptest.NewRequest("PATCH", "/api/users/me/email/", strings.NewReader(`{"email":"new@example.com","code":"123456"}`))
 			request.Header.Set("Content-Type", "application/json")
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
@@ -313,6 +300,39 @@ func TestEmailChangeDomainFailuresUseSafeHTTPResponses(t *testing.T) {
 			}
 			if repository.writes != 0 || repository.logouts != 0 || len(response.Header().Values("Set-Cookie")) != 0 {
 				t.Fatal("failed change admitted writes or expired the cookie")
+			}
+		})
+	}
+}
+
+func TestDeactivationFailuresKeepTheBrowserSession(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		err    error
+		status int
+	}{
+		{"administrator", store.DeactivationBlocked("Reassign the workspace administrator"), http.StatusBadRequest},
+		{"revoked", store.ErrUnauthenticated, http.StatusUnauthorized},
+		{"storage", errors.New("private database failure"), http.StatusInternalServerError},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			repository := &accountMountRepository{deactivationError: tc.err}
+			sessions := &cycleMiddlewareSessions{recorder: &cycleMiddlewareRecorder{}, userTimezone: "UTC"}
+			handler := newAccountWriteHandler(t, repository, sessions, &testsupport.RateStoreFake{})
+			request := httptest.NewRequest(http.MethodDelete, "/api/users/me/", nil)
+			request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, request)
+			if response.Code != tc.status || repository.writes != 0 || repository.emails != 0 {
+				t.Fatalf("status=%d writes=%d emails=%d body=%s", response.Code, repository.writes, repository.emails, response.Body.String())
+			}
+			for _, cookie := range response.Result().Cookies() {
+				if cookie.Name == "session-id" && cookie.MaxAge < 0 {
+					t.Fatal("failed deactivation expired the browser session")
+				}
+			}
+			if strings.Contains(response.Body.String(), "private database failure") {
+				t.Fatal("internal error leaked")
 			}
 		})
 	}

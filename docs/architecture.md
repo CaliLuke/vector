@@ -76,6 +76,13 @@ together. Email changes consume the code, mark the new address verified and deli
 revoke all account sessions, prepare
 the response, and record confirmation emails to both addresses in one transaction.
 The shared effect worker admits these emails using their immutable outbox IDs.
+Account deactivation revalidates the native session, checks administrator
+responsibilities, disables memberships, removes incoming workspace invitations,
+resets the profile, disables credentials, revokes sessions and email challenges,
+and queues the notification in one transaction. Infrequent deactivations take
+PostgreSQL table locks on instance administrators and workspace/project members
+to serialize that check with membership writes through commit. The browser
+cookie expires only after commit.
 
 Draft creation, editing, deletion and publication belong to `draftLifecycle` and
 `draftOperation` in `internal/workitems`. The lifecycle owns standalone transactions;

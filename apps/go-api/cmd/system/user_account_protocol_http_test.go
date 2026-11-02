@@ -16,9 +16,8 @@ import (
 func TestUserAccountProtocolMetadataAndAppendSlash(t *testing.T) {
 	repository := &accountMountRepository{}
 	quota := &testsupport.RateStoreFake{}
-	tasks := &accountMountTasks{}
 	sessions := &cycleMiddlewareSessions{recorder: &cycleMiddlewareRecorder{}, userTimezone: "UTC"}
-	service, err := systemapi.NewUserAccountWrites(repository, sessions, quota, tasks, "http://localhost:8000")
+	service, err := systemapi.NewUserAccountWrites(repository, sessions, quota, "http://localhost:8000")
 	if err != nil {
 		t.Fatal(err)
 	}

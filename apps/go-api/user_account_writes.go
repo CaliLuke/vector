@@ -3,7 +3,6 @@ package systemapi
 import (
 	"context"
 	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -21,7 +20,6 @@ import (
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	authpassword "github.com/CaliLuke/go-plane/internal/authentication/password"
 	"github.com/CaliLuke/go-plane/internal/emailvalidation"
 	"github.com/CaliLuke/go-plane/internal/ratelimit"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
@@ -39,22 +37,16 @@ type userAccountWritesRepository interface {
 	Me(context.Context, uuid.UUID) (json.RawMessage, error)
 	QueueEmailCode(context.Context, uuid.UUID, string, string, string) error
 	ChangeEmail(context.Context, uuid.UUID, string, string, string) (json.RawMessage, error)
-	DeactivationBlocker(context.Context, uuid.UUID) (string, error)
-	Deactivate(context.Context, uuid.UUID, string, string) error
+	Deactivate(context.Context, uuid.UUID, string, string, string) error
 }
 
 type userAccountWritesSessions interface {
 	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
-type userAccountWritesTasks interface {
-	Task(context.Context, string, []any, map[string]any) error
-}
-
 type userAccountWritesService struct {
 	repository userAccountWritesRepository
 	sessions   userAccountWritesSessions
-	tasks      userAccountWritesTasks
 	throttle   *apikey.Throttle
 	appBaseURL string
 }
@@ -67,15 +59,15 @@ type userAccountWritesPrincipal struct {
 
 type userAccountWritesPrincipalKey struct{}
 
-func NewUserAccountWrites(repository userAccountWritesRepository, sessions userAccountWritesSessions, quota ratelimit.Store, tasks userAccountWritesTasks, appBaseURL string) (api.Service, error) {
-	if repository == nil || sessions == nil || quota == nil || tasks == nil {
+func NewUserAccountWrites(repository userAccountWritesRepository, sessions userAccountWritesSessions, quota ratelimit.Store, appBaseURL string) (api.Service, error) {
+	if repository == nil || sessions == nil || quota == nil {
 		return nil, fmt.Errorf("user account writes dependencies are required")
 	}
 	throttle, err := apikey.NewThrottle(quota, "3/hour")
 	if err != nil {
 		return nil, err
 	}
-	return &userAccountWritesService{repository: repository, sessions: sessions, tasks: tasks, throttle: throttle, appBaseURL: appBaseURL}, nil
+	return &userAccountWritesService{repository: repository, sessions: sessions, throttle: throttle, appBaseURL: appBaseURL}, nil
 }
 
 func (service *userAccountWritesService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
@@ -195,33 +187,14 @@ func (service *userAccountWritesService) Deactivate(ctx context.Context, _ *api.
 	if err != nil {
 		return nil, err
 	}
-	blocker, err := service.repository.DeactivationBlocker(ctx, principal.userID)
-	if err != nil {
-		return nil, userAccountWritesInternal()
-	}
-	if blocker != "" {
-		return nil, userAccountWritesBadRequest(map[string]any{"error": blocker})
-	}
-	password, err := randomDeactivationPassword()
-	if err != nil {
-		return nil, userAccountWritesInternal()
-	}
-	hash, err := authpassword.Default().Encode(password)
-	if err != nil {
-		return nil, userAccountWritesInternal()
-	}
 	clientIP := ""
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
 		clientIP = metadata.ClientAddr
 	}
-	if err := service.repository.Deactivate(ctx, principal.userID, hash, clientIP); err != nil {
-		return nil, userAccountWritesInternal()
+	if err := service.repository.Deactivate(ctx, principal.userID, principal.sessionID, service.appBaseURL, clientIP); err != nil {
+		return nil, userAccountWritesRepositoryError(err)
 	}
-	// Expire the browser cookie after deleting the user's persisted sessions.
 	browsersession.ExpireResponseSession(ctx)
-	if err := service.tasks.Task(ctx, "plane.bgtasks.user_deactivation_email_task.user_deactivation_email", []any{service.appBaseURL, principal.userID.String()}, nil); err != nil {
-		return nil, userAccountWritesInternal()
-	}
 	return io.NopCloser(strings.NewReader("")), nil
 }
 
@@ -338,14 +311,6 @@ func normalizeUserAccountEmail(value string) string {
 	return emailvalidation.NormalizePythonEmail(value)
 }
 
-func randomDeactivationPassword() (string, error) {
-	value := make([]byte, 16)
-	if _, err := rand.Read(value); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(value), nil
-}
-
 func userAccountStringValue(value any) (string, bool) {
 	result, ok := value.(string)
 	return result, ok
@@ -397,6 +362,11 @@ func userAccountWritesRepositoryError(err error) error {
 	if errors.Is(err, store.ErrUnauthenticated) {
 		return userAccountWritesUnauthenticated()
 	}
+	var blocker store.DeactivationBlocked
+	if errors.As(err, &blocker) {
+		return userAccountWritesBadRequest(map[string]any{"error": blocker.Error()})
+	}
+
 	messages := []struct {
 		err     error
 		message string
