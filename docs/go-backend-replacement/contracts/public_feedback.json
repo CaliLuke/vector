@@ -2,7 +2,7 @@
   "version": 1,
   "family": "public_feedback",
   "source_revision": "9cb3baebc1baa06d4f6ae9d271a54c74acf1e065",
-  "characterization_status": "119 active pristine source fixtures are assigned to the 12 public_feedback operations. The 49 public issue collection fixtures and their six corrected-source overrides are preserved in the public_issue_collection follow-up contract. Fifty sparse corrected-source overrides were recorded across the original 13-operation candidate from the pinned Django revision plus the accepted patch. Malformed and non-object vote data and invalid intake object shapes are corrected to return 400 before writes; unsupported vote media remains 415 with no writes. The vote array 500 fixture records its committed partial vote and project-member writes under request autocommit.",
+  "characterization_status": "115 active pristine source fixtures are assigned to the 12 public_feedback operations. The 49 public issue collection fixtures and their six corrected-source overrides are preserved in the public_issue_collection follow-up contract. Fifty sparse corrected-source overrides were recorded across the original 13-operation candidate from the pinned Django revision plus the accepted patch. Malformed and non-object vote data and invalid intake object shapes are corrected to return 400 before writes; unsupported vote media remains 415 with no writes. The vote array 500 fixture records its committed partial vote and project-member writes under request autocommit.",
   "source_files": [
     "apps/api/plane/space/views/issue.py",
     "apps/api/plane/space/views/intake.py",
@@ -343,30 +343,6 @@
           "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-existing-vote-pristine.json"
         },
         {
-          "when": "vote-post-integer-coercion-boolean-pristine",
-          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
-          "source": "apps/api/plane/space/views/issue.py",
-          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-boolean-pristine.json"
-        },
-        {
-          "when": "vote-post-integer-coercion-float-pristine",
-          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
-          "source": "apps/api/plane/space/views/issue.py",
-          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-float-pristine.json"
-        },
-        {
-          "when": "vote-post-integer-coercion-unicode-digit-pristine",
-          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
-          "source": "apps/api/plane/space/views/issue.py",
-          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-unicode-digit-pristine.json"
-        },
-        {
-          "when": "vote-post-integer-coercion-whitespace-string-pristine",
-          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
-          "source": "apps/api/plane/space/views/issue.py",
-          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-whitespace-string-pristine.json"
-        },
-        {
           "when": "vote-post-member-insert-failure-after-vote-pristine",
           "observable": "HTTP 500; object keys: error; changed tables: issue_votes; durable tasks: none.",
           "source": "apps/api/plane/space/views/issue.py",
@@ -454,10 +430,6 @@
         "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-disabled-zero-source-pristine.json",
         "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-empty-avatar-pristine.json",
         "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-existing-vote-pristine.json",
-        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-boolean-pristine.json",
-        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-float-pristine.json",
-        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-unicode-digit-pristine.json",
-        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-whitespace-string-pristine.json",
         "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-malformed-json-effect-order-pristine.json",
         "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-member-insert-failure-after-vote-pristine.json",
         "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-missing-board-invalid-body-pristine.json",

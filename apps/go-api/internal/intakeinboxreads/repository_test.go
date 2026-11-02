@@ -458,6 +458,26 @@ func TestRelativeDateFilterUsesLocalCalendarDays(t *testing.T) {
 	}
 }
 
+func TestRelativeDateFiltersValidateTimezoneAndCalendarBeforeReadingData(t *testing.T) {
+	for _, options := range []ListOptions{
+		{Timezone: "Unknown/Zone", Filters: map[string]string{"created_at": "1_weeks;before;fromnow"}},
+		{Filters: map[string]string{"target_date": "500000_weeks;after;fromnow"}},
+	} {
+		database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true)}}
+		repository, err := NewRepository(database)
+		require.NoError(t, err)
+		_, err = repository.DraftIssueList(t.Context(), uuid.New(), "demo", options)
+		require.ErrorIs(t, err, ErrInvalidDetail)
+		require.Len(t, database.queries, 1, "invalid date filters must stop before reading work items")
+	}
+
+	builder := newWhereBuilder()
+	err := addDateFilter(builder, "issue.created_at", "1_weeks;before;fromnow", "", true, time.Date(2026, time.January, 2, 0, 0, 0, 0, time.UTC))
+	require.NoError(t, err)
+	require.Contains(t, builder.args, "UTC")
+	require.Contains(t, builder.args, "2025-12-26")
+}
+
 func TestListFilterErrorsPrecedePaginationErrors(t *testing.T) {
 	draftDatabase := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true)}}
 	draftRepository, constructorErr := NewRepository(draftDatabase)
