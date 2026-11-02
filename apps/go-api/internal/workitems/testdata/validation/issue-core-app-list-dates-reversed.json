@@ -1,0 +1,18 @@
+{
+  "request": {
+    "body": {
+      "name": "Dates",
+      "start_date": "2020-03-01",
+      "target_date": "2020-02-01"
+    },
+    "method": "POST",
+    "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "non_field_errors": ["Start date cannot exceed target date"]
+    },
+    "status": 400
+  }
+}

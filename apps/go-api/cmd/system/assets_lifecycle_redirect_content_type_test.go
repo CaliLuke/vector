@@ -2,11 +2,8 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"testing"
 
 	assetsapi "github.com/CaliLuke/go-plane/assetslifecycle/gen/assets_lifecycle"
@@ -14,17 +11,7 @@ import (
 	loomhttp "github.com/CaliLuke/loom/http"
 )
 
-type assetRedirectFixture struct {
-	Response struct {
-		Status  int `json:"status"`
-		Headers struct {
-			ContentType string `json:"content-type"`
-		} `json:"headers"`
-	} `json:"response"`
-}
-
-func TestAssetsLifecycleRedirectEncodersPreserveSourceContentType(t *testing.T) {
-	fixtureDir := filepath.Join(assetsTransportRepoRoot(t), "apps", "go-api", "internal", "parity", "testdata", "fixtures", "assets_lifecycle")
+func TestAssetsLifecycleRedirectEncodersPreserveContentType(t *testing.T) {
 	encode := func(context.Context, http.ResponseWriter) loomhttp.Encoder { return nil }
 	location := "https://signed.example.test/assets-lifecycle/file.png"
 	cases := []struct {
@@ -62,24 +49,13 @@ func TestAssetsLifecycleRedirectEncodersPreserveSourceContentType(t *testing.T) 
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			data, err := os.ReadFile(filepath.Join(fixtureDir, tc.name))
-			if err != nil {
-				t.Fatal(err)
-			}
-			var fixture assetRedirectFixture
-			if err := json.Unmarshal(data, &fixture); err != nil {
-				t.Fatal(err)
-			}
-			if fixture.Response.Status != http.StatusFound || fixture.Response.Headers.ContentType == "" {
-				t.Fatalf("fixture response status=%d content-type=%q; want 302 with a source content type", fixture.Response.Status, fixture.Response.Headers.ContentType)
-			}
-			contentType := fixture.Response.Headers.ContentType
+			contentType := "text/html; charset=utf-8"
 			response := httptest.NewRecorder()
 			if err := tc.encode(context.Background(), response, tc.result(&contentType)); err != nil {
 				t.Fatal(err)
 			}
-			if response.Code != fixture.Response.Status || response.Header().Get("Content-Type") != contentType {
-				t.Fatalf("encoded status=%d content-type=%q; want %d and %q", response.Code, response.Header().Get("Content-Type"), fixture.Response.Status, contentType)
+			if response.Code != http.StatusFound || response.Header().Get("Content-Type") != contentType {
+				t.Fatalf("encoded status=%d content-type=%q; want %d and %q", response.Code, response.Header().Get("Content-Type"), http.StatusFound, contentType)
 			}
 		})
 	}

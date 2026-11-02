@@ -65,18 +65,12 @@ func (service *timezoneService) List(context.Context) (*timezoneapi.TimezoneList
 }
 
 func formatTimezoneOffset(offsetSeconds int) string {
-	hours := offsetSeconds / 3600
-	remainder := offsetSeconds % 3600
-	if remainder < 0 {
-		hours--
-		remainder += 3600
-	}
 	sign := "+"
-	if hours < 0 {
+	if offsetSeconds < 0 {
 		sign = "-"
-		hours = -hours
+		offsetSeconds = -offsetSeconds
 	}
-	return fmt.Sprintf("%s%02d:%02d", sign, hours, remainder/60)
+	return fmt.Sprintf("%s%02d:%02d", sign, offsetSeconds/3600, offsetSeconds%3600/60)
 }
 
 var timezoneLocations = []timezoneLocation{

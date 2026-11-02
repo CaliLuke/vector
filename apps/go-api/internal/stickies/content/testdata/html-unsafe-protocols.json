@@ -1,0 +1,33 @@
+{
+  "request": {
+    "body": {
+      "description_html": "<a href=\"javascript:alert(1)\">JS</a><a href=\"data:text/html,bad\">Data</a><a href=\"ftp://example.com/file\">FTP</a><a href=\"mailto:test@example.com\">Mail</a><img src=\"https://example.com/a.png\"><img src=\"javascript:bad\">",
+      "name": "html-unsafe-protocols"
+    },
+    "method": "POST",
+    "path": "/api/workspaces/test-workspace/stickies/",
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "background_color": null,
+      "color": null,
+      "created_at": "<timestamp>",
+      "created_by": "<uuid-1>",
+      "deleted_at": null,
+      "description": {},
+      "description_binary": null,
+      "description_html": "<a rel=\"noopener noreferrer\">JS</a><a rel=\"noopener noreferrer\">Data</a><a rel=\"noopener noreferrer\">FTP</a><a href=\"mailto:test@example.com\" rel=\"noopener noreferrer\">Mail</a><img src=\"https://example.com/a.png\"><img>",
+      "description_stripped": "JSDataFTPMail",
+      "id": "<uuid-2>",
+      "logo_props": {},
+      "name": "html-unsafe-protocols",
+      "owner": "<uuid-1>",
+      "sort_order": 65535.0,
+      "updated_at": "<timestamp>",
+      "updated_by": null,
+      "workspace": "<uuid-3>"
+    },
+    "status": 201
+  }
+}

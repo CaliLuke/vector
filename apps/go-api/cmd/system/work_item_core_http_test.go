@@ -347,7 +347,7 @@ func TestWorkItemProtocolMiddlewareReturnsAuthorizationErrorBeforeMethodResponse
 	}
 }
 
-func TestWorkItemProtocolMiddlewareAppOptionsUsesSourceActionsAfterAuthorization(t *testing.T) {
+func TestWorkItemProtocolMiddlewareAppOptionsUsesNativeActionsAfterAuthorization(t *testing.T) {
 	authorizer := &workItemProtocolAuthorizerStub{}
 	middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, func(next http.Handler) http.Handler { return next }, browserSessionCookieConfig{})
 	handler := middleware(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
@@ -364,7 +364,7 @@ func TestWorkItemProtocolMiddlewareAppOptionsUsesSourceActionsAfterAuthorization
 	if response.Header().Get("Content-Type") != "application/json" {
 		t.Fatalf("Content-Type=%q", response.Header().Get("Content-Type"))
 	}
-	fixturePath := filepath.Join("..", "..", "internal", "parity", "testdata", "fixtures", "work_item_core", "work-item-core-protocol-app-options-issue-list.json")
+	fixturePath := filepath.Join("testdata", "work-item-options", "work-item-core-protocol-app-options-issue-list.json")
 	fixture, err := os.ReadFile(fixturePath)
 	if err != nil {
 		t.Fatal(err)
@@ -386,7 +386,7 @@ func TestWorkItemProtocolMiddlewareAppOptionsUsesSourceActionsAfterAuthorization
 	}
 }
 
-func TestWorkItemProtocolOptionsUsesSessionGzipStackLikeSource(t *testing.T) {
+func TestWorkItemProtocolOptionsUsesSessionGzipStack(t *testing.T) {
 	cases := []struct {
 		fixture string
 		varyAE  bool
@@ -396,7 +396,7 @@ func TestWorkItemProtocolOptionsUsesSessionGzipStackLikeSource(t *testing.T) {
 	}
 	for _, testCase := range cases {
 		t.Run(testCase.fixture, func(t *testing.T) {
-			fixturePath := filepath.Join("..", "..", "internal", "parity", "testdata", "fixtures", "work_item_core", testCase.fixture)
+			fixturePath := filepath.Join("testdata", "work-item-options", testCase.fixture)
 			fixtureBytes, err := os.ReadFile(fixturePath)
 			if err != nil {
 				t.Fatal(err)

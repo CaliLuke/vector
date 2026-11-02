@@ -1,0 +1,41 @@
+{
+  "request": {
+    "body": {
+      "name": "\u001cTrimmed\u001f"
+    },
+    "method": "POST",
+    "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "archived_at": null,
+      "assignee_ids": [],
+      "attachment_count": null,
+      "completed_at": null,
+      "created_at": "<timestamp>",
+      "created_by": "<uuid-2>",
+      "cycle_id": null,
+      "deleted_at": null,
+      "estimate_point": null,
+      "id": "<uuid-3>",
+      "is_draft": false,
+      "label_ids": [],
+      "link_count": null,
+      "module_ids": [],
+      "name": "Trimmed",
+      "parent_id": null,
+      "priority": "none",
+      "project_id": "<uuid-1>",
+      "sequence_id": 7,
+      "sort_order": 85535.0,
+      "start_date": null,
+      "state_id": "<uuid-4>",
+      "sub_issues_count": null,
+      "target_date": null,
+      "updated_at": "<timestamp>",
+      "updated_by": null
+    },
+    "status": 201
+  }
+}

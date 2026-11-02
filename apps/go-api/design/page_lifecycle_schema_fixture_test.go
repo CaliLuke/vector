@@ -76,7 +76,7 @@ func TestPageLifecycleWriteResponsesMatchOpenAPIFixtures(t *testing.T) {
 
 func readPageLifecycleSchemaFixture(t *testing.T, name string) pageLifecycleSchemaFixture {
 	t.Helper()
-	path := "../internal/parity/testdata/fixtures/page_lifecycle_corrected/" + name + ".json"
+	path := "testdata/pages/" + name + ".json"
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("read corrected source fixture %s: %v", path, err)

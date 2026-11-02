@@ -12,8 +12,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/v2-static-avatar-options-anonymous-allowed.json"
+    }
   },
   "/api/assets/v2/user-assets/": {
     "allow": "POST, OPTIONS",
@@ -28,8 +27,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-options-allow-01.json"
+    }
   },
   "/api/assets/v2/user-assets/{asset_id}/": {
     "allow": "PATCH, DELETE, OPTIONS",
@@ -44,8 +42,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-options-allow-02.json"
+    }
   },
   "/api/assets/v2/workspaces/{slug}/": {
     "allow": "POST, OPTIONS",
@@ -60,8 +57,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-options-allow-03.json"
+    }
   },
   "/api/assets/v2/workspaces/{slug}/check/{asset_id}/": {
     "allow": "GET, HEAD, OPTIONS",
@@ -76,8 +72,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/protocol-workspace-check-options.json"
+    }
   },
   "/api/assets/v2/workspaces/{slug}/download/{asset_id}/": {
     "allow": "GET, HEAD, OPTIONS",
@@ -92,8 +87,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/protocol-workspace-download-options.json"
+    }
   },
   "/api/assets/v2/workspaces/{slug}/duplicate-assets/{asset_id}/": {
     "allow": "POST, OPTIONS",
@@ -108,8 +102,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/protocol-options-v2-workspace-duplicate.json"
+    }
   },
   "/api/assets/v2/workspaces/{slug}/projects/{project_id}/": {
     "allow": "POST, OPTIONS",
@@ -124,8 +117,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-options-allow-05.json"
+    }
   },
   "/api/assets/v2/workspaces/{slug}/projects/{project_id}/download/{asset_id}/": {
     "allow": "GET, HEAD, OPTIONS",
@@ -140,8 +132,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/protocol-project-download-options.json"
+    }
   },
   "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/": {
     "allow": "GET, POST, HEAD, OPTIONS",
@@ -156,8 +147,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-options-allow-07.json"
+    }
   },
   "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/{pk}/": {
     "allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
@@ -172,8 +162,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/protocol-v2-attachment-detail-options.json"
+    }
   },
   "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{entity_id}/bulk/": {
     "allow": "POST, OPTIONS",
@@ -188,8 +177,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/protocol-options-v2-project-bulk.json"
+    }
   },
   "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{pk}/": {
     "allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
@@ -204,8 +192,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-options-allow-06.json"
+    }
   },
   "/api/assets/v2/workspaces/{slug}/restore/{asset_id}/": {
     "allow": "POST, OPTIONS",
@@ -220,8 +207,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/protocol-options-v2-workspace-restore.json"
+    }
   },
   "/api/assets/v2/workspaces/{slug}/{asset_id}/": {
     "allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
@@ -236,8 +222,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-options-allow-04.json"
+    }
   },
   "/api/public/assets/v2/anchor/{anchor}/": {
     "allow": "POST, OPTIONS",
@@ -252,8 +237,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-options-allow-08.json"
+    }
   },
   "/api/public/assets/v2/anchor/{anchor}/restore/{pk}/": {
     "allow": "POST, OPTIONS",
@@ -268,8 +252,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/protocol-options-public-anchor-restore.json"
+    }
   },
   "/api/public/assets/v2/anchor/{anchor}/{entity_id}/bulk/": {
     "allow": "POST, OPTIONS",
@@ -284,8 +267,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/protocol-options-public-anchor-bulk.json"
+    }
   },
   "/api/public/assets/v2/anchor/{anchor}/{pk}/": {
     "allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
@@ -300,8 +282,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-options-allow-09.json"
+    }
   },
   "/api/users/file-assets/": {
     "allow": "POST, OPTIONS",
@@ -315,8 +296,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-options-allow-10.json"
+    }
   },
   "/api/users/file-assets/{asset_key}/": {
     "allow": "GET, DELETE, HEAD, OPTIONS",
@@ -330,8 +310,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-options-allow-11.json"
+    }
   },
   "/api/v1/assets/user-assets/": {
     "allow": "POST"
@@ -376,16 +355,12 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-options-allow-14.json"
+    }
   },
   "/api/workspaces/file-assets/{workspace_id}/{asset_key}/restore/": {
     "allow": "POST, OPTIONS",
-    "status": 500,
-    "metadata": {
-      "error": "Something went wrong please try again later"
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/protocol-options-legacy-workspace-restore.json"
+    "status": 200,
+    "metadata": {}
   },
   "/api/workspaces/{slug}/file-assets/": {
     "allow": "POST, OPTIONS",
@@ -400,8 +375,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-options-allow-12.json"
+    }
   },
   "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/": {
     "allow": "GET, POST, HEAD, OPTIONS",
@@ -415,8 +389,7 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-options-allow-13.json"
+    }
   },
   "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/{pk}/": {
     "allow": "DELETE, OPTIONS",
@@ -430,7 +403,6 @@
       "renders": [
         "application/json"
       ]
-    },
-    "source_fixture": "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/protocol-options-legacy-attachment-detail.json"
+    }
   }
 }

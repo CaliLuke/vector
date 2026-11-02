@@ -69,10 +69,6 @@
       "statements": 97,
       "percent": 68.04
     },
-    "github.com/CaliLuke/go-plane/cmd/parity-diff": {
-      "statements": 166,
-      "percent": 68.07
-    },
     "github.com/CaliLuke/go-plane/cmd/route-policy": {
       "statements": 19,
       "percent": 0
@@ -302,8 +298,8 @@
       "percent": 93.51
     },
     "github.com/CaliLuke/go-plane/internal/notifications": {
-      "statements": 202,
-      "percent": 81.19
+      "statements": 169,
+      "percent": 84.02
     },
     "github.com/CaliLuke/go-plane/internal/notionsync": {
       "statements": 843,
@@ -312,10 +308,6 @@
     "github.com/CaliLuke/go-plane/internal/pagereads": {
       "statements": 1571,
       "percent": 63.48
-    },
-    "github.com/CaliLuke/go-plane/internal/parity": {
-      "statements": 352,
-      "percent": 74.72
     },
     "github.com/CaliLuke/go-plane/internal/personaldashboard": {
       "statements": 12,
@@ -382,8 +374,8 @@
       "percent": 92.84
     },
     "github.com/CaliLuke/go-plane/internal/routing": {
-      "statements": 251,
-      "percent": 92.43
+      "statements": 67,
+      "percent": 98.5
     },
     "github.com/CaliLuke/go-plane/internal/standardviews": {
       "statements": 276,

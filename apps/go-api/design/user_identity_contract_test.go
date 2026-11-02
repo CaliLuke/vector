@@ -3,49 +3,28 @@ package design
 import (
 	"encoding/json"
 	"os"
-	"strconv"
-	"strings"
 	"testing"
 )
 
-func TestUserIdentityOpenAPICoversCommittedParityFixtures(t *testing.T) {
+func TestUserIdentityOpenAPIExposesNativeSessionContracts(t *testing.T) {
 	generated := readOpenAPI(t)
-	fixtures := []struct{ file, method, path, operationID string }{
-		{"../internal/parity/testdata/fixtures/user_identity/session-anonymous.json", "GET", "/api/users/session/", "user_identity.session"},
-		{"../internal/parity/testdata/fixtures/user_identity/session-authenticated.json", "GET", "/api/users/session/", "user_identity.session"},
-		{"../internal/parity/testdata/fixtures/user_identity/profile-get.json", "GET", "/api/users/me/profile/", "user_identity.profile"},
-		{"../internal/parity/testdata/fixtures/user_identity/profile-patch.json", "PATCH", "/api/users/me/profile/", "user_identity.update_profile"},
-		{"../internal/parity/testdata/fixtures/user_me_read/authenticated.json", "GET", "/api/users/me/", "user_identity.me"},
-		{"../internal/parity/testdata/fixtures/user_me_read/session.json", "GET", "/api/users/me/", "user_identity.me"},
-		{"../internal/parity/testdata/fixtures/user_me_read/anonymous.json", "GET", "/api/users/me/", "user_identity.me"},
-	}
-	for _, fixture := range fixtures {
-		data, err := os.ReadFile(fixture.file)
-		if err != nil {
-			t.Fatalf("read %s: %v", fixture.file, err)
+	for _, contract := range []struct {
+		method, path, id string
+		statuses         []string
+	}{
+		{"get", "/api/users/session/", "user_identity.session", []string{"200"}},
+		{"get", "/api/users/me/", "user_identity.me", []string{"200", "401"}},
+		{"get", "/api/users/me/profile/", "user_identity.profile", []string{"200", "401"}},
+		{"patch", "/api/users/me/profile/", "user_identity.update_profile", []string{"200", "400", "401"}},
+	} {
+		operation, ok := generated.Paths[contract.path][contract.method]
+		if !ok || operation.OperationID != contract.id {
+			t.Fatalf("missing native operation %s %s", contract.method, contract.path)
 		}
-		var document struct {
-			Request  struct{ Method, Path string } `json:"request"`
-			Response struct {
-				Status int `json:"status"`
-			} `json:"response"`
-		}
-		if err := json.Unmarshal(data, &document); err != nil {
-			t.Fatalf("decode %s: %v", fixture.file, err)
-		}
-		if document.Request.Method != fixture.method || document.Request.Path != fixture.path {
-			t.Errorf("%s request = %s %s, want %s %s", fixture.file, document.Request.Method, document.Request.Path, fixture.method, fixture.path)
-		}
-		operation, exists := generated.Paths[fixture.path][strings.ToLower(fixture.method)]
-		if !exists {
-			t.Errorf("fixture %s has no generated %s %s operation", fixture.file, fixture.method, fixture.path)
-			continue
-		}
-		if operation.OperationID != fixture.operationID {
-			t.Errorf("%s %s operation ID=%q want=%q", fixture.method, fixture.path, operation.OperationID, fixture.operationID)
-		}
-		if _, exists := operation.Responses[strconv.Itoa(document.Response.Status)]; !exists {
-			t.Errorf("%s has no generated response for fixture status %d", fixture.file, document.Response.Status)
+		for _, status := range contract.statuses {
+			if _, ok := operation.Responses[status]; !ok {
+				t.Errorf("%s missing HTTP %s", contract.path, status)
+			}
 		}
 	}
 }

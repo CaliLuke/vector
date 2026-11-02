@@ -12,8 +12,8 @@ import (
 	systemapi "github.com/CaliLuke/go-plane"
 )
 
-// The protocol descriptions are source observations. They include native DRF
-// methods absent from the generated business-operation manifest.
+// Native asset protocol descriptions augment business routes with HEAD and
+// OPTIONS while preserving their authentication and resource checks.
 //
 //go:embed assets_protocol_metadata.json
 var assetsProtocolMetadataJSON []byte

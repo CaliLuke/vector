@@ -14,11 +14,10 @@ import (
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
-const issueSourceFixtureDir = "../../../../apps/go-api/internal/parity/testdata/fixtures/work_item_core"
+const issueValidationFixtureDir = "testdata/validation"
 
-func TestValidateIssueMatchesSourceScalarValidationFixtures(t *testing.T) {
-	// These fixtures are source-recorded for IssueViewSet.create/update and
-	// exercise DRF field validation before IssueCreateSerializer.validate.
+func TestValidateIssueValidatesNativeScalarFields(t *testing.T) {
+	// Field errors take precedence over object-level validation.
 	for _, tc := range []struct {
 		name     string
 		fixture  string
@@ -52,24 +51,20 @@ func TestValidateIssueMatchesSourceScalarValidationFixtures(t *testing.T) {
 			}
 			var got *apicontract.HTTPError
 			if !errors.As(err, &got) {
-				t.Fatalf("validateIssue() error = %v, want source HTTP 400", err)
+				t.Fatalf("validateIssue() error = %v, want HTTP 400", err)
 			}
 			if got.Status != fixture.Response.Status {
-				t.Fatalf("validation status = %d, source status = %d", got.Status, fixture.Response.Status)
+				t.Fatalf("validation status = %d, expected status = %d", got.Status, fixture.Response.Status)
 			}
 			if !sameJSON(t, got.Body, fixture.Response.Body) {
-				t.Fatalf("validation body = %s, source body = %s", marshalJSON(t, got.Body), fixture.Response.Body)
+				t.Fatalf("validation body = %s, expected body = %s", marshalJSON(t, got.Body), fixture.Response.Body)
 			}
 		})
 	}
 }
 
 func TestValidateIssueRunsObjectValidationOnlyAfterFieldValidation(t *testing.T) {
-	// The source name and priority cases are recorded in
-	// issue-core-app-list-name-boolean.json and
-	// issue-core-app-list-priority-invalid.json. DRF runs object-level
-	// IssueCreateSerializer.validate only after all fields validate, so its
-	// reversed-date check must not add non_field_errors to field failures.
+	// Reversed dates must not obscure invalid scalar fields.
 	input, err := requestinput.Parse(bytes.NewBufferString(`{"name":true,"priority":"unknown","start_date":"2020-03-01","target_date":"2020-02-01"}`), "application/json")
 	if err != nil {
 		t.Fatal(err)
@@ -100,7 +95,7 @@ type issueValidationFixture struct {
 
 func readIssueValidationFixture(t *testing.T, name string) issueValidationFixture {
 	t.Helper()
-	data, err := os.ReadFile(filepath.Join(issueSourceFixtureDir, name))
+	data, err := os.ReadFile(filepath.Join(issueValidationFixtureDir, name))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,0 +1,16 @@
+{
+  "request": {
+    "body": {
+      "name": null
+    },
+    "method": "POST",
+    "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "name": ["This field may not be null."]
+    },
+    "status": 400
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "request": {
+    "body": {
+      "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "method": "POST",
+    "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "name": ["Ensure this field has no more than 255 characters."]
+    },
+    "status": 400
+  }
+}

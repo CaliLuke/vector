@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"os"
 	"reflect"
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -89,34 +89,23 @@ func TestSessionProjectCoverPreservesNullAndValidatesExistingAssetScope(t *testi
 	}
 }
 
-func TestProjectTimezoneChoiceSetMatchesPinnedSourceAndRejectsSessionAliases(t *testing.T) {
-	raw, err := os.ReadFile("../../projectlifecycle/source/source.openapi.json")
-	if err != nil {
-		t.Fatal(err)
+func TestProjectTimezoneChoicesAreUsableAndCanonical(t *testing.T) {
+	if !slices.IsSorted(projectTimezones) {
+		t.Fatal("project timezone choices must be sorted")
 	}
-	var source struct {
-		Components struct {
-			Schemas struct {
-				Timezone struct {
-					Enum []string `json:"enum"`
-				} `json:"TimezoneEnum"`
-			} `json:"schemas"`
-		} `json:"components"`
-	}
-	if err = json.Unmarshal(raw, &source); err != nil {
-		t.Fatal(err)
-	}
-	if !slices.Equal(projectTimezones, source.Components.Schemas.Timezone.Enum) || len(projectTimezones) != 433 {
-		t.Fatal("project timezone choices drifted from pinned source")
+	for _, zone := range projectTimezones {
+		if _, err := time.LoadLocation(zone); err != nil {
+			t.Errorf("unsupported project timezone %q: %v", zone, err)
+		}
 	}
 	for _, zone := range []string{"UTC", "GMT", "US/Pacific", "Asia/Kolkata"} {
 		if !validProjectTimezone(zone) {
-			t.Errorf("rejected %s", zone)
+			t.Errorf("rejected supported project timezone %q", zone)
 		}
 	}
-	for _, zone := range []string{"Etc/UTC", "Asia/Calcutta", "CET", "Local", " UTC "} {
+	for _, zone := range []string{"Local", " UTC ", "Unknown/Zone"} {
 		if validProjectTimezone(zone) {
-			t.Errorf("accepted %s", zone)
+			t.Errorf("accepted invalid project timezone %q", zone)
 		}
 	}
 }

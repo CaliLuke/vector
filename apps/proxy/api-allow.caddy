@@ -1,0 +1,421 @@
+# Code generated from apps/go-api/internal/routing/resource-methods.json. DO NOT EDIT.
+
+@api_allow_001 {
+	path_regexp ^/api/users/me/$
+}
+header @api_allow_001 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_002 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/$
+}
+header @api_allow_002 >Allow "GET, POST" {
+	match header Allow *
+}
+
+@api_allow_003 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/$
+}
+header @api_allow_003 >Allow "GET, PATCH, DELETE" {
+	match header Allow *
+}
+
+@api_allow_004 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/$
+}
+header @api_allow_004 >Allow "GET, POST" {
+	match header Allow *
+}
+
+@api_allow_005 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/$
+}
+header @api_allow_005 >Allow "GET, POST" {
+	match header Allow *
+}
+
+@api_allow_006 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/[^/]+/$
+}
+header @api_allow_006 >Allow "GET, DELETE" {
+	match header Allow *
+}
+
+@api_allow_007 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/$
+}
+header @api_allow_007 >Allow "GET, PATCH, DELETE" {
+	match header Allow *
+}
+
+@api_allow_008 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/labels/$
+}
+header @api_allow_008 >Allow "GET, POST" {
+	match header Allow *
+}
+
+@api_allow_009 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/labels/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/$
+}
+header @api_allow_009 >Allow "GET, PATCH, DELETE" {
+	match header Allow *
+}
+
+@api_allow_010 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/$
+}
+header @api_allow_010 >Allow "GET, POST" {
+	match header Allow *
+}
+
+@api_allow_011 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-issues/$
+}
+header @api_allow_011 >Allow "GET, POST" {
+	match header Allow *
+}
+
+@api_allow_012 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/$
+}
+header @api_allow_012 >Allow "GET, PATCH, DELETE" {
+	match header Allow *
+}
+
+@api_allow_013 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/states/$
+}
+header @api_allow_013 >Allow "GET, POST" {
+	match header Allow *
+}
+
+@api_allow_014 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/states/[^/]+/$
+}
+header @api_allow_014 >Allow "GET, PATCH, DELETE" {
+	match header Allow *
+}
+
+@api_allow_015 {
+	path_regexp ^/api/workspaces/$
+}
+header @api_allow_015 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_016 {
+	path_regexp ^/api/workspaces/[^/]+/$
+}
+header @api_allow_016 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_017 {
+	path_regexp ^/api/workspaces/[^/]+/draft-issues/$
+}
+header @api_allow_017 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_018 {
+	path_regexp ^/api/workspaces/[^/]+/draft-issues/[^/]+/$
+}
+header @api_allow_018 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_019 {
+	path_regexp ^/api/workspaces/[^/]+/members/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/$
+}
+header @api_allow_019 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_020 {
+	path_regexp ^/api/workspaces/[^/]+/projects/$
+}
+header @api_allow_020 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_021 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/$
+}
+header @api_allow_021 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_022 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-cycles/$
+}
+header @api_allow_022 >Allow "GET, POST, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_023 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-cycles/[^/]+/$
+}
+header @api_allow_023 >Allow "GET, POST, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_024 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-modules/$
+}
+header @api_allow_024 >Allow "GET, POST, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_025 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-modules/[^/]+/$
+}
+header @api_allow_025 >Allow "GET, POST, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_026 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/$
+}
+header @api_allow_026 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_027 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/archive/$
+}
+header @api_allow_027 >Allow "GET, POST, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_028 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/$
+}
+header @api_allow_028 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_029 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/[^/]+/$
+}
+header @api_allow_029 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_030 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/$
+}
+header @api_allow_030 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_031 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/estimates/$
+}
+header @api_allow_031 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_032 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/estimates/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/$
+}
+header @api_allow_032 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_033 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inbox-issues/$
+}
+header @api_allow_033 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_034 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inbox-issues/[^/]+/$
+}
+header @api_allow_034 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_035 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inboxes/$
+}
+header @api_allow_035 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_036 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inboxes/[^/]+/$
+}
+header @api_allow_036 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_037 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intake-issues/$
+}
+header @api_allow_037 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_038 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intake-issues/[^/]+/$
+}
+header @api_allow_038 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_039 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intakes/$
+}
+header @api_allow_039 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_040 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intakes/[^/]+/$
+}
+header @api_allow_040 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_041 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/issue-labels/$
+}
+header @api_allow_041 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_042 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/issue-labels/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/$
+}
+header @api_allow_042 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_043 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/members/$
+}
+header @api_allow_043 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_044 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/members/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/$
+}
+header @api_allow_044 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_045 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/$
+}
+header @api_allow_045 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_046 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/archive/$
+}
+header @api_allow_046 >Allow "GET, POST, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_047 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/issues/$
+}
+header @api_allow_047 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_048 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/issues/[^/]+/$
+}
+header @api_allow_048 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_049 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-links/$
+}
+header @api_allow_049 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_050 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-links/[^/]+/$
+}
+header @api_allow_050 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_051 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/$
+}
+header @api_allow_051 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_052 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/$
+}
+header @api_allow_052 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_053 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/$
+}
+header @api_allow_053 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_054 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/description/$
+}
+header @api_allow_054 >Allow "GET, PATCH, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_055 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/preferences/member/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/$
+}
+header @api_allow_055 >Allow "GET, PATCH, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_056 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/project-deploy-boards/$
+}
+header @api_allow_056 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_057 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/project-deploy-boards/[^/]+/$
+}
+header @api_allow_057 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_058 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/states/$
+}
+header @api_allow_058 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_059 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/states/[^/]+/$
+}
+header @api_allow_059 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+
+@api_allow_060 {
+	path_regexp ^/api/workspaces/[^/]+/users/notifications/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/$
+}
+header @api_allow_060 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}

@@ -1,0 +1,14 @@
+{
+  "request": {
+    "body": {},
+    "method": "PUT",
+    "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/",
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "name": ["This field is required."]
+    },
+    "status": 400
+  }
+}

@@ -70,7 +70,7 @@ func TestHTMLPolicyMatchesPinnedPythonSource(t *testing.T) {
 func TestHTMLPolicyMatchesDjangoFixture(t *testing.T) {
 	t.Parallel()
 
-	fixture := readDjangoFixture(t, "html-allowlists.json")
+	fixture := readContentFixture(t, "html-allowlists.json")
 	result := nestedMap(t, fixture, "result")
 	if got := directString(t, result, "nh3_version"); got != "0.2.18" {
 		t.Fatalf("nh3 version = %q, want 0.2.18", got)

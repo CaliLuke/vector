@@ -1,0 +1,27 @@
+{
+  "request": {
+    "body": null,
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "OPTIONS",
+    "path": "/api/workspaces/issue-core-contract/draft-to-issue/<uuid-1>/"
+  },
+  "response": {
+    "body": {
+      "error": "Something went wrong please try again later"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 500
+  }
+}

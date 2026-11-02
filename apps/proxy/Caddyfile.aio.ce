@@ -12,7 +12,7 @@
 			reverse_proxy localhost:3005
 		}
 
-		import go-active-routes.caddy
+		import api-allow.caddy
 
 		handle /api/* {
 			reverse_proxy {$GO_API_UPSTREAM:localhost:8080}

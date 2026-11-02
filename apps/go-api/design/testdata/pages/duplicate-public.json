@@ -1,0 +1,34 @@
+{
+  "request": {
+    "body": null,
+    "method": "POST",
+    "path": "/api/workspaces/page-lifecycle-fixture/projects/<uuid-1>/pages/<uuid-2>/duplicate/",
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "access": 0,
+      "archived_at": null,
+      "color": "",
+      "created_at": "<timestamp>",
+      "created_by": "<uuid-3>",
+      "description_html": "<p>original</p>",
+      "id": "<uuid-4>",
+      "is_locked": false,
+      "logo_props": {
+        "emoji": "P"
+      },
+      "name": "Public source page (Copy)",
+      "owned_by": "<uuid-3>",
+      "parent": null,
+      "project_ids": ["<uuid-1>"],
+      "updated_at": "<timestamp>",
+      "updated_by": "<uuid-3>",
+      "view_props": {
+        "full_width": true
+      },
+      "workspace": "<uuid-5>"
+    },
+    "status": 201
+  }
+}

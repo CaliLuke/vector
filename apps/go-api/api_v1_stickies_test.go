@@ -88,7 +88,7 @@ func TestAPIV1StickyOptionsBodiesMatchRecordedDRFMetadata(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			fixturePath := filepath.Join(repoRoot, "apps", "go-api", "internal", "parity", "testdata", "fixtures", "api_v1_stickies", test.fixture+".json")
+			fixturePath := filepath.Join(repoRoot, "apps", "go-api", "testdata", "sticky-options", test.fixture+".json")
 			fixtureBytes, err := os.ReadFile(fixturePath)
 			if err != nil {
 				t.Fatalf("read source fixture %s: %v", fixturePath, err)

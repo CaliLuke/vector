@@ -17,4 +17,4 @@ RUN apk update && apk upgrade --no-cache && apk add --no-cache nss-tools bash cu
 COPY --from=caddy-builder /usr/bin/caddy /usr/bin/caddy
 
 COPY Caddyfile.ce /etc/caddy/Caddyfile
-COPY go-active-routes.caddy /etc/caddy/go-active-routes.caddy
+COPY api-allow.caddy /etc/caddy/api-allow.caddy

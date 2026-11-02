@@ -331,8 +331,8 @@ func generateProtocolMounts() ([]byte, error) {
 		return nil, fmt.Errorf("locate bindingsgen source file")
 	}
 	repoRoot := filepath.Clean(filepath.Join(filepath.Dir(sourceFile), "../../../../../"))
-	manifestPath := filepath.Join(repoRoot, "docs/go-backend-replacement/assets-lifecycle-manifest.json")
-	decisionPath := filepath.Join(repoRoot, "docs/go-backend-replacement/decisions/ASSET-001-invalid-methods.json")
+	manifestPath := filepath.Join(repoRoot, "apps/go-api/internal/assets/endpoint-policy.json")
+	decisionPath := filepath.Join(repoRoot, "apps/go-api/internal/assets/unsupported-methods.json")
 	var manifest struct {
 		Operations map[string]assetsLifecycleOperation `json:"operations"`
 	}

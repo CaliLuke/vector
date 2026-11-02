@@ -1,0 +1,662 @@
+{
+  "version": 1,
+  "operation_count": 82,
+  "operations": {
+    "get_api_assets_v2_static_by_asset_id": {
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_static_by_asset_id",
+      "path": "/api/assets/v2/static/{asset_id}/",
+      "auth_profile": "public-allow-any",
+      "authentication": ["anonymous", "session"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_assets_v2_user_assets": {
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_user_assets",
+      "path": "/api/assets/v2/user-assets/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "patch_api_assets_v2_user_assets": {
+      "method": "PATCH",
+      "operation_id": "patch_api_assets_v2_user_assets",
+      "path": "/api/assets/v2/user-assets/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_assets_v2_user_assets": {
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_user_assets",
+      "path": "/api/assets/v2/user-assets/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_assets_v2_user_assets_by_asset_id": {
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_user_assets_by_asset_id",
+      "path": "/api/assets/v2/user-assets/{asset_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "patch_api_assets_v2_user_assets_by_asset_id": {
+      "method": "PATCH",
+      "operation_id": "patch_api_assets_v2_user_assets_by_asset_id",
+      "path": "/api/assets/v2/user-assets/{asset_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_assets_v2_user_assets_by_asset_id": {
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_user_assets_by_asset_id",
+      "path": "/api/assets/v2/user-assets/{asset_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_assets_v2_workspaces_by_slug": {
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_workspaces_by_slug",
+      "path": "/api/assets/v2/workspaces/{slug}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_assets_v2_workspaces_by_slug": {
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug",
+      "path": "/api/assets/v2/workspaces/{slug}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "patch_api_assets_v2_workspaces_by_slug": {
+      "method": "PATCH",
+      "operation_id": "patch_api_assets_v2_workspaces_by_slug",
+      "path": "/api/assets/v2/workspaces/{slug}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_assets_v2_workspaces_by_slug": {
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug",
+      "path": "/api/assets/v2/workspaces/{slug}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_assets_v2_workspaces_by_slug_check_by_asset_id": {
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_check_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/check/{asset_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_assets_v2_workspaces_by_slug_download_by_asset_id": {
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_download_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/download/{asset_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_assets_v2_workspaces_by_slug_duplicate_assets_by_asset_id": {
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_duplicate_assets_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/duplicate-assets/{asset_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id": {
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_assets_v2_workspaces_by_slug_projects_by_project_id": {
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id": {
+      "method": "PATCH",
+      "operation_id": "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_assets_v2_workspaces_by_slug_projects_by_project_id": {
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_download_by_asset_id": {
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_download_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/download/{asset_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments": {
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments": {
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments": {
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk": {
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/{pk}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk": {
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/{pk}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk": {
+      "method": "PATCH",
+      "operation_id": "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/{pk}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_entity_id_bulk": {
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_entity_id_bulk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{entity_id}/bulk/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk": {
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{pk}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk": {
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{pk}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk": {
+      "method": "PATCH",
+      "operation_id": "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{pk}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk": {
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{pk}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_assets_v2_workspaces_by_slug_restore_by_asset_id": {
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_restore_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/restore/{asset_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_assets_v2_workspaces_by_slug_by_asset_id": {
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_workspaces_by_slug_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/{asset_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_assets_v2_workspaces_by_slug_by_asset_id": {
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/{asset_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "patch_api_assets_v2_workspaces_by_slug_by_asset_id": {
+      "method": "PATCH",
+      "operation_id": "patch_api_assets_v2_workspaces_by_slug_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/{asset_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_assets_v2_workspaces_by_slug_by_asset_id": {
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/{asset_id}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_public_assets_v2_anchor_by_anchor": {
+      "method": "DELETE",
+      "operation_id": "delete_api_public_assets_v2_anchor_by_anchor",
+      "path": "/api/public/assets/v2/anchor/{anchor}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_public_assets_v2_anchor_by_anchor": {
+      "method": "GET",
+      "operation_id": "get_api_public_assets_v2_anchor_by_anchor",
+      "path": "/api/public/assets/v2/anchor/{anchor}/",
+      "auth_profile": "public-allow-any",
+      "authentication": ["anonymous", "session"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "patch_api_public_assets_v2_anchor_by_anchor": {
+      "method": "PATCH",
+      "operation_id": "patch_api_public_assets_v2_anchor_by_anchor",
+      "path": "/api/public/assets/v2/anchor/{anchor}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_public_assets_v2_anchor_by_anchor": {
+      "method": "POST",
+      "operation_id": "post_api_public_assets_v2_anchor_by_anchor",
+      "path": "/api/public/assets/v2/anchor/{anchor}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_public_assets_v2_anchor_by_anchor_restore_by_pk": {
+      "method": "POST",
+      "operation_id": "post_api_public_assets_v2_anchor_by_anchor_restore_by_pk",
+      "path": "/api/public/assets/v2/anchor/{anchor}/restore/{pk}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_public_assets_v2_anchor_by_anchor_by_entity_id_bulk": {
+      "method": "POST",
+      "operation_id": "post_api_public_assets_v2_anchor_by_anchor_by_entity_id_bulk",
+      "path": "/api/public/assets/v2/anchor/{anchor}/{entity_id}/bulk/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_public_assets_v2_anchor_by_anchor_by_pk": {
+      "method": "DELETE",
+      "operation_id": "delete_api_public_assets_v2_anchor_by_anchor_by_pk",
+      "path": "/api/public/assets/v2/anchor/{anchor}/{pk}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_public_assets_v2_anchor_by_anchor_by_pk": {
+      "method": "GET",
+      "operation_id": "get_api_public_assets_v2_anchor_by_anchor_by_pk",
+      "path": "/api/public/assets/v2/anchor/{anchor}/{pk}/",
+      "auth_profile": "public-allow-any",
+      "authentication": ["anonymous", "session"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "patch_api_public_assets_v2_anchor_by_anchor_by_pk": {
+      "method": "PATCH",
+      "operation_id": "patch_api_public_assets_v2_anchor_by_anchor_by_pk",
+      "path": "/api/public/assets/v2/anchor/{anchor}/{pk}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_public_assets_v2_anchor_by_anchor_by_pk": {
+      "method": "POST",
+      "operation_id": "post_api_public_assets_v2_anchor_by_anchor_by_pk",
+      "path": "/api/public/assets/v2/anchor/{anchor}/{pk}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_users_file_assets": {
+      "method": "DELETE",
+      "operation_id": "delete_api_users_file_assets",
+      "path": "/api/users/file-assets/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_users_file_assets": {
+      "method": "GET",
+      "operation_id": "get_api_users_file_assets",
+      "path": "/api/users/file-assets/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_users_file_assets": {
+      "method": "POST",
+      "operation_id": "post_api_users_file_assets",
+      "path": "/api/users/file-assets/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_users_file_assets_by_asset_key": {
+      "method": "DELETE",
+      "operation_id": "delete_api_users_file_assets_by_asset_key",
+      "path": "/api/users/file-assets/{asset_key}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_users_file_assets_by_asset_key": {
+      "method": "GET",
+      "operation_id": "get_api_users_file_assets_by_asset_key",
+      "path": "/api/users/file-assets/{asset_key}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_users_file_assets_by_asset_key": {
+      "method": "POST",
+      "operation_id": "post_api_users_file_assets_by_asset_key",
+      "path": "/api/users/file-assets/{asset_key}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_v1_assets_user_assets": {
+      "method": "POST",
+      "operation_id": "post_api_v1_assets_user_assets",
+      "path": "/api/v1/assets/user-assets/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_v1_assets_user_assets_server": {
+      "method": "POST",
+      "operation_id": "post_api_v1_assets_user_assets_server",
+      "path": "/api/v1/assets/user-assets/server/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_v1_assets_user_assets_by_asset_id": {
+      "method": "DELETE",
+      "operation_id": "delete_api_v1_assets_user_assets_by_asset_id",
+      "path": "/api/v1/assets/user-assets/{asset_id}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "patch_api_v1_assets_user_assets_by_asset_id": {
+      "method": "PATCH",
+      "operation_id": "patch_api_v1_assets_user_assets_by_asset_id",
+      "path": "/api/v1/assets/user-assets/{asset_id}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_v1_assets_user_assets_by_asset_id_server": {
+      "method": "DELETE",
+      "operation_id": "delete_api_v1_assets_user_assets_by_asset_id_server",
+      "path": "/api/v1/assets/user-assets/{asset_id}/server/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "patch_api_v1_assets_user_assets_by_asset_id_server": {
+      "method": "PATCH",
+      "operation_id": "patch_api_v1_assets_user_assets_by_asset_id_server",
+      "path": "/api/v1/assets/user-assets/{asset_id}/server/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_v1_workspaces_by_slug_assets": {
+      "method": "POST",
+      "operation_id": "post_api_v1_workspaces_by_slug_assets",
+      "path": "/api/v1/workspaces/{slug}/assets/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_v1_workspaces_by_slug_assets_by_asset_id": {
+      "method": "GET",
+      "operation_id": "get_api_v1_workspaces_by_slug_assets_by_asset_id",
+      "path": "/api/v1/workspaces/{slug}/assets/{asset_id}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "patch_api_v1_workspaces_by_slug_assets_by_asset_id": {
+      "method": "PATCH",
+      "operation_id": "patch_api_v1_workspaces_by_slug_assets_by_asset_id",
+      "path": "/api/v1/workspaces/{slug}/assets/{asset_id}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments": {
+      "method": "GET",
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments": {
+      "method": "POST",
+      "operation_id": "post_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk": {
+      "method": "DELETE",
+      "operation_id": "delete_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk": {
+      "method": "GET",
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "patch_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk": {
+      "method": "PATCH",
+      "operation_id": "patch_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments": {
+      "method": "GET",
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/attachments/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments": {
+      "method": "POST",
+      "operation_id": "post_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/attachments/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk": {
+      "method": "DELETE",
+      "operation_id": "delete_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/attachments/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk": {
+      "method": "GET",
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/attachments/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "patch_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk": {
+      "method": "PATCH",
+      "operation_id": "patch_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/attachments/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_workspaces_file_assets_by_workspace_id_by_asset_key": {
+      "method": "DELETE",
+      "operation_id": "delete_api_workspaces_file_assets_by_workspace_id_by_asset_key",
+      "path": "/api/workspaces/file-assets/{workspace_id}/{asset_key}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_workspaces_file_assets_by_workspace_id_by_asset_key": {
+      "method": "GET",
+      "operation_id": "get_api_workspaces_file_assets_by_workspace_id_by_asset_key",
+      "path": "/api/workspaces/file-assets/{workspace_id}/{asset_key}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_workspaces_file_assets_by_workspace_id_by_asset_key": {
+      "method": "POST",
+      "operation_id": "post_api_workspaces_file_assets_by_workspace_id_by_asset_key",
+      "path": "/api/workspaces/file-assets/{workspace_id}/{asset_key}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_workspaces_file_assets_by_workspace_id_by_asset_key_restore": {
+      "method": "POST",
+      "operation_id": "post_api_workspaces_file_assets_by_workspace_id_by_asset_key_restore",
+      "path": "/api/workspaces/file-assets/{workspace_id}/{asset_key}/restore/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_workspaces_by_slug_file_assets": {
+      "method": "DELETE",
+      "operation_id": "delete_api_workspaces_by_slug_file_assets",
+      "path": "/api/workspaces/{slug}/file-assets/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_workspaces_by_slug_file_assets": {
+      "method": "GET",
+      "operation_id": "get_api_workspaces_by_slug_file_assets",
+      "path": "/api/workspaces/{slug}/file-assets/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_workspaces_by_slug_file_assets": {
+      "method": "POST",
+      "operation_id": "post_api_workspaces_by_slug_file_assets",
+      "path": "/api/workspaces/{slug}/file-assets/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments": {
+      "method": "DELETE",
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments": {
+      "method": "GET",
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments": {
+      "method": "POST",
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk": {
+      "method": "DELETE",
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/{pk}/",
+      "auth_profile": "session",
+      "authentication": ["session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"]
+    },
+    "post_api_assets_v2_workspaces_by_slug_by_entity_id_bulk": {
+      "method": "POST",
+      "path": "/api/assets/v2/workspaces/{slug}/{entity_id}/bulk/",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_by_entity_id_bulk",
+      "auth_profile": "session-required",
+      "authentication": ["session"],
+      "protocol_methods": ["OPTIONS"]
+    }
+  }
+}

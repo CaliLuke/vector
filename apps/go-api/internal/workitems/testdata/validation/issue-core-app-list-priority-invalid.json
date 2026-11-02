@@ -1,0 +1,17 @@
+{
+  "request": {
+    "body": {
+      "name": "Priority",
+      "priority": "unknown"
+    },
+    "method": "POST",
+    "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "priority": ["\"unknown\" is not a valid choice."]
+    },
+    "status": 400
+  }
+}

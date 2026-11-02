@@ -1,0 +1,36 @@
+{
+  "request": {
+    "body": {
+      "labels": ["<uuid-1>"],
+      "name": "Updated"
+    },
+    "method": "PATCH",
+    "path": "/api/workspaces/page-lifecycle-fixture/projects/<uuid-2>/pages/<uuid-3>/",
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "access": 0,
+      "archived_at": null,
+      "color": "",
+      "created_at": "<timestamp>",
+      "created_by": null,
+      "description_html": "<p>original</p>",
+      "id": "<uuid-3>",
+      "is_locked": false,
+      "logo_props": {
+        "emoji": "P"
+      },
+      "name": "Updated",
+      "owned_by": "<uuid-5>",
+      "parent": null,
+      "updated_at": "<timestamp>",
+      "updated_by": "<uuid-4>",
+      "view_props": {
+        "full_width": true
+      },
+      "workspace": "<uuid-6>"
+    },
+    "status": 200
+  }
+}

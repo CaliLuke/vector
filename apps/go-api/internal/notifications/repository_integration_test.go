@@ -205,7 +205,7 @@ func TestNotificationRepositoryPostgresPaginationOrdering(t *testing.T) {
 	if got := notificationTitles(t, page["results"]); !reflect.DeepEqual(got, []string{"new creation tie", "old creation tie"}) {
 		t.Fatalf("first page=%v", got)
 	}
-	for key, want := range map[string]any{"count": 2, "total_count": int64(3), "total_results": int64(3), "total_pages": int64(2), "next_cursor": "2:1:0", "prev_cursor": "2:-1:1", "next_page_results": true, "prev_page_results": false} {
+	for key, want := range map[string]any{"count": 2, "total_count": 3, "total_results": 3, "total_pages": 2, "next_cursor": "2:1:0", "prev_cursor": "2:-1:1", "next_page_results": true, "prev_page_results": false} {
 		if !reflect.DeepEqual(page[key], want) {
 			t.Errorf("%s=%v, want %v", key, page[key], want)
 		}
@@ -223,23 +223,40 @@ func TestNotificationRepositoryPostgresPaginationOrdering(t *testing.T) {
 	}
 }
 
-func TestNotificationRepositoryOversizedCursorMatchesDjango(t *testing.T) {
+func TestNotificationRepositoryRejectsOutOfRangeCursorsForOwnersAndGuests(t *testing.T) {
 	tx := notificationTestDB(t)
 	repository, err := NewRepository(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, cursor := range []string{"2:4611686018427387904:0", "2:100000000000000000000:0"} {
-		_, listErr := repository.List(t.Context(), notificationPrincipal, "test", url.Values{"per_page": {"2"}, "cursor": {cursor}})
-		assertNotificationStatus(t, listErr, 500)
+	for _, role := range []int{20, 5} {
+		execNotificationSQL(t, tx, `UPDATE workspace_members SET role=$1`, role)
+		for _, cursor := range []string{"2:4611686018427387904:0", "2:100000000000000000000:0", "1:9223372036854775807:0"} {
+			_, err := repository.List(t.Context(), notificationPrincipal, "test", url.Values{"per_page": {"2"}, "cursor": {cursor}, "type": {"created,assigned"}})
+			assertNotificationStatus(t, err, 400)
+		}
 	}
-	result, err := repository.List(t.Context(), notificationPrincipal, "test", url.Values{"per_page": {"1"}, "cursor": {"1:9223372036854775807:0"}})
-	if err != nil || result.(map[string]any)["count"] != 0 {
-		t.Fatalf("valid bigint boundary = %v, %v", result, err)
-	}
-	execNotificationSQL(t, tx, `UPDATE workspace_members SET role=5`)
-	result, err = repository.List(t.Context(), notificationPrincipal, "test", url.Values{"per_page": {"2"}, "cursor": {"2:100000000000000000000:0"}, "type": {"created,assigned"}})
-	if err != nil || result.(map[string]any)["count"] != 0 {
-		t.Fatalf("guest .none() boundary = %v, %v", result, err)
+}
+
+func TestNotificationReadAndArchiveFiltersUseNativeFirstPage(t *testing.T) {
+	tx := notificationTestDB(t)
+	repository, err := NewRepository(tx)
+	require.NoError(t, err)
+	require.NoError(t, repository.Authorize(t.Context(), notificationPrincipal, "test"))
+	insertNotification(t, tx, 101, "unread")
+	insertNotification(t, tx, 102, "read")
+	insertNotification(t, tx, 103, "archived")
+	execNotificationSQL(t, tx, `UPDATE notifications SET read_at=now() WHERE title='read'`)
+	execNotificationSQL(t, tx, `UPDATE notifications SET archived_at=now() WHERE title='archived'`)
+	for _, test := range []struct{ read, archived, title string }{
+		{"false", "false", "unread"}, {"true", "false", "read"}, {"", "true", "archived"},
+	} {
+		result, err := repository.List(t.Context(), notificationPrincipal, "test", url.Values{
+			"per_page": {"2"}, "read": {test.read}, "archived": {test.archived}, "order_by": {"unsupported"},
+		})
+		require.NoError(t, err)
+		page := result.(map[string]any)
+		require.Equal(t, []string{test.title}, notificationTitles(t, page["results"]))
+		require.Equal(t, "2:1:0", page["next_cursor"])
 	}
 }

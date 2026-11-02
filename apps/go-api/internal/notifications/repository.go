@@ -1,4 +1,4 @@
-// Package notifications preserves the notification request contract owned by Django.
+// Package notifications owns scoped notification reads and pagination.
 package notifications
 
 import (
@@ -6,15 +6,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"math/big"
 	"net/url"
 	"slices"
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -29,14 +27,10 @@ type Principal struct {
 	UserID   string
 	Timezone string
 }
-type HTTPError struct {
-	Status int
-	Body   map[string]any
-}
+type HTTPError = apicontract.HTTPError
 
-func (e *HTTPError) Error() string { return fmt.Sprintf("notification HTTP %d", e.Status) }
 func Failure(status int, key, message string) error {
-	return &HTTPError{status, map[string]any{key: message}}
+	return &HTTPError{Status: status, Body: map[string]any{key: message}}
 }
 func NewRepository(db Database) (*Repository, error) {
 	if db == nil {
@@ -172,7 +166,6 @@ func (r *Repository) List(ctx context.Context, p Principal, slug string, q url.V
 	predicates = append(predicates, mentioned)
 	types := strings.Split(last(q, "type", "all"), ",")
 	typePredicates := []string{}
-	guestCreated := false
 	if slices.Contains(types, "subscribed") {
 		typePredicates = append(typePredicates, subscribed)
 	}
@@ -185,7 +178,6 @@ func (r *Repository) List(ctx context.Context, p Principal, slug string, q url.V
 			return nil, err
 		}
 		if guest {
-			guestCreated = true
 			predicates = append(predicates, "FALSE")
 		} else {
 			typePredicates = append(typePredicates, created)
@@ -219,15 +211,8 @@ func (r *Repository) List(ctx context.Context, p Principal, slug string, q url.V
 		if scanErr := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM notifications n JOIN workspaces w ON w.id=n.workspace_id WHERE `+where, args...).Scan(&total); scanErr != nil {
 			return nil, scanErr
 		}
-		if page.offset.IsInt64() {
-			query += ` LIMIT $3 OFFSET $4`
-			args = append(args, page.limit+1, page.offset.Int64())
-		} else if guestCreated {
-			// Django's .none() skips SQL, including the overflowing OFFSET.
-			query += ` LIMIT 0`
-		} else {
-			return nil, Failure(500, "error", "Something went wrong please try again later")
-		}
+		query += ` LIMIT $3 OFFSET $4`
+		args = append(args, page.limit+1, page.offset)
 	}
 	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
@@ -252,65 +237,31 @@ func (r *Repository) List(ctx context.Context, p Principal, slug string, q url.V
 	if page == nil {
 		return results, nil
 	}
-	next := int64(len(results)) > page.limit
+	next := len(results) > page.limit
 	if next {
 		results = results[:page.limit]
 	}
-	return map[string]any{"count": len(results), "next_cursor": fmt.Sprintf("%d:%s:0", page.limit, new(big.Int).Add(page.number, big.NewInt(1))), "prev_cursor": fmt.Sprintf("%d:%s:1", page.limit, new(big.Int).Sub(page.number, big.NewInt(1))), "next_page_results": next, "prev_page_results": page.number.Sign() > 0, "total_count": total, "total_results": total, "total_pages": (total + page.limit - 1) / page.limit, "extra_stats": nil, "grouped_by": nil, "sub_grouped_by": nil, "results": results}, nil
+	envelope := apicontract.Envelope(results, int(total), page.limit, page.number)
+	envelope["next_page_results"] = next
+	return envelope, nil
 }
 
-type pagination struct {
-	limit          int64
-	number, offset *big.Int
-}
+type pagination struct{ limit, number, offset int }
 
 func parsePage(q url.Values) (*pagination, error) {
-	limitText, cursor := last(q, "per_page", ""), last(q, "cursor", "")
-	if limitText == "" || cursor == "" {
+	if !q.Has("per_page") && !q.Has("cursor") {
 		return nil, nil
 	}
-	limit, err := pythoncompat.DecimalInteger(limitText)
+	limit, page, offset, err := apicontract.PageWindow(apicontract.Query{
+		Params:  map[string]string{"per_page": last(q, "per_page", ""), "cursor": last(q, "cursor", "")},
+		Present: map[string]bool{"per_page": q.Has("per_page"), "cursor": q.Has("cursor")},
+	})
 	if err != nil {
-		return nil, Failure(400, "detail", "Invalid per_page parameter.")
+		return nil, err
 	}
-	if limit.Cmp(big.NewInt(1000)) > 0 {
-		return nil, Failure(400, "detail", "Invalid per_page value. Cannot exceed 1000.")
-	}
-	bits := strings.Split(cursor, ":")
-	bad := func() (*pagination, error) { return nil, Failure(400, "detail", "Invalid cursor parameter.") }
-	if len(bits) != 3 {
-		return bad()
-	}
-	equal := false
-	if strings.Contains(bits[0], ".") {
-		value, e := pythoncompat.DecimalFloat64(bits[0])
-		if e != nil {
-			return bad()
-		}
-		equal = limit.IsInt64() && value == float64(limit.Int64())
-	} else {
-		value, e := pythoncompat.DecimalInteger(bits[0])
-		if e != nil {
-			return bad()
-		}
-		equal = value.Cmp(limit) == 0
-	}
-	number, err := pythoncompat.DecimalInteger(bits[1])
-	if err != nil {
-		return bad()
-	}
-	previous, err := pythoncompat.DecimalInteger(bits[2])
-	if err != nil {
-		return bad()
-	}
-	if number.Sign() < 0 && limit.Sign() > 0 {
-		return nil, Failure(400, "detail", "Error in parsing")
-	}
-	if limit.Sign() <= 0 || (!equal && previous.Sign() != 0) {
-		return nil, Failure(500, "error", "Something went wrong please try again later")
-	}
-	return &pagination{limit: limit.Int64(), number: number, offset: new(big.Int).Mul(number, limit)}, nil
+	return &pagination{limit: limit, number: page, offset: offset}, nil
 }
+
 func (r *Repository) Counts(ctx context.Context, p Principal, slug string) (map[string]int64, error) {
 	var total, mentions int64
 	err := r.db.QueryRow(ctx, `SELECT COUNT(*) FILTER(WHERE UPPER(n.sender) NOT LIKE '%MENTIONED%'),COUNT(*) FILTER(WHERE UPPER(n.sender) LIKE '%MENTIONED%') FROM notifications n JOIN workspaces w ON w.id=n.workspace_id WHERE `+scope+` AND n.read_at IS NULL AND n.archived_at IS NULL AND n.snoozed_till IS NULL`, p.UserID, slug).Scan(&total, &mentions)

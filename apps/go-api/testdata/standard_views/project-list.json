@@ -1,0 +1,47 @@
+{
+  "request": {
+    "body": null,
+    "method": "GET",
+    "path": "/api/workspaces/standard-view-parity/projects/<uuid-1>/views/",
+    "query": {}
+  },
+  "response": {
+    "body": [
+      {
+        "access": 1,
+        "archived_at": null,
+        "created_at": "<timestamp>",
+        "created_by": "<uuid-2>",
+        "deleted_at": null,
+        "description": "Project view contract",
+        "display_filters": {
+          "layout": "list"
+        },
+        "display_properties": {
+          "priority": true
+        },
+        "filters": {
+          "priority": ["high"]
+        },
+        "id": "<uuid-3>",
+        "is_favorite": false,
+        "is_locked": false,
+        "logo_props": {
+          "emoji": "view"
+        },
+        "name": "Project view",
+        "owned_by": "<uuid-2>",
+        "project": "<uuid-1>",
+        "query": {
+          "priority__in": ["high"]
+        },
+        "rich_filters": {},
+        "sort_order": 65535.0,
+        "updated_at": "<timestamp>",
+        "updated_by": null,
+        "workspace": "<uuid-4>"
+      }
+    ],
+    "status": 200
+  }
+}

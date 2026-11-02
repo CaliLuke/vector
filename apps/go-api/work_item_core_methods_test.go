@@ -12,23 +12,9 @@ import (
 	"testing"
 )
 
-// This checks the authored delegation against the source contract, the Loom
-// design, and generated HTTP metadata without maintaining a second route list.
+// Authored adapters, native designs and generated transport must agree.
 func TestWorkItemCoreMethodAdaptersMatchContract(t *testing.T) {
 	const family = "work_item_core"
-	var contract struct {
-		Operations map[string]struct {
-			Method string `json:"method"`
-			Path   string `json:"path"`
-		} `json:"operations"`
-	}
-	readJSON(t, filepath.Join("..", "..", "docs", "go-backend-replacement", "contracts", family+".json"), &contract)
-	if len(contract.Operations) != 72 {
-		t.Fatalf("contract has %d operations, want 72", len(contract.Operations))
-	}
-
-	// Loom must preserve the canonical source route in x-plane-contract-id,
-	// while these three routes use a single generated transport segment.
 	identifierTransportRoutes := map[string]string{
 		"GET /api/v1/workspaces/{slug}/issues/{project_identifier}-{issue_identifier}/":     "GET /api/v1/workspaces/{slug}/issues/{identifier}/",
 		"GET /api/v1/workspaces/{slug}/work-items/{project_identifier}-{issue_identifier}/": "GET /api/v1/workspaces/{slug}/work-items/{identifier}/",
@@ -137,25 +123,26 @@ func TestWorkItemCoreMethodAdaptersMatchContract(t *testing.T) {
 		seen[id] = method.Name.Name
 	}
 
-	if len(seen) != len(contract.Operations) || len(metadata) != len(contract.Operations) || len(designIDs) != len(contract.Operations) {
-		t.Errorf("operation counts: adapters=%d design=%d generated=%d contract=%d", len(seen), len(designIDs), len(metadata), len(contract.Operations))
+	if len(seen) != len(metadata) || len(designIDs) != len(metadata) {
+		t.Errorf("operation counts: adapters=%d design=%d generated=%d", len(seen), len(designIDs), len(metadata))
 	}
-	for id, operation := range contract.Operations {
+	for id, route := range metadata {
 		if seen[id] == "" {
 			t.Errorf("missing adapter for %s", id)
 		}
-		canonicalID := operation.Method + " " + operation.Path
-		if contractIDs[id] != canonicalID {
-			t.Errorf("%s generated contract ID = %q, canonical source contract = %q", id, contractIDs[id], canonicalID)
+		canonical := contractIDs[id]
+		if canonical == "" {
+			t.Errorf("missing native contract ID for %s", id)
 		}
-		wantTransportRoute := canonicalID
-		if mapped, ok := identifierTransportRoutes[canonicalID]; ok {
-			wantTransportRoute = mapped
+		expected := canonical
+		if mapped, ok := identifierTransportRoutes[canonical]; ok {
+			expected = mapped
 		}
-		if metadata[id] != wantTransportRoute {
-			t.Errorf("%s generated transport route = %q, want %q", id, metadata[id], wantTransportRoute)
+		if route != expected {
+			t.Errorf("%s transport route=%q want=%q", id, route, expected)
 		}
 	}
+
 }
 
 func readJSON(t *testing.T, path string, target any) {

@@ -22,5 +22,5 @@ Edit source designs before regenerating transports. Keep generated files unchang
 Generate only affected designs.
 The module import path remains `github.com/CaliLuke/go-plane` for generated-code compatibility.
 
-Static contract fixtures live in `internal/parity/testdata/fixtures`.
-Historical Django replay tools have been removed; current tests run against Go.
+Native contract samples live beside their tests under `testdata`.
+Tests exercise the Go services and their current HTTP and MCP contracts.

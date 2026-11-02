@@ -165,7 +165,7 @@ services:
       PLANE_SPACE_PORT: ${PLANE_SPACE_PORT:-3002}
     volumes:
       - ./apps/proxy/Caddyfile.local:/etc/caddy/Caddyfile:ro
-      - ./apps/proxy/go-active-routes.caddy:/etc/caddy/go-active-routes.caddy:ro
+      - ./apps/proxy/api-allow.caddy:/etc/caddy/api-allow.caddy:ro
     depends_on:
       go-api:
         condition: service_started

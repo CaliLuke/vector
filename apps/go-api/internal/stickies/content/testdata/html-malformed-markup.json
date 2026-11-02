@@ -1,0 +1,33 @@
+{
+  "request": {
+    "body": {
+      "description_html": "<div><p>One<b>Two</div>Three &amp; Four</p>",
+      "name": "html-malformed-markup"
+    },
+    "method": "POST",
+    "path": "/api/workspaces/test-workspace/stickies/",
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "background_color": null,
+      "color": null,
+      "created_at": "<timestamp>",
+      "created_by": "<uuid-1>",
+      "deleted_at": null,
+      "description": {},
+      "description_binary": null,
+      "description_html": "<div><p>One<b>Two</b></p></div><b>Three &amp; Four<p></p></b>",
+      "description_stripped": "OneTwoThree & Four",
+      "id": "<uuid-2>",
+      "logo_props": {},
+      "name": "html-malformed-markup",
+      "owner": "<uuid-1>",
+      "sort_order": 65535.0,
+      "updated_at": "<timestamp>",
+      "updated_by": null,
+      "workspace": "<uuid-3>"
+    },
+    "status": 201
+  }
+}

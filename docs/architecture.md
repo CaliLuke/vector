@@ -99,16 +99,15 @@ reads, creation, acceptance/join, and updates each have a separate file.
 shares field validation. Each operation retains its authorization, transaction,
 and effect boundaries.
 
-| Path                                   | Purpose                                       |
-| -------------------------------------- | --------------------------------------------- |
-| `apps/go-api`                          | Go API, workers, bootstrap, schema, and tests |
-| `apps/web`                             | Main React application                        |
-| `apps/admin`                           | Instance administration                       |
-| `apps/space`                           | Public project pages                          |
-| `apps/live`                            | Collaboration service                         |
-| `apps/proxy`                           | Caddy configuration                           |
-| `packages`                             | Shared frontend code                          |
-| `apps/go-api/internal/parity/testdata` | Historical contract fixtures                  |
+| Path          | Purpose                                       |
+| ------------- | --------------------------------------------- |
+| `apps/go-api` | Go API, workers, bootstrap, schema, and tests |
+| `apps/web`    | Main React application                        |
+| `apps/admin`  | Instance administration                       |
+| `apps/space`  | Public project pages                          |
+| `apps/live`   | Collaboration service                         |
+| `apps/proxy`  | Caddy configuration                           |
+| `packages`    | Shared frontend code                          |
 
 The main web application uses React, Vite, and TanStack Router. `apps/web/routes.ts` defines the
 virtual route tree; route modules own their components, redirects, metadata, and route parameters.

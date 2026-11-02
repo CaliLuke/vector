@@ -1,0 +1,16 @@
+{
+  "request": {
+    "body": {
+      "name": true
+    },
+    "method": "POST",
+    "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "name": ["Not a valid string."]
+    },
+    "status": 400
+  }
+}

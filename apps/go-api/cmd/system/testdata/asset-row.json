@@ -1,0 +1,41 @@
+{
+  "response": {
+    "body": {
+      "data": [
+        {
+          "asset": "http://testserver/api/workspaces/file-assets/<uuid-1>/<uuid-2>.png/<uuid-1>/<uuid-2>.png",
+          "attributes": {
+            "name": "assets-fixture.png",
+            "size": 68,
+            "type": "image/png"
+          },
+          "comment": null,
+          "created_at": "<timestamp>",
+          "created_by": "<uuid-3>",
+          "deleted_at": null,
+          "draft_issue": null,
+          "entity_identifier": null,
+          "entity_type": "ISSUE_DESCRIPTION",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-2>",
+          "is_archived": false,
+          "is_deleted": false,
+          "is_uploaded": true,
+          "issue": "<uuid-4>",
+          "page": null,
+          "project": "<uuid-5>",
+          "size": 68.0,
+          "storage_metadata": {
+            "ContentLength": 68
+          },
+          "updated_at": "<timestamp>",
+          "updated_by": null,
+          "user": null,
+          "workspace": "<uuid-1>"
+        }
+      ],
+      "status": true
+    }
+  }
+}

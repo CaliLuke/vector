@@ -15,7 +15,7 @@ func TestProjectEstimatePointOptionsMetadataMatchesCorrectedSource(t *testing.T)
 		t.Fatalf("decode generated OPTIONS metadata: %v", err)
 	}
 
-	fixture, err := os.ReadFile("../../internal/parity/testdata/fixtures/project_configuration_corrected/options_estimate_points_valid_metadata.json")
+	fixture, err := os.ReadFile("testdata/project-options/options_estimate_points_valid_metadata.json")
 	if err != nil {
 		t.Fatalf("read corrected source fixture: %v", err)
 	}

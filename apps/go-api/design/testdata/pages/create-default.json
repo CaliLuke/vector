@@ -1,0 +1,36 @@
+{
+  "request": {
+    "body": {
+      "name": "Created page"
+    },
+    "method": "POST",
+    "path": "/api/workspaces/page-lifecycle-fixture/projects/<uuid-1>/pages/",
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "access": 0,
+      "archived_at": null,
+      "color": "",
+      "created_at": "<timestamp>",
+      "created_by": "<uuid-2>",
+      "description_html": "<p></p>",
+      "id": "<uuid-3>",
+      "is_favorite": false,
+      "is_locked": false,
+      "label_ids": [],
+      "logo_props": {},
+      "name": "Created page",
+      "owned_by": "<uuid-2>",
+      "parent": null,
+      "project_ids": ["<uuid-1>"],
+      "updated_at": "<timestamp>",
+      "updated_by": null,
+      "view_props": {
+        "full_width": false
+      },
+      "workspace": "<uuid-4>"
+    },
+    "status": 201
+  }
+}

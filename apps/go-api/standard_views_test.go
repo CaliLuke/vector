@@ -90,7 +90,7 @@ func standardViewsContext(t *testing.T, repository *standardViewsRepositoryStub)
 
 func standardViewFixtureBody(t *testing.T, name string) json.RawMessage {
 	t.Helper()
-	data, err := os.ReadFile("internal/parity/testdata/fixtures/standard_view/" + name)
+	data, err := os.ReadFile("testdata/standard_views/" + name)
 	if err != nil {
 		t.Fatal(err)
 	}

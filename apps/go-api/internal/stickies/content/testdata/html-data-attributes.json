@@ -1,0 +1,33 @@
+{
+  "request": {
+    "body": {
+      "description_html": "<p data-tight=\"true\" data-node-type=\"paragraph\" data-arbitrary=\"drop-me\" onclick=\"drop-me\">Data</p>",
+      "name": "html-data-attributes"
+    },
+    "method": "POST",
+    "path": "/api/workspaces/test-workspace/stickies/",
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "background_color": null,
+      "color": null,
+      "created_at": "<timestamp>",
+      "created_by": "<uuid-1>",
+      "deleted_at": null,
+      "description": {},
+      "description_binary": null,
+      "description_html": "<p data-tight=\"true\" data-node-type=\"paragraph\">Data</p>",
+      "description_stripped": "Data",
+      "id": "<uuid-2>",
+      "logo_props": {},
+      "name": "html-data-attributes",
+      "owner": "<uuid-1>",
+      "sort_order": 65535.0,
+      "updated_at": "<timestamp>",
+      "updated_by": null,
+      "workspace": "<uuid-3>"
+    },
+    "status": 201
+  }
+}

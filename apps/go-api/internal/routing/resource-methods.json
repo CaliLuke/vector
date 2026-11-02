@@ -1,0 +1,259 @@
+{
+  "version": 1,
+  "resources": [
+    {
+      "path": "/api/users/me/",
+      "methods": ["GET", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/v1/workspaces/{slug}/projects/",
+      "methods": ["GET", "POST"]
+    },
+    {
+      "path": "/api/v1/workspaces/{slug}/projects/{pk}/",
+      "methods": ["GET", "PATCH", "DELETE"],
+      "uuid_parameters": ["pk"]
+    },
+    {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/cycles/",
+      "methods": ["GET", "POST"]
+    },
+    {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/cycle-issues/",
+      "methods": ["GET", "POST"]
+    },
+    {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/cycle-issues/{issue_id}/",
+      "methods": ["GET", "DELETE"]
+    },
+    {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/cycles/{pk}/",
+      "methods": ["GET", "PATCH", "DELETE"]
+    },
+    {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/labels/",
+      "methods": ["GET", "POST"],
+      "uuid_parameters": ["project_id"]
+    },
+    {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/labels/{pk}/",
+      "methods": ["GET", "PATCH", "DELETE"],
+      "uuid_parameters": ["project_id", "pk"]
+    },
+    {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/modules/",
+      "methods": ["GET", "POST"]
+    },
+    {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-issues/",
+      "methods": ["GET", "POST"]
+    },
+    {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+      "methods": ["GET", "PATCH", "DELETE"]
+    },
+    {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/states/",
+      "methods": ["GET", "POST"]
+    },
+    {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/states/{state_id}/",
+      "methods": ["GET", "PATCH", "DELETE"]
+    },
+    {
+      "path": "/api/workspaces/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/",
+      "methods": ["GET", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/draft-issues/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/draft-issues/{pk}/",
+      "methods": ["GET", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/members/{pk}/",
+      "methods": ["GET", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+      "uuid_parameters": ["pk"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{pk}/",
+      "methods": ["GET", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+      "uuid_parameters": ["pk"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archived-cycles/",
+      "methods": ["GET", "POST", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archived-cycles/{pk}/",
+      "methods": ["GET", "POST", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archived-modules/",
+      "methods": ["GET", "POST", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/",
+      "methods": ["GET", "POST", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/archive/",
+      "methods": ["GET", "POST", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/cycle-issues/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/cycle-issues/{issue_id}/",
+      "methods": ["GET", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/{pk}/",
+      "methods": ["GET", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/estimates/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"],
+      "uuid_parameters": ["project_id"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/estimates/{estimate_id}/",
+      "methods": ["GET", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+      "uuid_parameters": ["project_id", "estimate_id"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/inbox-issues/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/inbox-issues/{pk}/",
+      "methods": ["GET", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/inboxes/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/inboxes/{pk}/",
+      "methods": ["GET", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/intake-issues/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/intake-issues/{pk}/",
+      "methods": ["GET", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/intakes/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/intakes/{pk}/",
+      "methods": ["GET", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issue-labels/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"],
+      "uuid_parameters": ["project_id"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issue-labels/{pk}/",
+      "methods": ["GET", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+      "uuid_parameters": ["project_id", "pk"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/members/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"],
+      "uuid_parameters": ["project_id"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/members/{pk}/",
+      "methods": ["GET", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+      "uuid_parameters": ["project_id", "pk"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/archive/",
+      "methods": ["GET", "POST", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/issues/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/issues/{issue_id}/",
+      "methods": ["GET", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/",
+      "methods": ["GET", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+      "methods": ["GET", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/",
+      "methods": ["GET", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/description/",
+      "methods": ["GET", "PATCH", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/preferences/member/{member_id}/",
+      "methods": ["GET", "PATCH", "HEAD", "OPTIONS"],
+      "uuid_parameters": ["project_id", "member_id"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/{pk}/",
+      "methods": ["GET", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/states/",
+      "methods": ["GET", "POST", "HEAD", "OPTIONS"],
+      "uuid_parameters": ["project_id"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/states/{pk}/",
+      "methods": ["GET", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+    },
+    {
+      "path": "/api/workspaces/{slug}/users/notifications/{pk}/",
+      "methods": ["GET", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+      "uuid_parameters": ["pk"]
+    }
+  ]
+}

@@ -44,16 +44,11 @@ func TestAssetsGeneratedOperationsMatchFamilyManifest(t *testing.T) {
 	root := assetsRepositoryRoot(t)
 	var manifest assetsFamilyManifest
 	var generated assetsGeneratedOpenAPI
-	readAssetsContractJSON(t, root, "docs/go-backend-replacement/assets-lifecycle-manifest.json", &manifest)
+	readAssetsContractJSON(t, root, "apps/go-api/internal/assets/endpoint-policy.json", &manifest)
 	readAssetsContractJSON(t, root, "apps/go-api/assetslifecycle/gen/http/openapi.json", &generated)
 
-	if manifest.OperationCount != 81 || len(manifest.Operations) != 81 {
-		t.Fatalf("assets manifest has operation_count=%d and %d operation entries; want 81", manifest.OperationCount, len(manifest.Operations))
-	}
-	// Vector adds draft association beyond the frozen source migration inventory.
-	manifest.Operations["post_api_assets_v2_workspaces_by_slug_by_entity_id_bulk"] = assetsOperation{
-		Method: "POST", Path: "/api/assets/v2/workspaces/{slug}/{entity_id}/bulk/",
-		OperationID: "post_api_assets_v2_workspaces_by_slug_by_entity_id_bulk",
+	if manifest.OperationCount != 82 || len(manifest.Operations) != 82 {
+		t.Fatalf("assets manifest has operation_count=%d and %d operation entries; want 82", manifest.OperationCount, len(manifest.Operations))
 	}
 	generation := make(map[string]assetsRoute, len(manifest.Operations))
 	for path, methods := range generated.Paths {
@@ -95,9 +90,9 @@ func TestAssetsInvalidMethodDecisionOperationsMatchDeclaredRoutes(t *testing.T) 
 	var manifest assetsFamilyManifest
 	var generated assetsGeneratedOpenAPI
 	var decision assetsInvalidMethodDecision
-	readAssetsContractJSON(t, root, "docs/go-backend-replacement/assets-lifecycle-manifest.json", &manifest)
+	readAssetsContractJSON(t, root, "apps/go-api/internal/assets/endpoint-policy.json", &manifest)
 	readAssetsContractJSON(t, root, "apps/go-api/assetslifecycle/gen/http/openapi.json", &generated)
-	readAssetsContractJSON(t, root, "docs/go-backend-replacement/decisions/ASSET-001-invalid-methods.json", &decision)
+	readAssetsContractJSON(t, root, "apps/go-api/internal/assets/unsupported-methods.json", &decision)
 
 	if decision.IncludedOperationCount != 23 || len(decision.Operations) != 23 {
 		t.Fatalf("invalid-method decision includes count=%d and %d operation IDs; want 23", decision.IncludedOperationCount, len(decision.Operations))

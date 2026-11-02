@@ -21,7 +21,6 @@ require (
 	github.com/go-jose/go-jose/v4 v4.1.7
 	github.com/go-json-experiment/json v0.0.0-20260820222146-c27c302e5fc3
 	github.com/golang-migrate/migrate/v4 v4.20.1
-	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.12.0
 	github.com/moby/moby/api v1.56.1
@@ -121,6 +120,7 @@ require (
 	github.com/go-sql-driver/mysql v1.10.1 // indirect
 	github.com/goccy/go-json v0.12.0 // indirect
 	github.com/google/cel-go v0.31.0 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/jsonschema-go v0.4.3 // indirect
 	github.com/google/s2a-go v0.1.11 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.24 // indirect

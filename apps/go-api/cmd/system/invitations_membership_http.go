@@ -17,11 +17,9 @@ import (
 var invitationsMembershipMetadataJSON []byte
 
 var invitationsMembershipMetadata = func() map[string]struct {
-	Fixture  string          `json:"fixture"`
 	Metadata json.RawMessage `json:"metadata"`
 } {
 	var result map[string]struct {
-		Fixture  string          `json:"fixture"`
 		Metadata json.RawMessage `json:"metadata"`
 	}
 	if err := json.Unmarshal(invitationsMembershipMetadataJSON, &result); err != nil {

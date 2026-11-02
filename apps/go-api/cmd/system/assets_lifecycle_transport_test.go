@@ -322,9 +322,9 @@ func TestAssetsLifecycleGeneratedMountsOwnEveryContractOperation(t *testing.T) {
 			Path   string `json:"path"`
 		} `json:"operations"`
 	}
-	readAssetsTransportJSON(t, filepath.Join(root, "docs/go-backend-replacement/assets-lifecycle-manifest.json"), &manifest)
-	if manifest.OperationCount != 81 || len(manifest.Operations) != 81 {
-		t.Fatalf("manifest has count=%d operations=%d; want 81", manifest.OperationCount, len(manifest.Operations))
+	readAssetsTransportJSON(t, filepath.Join(root, "apps/go-api/internal/assets/endpoint-policy.json"), &manifest)
+	if manifest.OperationCount != 82 || len(manifest.Operations) != 82 {
+		t.Fatalf("manifest has count=%d operations=%d; want 82", manifest.OperationCount, len(manifest.Operations))
 	}
 	server := assetslifecyclesvr.New(assetsapi.NewEndpoints(&assetdomain.LifecycleService{}), loomhttp.NewMuxer(), nil, nil, nil, nil)
 	mounts := make(map[string]struct{}, len(server.Mounts))
@@ -334,7 +334,7 @@ func TestAssetsLifecycleGeneratedMountsOwnEveryContractOperation(t *testing.T) {
 	if _, ok := mounts["POST /api/assets/v2/workspaces/{slug}/{entity_id}/bulk/"]; !ok {
 		t.Fatal("Vector draft association route is not mounted")
 	}
-	if len(mounts) != manifest.OperationCount+1 {
+	if len(mounts) != manifest.OperationCount {
 		t.Fatalf("generated server mounts %d distinct method/path operations, manifest has %d", len(mounts), manifest.OperationCount)
 	}
 	for id, operation := range manifest.Operations {
@@ -467,7 +467,7 @@ func TestAssetsLifecycleLegacyAssetGeneratedEncodersEmitJSONBody(t *testing.T) {
 
 func assetsLifecycleFixtureAssetRows(t *testing.T) []map[string]any {
 	t.Helper()
-	path := filepath.Join(assetsTransportRepoRoot(t), "apps", "go-api", "internal", "parity", "testdata", "fixtures", "assets_lifecycle", "legacy-workspace-file-asset-get.json")
+	path := filepath.Join("testdata", "asset-row.json")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
@@ -544,10 +544,21 @@ func TestAssetsLifecycleDerivedHeadMountsOnlyEligibleGeneratedGets(t *testing.T)
 	}
 }
 
-func TestAssetsLifecycleNativeProtocolCoverageMatchesSourceMetadataAndMounts(t *testing.T) {
+func TestAssetsLifecycleRestoreOptionsDescribesSupportedMethod(t *testing.T) {
+	handler := assetsTransportHandler(t)
+	path := assetsTransportConcretePath("/api/workspaces/file-assets/{workspace_id}/{asset_key}/restore/")
+	request := httptest.NewRequest(http.MethodOptions, path, nil)
+	request.AddCookie(&http.Cookie{Name: "session-id", Value: "assets-transport-session"})
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+	if response.Code != http.StatusOK || response.Header().Get("Allow") != "POST, OPTIONS" {
+		t.Fatalf("restore OPTIONS status=%d Allow=%q body=%s", response.Code, response.Header().Get("Allow"), response.Body)
+	}
+}
+
+func TestAssetsLifecycleNativeProtocolCoverageMatchesNativeMetadataAndMounts(t *testing.T) {
 	type protocolMetadata struct {
-		Allow         string `json:"allow"`
-		SourceFixture string `json:"source_fixture"`
+		Allow string `json:"allow"`
 	}
 	var source map[string]protocolMetadata
 	if err := json.Unmarshal(assetsProtocolMetadataJSON, &source); err != nil {
@@ -570,15 +581,7 @@ func TestAssetsLifecycleNativeProtocolCoverageMatchesSourceMetadataAndMounts(t *
 		if protocol.allow != metadata.Allow {
 			t.Errorf("%s Allow=%q, source=%q", path, protocol.allow, metadata.Allow)
 		}
-		if readServiceMethodAllowed(metadata.Allow, http.MethodOptions) {
-			if !strings.HasPrefix(path, "/api/v1/") && metadata.SourceFixture == "" {
-				t.Errorf("native OPTIONS path %s has no Django source fixture", path)
-			}
-		}
 		if readServiceMethodAllowed(metadata.Allow, http.MethodHead) {
-			if metadata.SourceFixture == "" {
-				t.Errorf("native HEAD path %s has no Django source fixture", path)
-			}
 			if _, ok := generated[assetsLifecycleMountedRoute{Method: http.MethodGet, Path: path}]; !ok {
 				t.Errorf("native HEAD path %s has no generated GET handler", path)
 			}
@@ -599,7 +602,7 @@ func TestAssetsLifecycleProductionHandlerRejectsDeclaredInvalidMethods(t *testin
 			TargetAllow    string   `json:"target_allow"`
 		} `json:"routes"`
 	}
-	readAssetsTransportJSON(t, filepath.Join(root, "docs/go-backend-replacement/decisions/ASSET-001-invalid-methods.json"), &decision)
+	readAssetsTransportJSON(t, filepath.Join(root, "apps/go-api/internal/assets/unsupported-methods.json"), &decision)
 	var manifest struct {
 		Operations map[string]struct {
 			Method      string `json:"method"`
@@ -607,7 +610,7 @@ func TestAssetsLifecycleProductionHandlerRejectsDeclaredInvalidMethods(t *testin
 			AuthProfile string `json:"auth_profile"`
 		} `json:"operations"`
 	}
-	readAssetsTransportJSON(t, filepath.Join(root, "docs/go-backend-replacement/assets-lifecycle-manifest.json"), &manifest)
+	readAssetsTransportJSON(t, filepath.Join(root, "apps/go-api/internal/assets/endpoint-policy.json"), &manifest)
 	if decision.IncludedOperationCount != 23 {
 		t.Fatalf("invalid-method decision count=%d, want 23", decision.IncludedOperationCount)
 	}

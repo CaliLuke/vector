@@ -13,7 +13,7 @@ import (
 	"testing"
 )
 
-func TestHTMLFixturesFromDjango(t *testing.T) {
+func TestHTMLFixturesContractCases(t *testing.T) {
 	t.Parallel()
 
 	fixtures := []string{
@@ -26,7 +26,7 @@ func TestHTMLFixturesFromDjango(t *testing.T) {
 	for _, name := range fixtures {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			fixture := readDjangoFixture(t, name)
+			fixture := readContentFixture(t, name)
 			input := nestedString(t, fixture, "request", "body", "description_html")
 			wantHTML := nestedString(t, fixture, "response", "body", "description_html")
 			wantText := nestedString(t, fixture, "response", "body", "description_stripped")
@@ -45,7 +45,7 @@ func TestHTMLFixturesFromDjango(t *testing.T) {
 	}
 }
 
-func TestStripTagsFixturesFromDjango(t *testing.T) {
+func TestStripTagsFixturesContractCases(t *testing.T) {
 	t.Parallel()
 
 	fixtures := []string{
@@ -57,7 +57,7 @@ func TestStripTagsFixturesFromDjango(t *testing.T) {
 	for _, name := range fixtures {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			fixture := readDjangoFixture(t, name)
+			fixture := readContentFixture(t, name)
 			input := nestedString(t, fixture, "source_call", "input", "html")
 			want := nestedString(t, fixture, "result", "text")
 			if got := StripTags(input); got != want {
@@ -67,10 +67,10 @@ func TestStripTagsFixturesFromDjango(t *testing.T) {
 	}
 }
 
-func TestHTMLBoundaryFixturesFromDjango(t *testing.T) {
+func TestHTMLBoundaryFixturesContractCases(t *testing.T) {
 	t.Parallel()
 
-	maximumFixture := readDjangoFixture(t, "html-maximum-size.json")
+	maximumFixture := readContentFixture(t, "html-maximum-size.json")
 	maximumResult := nestedMap(t, maximumFixture, "result")
 	if !directBool(t, maximumResult, "is_valid") {
 		t.Fatal("maximum-size Django fixture is not valid")
@@ -80,16 +80,16 @@ func TestHTMLBoundaryFixturesFromDjango(t *testing.T) {
 		t.Fatalf("ValidateHTML(maximum) = (len %d, %t, %v)", len(clean), hasClean, err)
 	}
 
-	oversizedFixture := readDjangoFixture(t, "html-validator-oversized.json")
+	oversizedFixture := readContentFixture(t, "html-validator-oversized.json")
 	want := nestedString(t, oversizedFixture, "result", "error")
 	_, _, err = ValidateHTML(strings.Repeat("a", MaxContentBytes+1))
 	assertFixtureError(t, err, want)
 }
 
-func TestHTMLDeepNestingFixtureFromDjango(t *testing.T) {
+func TestHTMLDeepNestingFixtureContractCases(t *testing.T) {
 	t.Parallel()
 
-	fixture := readDjangoFixture(t, "html-deep-valid-nesting.json")
+	fixture := readContentFixture(t, "html-deep-valid-nesting.json")
 	input := nestedMap(t, fixture, "source_call", "input")
 	results := nestedMap(t, fixture, "result")
 	for _, depth := range intArray(t, input, "depths") {
@@ -197,29 +197,29 @@ func TestHTMLDeepNestingFixtureFromDjango(t *testing.T) {
 	}
 }
 
-func TestBinaryFixturesFromDjango(t *testing.T) {
+func TestBinaryFixturesContractCases(t *testing.T) {
 	t.Parallel()
 
 	t.Run("base64 error", func(t *testing.T) {
-		fixture := readDjangoFixture(t, "binary-base64-error.json")
+		fixture := readContentFixture(t, "binary-base64-error.json")
 		input := nestedString(t, fixture, "source_call", "input", "value")
 		want := nestedString(t, fixture, "result", "error")
 		assertFixtureError(t, ValidateBase64Binary(input), want)
 	})
 	t.Run("too short", func(t *testing.T) {
-		fixture := readDjangoFixture(t, "binary-too-short.json")
+		fixture := readContentFixture(t, "binary-too-short.json")
 		want := nestedString(t, fixture, "result", "error")
 		input := base64.StdEncoding.EncodeToString([]byte("ABC"))
 		assertFixtureError(t, ValidateBase64Binary(input), want)
 	})
 	t.Run("decoded oversized", func(t *testing.T) {
-		fixture := readDjangoFixture(t, "binary-decoded-oversized.json")
+		fixture := readContentFixture(t, "binary-decoded-oversized.json")
 		want := nestedString(t, fixture, "result", "error")
 		input := base64.StdEncoding.EncodeToString(make([]byte, MaxContentBytes+1))
 		assertFixtureError(t, ValidateBase64Binary(input), want)
 	})
 	t.Run("suspicious patterns", func(t *testing.T) {
-		fixture := readDjangoFixture(t, "binary-suspicious-patterns.json")
+		fixture := readContentFixture(t, "binary-suspicious-patterns.json")
 		result := nestedMap(t, fixture, "result")
 		rows, ok := result["results"].([]any)
 		if !ok {
@@ -237,7 +237,7 @@ func TestBinaryFixturesFromDjango(t *testing.T) {
 		}
 	})
 	t.Run("valid boundaries", func(t *testing.T) {
-		fixture := readDjangoFixture(t, "binary-valid-boundaries.json")
+		fixture := readContentFixture(t, "binary-valid-boundaries.json")
 		result := nestedMap(t, fixture, "result")
 		inputs := map[string]string{
 			"minimum_four_decoded_bytes":        base64.StdEncoding.EncodeToString([]byte("ABCD")),
@@ -254,7 +254,7 @@ func TestBinaryFixturesFromDjango(t *testing.T) {
 		}
 	})
 	t.Run("character scan boundary", func(t *testing.T) {
-		fixture := readDjangoFixture(t, "binary-scan-character-boundary.json")
+		fixture := readContentFixture(t, "binary-scan-character-boundary.json")
 		result := nestedMap(t, fixture, "result")
 		inside := nestedMap(t, result, "pattern_starts_at_byte_200_character_100")
 		outside := nestedMap(t, result, "pattern_starts_after_character_200")
@@ -280,13 +280,13 @@ func assertFixtureError(t *testing.T, err error, want string) {
 	}
 }
 
-func readDjangoFixture(t *testing.T, name string) map[string]any {
+func readContentFixture(t *testing.T, name string) map[string]any {
 	t.Helper()
 	_, currentFile, _, ok := runtime.Caller(0)
 	if !ok {
 		t.Fatal("resolve current test file")
 	}
-	path := filepath.Join(filepath.Dir(currentFile), "../../parity/testdata/fixtures/stickies", name)
+	path := filepath.Join(filepath.Dir(currentFile), "testdata", name)
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("read fixture %s: %v", name, err)

@@ -31,9 +31,9 @@
 		path_regexp ^/api/workspaces/[^/]+/stickies/[^/]+$
 	}
 	rewrite @sticky_detail_without_slash {path}/
-	import /etc/caddy/go-active-routes.caddy
-	reverse_proxy /api/* go-api:8080
-	reverse_proxy /auth/* go-api:8080
+	import /etc/caddy/api-allow.caddy
+	reverse_proxy /api/* {$GO_API_UPSTREAM:go-api:8080}
+	reverse_proxy /auth/* {$GO_API_UPSTREAM:go-api:8080}
 	@mcp path /mcp /mcp/* /.well-known/oauth-protected-resource/mcp /.well-known/oauth-protected-resource/mcp/*
 	reverse_proxy @mcp {$GO_API_UPSTREAM:go-api:8080}
 	respond /static/* 404

@@ -1,0 +1,33 @@
+{
+  "request": {
+    "body": {
+      "description_html": "<mention-component id=\"u1\" entity_identifier=\"user-1\" entity_name=\"Ada\">Ada</mention-component><image-component id=\"i1\" src=\"https://example.com/a.png\" aspectRatio=\"1.5\"></image-component><label>Done <input type=\"checkbox\" checked></label>",
+      "name": "html-custom-editor-tags"
+    },
+    "method": "POST",
+    "path": "/api/workspaces/test-workspace/stickies/",
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "background_color": null,
+      "color": null,
+      "created_at": "<timestamp>",
+      "created_by": "<uuid-1>",
+      "deleted_at": null,
+      "description": {},
+      "description_binary": null,
+      "description_html": "<mention-component id=\"u1\" entity_identifier=\"user-1\" entity_name=\"Ada\">Ada</mention-component><image-component id=\"i1\" src=\"https://example.com/a.png\" aspectratio=\"1.5\"></image-component><label>Done <input type=\"checkbox\" checked=\"\"></label>",
+      "description_stripped": "AdaDone ",
+      "id": "<uuid-2>",
+      "logo_props": {},
+      "name": "html-custom-editor-tags",
+      "owner": "<uuid-1>",
+      "sort_order": 65535.0,
+      "updated_at": "<timestamp>",
+      "updated_by": null,
+      "workspace": "<uuid-3>"
+    },
+    "status": 201
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "HTTP_X_API_KEY": "<secret:x-api-key>"
+    },
+    "method": "OPTIONS",
+    "path": "/api/v1/workspaces/sticky-v1-parity/stickies/<uuid-1>/"
+  },
+  "response": {
+    "body": {
+      "actions": {
+        "PUT": {
+          "background_color": {
+            "label": "Background color",
+            "max_length": 255,
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "color": {
+            "label": "Color",
+            "max_length": 255,
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "created_at": {
+            "label": "Created At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "created_by": {
+            "label": "Created By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "deleted_at": {
+            "label": "Deleted At",
+            "read_only": false,
+            "required": false,
+            "type": "datetime"
+          },
+          "description": {
+            "label": "Description",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "description_binary": {
+            "label": "Description binary",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "description_html": {
+            "label": "Description html",
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "description_stripped": {
+            "label": "Description stripped",
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "logo_props": {
+            "label": "Logo props",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "name": {
+            "label": "Name",
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "owner": {
+            "label": "Owner",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "sort_order": {
+            "label": "Sort order",
+            "read_only": false,
+            "required": false,
+            "type": "float"
+          },
+          "updated_at": {
+            "label": "Last Modified At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "updated_by": {
+            "label": "Last Modified By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "workspace": {
+            "label": "Workspace",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          }
+        }
+      },
+      "description": "",
+      "name": "Sticky Instance",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  }
+}

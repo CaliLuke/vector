@@ -17,7 +17,7 @@
 	}
 	rewrite @sticky_detail_without_slash {path}/
 
-	import /etc/caddy/go-active-routes.caddy
+	import /etc/caddy/api-allow.caddy
 
 	reverse_proxy /api/* {$GO_API_UPSTREAM:go-api:8080}
 

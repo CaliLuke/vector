@@ -1,7 +1,4 @@
-// Package design is reverse-generated from the selected operations in
-// docs/go-backend-replacement/openapi/full-server.openapi.json. The source
-// projection was produced with Loom v1.10.0-alpha.8; source-backed adjustments
-// below preserve runtime details absent from the published schema.
+// Package design defines native project membership operations.
 //
 //go:generate go tool loom gen github.com/CaliLuke/go-plane/projectmembershiplifecycle/design --output ..
 package design

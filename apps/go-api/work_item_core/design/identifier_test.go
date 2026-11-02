@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http/httptest"
-	"net/url"
 	"os"
 	"reflect"
 	"strings"
@@ -18,31 +17,10 @@ import (
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
-// The complete identifier is one native string path parameter. The domain owns
-// Django's split and numeric lookup semantics; transport preserves the spelling.
-func TestWorkItemGeneratedIdentifierSchemaPreservesSourceSpelling(t *testing.T) {
-	for _, fixtureName := range []string{
-		"issue-core-entry-v1-issues-identifier-unicode-decimal",
-		"issue-core-entry-v1-issues-identifier-whitespace",
-		"issue-core-entry-v1-issues-identifier-out-of-range",
-	} {
-		t.Run(fixtureName, func(t *testing.T) {
-			data, err := os.ReadFile("../../../../apps/go-api/internal/parity/testdata/fixtures/work_item_core/" + fixtureName + ".json")
-			if err != nil {
-				t.Fatal(err)
-			}
-			var fixture struct{ Request struct{ Path string } }
-			if unmarshalErr := json.Unmarshal(data, &fixture); unmarshalErr != nil {
-				t.Fatal(unmarshalErr)
-			}
-			path, err := url.PathUnescape(strings.TrimSuffix(fixture.Request.Path, "/"))
-			if err != nil {
-				t.Fatal(err)
-			}
-			spelling := path[strings.LastIndex(path, "/")+1:]
-			if !strings.HasPrefix(spelling, "IC-") {
-				t.Fatalf("source identifier missing from %q", path)
-			}
+// The complete identifier is a string. Domain validation owns its format.
+func TestWorkItemGeneratedIdentifierSchemaPreservesStringSpelling(t *testing.T) {
+	for _, spelling := range []string{"IC-42", "IC-9007199254740993", "ALPHA-BETA-42"} {
+		t.Run(spelling, func(t *testing.T) {
 			body, err := json.Marshal(map[string]any{"identifier": spelling, "slug": "entry"})
 			if err != nil {
 				t.Fatal(err)

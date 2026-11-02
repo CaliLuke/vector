@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
@@ -178,59 +177,33 @@ func TestWorkItemGeneratedErrorsPreserveFieldKeysAndJSONValues(t *testing.T) {
 	}
 }
 
-func TestWorkItemGeneratedErrorsPreserveRecordedClientErrorBodies(t *testing.T) {
-	fixtures, err := filepath.Glob("../../../../apps/go-api/internal/parity/testdata/fixtures/work_item_core/*.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	checked := 0
-	for _, path := range fixtures {
-		body, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatal(err)
-		}
-		var fixture struct {
-			Response struct {
-				Status int
-				Body   json.RawMessage
-			}
-		}
-		if err := json.Unmarshal(body, &fixture); err != nil {
-			t.Fatal(err)
-		}
-		if fixture.Response.Status < 400 || fixture.Response.Status >= 500 {
-			continue
-		}
-		checked++
-		t.Run(filepath.Base(path), func(t *testing.T) {
+func TestWorkItemGeneratedErrorsPreserveOpaqueJSON(t *testing.T) {
+	for _, code := range []int{400, 403, 404, 500} {
+		t.Run(strconv.Itoa(code), func(t *testing.T) {
 			handler, service := transport(t)
-			failure := &api.WorkItemError{Kind: fmt.Sprintf("status_%d", fixture.Response.Status), Body: fixture.Response.Body}
-			service.failure = failure
+			body := json.RawMessage(`{"detail":"Rejected","fields":{"name":["Required"]},"exact":9007199254740993}`)
+			service.failure = &api.WorkItemError{Kind: fmt.Sprintf("status_%d", code), Body: body}
 			request := httptest.NewRequest("POST", "/api/workspaces/demo/projects/01234567-89ab-4def-8123-456789abcdef/issues/", strings.NewReader(`{}`))
 			response := httptest.NewRecorder()
 			handler.ServeHTTP(response, request)
-			if response.Code != fixture.Response.Status {
-				t.Fatalf("status=%d; source=%d", response.Code, fixture.Response.Status)
+			if response.Code != code {
+				t.Fatalf("status=%d want=%d", response.Code, code)
 			}
 			decode := func(raw []byte) any {
 				t.Helper()
-				var value any
 				decoder := json.NewDecoder(strings.NewReader(string(raw)))
 				decoder.UseNumber()
+				var value any
 				if err := decoder.Decode(&value); err != nil {
 					t.Fatal(err)
 				}
 				return value
 			}
-			if got, want := decode(response.Body.Bytes()), decode(fixture.Response.Body); !reflect.DeepEqual(got, want) {
-				t.Fatalf("generated error=%s; source=%s", response.Body, fixture.Response.Body)
+			if !reflect.DeepEqual(decode(response.Body.Bytes()), decode(body)) {
+				t.Fatalf("opaque error body changed: %s", response.Body)
 			}
 		})
 	}
-	if checked == 0 {
-		t.Fatal("no source client-error fixtures were checked")
-	}
-	t.Logf("checked %d recorded client-error bodies through generated transport", checked)
 }
 
 type workItemCookieDoer struct{ client *http.Client }
@@ -278,7 +251,7 @@ func TestWorkItemGeneratedPathConstructorEscapesSegments(t *testing.T) {
 	}
 }
 
-func TestWorkItemGeneratedSuccessStatusesMatchDjangoFixtures(t *testing.T) {
+func TestWorkItemGeneratedSuccessStatuses(t *testing.T) {
 	openAPIBody, err := os.ReadFile("../gen/http/openapi.json")
 	if err != nil {
 		t.Fatal(err)
@@ -292,52 +265,37 @@ func TestWorkItemGeneratedSuccessStatusesMatchDjangoFixtures(t *testing.T) {
 	if err := json.Unmarshal(openAPIBody, &schema); err != nil {
 		t.Fatal(err)
 	}
-	for _, tc := range []struct{ fixture, operationID string }{
-		{"lifecycle-draft-publish-planning-and-asset", "post_api_workspaces_by_slug_draft_to_issue_by_draft_id"},
-		{"lifecycle-delete-bulk", "delete_api_workspaces_by_slug_projects_by_project_id_bulk_delete_issues"},
-		{"lifecycle-inbox-create", "post_api_workspaces_by_slug_projects_by_project_id_inbox_issues"},
-		{"lifecycle-intake-create", "post_api_workspaces_by_slug_projects_by_project_id_intake_issues"},
-		{"lifecycle-relation-remove", "post_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_remove_relation"},
-		{"issue-core-app-patch-description-skip", "patch_api_workspaces_by_slug_projects_by_project_id_issues_by_pk"},
+	for _, tc := range []struct {
+		method, operationID string
+		status              int
+	}{
+		{"POST", "post_api_workspaces_by_slug_draft_to_issue_by_draft_id", 201},
+		{"DELETE", "delete_api_workspaces_by_slug_projects_by_project_id_bulk_delete_issues", 200},
+		{"POST", "post_api_workspaces_by_slug_projects_by_project_id_inbox_issues", 200},
+		{"POST", "post_api_workspaces_by_slug_projects_by_project_id_intake_issues", 200},
+		{"POST", "post_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_remove_relation", 204},
+		{"PATCH", "patch_api_workspaces_by_slug_projects_by_project_id_issues_by_pk", 204},
 	} {
-		t.Run(tc.fixture, func(t *testing.T) {
-			fixtureBody, err := os.ReadFile("../../../../apps/go-api/internal/parity/testdata/fixtures/work_item_core/" + tc.fixture + ".json")
-			if err != nil {
-				t.Fatal(err)
-			}
-			var fixture struct {
-				Request struct {
-					Method string `json:"method"`
-				} `json:"request"`
-				Response struct {
-					Status int `json:"status"`
-				} `json:"response"`
-			}
-			if err := json.Unmarshal(fixtureBody, &fixture); err != nil {
-				t.Fatal(err)
-			}
-			if fixture.Response.Status < 200 || fixture.Response.Status >= 300 {
-				t.Fatalf("source fixture is not a success: %d", fixture.Response.Status)
-			}
+		t.Run(tc.operationID, func(t *testing.T) {
 			found := false
 			for _, operations := range schema.Paths {
-				operation, ok := operations[strings.ToLower(fixture.Request.Method)]
+				operation, ok := operations[strings.ToLower(tc.method)]
 				if !ok || operation.OperationID != tc.operationID {
 					continue
 				}
 				found = true
 				for status := range operation.Responses {
 					code, err := strconv.Atoi(status)
-					if err == nil && code >= 200 && code < 300 && code != fixture.Response.Status {
-						t.Errorf("OpenAPI advertises success %d, Django fixture returned %d", code, fixture.Response.Status)
+					if err == nil && code >= 200 && code < 300 && code != tc.status {
+						t.Errorf("unexpected success status %d", code)
 					}
 				}
-				if _, ok := operation.Responses[strconv.Itoa(fixture.Response.Status)]; !ok {
-					t.Errorf("OpenAPI operation %s lacks source status %d", tc.operationID, fixture.Response.Status)
+				if _, ok := operation.Responses[strconv.Itoa(tc.status)]; !ok {
+					t.Errorf("missing native success status %d", tc.status)
 				}
 			}
 			if !found {
-				t.Fatalf("OpenAPI lacks %s %s", fixture.Request.Method, tc.operationID)
+				t.Fatal("missing native operation")
 			}
 		})
 	}
