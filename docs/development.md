@@ -189,7 +189,9 @@ CI selects the same full hooks with `--group ci`, using `--require-group go` or
 
 Go checks cover build, vet, formatting/imports, module-tidy drift, lint, dead code,
 duplication, enforced function complexity, and integration-tagged tests with coverage. Docker is required for
-disposable service fixtures. Package concurrency is bounded.
+disposable service fixtures. Integration tests run one Go package at a time, with
+up to two parallel tests within a package. This keeps database-backed packages
+from competing for the test VM.
 The test-result guard rejects failures, incomplete reports, and unreviewed skips.
 `.quality/go-test-skips.json` is empty. Tests own their disposable fixtures.
 Never point these tests at a database with valuable data.

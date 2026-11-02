@@ -103,7 +103,7 @@ test_gate() {
   rm -f "$coverage" "$test_json"
   (
     cd "$MODULE"
-    go test -json -tags=integration -count=1 -p 2 -parallel 2 -timeout=20m \
+    go test -json -tags=integration -count=1 -p 1 -parallel 2 -timeout=20m \
       -coverpkg="$coverage_packages" -coverprofile="$coverage" ./...
   ) >"$test_json" || test_status=$?
   node "$ROOT/scripts/quality/go-test-results.mjs" "$test_json" "$ROOT/.quality/go-test-skips.json"
