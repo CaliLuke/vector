@@ -48,7 +48,7 @@ func CursorPage(request Query, limit int) (int, error) {
 	}
 	previousSize, sizeErr := strconv.Atoi(parts[0])
 	page, pageErr := strconv.Atoi(parts[1])
-	if sizeErr != nil || previousSize < 1 || previousSize > 1000 || pageErr != nil || page < 0 || page > math.MaxInt/limit || (parts[2] != "0" && parts[2] != "1") {
+	if sizeErr != nil || previousSize < 1 || previousSize > 1000 || pageErr != nil || page < 0 || page > (math.MaxInt-limit)/limit || (parts[2] != "0" && parts[2] != "1") {
 		return 0, invalidCursorError()
 	}
 	return page, nil
@@ -79,4 +79,22 @@ func PageWindow(request Query) (limit, page, offset int, err error) {
 		return 0, 0, 0, err
 	}
 	return limit, page, page * limit, nil
+}
+
+// CursorWindow reads the page size embedded in a self-contained cursor.
+func CursorWindow(cursor *string) (limit, page, offset int, err error) {
+	query := Query{Params: map[string]string{}, Present: map[string]bool{}}
+	if cursor != nil {
+		size, _, found := strings.Cut(*cursor, ":")
+		if !found {
+			return 0, 0, 0, invalidCursorError()
+		}
+		query.Params["per_page"], query.Present["per_page"] = size, true
+		query.Params["cursor"], query.Present["cursor"] = *cursor, true
+	}
+	limit, page, offset, err = PageWindow(query)
+	if err != nil {
+		return 0, 0, 0, invalidCursorError()
+	}
+	return limit, page, offset, nil
 }

@@ -2,14 +2,11 @@ package workitems
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"math"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -102,13 +99,63 @@ func (repository *Repository) PublicVoteCreate(
 	if publicFeedbackErr := publicFeedbackObjectRootError(input); publicFeedbackErr != nil {
 		return Result{}, publicFeedbackErr
 	}
-	voteValue, exists := input.Fields["vote"]
-	if !exists {
-		voteValue = int64(1)
+	vote, err := publicVote(input)
+	if err != nil {
+		return Result{}, err
 	}
+	return repository.publicVoteTransaction(ctx, scope, issueID, func(writer *Repository) (Result, error) {
+		return writer.createPublicVote(ctx, scope, issueID, actorID, vote)
+	})
+}
+
+func publicVote(input requestinput.Input) (int64, error) {
+	value, exists := input.Fields["vote"]
+	if !exists {
+		return 1, nil
+	}
+	number, err := requestinput.IntegerField(value)
+	if err != nil || !number.IsInt64() || (number.Int64() != -1 && number.Int64() != 1) {
+		return 0, invalid(map[string]any{"vote": []string{"Choose -1 or 1."}})
+	}
+	return number.Int64(), nil
+}
+
+func (repository *Repository) publicVoteTransaction(ctx context.Context, scope PublicFeedbackScope, issueID string, operation func(*Repository) (Result, error)) (Result, error) {
+	return repository.writeProjectTransaction(ctx, scope.ProjectID, func(writer *Repository) error {
+		return writer.publicVisibleIssue(ctx, scope, issueID)
+	}, func(writer *Repository) (Result, error) {
+		if err := writer.lockPublicVoteTarget(ctx, scope, issueID); err != nil {
+			return Result{}, err
+		}
+		return operation(writer)
+	})
+}
+
+func (repository *Repository) lockPublicVoteTarget(ctx context.Context, scope PublicFeedbackScope, issueID string) error {
+	var id string
+	err := repository.db.QueryRow(ctx, `
+SELECT issue.id::text FROM issues issue
+JOIN projects project ON project.id=issue.project_id
+JOIN workspaces workspace ON workspace.id=issue.workspace_id
+JOIN deploy_boards board ON board.project_id=project.id AND board.workspace_id=workspace.id
+LEFT JOIN states state ON state.id=issue.state_id
+WHERE issue.id=$1::uuid AND project.id=$2::uuid AND workspace.id=$3::uuid AND workspace.slug=$4
+ AND board.anchor=$5 AND board.entity_name='project' AND board.entity_identifier=project.id
+ AND board.deleted_at IS NULL AND NOT board.is_disabled AND board.is_votes_enabled
+ AND issue.deleted_at IS NULL AND issue.archived_at IS NULL AND NOT issue.is_draft
+ AND state."group" IS DISTINCT FROM 'triage'
+ AND project.deleted_at IS NULL AND project.archived_at IS NULL AND workspace.deleted_at IS NULL
+FOR UPDATE OF issue FOR SHARE OF project,workspace,board`, issueID, scope.ProjectID, scope.WorkspaceID, scope.WorkspaceSlug, scope.Anchor).Scan(&id)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return failure(404, "error", "Issue not found")
+	}
+	return err
+}
+
+func (repository *Repository) createPublicVote(ctx context.Context, scope PublicFeedbackScope, issueID, actorID string, vote int64) (Result, error) {
 	q := Request{ProjectID: scope.ProjectID, Slug: scope.WorkspaceSlug, IssueID: issueID, ActorID: actorID, Params: map[string]string{"anchor": scope.Anchor}}
 	var identifier string
-	err = repository.db.QueryRow(ctx, `SELECT id::text FROM issue_votes WHERE issue_id=$1 AND actor_id=$2 AND project_id=$3 AND workspace_id=$4 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1`, issueID, actorID, scope.ProjectID, scope.WorkspaceID).Scan(&identifier)
+	err := repository.db.QueryRow(ctx, `SELECT id::text FROM issue_votes WHERE issue_id=$1 AND actor_id=$2 AND project_id=$3 AND workspace_id=$4 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1`, issueID, actorID, scope.ProjectID, scope.WorkspaceID).Scan(&identifier)
 	created := errors.Is(err, pgx.ErrNoRows)
 	if err != nil && !created {
 		return Result{}, err
@@ -116,10 +163,9 @@ func (repository *Repository) PublicVoteCreate(
 	now := timestamp(repository.now())
 	if created {
 		identifier = uuid.NewString()
-		// Django get_or_create persists the model's default before assigning the
-		// request value. A database conversion failure therefore leaves the new
-		// row behind under the source autocommit contract.
-		_, err = repository.db.Exec(ctx, `INSERT INTO issue_votes (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,project_id,workspace_id,issue_id,actor_id,vote) VALUES ($1,$2,$2,NULL,$3,NULL,$4,$5,$6,$3,1)`, identifier, now, actorID, scope.ProjectID, scope.WorkspaceID, issueID)
+		_, err = repository.db.Exec(ctx, `INSERT INTO issue_votes (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,project_id,workspace_id,issue_id,actor_id,vote) VALUES($1,$2,$2,NULL,$3,NULL,$4,$5,$6,$3,$7)`, identifier, now, actorID, scope.ProjectID, scope.WorkspaceID, issueID, vote)
+	} else {
+		_, err = repository.db.Exec(ctx, `UPDATE issue_votes SET vote=$2,updated_at=$3,updated_by_id=$4 WHERE id=$1`, identifier, vote, now, actorID)
 	}
 	if err != nil {
 		return Result{}, err
@@ -127,24 +173,8 @@ func (repository *Repository) PublicVoteCreate(
 	if collaborationPublicErr := repository.collaborationPublicMember(ctx, q, scope.WorkspaceID); collaborationPublicErr != nil {
 		return Result{}, collaborationPublicErr
 	}
-	vote, ok := publicVoteValue(voteValue)
-	if !ok {
-		_, err = repository.db.Exec(ctx, `UPDATE issue_votes SET vote=$2,updated_at=$3,updated_by_id=$4 WHERE id=$1`, identifier, voteValue, now, actorID)
-		if err == nil {
-			return Result{}, fmt.Errorf("invalid persisted public vote value %T", voteValue)
-		}
-		return Result{}, err
-	}
-	_, err = repository.db.Exec(ctx, `UPDATE issue_votes SET vote=$2,updated_at=$3,updated_by_id=$4 WHERE id=$1`, identifier, vote, now, actorID)
-	if err != nil {
-		return Result{}, err
-	}
-	requested, err := pythoncompat.Dumps(input.Fields, input.Raw)
-	if err != nil {
-		return Result{}, err
-	}
 	if publishTaskErr := repository.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{
-		"type": "issue_vote.activity.created", "requested_data": requested, "actor_id": actorID,
+		"type": "issue_vote.activity.created", "requested_data": fmt.Sprintf(`{"vote":%d}`, vote), "actor_id": actorID,
 		"issue_id": issueID, "project_id": scope.ProjectID, "current_instance": nil,
 		"epoch": repository.now().Unix(),
 	}); publishTaskErr != nil {
@@ -162,48 +192,19 @@ FROM issue_votes vote JOIN users actor ON actor.id=vote.actor_id WHERE vote.id=$
 	if err != nil {
 		return Result{}, err
 	}
-	// Django serializes the in-memory value assigned by the request. IntegerField
-	// coerces it for persistence, but the response retains the original scalar.
-	response["vote"] = voteValue
 	return Result{Status: 201, Body: response}, nil
-}
-
-func publicVoteValue(value any) (int64, bool) {
-	switch value := value.(type) {
-	case int:
-		return int64(value), true
-	case int64:
-		return value, true
-	case bool:
-		if value {
-			return 1, true
-		}
-		return 0, true
-	case json.Number:
-		parsed, err := pythoncompat.DecimalInteger(value.String())
-		if err == nil && parsed.IsInt64() {
-			return parsed.Int64(), true
-		}
-		floating, floatErr := pythoncompat.DecimalFloat64(value.String())
-		if floatErr != nil || floating > math.MaxInt64 || floating < math.MinInt64 {
-			return 0, false
-		}
-		return int64(floating), true
-	case string:
-		parsed, err := pythoncompat.DecimalInteger(value)
-		if err != nil || !parsed.IsInt64() {
-			return 0, false
-		}
-		return parsed.Int64(), true
-	default:
-		return 0, false
-	}
 }
 
 func (repository *Repository) PublicVoteDelete(ctx context.Context, scope PublicFeedbackScope, issueID, actorID string) (Result, error) {
 	if !scope.VotesEnabled {
 		return Result{}, failure(403, "error", publicVoteDisabled)
 	}
+	return repository.publicVoteTransaction(ctx, scope, issueID, func(writer *Repository) (Result, error) {
+		return writer.deletePublicVote(ctx, scope, issueID, actorID)
+	})
+}
+
+func (repository *Repository) deletePublicVote(ctx context.Context, scope PublicFeedbackScope, issueID, actorID string) (Result, error) {
 	var identifier, vote string
 	err := repository.db.QueryRow(ctx, `SELECT id::text,vote::text FROM issue_votes WHERE issue_id=$1::uuid AND actor_id=$2::uuid AND project_id=$3::uuid AND workspace_id=$4::uuid AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1`, issueID, actorID, scope.ProjectID, scope.WorkspaceID).Scan(&identifier, &vote)
 	if errors.Is(err, pgx.ErrNoRows) {

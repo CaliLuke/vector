@@ -97,15 +97,25 @@ func TestDraftNameUsesNullableOptionalModelContract(t *testing.T) {
 	}
 }
 
-func TestGlobalCursorNegativePageKeepsSourceCursorAndFirstWindow(t *testing.T) {
-	rows := []map[string]any{{"id": "one", "link_count": json.Number("0")}, {"id": "two"}}
-	result, err := (&Repository{}).v2Page(Request{Params: map[string]string{"cursor": "1:-1:0"}, Present: map[string]bool{"cursor": true}}, rows)
+func TestGlobalCursorRejectsInvalidWindows(t *testing.T) {
+	for _, cursor := range []string{"1:-1:0", "١:٠:٠", "1:0:9", "1:9223372036854775807:0", "1001:0:0"} {
+		_, err := (&Repository{}).v2Page(Request{Params: map[string]string{"cursor": cursor}, Present: map[string]bool{"cursor": true}}, nil)
+		var invalid *apicontract.HTTPError
+		if !errors.As(err, &invalid) || invalid.Status != 400 {
+			t.Fatalf("cursor=%q error=%v", cursor, err)
+		}
+	}
+}
+
+func TestGlobalCursorUsesEncodedWindowAndPreservesProjection(t *testing.T) {
+	rows := []map[string]any{{"id": "one"}, {"id": "two", "link_count": json.Number("0")}, {"id": "three"}}
+	result, err := (&Repository{}).v2Page(Request{Params: map[string]string{"cursor": "1:1:0"}, Present: map[string]bool{"cursor": true}}, rows)
 	if err != nil {
 		t.Fatal(err)
 	}
 	value := result.Body.(map[string]any)
 	items := value["results"].([]any)
-	if len(items) != 1 || items[0].(map[string]any)["id"] != "one" || value["cursor"] != "1:-1:0" || value["prev_cursor"] != "1:-2:0" || value["prev_page_results"] != false || items[0].(map[string]any)["link_count"] != nil {
+	if len(items) != 1 || items[0].(map[string]any)["id"] != "two" || items[0].(map[string]any)["link_count"] != nil || value["next_cursor"] != "1:2:0" || value["prev_cursor"] != "1:0:0" || value["next_page_results"] != true || value["prev_page_results"] != true {
 		t.Fatalf("page=%#v", value)
 	}
 }

@@ -29,7 +29,7 @@ func TestIntakeValidationErrorsUseClientHTTPStatus(t *testing.T) {
 		}{
 			{"limit", store.ErrInvalidPerPage, 400, "detail", "Invalid per_page parameter."},
 			{"cursor", store.ErrInvalidCursor, 400, "detail", "Invalid cursor parameter."},
-			{"description cursor", store.ErrInvalidDescriptionCursor, 400, "detail", "Invalid cursor parameter."},
+			{"description cursor", store.ErrInvalidCursor, 400, "detail", "Invalid cursor parameter."},
 			{"filter", store.ErrBadRequest, 400, "detail", "Invalid pagination or filter parameter."},
 			{"unexpected", errors.New("private database error"), 500, "error", intakeInboxReadsInternalErrorDetail},
 		} {

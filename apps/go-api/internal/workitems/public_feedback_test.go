@@ -32,26 +32,27 @@ func TestPublicVoteDisabledGuardsPrecedeBodyAndTargetAccess(t *testing.T) {
 	}
 }
 
-func TestPublicVoteValueUsesDjangoIntegerCoercion(t *testing.T) {
-	for input, expected := range map[any]int64{
-		json.Number("1"):   1,
-		json.Number("1.0"): 1,
-		json.Number("0"):   0,
-		int64(1):           1,
-		int(0):             0,
-		true:               1,
-		false:              0,
-		"-1":               -1,
-		" 1 ":              1,
-		"١":                1,
-	} {
-		got, ok := publicVoteValue(input)
-		if !ok || got != expected {
-			t.Errorf("publicVoteValue(%v)=(%d,%v), want (%d,true)", input, got, ok, expected)
+func TestPublicVoteUsesNativeIntegerDirections(t *testing.T) {
+	for _, body := range []string{`{}`, `{"vote":1}`, `{"vote":-1}`, `{"vote":1.0}`, `{"vote":"-1"}`} {
+		input, err := requestinput.Parse(strings.NewReader(body), "application/json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		vote, err := publicVote(input)
+		if err != nil || (vote != 1 && vote != -1) {
+			t.Fatalf("body=%s vote=%d err=%v", body, vote, err)
 		}
 	}
-	if _, ok := publicVoteValue([]any{1}); ok {
-		t.Fatal("array vote unexpectedly parsed as an integer")
+	for _, body := range []string{`{"vote":true}`, `{"vote":1.5}`, `{"vote":0}`, `{"vote":2}`, `{"vote":"١"}`, `{"vote":null}`} {
+		input, err := requestinput.Parse(strings.NewReader(body), "application/json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = publicVote(input)
+		var invalid *apicontract.HTTPError
+		if !errors.As(err, &invalid) || invalid.Status != 400 {
+			t.Fatalf("body=%s err=%v", body, err)
+		}
 	}
 }
 

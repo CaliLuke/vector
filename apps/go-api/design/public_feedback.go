@@ -159,16 +159,6 @@ var publicFeedbackVote = Type("PublicFeedbackVote", func() {
 	Required("issue", "vote", "workspace", "project", "actor", "actor_detail")
 })
 
-var publicFeedbackVoteCreated = Type("PublicFeedbackVoteCreated", func() {
-	Attribute("issue", String, func() { Format(FormatUUID) })
-	Attribute("vote", Any)
-	Attribute("workspace", String, func() { Format(FormatUUID) })
-	Attribute("project", String, func() { Format(FormatUUID) })
-	Attribute("actor", String, func() { Format(FormatUUID) })
-	Attribute("actor_detail", Any)
-	Required("issue", "vote", "workspace", "project", "actor", "actor_detail")
-})
-
 var publicFeedbackDirectoryProject = Type("PublicFeedbackDirectoryProject", func() {
 	Attribute("id", String, func() { Format(FormatUUID) })
 	Attribute("identifier", String)
@@ -370,7 +360,7 @@ var _ = Service("public_feedback", func() {
 			Param("anchor")
 			Param("issue_id")
 			publicFeedbackRawRequestBody()
-			publicFeedbackJSONResponse(201, publicFeedbackVoteCreated, false)
+			publicFeedbackJSONResponse(201, publicFeedbackVote, false)
 		})
 	})
 

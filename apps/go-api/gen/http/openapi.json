@@ -7901,22 +7901,22 @@
               "application/json": {
                 "schema": {
                   "example": {
-                    "actor": "9733aa9d-7009-40bf-879f-096ea1b5073c",
-                    "actor_detail": "Odit non.",
+                    "actor": "be93bd81-b6f3-4ee4-ac87-33be6f699e00",
+                    "actor_detail": "Laudantium vel et.",
                     "issue": "30973fca-4cab-47c3-8ff1-662c259dbe9a",
-                    "project": "16bd92d0-6692-4989-9579-4e06edc74ae1",
-                    "vote": "Recusandae non voluptatem modi dolor voluptas iste.",
-                    "workspace": "aedfd986-2688-44ef-9273-71341c5964ee"
+                    "project": "ff8dc4b7-02cb-415e-a028-c921ebc44991",
+                    "vote": 2478141374279710291,
+                    "workspace": "aedfd986-269b-4592-85dd-32afc2c97889"
                   },
-                  "$ref": "#/components/schemas/PublicFeedbackVoteCreated"
+                  "$ref": "#/components/schemas/PublicFeedbackVote"
                 },
                 "example": {
-                  "actor": "9733aa9d-7009-40bf-879f-096ea1b5073c",
-                  "actor_detail": "Odit non.",
+                  "actor": "be93bd81-b6f3-4ee4-ac87-33be6f699e00",
+                  "actor_detail": "Laudantium vel et.",
                   "issue": "30973fca-4cab-47c3-8ff1-662c259dbe9a",
-                  "project": "16bd92d0-6692-4989-9579-4e06edc74ae1",
-                  "vote": "Recusandae non voluptatem modi dolor voluptas iste.",
-                  "workspace": "aedfd986-2688-44ef-9273-71341c5964ee"
+                  "project": "ff8dc4b7-02cb-415e-a028-c921ebc44991",
+                  "vote": 2478141374279710291,
+                  "workspace": "aedfd986-269b-4592-85dd-32afc2c97889"
                 }
               }
             }
@@ -56681,53 +56681,6 @@
           "project": "4a7a8f4b-d383-42e5-857c-a9eb917bcef9",
           "vote": 1606756822916966809,
           "workspace": "9801c5d8-acbc-4ea8-af62-bacc01f3536c"
-        },
-        "required": [
-          "issue",
-          "vote",
-          "workspace",
-          "project",
-          "actor",
-          "actor_detail"
-        ]
-      },
-      "PublicFeedbackVoteCreated": {
-        "type": "object",
-        "properties": {
-          "actor": {
-            "type": "string",
-            "example": "7875c37d-bdb4-47be-ad29-ede67b3c9c8b",
-            "format": "uuid"
-          },
-          "actor_detail": {
-            "example": "Quod corrupti numquam porro velit aspernatur et."
-          },
-          "issue": {
-            "type": "string",
-            "example": "cdd020af-3d25-4c6c-ba66-71ff5a62dd98",
-            "format": "uuid"
-          },
-          "project": {
-            "type": "string",
-            "example": "bca945cc-b526-47ed-96df-43179c9dc44c",
-            "format": "uuid"
-          },
-          "vote": {
-            "example": "Doloribus id est aliquid dolor illum vel."
-          },
-          "workspace": {
-            "type": "string",
-            "example": "97f4ef7c-b4c0-46b7-a3d1-ab8cf58bba84",
-            "format": "uuid"
-          }
-        },
-        "example": {
-          "actor": "f52fe370-00c9-4a41-bcb2-0836253dfec8",
-          "actor_detail": "Rerum similique.",
-          "issue": "2e20e954-b1b6-4b53-8506-5c29cbc2bf15",
-          "project": "d7ad1732-71a6-4e86-8790-d0380bb17c50",
-          "vote": "Pariatur quis.",
-          "workspace": "0e27521c-54d0-42b3-a538-520113f60b34"
         },
         "required": [
           "issue",

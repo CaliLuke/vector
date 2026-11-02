@@ -387,59 +387,14 @@ func TestDescriptionVersionListAndDetailHaveDistinctProjections(t *testing.T) {
 	}
 }
 
-func TestDescriptionVersionNegativePagePreservesCursorAndClampsQueryStart(t *testing.T) {
-	database := &repositoryDatabaseStub{rows: []pgx.Row{
-		repositoryBoolRow(true),
-		repositoryBoolRow(false),
-		repositoryJSONRow(`{"results":[]}`),
-	}}
-	repository, constructorErr := NewRepository(database)
-	require.NoError(t, constructorErr)
+func TestDescriptionVersionInvalidCursorStopsBeforeDataRead(t *testing.T) {
+	database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true), repositoryBoolRow(false)}}
+	repository, err := NewRepository(database)
+	require.NoError(t, err)
 	cursor := "50:-2:0"
-	if _, err := repository.DescriptionVersionList(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), &cursor); err != nil {
-		t.Fatal(err)
-	}
-	args := database.args[2]
-	if len(args) != 6 || args[3] != 50 || args[4] != 0 || args[5] != -2 {
-		t.Fatalf("description negative-page args=%#v", args)
-	}
-	for _, fragment := range []string{"$6::numeric - 1", "$6::numeric + 1", "'cursor', concat($4::int, ':', $6::numeric"} {
-		if !strings.Contains(database.queries[2], fragment) {
-			t.Errorf("description cursor SQL missing %q", fragment)
-		}
-	}
-
-	hugeDatabase := &repositoryDatabaseStub{rows: []pgx.Row{
-		repositoryBoolRow(true),
-		repositoryBoolRow(false),
-		repositoryJSONRow(`{"cursor":"1000:-999999999999999999999999:0","results":[]}`),
-	}}
-	hugeRepository, constructorErr := NewRepository(hugeDatabase)
-	require.NoError(t, constructorErr)
-	hugeCursor := "1000:-999999999999999999999999:0"
-	if _, err := hugeRepository.DescriptionVersionList(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), &hugeCursor); err != nil {
-		t.Fatal(err)
-	}
-	hugeArgs := hugeDatabase.args[2]
-	if hugeArgs[4] != 0 || hugeArgs[5] != "-999999999999999999999999" {
-		t.Fatalf("description huge negative-page args=%#v", hugeArgs)
-	}
-
-	hugePositiveDatabase := &repositoryDatabaseStub{rows: []pgx.Row{
-		repositoryBoolRow(true),
-		repositoryBoolRow(false),
-		repositoryJSONRow(`{"cursor":"1000:999999999999999999999999:0","results":[]}`),
-	}}
-	hugePositiveRepository, constructorErr := NewRepository(hugePositiveDatabase)
-	require.NoError(t, constructorErr)
-	hugePositiveCursor := "1000:999999999999999999999999:0"
-	if _, err := hugePositiveRepository.DescriptionVersionList(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), &hugePositiveCursor); err != nil {
-		t.Fatal(err)
-	}
-	hugePositiveArgs := hugePositiveDatabase.args[2]
-	if hugePositiveArgs[4] != int(^uint(0)>>1) || hugePositiveArgs[5] != "999999999999999999999999" {
-		t.Fatalf("description huge positive-page args=%#v", hugePositiveArgs)
-	}
+	_, err = repository.DescriptionVersionList(context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), &cursor)
+	require.ErrorIs(t, err, ErrInvalidCursor)
+	require.Len(t, database.queries, 2)
 }
 
 func TestIssueDateFiltersImplementRelativeDatesAndUserTimezone(t *testing.T) {
@@ -450,7 +405,7 @@ func TestIssueDateFiltersImplementRelativeDatesAndUserTimezone(t *testing.T) {
 		Timezone: "America/New_York",
 		Filters: map[string]string{
 			"created_at":   "1_weeks;before;fromnow",
-			"updated_at":   "2_months;after;beforetoday",
+			"updated_at":   "2_months;after;fromnow",
 			"completed_at": "2026-01-02;after",
 			"start_date":   "2026-01",
 			"target_date":  "2026-02-03;before",
@@ -484,16 +439,16 @@ func TestIssueDateFiltersImplementRelativeDatesAndUserTimezone(t *testing.T) {
 	}
 }
 
-func TestRelativeDateFilterUsesDjangoWeekAndMonthBoundaries(t *testing.T) {
-	now := time.Date(2026, time.January, 15, 23, 59, 0, 0, time.UTC)
+func TestRelativeDateFilterUsesLocalCalendarDays(t *testing.T) {
+	now := time.Date(2026, time.January, 16, 0, 30, 0, 0, time.UTC)
 	builder := newWhereBuilder(uuid.New(), "demo")
 	if err := addDateFilter(builder, "issue.created_at", "1_weeks;before;fromnow", "America/New_York", true, now); err != nil {
 		t.Fatal(err)
 	}
-	if err := addDateFilter(builder, "issue.updated_at", "2_months;after;beforetoday", "America/New_York", true, now); err != nil {
+	if err := addDateFilter(builder, "issue.updated_at", "2_months;after;fromnow", "America/New_York", true, now); err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []any{"2026-01-22", "2025-11-16"} {
+	for _, want := range []any{"2026-01-08", "2026-03-16"} {
 		if !repositoryArgsContain(builder.args, want) {
 			t.Errorf("relative boundary missing %#v: %#v", want, builder.args)
 		}
@@ -550,101 +505,24 @@ func TestListFilterErrorsPrecedePaginationErrors(t *testing.T) {
 	}
 }
 
-func TestPaginationErrorsPreserveDjangoParameterDetail(t *testing.T) {
-	if _, err := parseOffsetPagination("invalid", true, "", false); !errors.Is(err, ErrInvalidPerPage) {
-		t.Fatalf("per_page err=%v", err)
+func TestIntakePaginationUsesNativeWindows(t *testing.T) {
+	pagination, err := parseOffsetPagination("20", true, "10:2:1", true)
+	if err != nil || pagination.limit != 20 || pagination.page != 2 {
+		t.Fatalf("window=%+v err=%v", pagination, err)
 	}
-
-	if _, err := parseOffsetPagination("1001", true, "", false); !errors.Is(err, ErrPerPageTooLarge) {
-		t.Fatalf("per_page overflow err=%v", err)
+	cursor := "50:2:0"
+	size, page, err := parseDescriptionCursor(&cursor)
+	if err != nil || size != 50 || page != 2 {
+		t.Fatalf("description window=%d/%d err=%v", size, page, err)
 	}
-	if _, err := parseOffsetPagination("", false, "invalid", true); !errors.Is(err, ErrInvalidCursor) {
-		t.Fatalf("cursor err=%v", err)
-	}
-	if _, err := parseOffsetPagination("0", true, "", false); !errors.Is(err, ErrInvalidPerPage) {
-		t.Fatalf("zero per_page err=%v", err)
-	}
-	if _, err := parseOffsetPagination("", false, "1e3:0:0", true); !errors.Is(err, ErrInvalidCursor) {
-		t.Fatalf("exponent cursor err=%v", err)
-	}
-	if _, err := parseOffsetPagination("", false, "10:-1:0", true); !errors.Is(err, ErrPaginationParsing) {
-		t.Fatalf("negative-page cursor err=%v", err)
-	}
-	if pagination, err := parseOffsetPagination("", false, "1000:2:9", true); err != nil || pagination.page != 2 {
-		t.Fatalf("matching truthy is_prev cursor pagination=%+v err=%v", pagination, err)
-	}
-	if _, err := parseOffsetPagination("", false, "10:2:1", true); !errors.Is(err, ErrInvalidCursor) {
-		t.Fatalf("mismatched truthy is_prev cursor err=%v", err)
-	}
-	if _, err := parseOffsetPagination("", false, "1.e999:0:0", true); !errors.Is(err, ErrInvalidCursor) {
-		t.Fatalf("overflowing Python float cursor err=%v", err)
-	}
-	if pagination, err := parseOffsetPagination(" 2_0 ", true, " 2_0 : 2 : 9 ", true); err != nil || pagination.limit != 20 || pagination.page != 2 {
-		t.Fatalf("whitespace pagination=%+v err=%v", pagination, err)
-	}
-	if _, err := parseOffsetPagination("999999999999999999999999", true, "", false); !errors.Is(err, ErrPerPageTooLarge) {
-		t.Fatalf("huge positive per_page err=%v", err)
-	}
-	if _, err := parseOffsetPagination("-999999999999999999999999", true, "", false); !errors.Is(err, ErrInvalidPerPage) {
-		t.Fatalf("huge negative per_page err=%v", err)
-	}
-	if pagination, err := parseOffsetPagination("١", true, "١:٠:٠", true); err != nil || pagination.limit != 1 || pagination.page != 0 {
-		t.Fatalf("Unicode cursor pagination=%+v err=%v", pagination, err)
-	}
-	if pagination, err := parseOffsetPagination("", false, "٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩:٠:٠", true); err != nil || pagination.page != 0 {
-		t.Fatalf("arbitrary ignored first cursor component pagination=%+v err=%v", pagination, err)
-	}
-	if pagination, err := parseOffsetPagination("", false, "١٠٠٠:٠:٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩٩", true); err != nil || pagination.page != 0 {
-		t.Fatalf("arbitrary truthy previous cursor component pagination=%+v err=%v", pagination, err)
-	}
-	if _, err := parseOffsetPagination("", false, "0x1.0p0:0:0", true); !errors.Is(err, ErrInvalidCursor) {
-		t.Fatalf("Go-only hex float cursor err=%v", err)
-	}
-	if _, err := parseOffsetPagination("", false, "1000:-999999999999999999999999:0", true); !errors.Is(err, ErrPaginationParsing) {
-		t.Fatalf("huge negative cursor page err=%v", err)
-	}
-	if _, err := parseOffsetPagination("", false, "1000:999999999999999999999999:0", true); !errors.Is(err, ErrInvalidCursor) {
-		t.Fatalf("huge positive cursor page err=%v", err)
-	}
-	if _, err := parseOffsetPagination("1000", true, "1000:2305843009213693952:0", true); !errors.Is(err, ErrInvalidCursor) {
-		t.Fatalf("overflowing cursor offset err=%v", err)
-	}
-	invalidDescriptionCursor := "invalid"
-	if _, _, err := parseDescriptionCursor(&invalidDescriptionCursor); !errors.Is(err, ErrInvalidDescriptionCursor) {
-		t.Fatalf("description cursor err=%v", err)
-	}
-	negativePageCursor := "50:-2:0"
-	pageSize, page, err := parseDescriptionCursor(&negativePageCursor)
-	if err != nil || pageSize != 50 || page.Int64() != -2 {
-		t.Fatalf("negative description cursor page_size=%d page=%s err=%v", pageSize, page, err)
-	}
-	whitespaceDescriptionCursor := " 50 : -2 : 0 "
-	pageSize, page, err = parseDescriptionCursor(&whitespaceDescriptionCursor)
-	if err != nil || pageSize != 50 || page.Int64() != -2 {
-		t.Fatalf("whitespace description cursor page_size=%d page=%s err=%v", pageSize, page, err)
-	}
-	hugeDescriptionPageSize := "999999999999999999999999:0:0"
-	pageSize, page, err = parseDescriptionCursor(&hugeDescriptionPageSize)
-	if err != nil || pageSize != 1000 || page.Sign() != 0 {
-		t.Fatalf("huge description page_size=%d page=%s err=%v", pageSize, page, err)
-	}
-	hugeNegativeDescriptionPageSize := "-999999999999999999999999:0:0"
-	if _, _, parseDescriptionCursorErr := parseDescriptionCursor(&hugeNegativeDescriptionPageSize); !errors.Is(parseDescriptionCursorErr, ErrInvalidDescriptionCursor) {
-		t.Fatalf("huge negative description page size err=%v", parseDescriptionCursorErr)
-	}
-	hugeIgnoredComponent := "1000:0:999999999999999999999999"
-	pageSize, page, err = parseDescriptionCursor(&hugeIgnoredComponent)
-	if err != nil || pageSize != 1000 || page.Sign() != 0 {
-		t.Fatalf("huge ignored description component page_size=%d page=%s err=%v", pageSize, page, err)
-	}
-	hugeNegativeDescriptionPage := "1000:-999999999999999999999999:0"
-	pageSize, page, err = parseDescriptionCursor(&hugeNegativeDescriptionPage)
-	if err != nil || pageSize != 1000 || page.String() != "-999999999999999999999999" {
-		t.Fatalf("huge negative description page_size=%d page=%s err=%v", pageSize, page, err)
+	for _, value := range []string{"50:-2:0", " 50:2:0", "١٠:٠:٠", "99999999999999999999999:0:0", "50:0:9", "1:9223372036854775807:0"} {
+		if _, _, err := parseDescriptionCursor(&value); !errors.Is(err, ErrInvalidCursor) {
+			t.Fatalf("cursor=%q err=%v", value, err)
+		}
 	}
 }
-func TestUnicodeRelativeDatesAndEmptyCSVTokensPreserveDjangoFilters(t *testing.T) {
-	if days, ok := relativeDateDays("١_weeks"); !ok || days != 7 {
+func TestRelativeDatesUseASCIIDurationsAndCSVRejectsEmptyTokens(t *testing.T) {
+	if days, ok := relativeDateDays("١_weeks"); ok || days != 0 {
 		t.Fatalf("Unicode relative duration days=%d ok=%v", days, ok)
 	}
 	if values := csvStrings("high,"); len(values) != 0 {
@@ -655,13 +533,12 @@ func TestUnicodeRelativeDatesAndEmptyCSVTokensPreserveDjangoFilters(t *testing.T
 	}
 }
 
-func TestRelativeDateFilterWithoutOffsetMatchesDjangoNoOp(t *testing.T) {
-	builder := newWhereBuilder(uuid.New(), "demo")
-	if err := addDateFilter(builder, "issue.created_at", "1_weeks;after", "UTC", true, time.Now()); err != nil {
-		t.Fatal(err)
-	}
-	if len(builder.conditions) != 0 || len(builder.args) != 2 {
-		t.Fatalf("relative date without offset conditions=%v args=%v", builder.conditions, builder.args)
+func TestRelativeDateFiltersRejectMalformedOrUnboundedPresets(t *testing.T) {
+	for _, value := range []string{"1_weeks;after", "1_weeks;unknown;ago", "1_weeks;before;unknown", "١_weeks;before;ago", "999999999999999999_weeks;after;fromnow", "3660000_months;after;fromnow"} {
+		builder := newWhereBuilder(uuid.New(), "demo")
+		if err := addDateFilter(builder, "issue.created_at", value, "UTC", true, time.Now()); !errors.Is(err, ErrInvalidDetail) {
+			t.Fatalf("preset=%q err=%v", value, err)
+		}
 	}
 }
 
@@ -877,20 +754,13 @@ func TestMalformedStatusFiltersReturnClientErrors(t *testing.T) {
 	if strings.Contains(strings.Join(builder.conditions, " "), "filtered_intake.deleted_at") {
 		t.Fatalf("intake status filters soft-delete related rows: %v", builder.conditions)
 	}
-	builder = newWhereBuilder(uuid.New(), "demo")
-	if err := addIntakeStatuses(builder, " 1 ", true); err != nil {
-		t.Fatal(err)
+	for _, value := range []string{" 1 ", "0_1", "١"} {
+		builder = newWhereBuilder(uuid.New(), "demo")
+		if err := addIntakeStatuses(builder, value, true); !errors.Is(err, ErrBadRequest) {
+			t.Fatalf("status=%q err=%v", value, err)
+		}
 	}
-	if statuses, ok := builder.args[len(builder.args)-1].([]int); !ok || !reflect.DeepEqual(statuses, []int{1}) {
-		t.Fatalf("whitespace status args=%#v", builder.args)
-	}
-	builder = newWhereBuilder(uuid.New(), "demo")
-	if err := addIssueFilters(builder, "issue", map[string]string{"intake_status": " 0_1 "}, nil, false, "UTC"); err != nil {
-		t.Fatal(err)
-	}
-	if statuses, ok := builder.args[len(builder.args)-1].([]int); !ok || !reflect.DeepEqual(statuses, []int{1}) {
-		t.Fatalf("whitespace intake_status args=%#v", builder.args)
-	}
+
 }
 
 func TestProjectionOrderingAndCoverAssetURLsPreserveDjangoProperties(t *testing.T) {

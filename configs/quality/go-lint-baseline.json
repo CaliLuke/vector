@@ -6,10 +6,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["bodyclose", "design/public_feedback_schema_fixture_test.go", "response body must be closed"],
-      "count": 3
-    },
-    {
       "fingerprint": ["bodyclose", "modulelifecycle/design/transport_test.go", "response body must be closed"],
       "count": 1
     },

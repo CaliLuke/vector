@@ -198,7 +198,7 @@ func TestListServicesPreserveExplicitEmptyQueryPresence(t *testing.T) {
 }
 
 func TestDescriptionServiceRejectsExplicitEmptyCursorAsClientError(t *testing.T) {
-	repository := &intakeInboxReadsRepositoryStub{err: store.ErrInvalidDescriptionCursor}
+	repository := &intakeInboxReadsRepositoryStub{err: store.ErrInvalidCursor}
 	service, ctx := authenticatedIntakeReadsService(t, repository)
 	ctx = WithReadServiceQueryPresence(ctx, url.Values{"cursor": {""}})
 	ctx = WithReadServiceDjangoHTML500(ctx)
@@ -405,9 +405,7 @@ func TestPaginationErrorsMapToClientDetails(t *testing.T) {
 		detail string
 	}{
 		{err: store.ErrInvalidPerPage, detail: "Invalid per_page parameter."},
-		{err: store.ErrPerPageTooLarge, detail: "Invalid per_page value. Cannot exceed 1000."},
 		{err: store.ErrInvalidCursor, detail: "Invalid cursor parameter."},
-		{err: store.ErrInvalidDescriptionCursor, detail: "Invalid cursor parameter."},
 		{err: store.ErrBadRequest, detail: "Invalid pagination or filter parameter."},
 	} {
 		mapped := intakeInboxReadsRepositoryError(test.err, "")

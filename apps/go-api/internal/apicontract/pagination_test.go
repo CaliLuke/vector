@@ -31,3 +31,20 @@ func TestEnvelopePreventsCursorIntegerWrap(t *testing.T) {
 		t.Fatalf("overflowing cursor %#v", result)
 	}
 }
+
+func TestCursorWindowBoundsBothPageEnds(t *testing.T) {
+	limit, page, offset, err := CursorWindow(nil)
+	if err != nil || limit != 1000 || page != 0 || offset != 0 {
+		t.Fatalf("default window=(%d,%d,%d), error=%v", limit, page, offset, err)
+	}
+	cursor := "25:3:1"
+	limit, page, offset, err = CursorWindow(&cursor)
+	if err != nil || limit != 25 || page != 3 || offset != 75 {
+		t.Fatalf("cursor window=(%d,%d,%d), error=%v", limit, page, offset, err)
+	}
+	for _, cursor = range []string{"", "0:0:0", "1001:0:0", "25:-1:0", "25:0:2", fmt.Sprintf("2:%d:0", math.MaxInt/2)} {
+		if _, _, _, err = CursorWindow(&cursor); err == nil {
+			t.Errorf("accepted invalid cursor %q", cursor)
+		}
+	}
+}

@@ -11,7 +11,6 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 )
 
 func queryOptions(q Request) issuequery.Options {
@@ -502,36 +501,23 @@ func (r *Repository) v2Page(q Request, rows []map[string]any) (Result, error) {
 		return Result{}, err
 	}
 	total := len(rows)
-	start := min(total, max(0, page)*limit)
+	start := min(total, page*limit)
 	end := min(total, start+limit)
 	return v2Envelope(q, rows[start:end], total, limit, page)
 }
 
 func v2Window(q Request) (int, int, error) {
-	limit, page := 1000, 0
+	var cursor *string
 	if q.Present["cursor"] {
-		parts := strings.Split(q.Params["cursor"], ":")
-		if len(parts) != 3 {
-			return 0, 0, errors.New("invalid global cursor")
-		}
-		numbers := []int{}
-		for _, part := range parts {
-			n, e := pythoncompat.DecimalInteger(part)
-			if e != nil || !n.IsInt64() {
-				return 0, 0, errors.New("invalid global cursor")
-			}
-			numbers = append(numbers, int(n.Int64()))
-		}
-		limit, page = min(numbers[0], 1000), numbers[1]
+		value := q.Params["cursor"]
+		cursor = &value
 	}
-	if limit <= 0 || page > math.MaxInt/limit {
-		return 0, 0, errors.New("invalid global pagination")
-	}
-	return limit, page, nil
+	limit, page, _, err := apicontract.CursorWindow(cursor)
+	return limit, page, err
 }
 
 func v2Envelope(q Request, rows []map[string]any, total, limit, page int) (Result, error) {
-	start := min(total, max(0, page)*limit)
+	start := min(total, page*limit)
 	end := min(total, start+limit)
 	results := []any{}
 	fields := append(append([]string{}, compactFields...), "state__group")

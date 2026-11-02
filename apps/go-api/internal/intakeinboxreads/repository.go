@@ -6,13 +6,9 @@ import (
 	"encoding/json/jsontext"
 	"errors"
 	"fmt"
-	"math"
-	"math/big"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/datetime"
@@ -24,17 +20,14 @@ import (
 )
 
 var (
-	ErrForbidden                = errors.New("active membership with an allowed role required")
-	ErrGuestRestricted          = errors.New("guest cannot read another creator's intake issue")
-	ErrNotFound                 = errors.New("intake or work item not found")
-	ErrBadRequest               = errors.New("invalid filter parameter")
-	ErrInvalidPerPage           = errors.New("invalid per_page parameter")
-	ErrPerPageTooLarge          = errors.New("per_page value exceeds 1000")
-	ErrMissingIntake            = errors.New("active project intake required")
-	ErrInvalidCursor            = errors.New("invalid cursor parameter")
-	ErrPaginationParsing        = errors.New("error in parsing pagination cursor")
-	ErrInvalidDescriptionCursor = errors.New("invalid description-version cursor")
-	ErrInvalidDetail            = errors.New("invalid filter detail")
+	ErrForbidden       = errors.New("active membership with an allowed role required")
+	ErrGuestRestricted = errors.New("guest cannot read another creator's intake issue")
+	ErrNotFound        = errors.New("intake or work item not found")
+	ErrBadRequest      = errors.New("invalid filter parameter")
+	ErrInvalidPerPage  = errors.New("invalid per_page parameter")
+	ErrMissingIntake   = errors.New("active project intake required")
+	ErrInvalidCursor   = errors.New("invalid cursor parameter")
+	ErrInvalidDetail   = errors.New("invalid filter detail")
 )
 
 type database interface {
@@ -107,22 +100,9 @@ func (repository *Repository) DescriptionVersionList(ctx context.Context, userID
 	if err != nil {
 		return nil, err
 	}
-	start := 0
-	pageArgument := any(page.String())
-	if page.IsInt64() {
-		pageArgument = int(page.Int64())
-	}
-	if page.Sign() > 0 {
-		offset := new(big.Int).Mul(page, big.NewInt(int64(pageSize)))
-		maximumOffset := int64(^uint(0) >> 1)
-		if !offset.IsInt64() || offset.Int64() > maximumOffset {
-			start = int(maximumOffset)
-		} else {
-			start = int(offset.Int64())
-		}
-	}
+	start := page * pageSize
 	var data []byte
-	err = repository.database.QueryRow(ctx, descriptionVersionListSQL, slug, projectID, issueID, pageSize, start, pageArgument).Scan(&data)
+	err = repository.database.QueryRow(ctx, descriptionVersionListSQL, slug, projectID, issueID, pageSize, start, page).Scan(&data)
 	return scannedJSON(data, err, "list intake work item description versions")
 }
 
@@ -338,184 +318,28 @@ type offsetPagination struct {
 	page  int
 }
 
-var pythonDecimalFloatPattern = regexp.MustCompile(`^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$`)
-
 func parseOffsetPagination(perPage string, perPageSet bool, cursor string, cursorSet bool) (offsetPagination, error) {
-	limit := 1000
-	if perPageSet {
-		perPage = pythonNumericString(perPage)
-		parsed, err := parsePerPage(perPage)
-		if err != nil {
-			return offsetPagination{}, err
-		}
-		limit = parsed
+	query := apicontract.Query{
+		Params:  map[string]string{"per_page": perPage, "cursor": cursor},
+		Present: map[string]bool{"per_page": perPageSet, "cursor": cursorSet},
 	}
-	page := 0
-	if cursorSet {
-		parts := strings.Split(cursor, ":")
-		if len(parts) != 3 {
-			return offsetPagination{}, ErrInvalidCursor
-		}
-		for index := range parts {
-			parts[index] = pythonNumericString(parts[index])
-		}
-		cursorValueMatchesLimit := false
-		if strings.Contains(parts[0], ".") {
-			if !pythonDecimalFloatPattern.MatchString(parts[0]) {
-				return offsetPagination{}, ErrInvalidCursor
-			}
-			cursorValue, err := strconv.ParseFloat(parts[0], 64)
-			if err != nil && (!errors.Is(err, strconv.ErrRange) || math.IsInf(cursorValue, 0)) {
-				return offsetPagination{}, ErrInvalidCursor
-			}
-			cursorValueMatchesLimit = cursorValue == float64(limit)
-		} else {
-			cursorValue, ok := new(big.Int).SetString(parts[0], 10)
-			if !ok {
-				return offsetPagination{}, ErrInvalidCursor
-			}
-			cursorValueMatchesLimit = cursorValue.Cmp(big.NewInt(int64(limit))) == 0
-		}
-		parsedPage, ok := new(big.Int).SetString(parts[1], 10)
-		if !ok {
-			return offsetPagination{}, ErrInvalidCursor
-		}
-		if parsedPage.Sign() < 0 {
-			return offsetPagination{}, ErrPaginationParsing
-		}
-		if !parsedPage.IsInt64() || parsedPage.Int64() > int64(^uint(0)>>1) {
-			return offsetPagination{}, ErrInvalidCursor
-		}
-		previous, ok := new(big.Int).SetString(parts[2], 10)
-		if !ok {
-			return offsetPagination{}, ErrInvalidCursor
-		}
-		if previous.Sign() != 0 && !cursorValueMatchesLimit {
-			return offsetPagination{}, ErrInvalidCursor
-		}
-		page = int(parsedPage.Int64())
-		if page > (int(^uint(0)>>1)-limit)/limit {
-			return offsetPagination{}, ErrInvalidCursor
-		}
+	limit, err := apicontract.PageSize(query)
+	if err != nil {
+		return offsetPagination{}, ErrInvalidPerPage
+	}
+	page, err := apicontract.CursorPage(query, limit)
+	if err != nil {
+		return offsetPagination{}, ErrInvalidCursor
 	}
 	return offsetPagination{limit: limit, page: page}, nil
 }
 
-func parsePerPage(value string) (int, error) {
-	if parsed, err := strconv.Atoi(value); err == nil {
-		if parsed > 1000 {
-			return 0, ErrPerPageTooLarge
-		}
-		if parsed <= 0 {
-			return 0, ErrInvalidPerPage
-		}
-		return parsed, nil
+func parseDescriptionCursor(cursor *string) (int, int, error) {
+	limit, page, _, err := apicontract.CursorWindow(cursor)
+	if err != nil {
+		return 0, 0, ErrInvalidCursor
 	}
-	arbitrary, ok := new(big.Int).SetString(value, 10)
-	if !ok {
-		return 0, ErrInvalidPerPage
-	}
-	if arbitrary.Sign() <= 0 {
-		return 0, ErrInvalidPerPage
-	}
-	if arbitrary.Cmp(big.NewInt(1000)) > 0 {
-		return 0, ErrPerPageTooLarge
-	}
-	return int(arbitrary.Int64()), nil
-}
-
-func pythonNumericString(value string) string {
-	value = normalizePythonDecimalDigits(strings.TrimSpace(value))
-	if !strings.Contains(value, "_") {
-		return value
-	}
-	normalized := make([]byte, 0, len(value))
-	for index := range len(value) {
-		if value[index] == '_' && index > 0 && index+1 < len(value) &&
-			value[index-1] >= '0' && value[index-1] <= '9' &&
-			value[index+1] >= '0' && value[index+1] <= '9' {
-			continue
-		}
-		normalized = append(normalized, value[index])
-	}
-	return string(normalized)
-}
-
-func normalizePythonDecimalDigits(value string) string {
-	var digits strings.Builder
-	digits.Grow(len(value))
-	for _, character := range value {
-		if digit, ok := pythonDecimalDigit(character); ok {
-			digits.WriteByte('0' + digit)
-		} else {
-			digits.WriteRune(character)
-		}
-	}
-	return digits.String()
-}
-
-func pythonDecimalDigit(character rune) (byte, bool) {
-	for _, item := range unicode.Nd.R16 {
-		value := uint32(character)
-		if value >= uint32(item.Lo) && value <= uint32(item.Hi) && (value-uint32(item.Lo))%uint32(item.Stride) == 0 {
-			return byte(((value - uint32(item.Lo)) / uint32(item.Stride)) % 10), true
-		}
-	}
-	for _, item := range unicode.Nd.R32 {
-		value := uint32(character)
-		if value >= item.Lo && value <= item.Hi && (value-item.Lo)%item.Stride == 0 {
-			return byte(((value - item.Lo) / item.Stride) % 10), true
-		}
-	}
-	return 0, false
-}
-
-func parseDescriptionCursor(cursor *string) (int, *big.Int, error) {
-	if cursor == nil {
-		return 1000, big.NewInt(0), nil
-	}
-	parts := strings.Split(*cursor, ":")
-	if len(parts) != 3 {
-		return 0, nil, ErrInvalidDescriptionCursor
-	}
-	for index := range parts {
-		parts[index] = pythonNumericString(parts[index])
-	}
-	pageSize, firstErr := parseDescriptionPageSize(parts[0])
-	page, pageOK := new(big.Int).SetString(parts[1], 10)
-	thirdErr := validateArbitraryInteger(parts[2])
-	if firstErr != nil || !pageOK || thirdErr != nil || pageSize <= 0 {
-		return 0, nil, ErrInvalidDescriptionCursor
-	}
-	if pageSize > 1000 {
-		pageSize = 1000
-	}
-	return pageSize, page, nil
-}
-
-func parseDescriptionPageSize(value string) (int, error) {
-	pageSize, err := strconv.Atoi(value)
-	if err == nil {
-		return pageSize, nil
-	}
-	arbitrary, ok := new(big.Int).SetString(value, 10)
-	if !ok || arbitrary.Sign() < 0 {
-		return 0, err
-	}
-	maximum := big.NewInt(1000)
-	if arbitrary.Cmp(maximum) > 0 {
-		return 1000, nil
-	}
-	return int(arbitrary.Int64()), nil
-}
-
-func validateArbitraryInteger(value string) error {
-	if _, err := strconv.Atoi(value); err == nil {
-		return nil
-	} else if _, ok := new(big.Int).SetString(value, 10); !ok {
-		return err
-	}
-	return nil
+	return limit, page, nil
 }
 
 func (pagination offsetPagination) limitPlaceholder(builder *whereBuilder) string {
@@ -622,7 +446,7 @@ func parseIntakeStatuses(values []string) ([]int, error) {
 		if value == "null" {
 			continue
 		}
-		status, err := strconv.ParseInt(pythonNumericString(value), 10, 32)
+		status, err := strconv.ParseInt(value, 10, 32)
 		if err != nil {
 			return nil, ErrBadRequest
 		}
@@ -824,13 +648,25 @@ func addDateFilter(builder *whereBuilder, column, value, timezone string, timest
 		}
 		boundary := parts[0]
 		if days, relative := relativeDateDays(boundary); relative {
-			if len(parts) != 3 {
-				continue
+			if len(parts) != 3 || (parts[1] != "after" && parts[1] != "before") || parts[2] != "fromnow" {
+				return ErrInvalidDetail
 			}
-			if parts[2] != "fromnow" {
+			if parts[1] == "before" {
 				days = -days
 			}
-			boundary = now.UTC().AddDate(0, 0, days).Format(time.DateOnly)
+			location := time.UTC
+			if timezone != "" {
+				var err error
+				location, err = time.LoadLocation(timezone)
+				if err != nil {
+					return ErrInvalidDetail
+				}
+			}
+			date := now.In(location).AddDate(0, 0, days)
+			if date.Year() < 1 || date.Year() > 9999 {
+				return ErrInvalidDetail
+			}
+			boundary = date.Format(time.DateOnly)
 			if parts[1] == "after" {
 				after, hasAfter = boundary, true
 			} else {
@@ -905,12 +741,11 @@ func relativeDateDays(value string) (int, bool) {
 	} else {
 		return 0, false
 	}
-	number = normalizePythonDecimalDigits(number)
 	if !asciiDecimalDigits(number) {
 		return 0, false
 	}
 	duration, err := strconv.Atoi(number)
-	if err != nil {
+	if err != nil || duration > 9999*366/multiplier {
 		return 0, false
 	}
 	return duration * multiplier, true

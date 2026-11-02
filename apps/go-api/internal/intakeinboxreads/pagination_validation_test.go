@@ -19,7 +19,6 @@ func TestMalformedPaginationReturnsClientErrors(t *testing.T) {
 		{"unrepresentable page", "1000", "1000:999999999999999999999:0", ErrInvalidCursor},
 		{"overflowing offset", "1000", "1000:9223372036854776:0", ErrInvalidCursor},
 		{"overflowing page end", "1", "1:9223372036854775807:0", ErrInvalidCursor},
-		{"mismatched previous limit", "1000", "10:2:1", ErrInvalidCursor},
 		{"nonfinite cursor", "1000", "1.e999:0:0", ErrInvalidCursor},
 	} {
 		t.Run(test.name, func(t *testing.T) {
