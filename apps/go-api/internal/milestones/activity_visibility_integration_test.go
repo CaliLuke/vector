@@ -117,7 +117,7 @@ func (f activityReadFixture) checkNotifications(t *testing.T, db pgx.Tx, want in
 	result, err := repo.List(f.ctx, principal, "milestones", url.Values{"per_page": {"1"}, "cursor": {"1:0:0"}})
 	require.NoError(t, err)
 	page := result.(map[string]any)
-	require.Equal(t, int64(want), page["total_count"])
+	require.Equal(t, want, page["total_count"])
 	require.Equal(t, want == 2, page["next_page_results"])
 	require.Len(t, page["results"], 1)
 	counts, err := repo.Counts(f.ctx, principal, "milestones")
