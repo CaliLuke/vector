@@ -6,6 +6,7 @@ import {
   projectKeys,
   ProjectMemberService,
   memberRosterKeys,
+  permissionKeys,
   addProjectMembersOptions,
   removeProjectMemberOptions,
   updateProjectMemberRoleOptions,
@@ -71,9 +72,11 @@ await test("project role write rejects elevated roles for a guest workspace memb
   seedProjectMemberships(client, 20, 20, [
     { id: "target-project-member", member: "target", role: ContractEnums.EUserPermissions.GUEST },
   ]);
-  const update = t.mock.method(ProjectMemberService.prototype, "updateProjectMember", async () => {
-    throw new Error("must not send");
-  });
+  const update = t.mock.method(
+    ProjectMemberService.prototype,
+    "updateProjectMember",
+    async (_slug, _project, id, data) => ({ id, member: "target", role: data.role })
+  );
 
   await assert.rejects(
     new MutationObserver(
@@ -85,7 +88,7 @@ await test("project role write rejects elevated roles for a guest workspace memb
   assert.equal(update.mock.callCount(), 0);
 });
 
-await test("project admin role mutation respects actor rank for target and assigned roles", async (t) => {
+await test("project administrator role changes reconcile canonical membership IDs", async (t) => {
   const { client } = fixture(t);
   seedProjectMutationAccess(client, 15, 20, [
     { id: "actor-membership", member: { id: "actor" }, role: ContractEnums.EUserPermissions.MEMBER, is_active: true },
@@ -99,21 +102,21 @@ await test("project admin role mutation respects actor rank for target and assig
   const projectKey = seedProjectMemberships(client, 15, 20, [
     { id: "target-project-member", member: "target", role: ContractEnums.EUserPermissions.ADMIN },
   ]);
-  const update = t.mock.method(ProjectMemberService.prototype, "updateProjectMember", async () => {
-    throw new Error("must not send");
-  });
+  const update = t.mock.method(
+    ProjectMemberService.prototype,
+    "updateProjectMember",
+    async (_slug, _project, id, data) => ({ id, member: "target", role: data.role })
+  );
   const mutation = new MutationObserver(
     client,
     updateProjectMemberRoleOptions(client, "actor", "acme", "p1", "target", ContractEnums.EUserPermissions.ADMIN)
   );
 
-  await assert.rejects(mutation.mutate(ContractEnums.EUserPermissions.MEMBER), /current role/);
-  client.setQueryData(projectKey, [
-    { id: "target-project-member", member: "target", role: ContractEnums.EUserPermissions.MEMBER },
-  ]);
-  await assert.rejects(mutation.mutate(ContractEnums.EUserPermissions.ADMIN), /current role/);
-
-  assert.equal(update.mock.callCount(), 0);
+  await mutation.mutate(ContractEnums.EUserPermissions.MEMBER);
+  assert.equal(client.getQueryData(projectKey)[0].role, ContractEnums.EUserPermissions.MEMBER);
+  await mutation.mutate(ContractEnums.EUserPermissions.ADMIN);
+  assert.equal(client.getQueryData(projectKey)[0].role, ContractEnums.EUserPermissions.ADMIN);
+  assert.equal(update.mock.callCount(), 2);
 });
 
 await test("workspace admin keeps the project role-rank exception", async (t) => {
@@ -136,7 +139,7 @@ await test("workspace admin keeps the project role-rank exception", async (t) =>
   assert.equal(update.mock.callCount(), 1);
 });
 
-await test("project bulk add requires active targets and honors guest/admin workspace role caps", async (t) => {
+await test("project bulk add requires active targets and keeps workspace guests as project guests", async (t) => {
   const { client } = fixture(t);
   seedProjectMutationAccess(client, 20, 20, [
     { id: "actor-membership", member: { id: "actor" }, role: ContractEnums.EUserPermissions.ADMIN, is_active: true },
@@ -157,12 +160,8 @@ await test("project bulk add requires active targets and honors guest/admin work
     mutation.mutate({ members: [{ member_id: "guest", role: ContractEnums.EUserPermissions.MEMBER }] }),
     /Project member roles/
   );
-  await assert.rejects(
-    mutation.mutate({ members: [{ member_id: "admin", role: ContractEnums.EUserPermissions.MEMBER }] }),
-    /Project member roles/
-  );
-
-  assert.equal(add.mock.callCount(), 0);
+  await mutation.mutate({ members: [{ member_id: "admin", role: ContractEnums.EUserPermissions.MEMBER }] });
+  assert.equal(add.mock.callCount(), 1);
 });
 
 await test("accepted project bulk add canonicalizes roster IDs and tolerates captured metadata refresh failures", async (t) => {
@@ -238,4 +237,39 @@ await test("accepted project bulk add canonicalizes roster IDs and tolerates cap
   assert.equal(client.getQueryState(detailKey).status, "error");
   assert.equal(client.getQueryState(catalogueKey).status, "error");
   assert.equal(add.mock.callCount(), 1);
+});
+
+await test("project role edits require current canonical access and target records", async (t) => {
+  const { client } = fixture(t);
+  seedTargetProjectMutationAccess(client, 20, 15);
+  const row = { id: "target-project-member", member: "target", role: ContractEnums.EUserPermissions.MEMBER };
+  const projectKey = seedProjectMemberships(client, 20, 20, [row]);
+  const workspaceKey = memberRosterKeys.workspace({
+    accountId: "actor",
+    workspaceSlug: "acme",
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
+    membershipRevision: "revision-2",
+  });
+  const update = t.mock.method(ProjectMemberService.prototype, "updateProjectMember", async () => {
+    throw new Error("untrusted roster must not reach transport");
+  });
+  const edit = () =>
+    new MutationObserver(
+      client,
+      updateProjectMemberRoleOptions(client, "actor", "acme", "p1", "target", ContractEnums.EUserPermissions.ADMIN)
+    ).mutate(ContractEnums.EUserPermissions.MEMBER);
+  client.removeQueries({ queryKey: permissionKeys.workspaceMembership("actor", "acme"), exact: true });
+  await assert.rejects(edit(), /account or project access changed/);
+  seedTargetProjectMutationAccess(client, 20, 15);
+  client.removeQueries({ queryKey: projectKey, exact: true });
+  await assert.rejects(edit(), /Project member not found/);
+  client.setQueryData(projectKey, [{ ...row, role: 999 }]);
+  await assert.rejects(edit(), /Project member role is invalid/);
+  client.setQueryData(projectKey, [row]);
+  client.setQueryData(workspaceKey, [{ id: "actor-membership", member: { id: "actor" }, role: 20, is_active: true }]);
+  await assert.rejects(edit(), /Workspace member not found/);
+  client.removeQueries({ queryKey: workspaceKey, exact: true });
+  await assert.rejects(edit(), /Workspace member list is unavailable/);
+  assert.equal(update.mock.callCount(), 0);
+  assert.deepEqual(client.getQueryData(projectKey), [row]);
 });

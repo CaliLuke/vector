@@ -15,7 +15,12 @@ import type {
   TProjectMembership,
   TUserPermissions,
 } from "@plane/types";
-import { effectiveProjectRole, isWorkspaceRole } from "@/helpers/permission-policy";
+import {
+  effectiveProjectRole,
+  isWorkspaceRole,
+  canAssignProjectMemberRole,
+  projectRoleAllowedForWorkspace,
+} from "@/helpers/permission-policy";
 import {
   captureIdentityScope,
   getIdentitySessionGeneration,
@@ -180,46 +185,6 @@ async function refreshProjectMetadata(
   );
 }
 
-function canChangeProjectMemberRole(
-  actorId: string | undefined,
-  targetId: string,
-  actorWorkspaceRole: EUserWorkspaceRoles | undefined,
-  projectRole: TUserPermissions | undefined,
-  targetWorkspaceRole: TUserPermissions | EUserWorkspaceRoles | undefined
-) {
-  return (
-    (actorWorkspaceRole === EUserWorkspaceRoles.ADMIN && actorId === targetId) ||
-    (projectRole === EUserPermissions.ADMIN &&
-      actorId !== targetId &&
-      targetWorkspaceRole !== undefined &&
-      targetWorkspaceRole !== EUserPermissions.ADMIN)
-  );
-}
-
-function canAssignProjectMemberRole(
-  actorId: string | undefined,
-  memberId: string,
-  actorWorkspaceRole: EUserWorkspaceRoles | undefined,
-  projectRole: TUserPermissions,
-  targetProjectRole: TUserPermissions,
-  requestedRole: TUserPermissions,
-  targetWorkspaceRole: TUserPermissions | EUserWorkspaceRoles
-) {
-  const canEditTarget = canChangeProjectMemberRole(
-    actorId,
-    memberId,
-    actorWorkspaceRole,
-    projectRole,
-    targetWorkspaceRole
-  );
-  const actorRankAllowsChange =
-    actorWorkspaceRole === EUserWorkspaceRoles.ADMIN ||
-    (targetProjectRole < projectRole && requestedRole < projectRole);
-  const workspaceRoleAllowsAssignment =
-    targetWorkspaceRole !== EUserWorkspaceRoles.GUEST || requestedRole === EUserPermissions.GUEST;
-  return canEditTarget && actorRankAllowsChange && workspaceRoleAllowsAssignment;
-}
-
 function activeWorkspaceMembers(
   client: QueryClient,
   accountId: string | undefined,
@@ -249,22 +214,6 @@ const PROJECT_ROLE_BY_VALUE: ReadonlyMap<number, TUserPermissions> = new Map([
 
 function normalizeProjectRole(role: TUserPermissions): TUserPermissions | undefined {
   return PROJECT_ROLE_BY_VALUE.get(role);
-}
-
-function projectRoleAllowedForWorkspace(
-  role: TUserPermissions,
-  workspaceRole: TUserPermissions,
-  projectRole: TUserPermissions
-) {
-  const normalizedRole = normalizeProjectRole(role);
-  const normalizedWorkspaceRole = normalizeProjectRole(workspaceRole);
-  return (
-    normalizedRole !== undefined &&
-    normalizedWorkspaceRole !== undefined &&
-    normalizedRole <= projectRole &&
-    ((normalizedWorkspaceRole !== EUserPermissions.GUEST && normalizedWorkspaceRole !== EUserPermissions.ADMIN) ||
-      normalizedRole === normalizedWorkspaceRole)
-  );
 }
 
 export function addProjectMembersOptions(
@@ -358,7 +307,6 @@ export function updateProjectMemberRoleOptions(
           memberId,
           captured.membershipRole,
           projectRole,
-          targetProjectRole,
           role,
           targetWorkspaceRole
         )

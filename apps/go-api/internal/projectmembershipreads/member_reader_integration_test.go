@@ -39,10 +39,10 @@ func projectRosterDatabase(t *testing.T) *pgx.Conn {
 	return conn
 }
 
-func primaryRosterRepository(t *testing.T, db database) *LifecycleRepository {
+func primaryRosterRepository(t *testing.T, db membershipDatabase) *LifecycleRepository {
 	t.Helper()
 	replica := &databaseStub{row: rowFunc(func(...any) error { return errors.New("project roster must not use a replica") })}
-	repository, err := NewLifecycleRepositoryWithReaderWriter(replica, db, &lifecycleTaskSpy{}, "http://localhost:8000")
+	repository, err := NewLifecycleRepositoryWithReaderWriter(replica, db, "http://localhost:8000")
 	require.NoError(t, err)
 	return repository
 }

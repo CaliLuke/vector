@@ -99,7 +99,7 @@ export class WorkspaceService extends APIService {
   async updateWorkspaceMember(
     workspaceSlug: string,
     memberId: string,
-    data: Partial<IWorkspaceMember>
+    data: Pick<IWorkspaceMember, "role">
   ): Promise<IWorkspaceMember> {
     return this.responseData(this.patch(`/api/workspaces/${workspaceSlug}/members/${memberId}/`, data));
   }

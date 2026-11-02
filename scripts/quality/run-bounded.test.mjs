@@ -80,10 +80,11 @@ void test("one delayed memory sample recovers without rejecting the child", (t) 
   assert.match(result.stderr, /memory sample timed out; retrying once/);
 });
 
-void test("repeated memory sampling timeouts fail closed", (t) => {
+void test("repeated memory sampling timeouts fail closed with bounded diagnostics", (t) => {
   const result = runWithUnavailableSamples(t, 2, { childDuration: 60_000 });
   assert.equal(result.status, 125, result.stderr);
   assert.match(result.stderr, /memory monitoring failed/);
+  assert.match(result.stderr, /sampleMs=\d+, stdoutBytes=\d+, stderrBytes=\d+/);
 });
 
 void test("a timed-out memory inspector with pending output gets one retry", (t) => {

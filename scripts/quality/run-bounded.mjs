@@ -108,8 +108,12 @@ function stop(code, reason) {
   signalGroup("SIGTERM");
   forceTimer = setTimeout(() => signalGroup("SIGKILL"), 500);
 }
+// Darwin's comm resolves argv through KERN_PROCARGS2. Its accounting name
+// comes from kernel process metadata and is sufficient for sanitized diagnostics.
+// https://github.com/apple-oss-distributions/adv_cmds/blob/main/ps/keyword.c
+const processNameColumn = process.platform === "darwin" ? "ucomm" : "comm";
 async function groupMemory() {
-  const { stdout } = await execFileAsync("ps", ["-axo", "pid=,ppid=,pgid=,rss=,comm="], {
+  const { stdout } = await execFileAsync("ps", ["-axo", `pid=,ppid=,pgid=,rss=,${processNameColumn}=`], {
     timeout: 2000,
     // Inspectors have no domain work to drain. A soft signal can leave memory
     // monitoring suspended indefinitely while waiting for the inspector to exit.
@@ -158,9 +162,14 @@ function reportMemoryFailure(usage) {
   );
 }
 
+function sampleFailureDetails(error, started) {
+  return `code=${error.code ?? "unknown"}, killed=${Boolean(error.killed)}, signal=${error.signal ?? "none"}, sampleMs=${Math.round(performance.now() - started)}, stdoutBytes=${Buffer.byteLength(error.stdout ?? "")}, stderrBytes=${Buffer.byteLength(error.stderr ?? "")}`;
+}
+
 async function checkMemory() {
   if (monitoring || finished) return;
   monitoring = true;
+  const sampleStarted = performance.now();
   try {
     const usage = await groupMemory();
     sampleFailures = 0;
@@ -180,13 +189,10 @@ async function checkMemory() {
     const timedOut = error.killed && error.code === null;
     if ((timedOut || error.code === "NO_PROCESS_TREE") && sampleFailures++ === 0) {
       const reason = timedOut ? "memory sample timed out" : "child tree missing from memory sample";
-      process.stderr.write(`[bounded] ${reason}; retrying once\n`);
+      process.stderr.write(`[bounded] ${reason}; retrying once (${sampleFailureDetails(error, sampleStarted)})\n`);
       return;
     }
-    stop(
-      125,
-      `memory monitoring failed (code=${error.code ?? "unknown"}, killed=${Boolean(error.killed)}, signal=${error.signal ?? "none"})`
-    );
+    stop(125, `memory monitoring failed (${sampleFailureDetails(error, sampleStarted)})`);
   } finally {
     monitoring = false;
   }

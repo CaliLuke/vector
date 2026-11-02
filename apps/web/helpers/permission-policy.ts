@@ -51,3 +51,45 @@ export function evaluateProjectPermission(
   const role = effectiveProjectRole(workspaceRole, projectRoles, projectId);
   return role !== undefined && allowedRoles.includes(role);
 }
+
+function isProjectRole(value: unknown): value is TUserPermissions {
+  return typeof value === "number" && VALID_ROLES.has(value);
+}
+
+export function canChangeProjectMemberRole(
+  actorId: string | undefined,
+  targetId: string,
+  workspaceRole: unknown,
+  projectRole: unknown,
+  targetWorkspaceRole: unknown
+) {
+  if (!actorId || !isProjectRole(projectRole) || !isWorkspaceRole(targetWorkspaceRole)) return false;
+  return (
+    workspaceRole === EUserWorkspaceRoles.ADMIN ||
+    (workspaceRole === EUserWorkspaceRoles.MEMBER && projectRole === EUserPermissions.ADMIN && actorId !== targetId)
+  );
+}
+
+export function projectRoleAllowedForWorkspace(role: unknown, workspaceRole: unknown, projectRole: unknown) {
+  return (
+    isProjectRole(role) &&
+    isWorkspaceRole(workspaceRole) &&
+    isProjectRole(projectRole) &&
+    role <= projectRole &&
+    (workspaceRole !== EUserWorkspaceRoles.GUEST || role === EUserPermissions.GUEST)
+  );
+}
+
+export function canAssignProjectMemberRole(
+  actorId: string | undefined,
+  memberId: string,
+  workspaceRole: unknown,
+  projectRole: unknown,
+  requestedRole: unknown,
+  targetWorkspaceRole: unknown
+) {
+  return (
+    canChangeProjectMemberRole(actorId, memberId, workspaceRole, projectRole, targetWorkspaceRole) &&
+    projectRoleAllowedForWorkspace(requestedRole, targetWorkspaceRole, projectRole)
+  );
+}

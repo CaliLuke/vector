@@ -180,7 +180,7 @@ func databaseApplications(t *testing.T, pool *pgxpool.Pool) mcpactions.Applicati
 	require.NoError(t, err)
 	reader, err := useridentity.NewIdentityReader(repository)
 	require.NoError(t, err)
-	projectRepository, err := projectmembershipreads.NewLifecycleRepository(pool, rosterPublisher{}, "https://vector.example")
+	projectRepository, err := projectmembershipreads.NewLifecycleRepository(pool, "https://vector.example")
 	require.NoError(t, err)
 	projectReader, err := projectmembershipreads.NewMemberReader(projectRepository)
 	require.NoError(t, err)

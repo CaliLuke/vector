@@ -105,8 +105,23 @@ Membership invitation operations live in `internal/projectmembershipreads`.
 reads, creation, acceptance/join, and updates each have a separate file.
 `workspace_member_mutations.go` owns workspace member changes, while
 `membership_insert.go` shares membership persistence and `invitations_fields.go`
-shares field validation. Each operation retains its authorization, transaction,
-and effect boundaries.
+shares field validation. Role changes, bulk project additions, removal and departure use a shared native
+transaction boundary. They serialize with account deactivation, recheck active
+workspace/project permissions after waiting, and retain workspace and project
+administrators through commit. Workspace guest changes cascade to project roles
+in that transaction. Membership identity, tenant and audit fields cannot be changed through a member
+patch. Project additions, properties and email intents commit together;
+existing active members do not receive another addition email.
+Single and bulk project writes return the same membership shape with a member
+UUID, so the app can reconcile its cached roster. The project role dropdown and
+mutation guards share `helpers/permission-policy.ts`. Confirmed administrator
+access permits project role management; workspace guests remain project guests,
+and a project administrator uses the leave action for their own membership.
+Workspace administrators can change their own project role when another project
+administrator remains.
+
+Invitation acceptance and post-login joins still have separate write boundaries;
+the debt catalog tracks their replacement.
 
 | Path          | Purpose                                       |
 | ------------- | --------------------------------------------- |

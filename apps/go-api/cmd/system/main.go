@@ -1116,7 +1116,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	}
 	moduleLifecycleEndpoints := modulelifecycleapi.NewEndpoints(moduleLifecycleService)
 	moduleLifecycleEndpoints.Use(log.Endpoint)
-	membershipRepository, err := projectmembershipreadsstore.NewLifecycleRepositoryWithReaderWriter(activityReadsPool, pool, notificationTaskPublisher, membershipBaseHost)
+	membershipRepository, err := projectmembershipreadsstore.NewLifecycleRepositoryWithReaderWriter(activityReadsPool, pool, membershipBaseHost)
 	if err != nil {
 		return err
 	}

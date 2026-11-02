@@ -161,6 +161,10 @@ func TestDeactivationAdministratorResponsibilities(t *testing.T) {
 	// Historical admin rows confer no responsibility. A solo member may leave
 	// their account disabled without being forced to delete owned resources.
 	f.exec(t, `UPDATE instance_admins SET deleted_at=now() WHERE user_id=$1`, f.user)
+	f.exec(t, `UPDATE project_members SET role=20 WHERE member_id=$1`, f.foreign)
+	f.exec(t, `UPDATE users SET is_active=false WHERE id=$1`, f.foreign)
+	require.ErrorAs(t, f.repo.Deactivate(f.ctx, f.user, f.session, "https://vector.example.test", ""), &blocker)
+	require.Contains(t, blocker.Error(), "projects", "inactive accounts cannot cover an administrator responsibility")
 	f.exec(t, `UPDATE project_members SET is_active=false WHERE member_id<>$1`, f.user)
 	f.exec(t, `UPDATE workspace_members SET is_active=false WHERE member_id<>$1`, f.user)
 	require.NoError(t, f.repo.Deactivate(f.ctx, f.user, f.session, "https://vector.example.test", ""))

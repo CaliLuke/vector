@@ -168,66 +168,6 @@ func TestProjectInviteBatchRejectsInvalidRoleBeforeAnyInsertOrTask(t *testing.T)
 		t.Fatalf("invalid batch mutated database or queue: begin=%d exec=%d tasks=%v", db.beginCount, db.execCount, publisher.tasks)
 	}
 }
-func invitationMemberDB() *invitationTestDB {
-	return &invitationTestDB{databaseStub: databaseStub{row: rowFunc(func(dest ...any) error {
-		*dest[0].(*string) = "membership"
-		*dest[1].(*string) = "target"
-		*dest[2].(*string) = "workspace"
-		*dest[3].(*int) = 15
-		return nil
-	})}}
-}
-func TestWorkspaceGuestDemotionValidatesWholePayloadBeforeCascade(t *testing.T) {
-	db := invitationMemberDB()
-	repository := &InvitationsRepository{reader: db, writer: db, publisher: &invitationTaskSpy{}}
-	_, err := repository.Invitation(context.Background(), InvitationCommand{Operation: "member-patch", Slug: "workspace", ID: "membership", UserID: "owner", ContentType: "application/json", Body: strings.NewReader(`{"role":5,"is_active":"not-a-boolean"}`)})
-	var failure *apicontract.HTTPError
-	if !errors.As(err, &failure) || failure.Status != 400 || failure.Body["is_active"] == nil {
-		t.Fatalf("error=%v", err)
-	}
-	if db.beginCount != 0 || db.execCount != 0 {
-		t.Fatalf("invalid patch reached cascade: begin=%d exec=%d", db.beginCount, db.execCount)
-	}
-}
-
-type invitationRollbackTx struct {
-	pgx.Tx
-	pendingRole int
-	projectRole int
-	committed   bool
-	rolledBack  bool
-}
-
-func (tx *invitationRollbackTx) Exec(_ context.Context, query string, _ ...any) (pgconn.CommandTag, error) {
-	if strings.HasPrefix(query, "UPDATE project_members") {
-		tx.pendingRole = 5
-		return pgconn.NewCommandTag("UPDATE 1"), nil
-	}
-	return pgconn.CommandTag{}, errors.New("injected member save failure")
-}
-func (tx *invitationRollbackTx) Commit(context.Context) error {
-	tx.committed = true
-	tx.projectRole = tx.pendingRole
-	return nil
-}
-func (tx *invitationRollbackTx) Rollback(context.Context) error {
-	tx.rolledBack = true
-	tx.pendingRole = tx.projectRole
-	return nil
-}
-func TestWorkspaceGuestDemotionRollsBackCascadeIfMemberSaveFails(t *testing.T) {
-	tx := &invitationRollbackTx{projectRole: 15, pendingRole: 15}
-	db := invitationMemberDB()
-	db.tx = tx
-	repository := &InvitationsRepository{reader: db, writer: db, publisher: &invitationTaskSpy{}}
-	_, err := repository.Invitation(context.Background(), InvitationCommand{Operation: "member-patch", Slug: "workspace", ID: "membership", UserID: "owner", ContentType: "application/json", Body: strings.NewReader(`{"role":5}`)})
-	if err == nil || !strings.Contains(err.Error(), "injected member save failure") {
-		t.Fatalf("error=%v", err)
-	}
-	if tx.committed || !tx.rolledBack || tx.pendingRole != 15 || tx.projectRole != 15 {
-		t.Fatalf("cascade did not roll back: %+v", tx)
-	}
-}
 func TestPublicWorkspaceJoinChecksTokenBeforeAuthentication(t *testing.T) {
 	db := &invitationTestDB{databaseStub: databaseStub{row: rowFunc(func(dest ...any) error {
 		*dest[0].(*string) = "correct"
@@ -421,44 +361,6 @@ func TestWorkspaceInvitePatchReturnsUpdatedTombstonedInstance(t *testing.T) {
 	}
 }
 
-func TestWorkspaceMemberPatchAggregatesFieldErrorsWithoutCascade(t *testing.T) {
-	db := invitationMemberDB()
-	repository := &InvitationsRepository{reader: db, writer: db, publisher: &invitationTaskSpy{}}
-	_, err := repository.Invitation(context.Background(), InvitationCommand{Operation: "member-patch", ID: "membership", UserID: "owner", ContentType: "application/json", Body: strings.NewReader(`{"role":6,"is_active":"invalid","default_props":null}`)})
-	var failure *apicontract.HTTPError
-	if !errors.As(err, &failure) || failure.Status != 400 {
-		t.Fatalf("error=%v", err)
-	}
-	if len(failure.Body) != 3 || failure.Body["role"] == nil || failure.Body["is_active"] == nil || failure.Body["default_props"] == nil {
-		t.Fatalf("errors=%v", failure.Body)
-	}
-	if db.beginCount != 0 || db.execCount != 0 {
-		t.Fatalf("invalid payload wrote data: begin=%d exec=%d", db.beginCount, db.execCount)
-	}
-}
-func TestWorkspaceMemberPatchValidatesRelatedFieldsBeforeSaving(t *testing.T) {
-	db := invitationMemberDB()
-	memberRow := db.row
-	db.row = rowFunc(func(dest ...any) error {
-		if len(dest) == 1 {
-			*dest[0].(*bool) = false
-			return nil
-		}
-		return memberRow.Scan(dest...)
-	})
-	repository := &InvitationsRepository{reader: db, writer: db, publisher: &invitationTaskSpy{}}
-	_, err := repository.Invitation(context.Background(), InvitationCommand{Operation: "member-patch", ID: "membership", UserID: "owner", ContentType: "application/json", Body: strings.NewReader(`{"role":5,"created_by":"00000000-0000-4000-8000-000000000001","updated_by":"00000000-0000-4000-8000-000000000002","workspace":"00000000-0000-4000-8000-000000000003"}`)})
-	var failure *apicontract.HTTPError
-	if !errors.As(err, &failure) || failure.Status != 400 {
-		t.Fatalf("error=%v", err)
-	}
-	if len(failure.Body) != 3 || failure.Body["created_by"] == nil || failure.Body["updated_by"] == nil || failure.Body["workspace"] == nil {
-		t.Fatalf("errors=%v", failure.Body)
-	}
-	if db.beginCount != 0 || db.execCount != 0 {
-		t.Fatal("invalid relation reached cascade or save")
-	}
-}
 func TestWorkspaceInvitePatchValidatesUpdaterThenUsesAuthenticatedActor(t *testing.T) {
 	db := &invitationTestDB{}
 	actor := "00000000-0000-4000-8000-000000000001"
@@ -497,22 +399,6 @@ func TestV1WorkspaceLookupPrecedesMalformedCreateBody(t *testing.T) {
 	}
 }
 
-func TestWorkspaceMemberPatchReturnsSourceMalformedUUIDFieldError(t *testing.T) {
-	db := invitationMemberDB()
-	repository := &InvitationsRepository{reader: db, writer: db, publisher: &invitationTaskSpy{}}
-	_, err := repository.Invitation(context.Background(), InvitationCommand{Operation: "member-patch", ID: "membership", UserID: "owner", ContentType: "application/json", Body: strings.NewReader(`{"created_by":"not-a-uuid"}`)})
-	var failure *apicontract.HTTPError
-	if !errors.As(err, &failure) || failure.Status != 400 {
-		t.Fatalf("error=%v", err)
-	}
-	messages, ok := failure.Body["created_by"].([]string)
-	if !ok || len(messages) != 1 || messages[0] != "“not-a-uuid” is not a valid UUID." {
-		t.Fatalf("errors=%v", failure.Body)
-	}
-	if db.beginCount != 0 || db.execCount != 0 {
-		t.Fatal("invalid related UUID wrote data")
-	}
-}
 func TestV1InviteCreateAggregatesSerializerErrors(t *testing.T) {
 	db := &invitationTestDB{databaseStub: databaseStub{row: rowFunc(func(dest ...any) error { *dest[0].(*string) = "workspace"; return nil })}}
 	repository := &InvitationsRepository{reader: db, writer: db, publisher: &invitationTaskSpy{}}

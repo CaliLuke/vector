@@ -7778,10 +7778,10 @@
       "branches": 0
     },
     "core/components/project/settings/member-columns.tsx": {
-      "lines": 75.86,
-      "statements": 74.19,
-      "functions": 50,
-      "branches": 52
+      "lines": 90,
+      "statements": 85.71,
+      "functions": 87.5,
+      "branches": 60
     },
     "core/components/projects/create/root.tsx": {
       "lines": 87.5,
@@ -10916,10 +10916,10 @@
       "branches": 95.65
     },
     "core/queries/project-member-mutations.ts": {
-      "lines": 96.15,
-      "statements": 90.08,
+      "lines": 97.91,
+      "statements": 93.8,
       "functions": 100,
-      "branches": 80.85
+      "branches": 89.18
     },
     "core/queries/project-publishing.ts": {
       "lines": 63.15,

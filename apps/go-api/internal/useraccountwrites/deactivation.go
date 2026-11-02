@@ -73,11 +73,13 @@ func deactivationBlocker(ctx context.Context, tx pgx.Tx, userID uuid.UUID) (stri
  THEN 'You cannot deactivate your account since you are an instance admin'
  WHEN EXISTS(SELECT 1 FROM project_members mine
   JOIN project_members members ON members.project_id=mine.project_id AND members.is_active AND members.deleted_at IS NULL
+  JOIN users member_user ON member_user.id=members.member_id AND member_user.is_active
   WHERE mine.member_id=$1 AND mine.role=20 AND mine.is_active AND mine.deleted_at IS NULL
   GROUP BY mine.id HAVING count(*)>1 AND count(*) FILTER(WHERE members.role=20 AND members.member_id<>mine.member_id)=0)
  THEN 'You cannot deactivate account as you are the only admin in some projects.'
  WHEN EXISTS(SELECT 1 FROM workspace_members mine
   JOIN workspace_members members ON members.workspace_id=mine.workspace_id AND members.is_active AND members.deleted_at IS NULL
+  JOIN users member_user ON member_user.id=members.member_id AND member_user.is_active
   WHERE mine.member_id=$1 AND mine.role=20 AND mine.is_active AND mine.deleted_at IS NULL
   GROUP BY mine.id HAVING count(*)>1 AND count(*) FILTER(WHERE members.role=20 AND members.member_id<>mine.member_id)=0)
  THEN 'You cannot deactivate account as you are the only admin in some workspaces.'

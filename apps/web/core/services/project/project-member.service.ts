@@ -41,7 +41,7 @@ export class ProjectMemberService extends APIService {
     workspaceSlug: string,
     projectId: string,
     memberId: string,
-    data: Partial<TProjectMembership>
+    data: Pick<TProjectMembership, "role">
   ): Promise<TProjectMembership> {
     return this.responseData(
       this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/${memberId}/`, data)

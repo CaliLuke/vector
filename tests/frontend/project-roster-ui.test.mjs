@@ -175,7 +175,7 @@ async function renderWithNativeQueryContext(fixture, element) {
   await fixture.render(element);
 }
 
-await test("project member role picker caps requested roles below a project-admin actor", async (t) => {
+await test("project administrator can delegate project administrator access", async (t) => {
   const fixture = await createProjectAdminFixture(t);
   await renderWithNativeQueryContext(
     fixture,
@@ -192,7 +192,27 @@ await test("project member role picker caps requested roles below a project-admi
   const roleOptions = [...document.querySelectorAll('[data-testid="role-selector"] option')].map(
     (option) => option.value
   );
-  assert.deepEqual(roleOptions, ["5", "15"]);
+  assert.deepEqual(roleOptions, ["5", "15", "20"]);
+  const update = t.mock.method(
+    ProjectMemberService.prototype,
+    "updateProjectMember",
+    async (_slug, _project, id, data) => ({
+      id,
+      member: "bob",
+      role: data.role,
+      original_role: data.role,
+      created_at: "2026-02-01T00:00:00Z",
+    })
+  );
+  await act(async () => select("role-selector", EUserProjectRoles.ADMIN));
+  await settleQuery();
+  assert.equal(update.mock.callCount(), 1);
+  assert.deepEqual(update.mock.calls[0].arguments, [
+    "acme",
+    "project-1",
+    "membership-bob",
+    { role: EUserProjectRoles.ADMIN },
+  ]);
 });
 
 async function verifyRoleWriteFailure(label, failure, expectedMessage) {

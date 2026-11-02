@@ -47,11 +47,15 @@ export class WorkspaceMemberService extends APIService {
    * Updates a workspace member's information
    * @param {string} workspaceSlug - The unique slug identifier for the workspace
    * @param {string} memberId - The unique identifier for the member
-   * @param {Partial<IWorkspaceMember>} data - Updated member data
+   * @param {Pick<IWorkspaceMember, "role">} data - Updated member data
    * @returns {Promise<IWorkspaceMember>} Promise resolving to the updated member information
    * @throws {Error} If the API request fails
    */
-  async update(workspaceSlug: string, memberId: string, data: Partial<IWorkspaceMember>): Promise<IWorkspaceMember> {
+  async update(
+    workspaceSlug: string,
+    memberId: string,
+    data: Pick<IWorkspaceMember, "role">
+  ): Promise<IWorkspaceMember> {
     return this.responseData(this.patch(`/api/workspaces/${workspaceSlug}/members/${memberId}/`, data));
   }
 

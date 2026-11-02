@@ -120,9 +120,6 @@ func (s *projectMembershipLifecycleService) execute(ctx context.Context, method,
 	}
 	result, err := s.executeAuthorized(ctx, command)
 	if err != nil {
-		if errors.Is(err, store.ErrLifecycleRendering) {
-			MarkReadServiceDjangoHTML500(ctx)
-		}
 		return nil, projectMembershipLifecycleMapError(err)
 	}
 	return activityTimestamps(result, principal.Timezone), nil

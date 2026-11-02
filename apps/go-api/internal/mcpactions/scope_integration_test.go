@@ -69,7 +69,7 @@ func memberFixtureWithScopeChange(t *testing.T, f fixture, pool *pgxpool.Pool, m
 	require.NoError(t, err)
 	identity, err := useridentity.NewIdentityReader(repo)
 	require.NoError(t, err)
-	members, err := membership.NewLifecycleRepository(pool, rosterPublisher{}, "https://vector.example")
+	members, err := membership.NewLifecycleRepository(pool, "https://vector.example")
 	require.NoError(t, err)
 	memberReader, err := membership.NewMemberReader(members)
 	require.NoError(t, err)

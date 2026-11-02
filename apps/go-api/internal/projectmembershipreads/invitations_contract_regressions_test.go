@@ -105,29 +105,8 @@ func TestInvitationReadsAndDeletesIgnoreUnusedRequestBodies(t *testing.T) {
 	}
 }
 
-func TestInvitationLeaveIgnoresUnusedRequestBody(t *testing.T) {
-	db := &invitationTestDB{databaseStub: databaseStub{row: rowFunc(func(dest ...any) error {
-		if len(dest) == 4 {
-			*dest[0].(*string) = "membership"
-			*dest[1].(*string) = "actor"
-			*dest[2].(*string) = "workspace"
-			*dest[3].(*int) = 15
-		} else {
-			*dest[0].(*bool) = false
-		}
-		return nil
-	})}}
-	repository := &InvitationsRepository{reader: db, writer: db, publisher: &invitationTaskSpy{}}
-	if _, err := repository.Invitation(context.Background(), InvitationCommand{Operation: "member-leave", UserID: "actor", Body: unreadInvitationBody{t}, ContentType: "text/plain"}); err != nil {
-		t.Fatal(err)
-	}
-	if db.execCount != 2 {
-		t.Fatalf("leave did not deactivate both memberships: writes=%d", db.execCount)
-	}
-}
-
 func TestInvitationTargetLookupPrecedesRequestDataParsing(t *testing.T) {
-	for _, operation := range []string{"workspace-patch", "workspace-join", "project-join", "member-patch", "v1-put"} {
+	for _, operation := range []string{"workspace-patch", "workspace-join", "project-join", "v1-put"} {
 		for _, media := range []string{"application/json", "text/plain"} {
 			t.Run(operation+"/"+media, func(t *testing.T) {
 				db := &invitationTestDB{databaseStub: databaseStub{row: rowFunc(func(...any) error { return pgx.ErrNoRows })}}
@@ -142,20 +121,6 @@ func TestInvitationTargetLookupPrecedesRequestDataParsing(t *testing.T) {
 				}
 			})
 		}
-	}
-}
-
-func TestInvitationSelfEditPrecedesRequestDataParsing(t *testing.T) {
-	for _, media := range []string{"application/json", "text/plain"} {
-		t.Run(media, func(t *testing.T) {
-			db := invitationMemberDB()
-			repository := &InvitationsRepository{reader: db, writer: db, publisher: &invitationTaskSpy{}}
-			_, err := repository.Invitation(context.Background(), InvitationCommand{Operation: "member-patch", ID: "membership", UserID: "target", ContentType: media, Body: strings.NewReader("{")})
-			var failure *apicontract.HTTPError
-			if !errors.As(err, &failure) || failure.Status != 400 || failure.Body["error"] != "You cannot update your own role" || db.beginCount != 0 || db.execCount != 0 {
-				t.Fatalf("error=%v transactions=%d writes=%d", err, db.beginCount, db.execCount)
-			}
-		})
 	}
 }
 
@@ -315,11 +280,11 @@ func TestWorkspaceInvitationInvalidEmailPreservesPythonRepresentation(t *testing
 }
 
 func TestInvitationNonObjectJSONFollowsOperationSourceAccess(t *testing.T) {
-	for _, operation := range []string{"v1-create", "v1-patch", "v1-put", "workspace-patch", "member-patch"} {
+	for _, operation := range []string{"v1-create", "v1-patch", "v1-put", "workspace-patch"} {
 		for _, body := range []string{`null`, `[]`, `"other"`, `"role"`, `["role"]`, `17`, `17.5`, `true`} {
 			t.Run(operation+"/"+body, func(t *testing.T) {
 				want := 500
-				if operation == "v1-create" || operation == "workspace-patch" || operation == "member-patch" && (body == `[]` || body == `"other"`) {
+				if operation == "v1-create" || operation == "workspace-patch" {
 					want = 400
 				}
 				db := &invitationTestDB{databaseStub: databaseStub{row: rowFunc(func(dest ...any) error {

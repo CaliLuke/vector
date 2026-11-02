@@ -338,8 +338,8 @@
       "percent": 0
     },
     "github.com/CaliLuke/go-plane/internal/projectmembershipreads": {
-      "statements": 1575,
-      "percent": 69.24
+      "statements": 1311,
+      "percent": 69.41
     },
     "github.com/CaliLuke/go-plane/internal/projectmutations": {
       "statements": 101,
@@ -690,6 +690,18 @@
     "github.com/CaliLuke/go-plane/internal/pagereads/lifecycle_update.go": {
       "statements": 98,
       "percent": 84.69
+    },
+    "github.com/CaliLuke/go-plane/internal/projectmembershipreads/member_mutation.go": {
+      "statements": 41,
+      "percent": 80.49
+    },
+    "github.com/CaliLuke/go-plane/internal/projectmembershipreads/project_member_mutations.go": {
+      "statements": 166,
+      "percent": 90.36
+    },
+    "github.com/CaliLuke/go-plane/internal/projectmembershipreads/workspace_member_mutations.go": {
+      "statements": 47,
+      "percent": 80.85
     },
     "github.com/CaliLuke/go-plane/internal/useraccountwrites/deactivation.go": {
       "statements": 33,

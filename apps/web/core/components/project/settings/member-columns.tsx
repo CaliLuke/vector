@@ -9,9 +9,10 @@ import { Disclosure } from "@headlessui/react";
 // plane imports
 import { ROLE, EUserPermissions, MEMBER_TRACKER_ELEMENTS } from "@plane/constants";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import { EUserProjectRoles, EUserWorkspaceRoles } from "@plane/types";
+import { EUserProjectRoles } from "@plane/types";
 import type { IWorkspaceMember, IUser, IUserLite, TProjectMembership, TUserPermissions } from "@plane/types";
 import { CustomMenu, CustomSelect } from "@plane/ui";
+import { canChangeProjectMemberRole, canAssignProjectMemberRole } from "@/helpers/permission-policy";
 import { MemberProfileAvatar } from "@/components/common/member-profile-avatar";
 // hooks
 import { useProjectPermissions } from "@/hooks/use-permissions";
@@ -93,37 +94,25 @@ export function AccountTypeColumn(props: AccountTypeProps) {
   const roleMutation = useUpdateProjectMemberRole(workspaceSlug, projectId, rowData.member.id, currentProjectRole);
   // derived values
   const roleLabel = ROLE[rowData.original_role ?? EUserPermissions.GUEST];
-  const isCurrentUser = currentUser?.id === rowData.member.id;
-  const isRowDataWorkspaceAdmin = rowData.workspaceRole === EUserWorkspaceRoles.ADMIN;
-  const isRowDataWorkspaceGuest = rowData.workspaceRole === EUserWorkspaceRoles.GUEST;
-  const isCurrentUserWorkspaceAdmin = workspaceRole === EUserWorkspaceRoles.ADMIN;
-  const isCurrentUserProjectAdmin = currentProjectRole === EUserPermissions.ADMIN;
-  const currentProjectRoleValue =
-    currentProjectRole === undefined ? undefined : Number.parseInt(String(currentProjectRole), 10);
-  const memberProjectRoleValue = Number.parseInt(String(rowData.original_role ?? EUserPermissions.GUEST), 10);
 
-  // logic
-  // Workspace admin can change his own role
-  // Project admin can change any role except his own and workspace admin's role
-  const isRoleEditable =
-    currentProjectRole !== undefined &&
-    ((isCurrentUserWorkspaceAdmin && isCurrentUser) ||
-      (isCurrentUserProjectAdmin &&
-        !isRowDataWorkspaceAdmin &&
-        !isCurrentUser &&
-        memberProjectRoleValue < (currentProjectRoleValue ?? 0)));
-  const allowedRoles = Object.entries(ROLE).filter(([key]) => {
-    const role = Number(key);
-    if (isRowDataWorkspaceGuest) return key === String(EUserPermissions.GUEST);
-    if (isCurrentUserWorkspaceAdmin && isCurrentUser) return true;
-    return (
-      isCurrentUserProjectAdmin &&
-      !isRowDataWorkspaceAdmin &&
-      !isCurrentUser &&
-      memberProjectRoleValue < (currentProjectRoleValue ?? 0) &&
-      role < (currentProjectRoleValue ?? 0)
-    );
-  });
+  const isRoleEditable = canChangeProjectMemberRole(
+    currentUser?.id,
+    rowData.member.id,
+    workspaceRole,
+    currentProjectRole,
+    rowData.workspaceRole
+  );
+  const allowedRoles = Object.entries(ROLE).filter(([key]) =>
+    canAssignProjectMemberRole(
+      currentUser?.id,
+      rowData.member.id,
+      workspaceRole,
+      currentProjectRole,
+      Number(key),
+      rowData.workspaceRole
+    )
+  );
+
   return (
     <>
       {isRoleEditable ? (

@@ -4,8 +4,15 @@ import { EUserPermissions, EUserProjectRoles, EUserWorkspaceRoles } from "../../
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
-const { evaluateWorkspacePermission, evaluateProjectPermission, effectiveProjectRole, isWorkspaceRole } =
-  await import("../../apps/web/helpers/permission-policy.ts");
+const {
+  evaluateWorkspacePermission,
+  evaluateProjectPermission,
+  effectiveProjectRole,
+  isWorkspaceRole,
+  canChangeProjectMemberRole,
+  canAssignProjectMemberRole,
+  projectRoleAllowedForWorkspace,
+} = await import("../../apps/web/helpers/permission-policy.ts");
 
 await test("workspace permissions require an active membership and an allowed role", () => {
   assert.equal(evaluateWorkspacePermission(true, EUserWorkspaceRoles.MEMBER, [EUserPermissions.MEMBER]), true);
@@ -59,4 +66,39 @@ await test("project permissions require membership before applying workspace-adm
       "workspace-admin elevation requires a valid project role entry"
     );
   }
+});
+
+await test("project member management requires confirmed administrator access", () => {
+  for (const [actor, target, workspace, project, targetWorkspace, allowed] of [
+    ["actor", "target", 20, 20, 15, true],
+    ["actor", "actor", 20, 20, 20, true],
+    ["actor", "target", 15, 20, 15, true],
+    ["actor", "actor", 15, 20, 15, false],
+    ["actor", "target", 15, 15, 15, false],
+    ["actor", "target", 5, 20, 15, false],
+    [undefined, "target", 20, 20, 15, false],
+    ["actor", "target", 20, undefined, 15, false],
+    ["actor", "target", 20, 999, 15, false],
+    ["actor", "target", 20, 20, 999, false],
+  ])
+    assert.equal(canChangeProjectMemberRole(actor, target, workspace, project, targetWorkspace), allowed);
+});
+
+await test("project assignments stay inside current authority and workspace guest access", () => {
+  for (const [role, workspace, project, allowed] of [
+    [20, 15, 20, true],
+    [15, 20, 20, true],
+    [5, 5, 20, true],
+    [15, 5, 20, false],
+    [20, 15, 15, false],
+    ["20", 15, 20, false],
+    [999, 15, 20, false],
+    [15, 999, 20, false],
+    [15, 15, undefined, false],
+    [15, 15, 999, false],
+  ])
+    assert.equal(projectRoleAllowedForWorkspace(role, workspace, project), allowed);
+  assert.equal(canAssignProjectMemberRole("actor", "target", 15, 20, 20, 15), true);
+  assert.equal(canAssignProjectMemberRole("actor", "actor", 15, 20, 15, 15), false);
+  assert.equal(canAssignProjectMemberRole("actor", "target", 20, 20, 15, 5), false);
 });
