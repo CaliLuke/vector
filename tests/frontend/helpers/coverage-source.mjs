@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -28,14 +28,28 @@ export function recordCoverageSource(filename, code) {
   const directory = process.env.VECTOR_FRONTEND_COVERAGE;
   if (!directory) return;
   const url = pathToFileURL(filename).href;
-  const digest = createHash("sha256").update(url).update(code).digest("hex");
-  const key = `${process.pid}-${digest}`;
-  if (recorded.has(`${directory}/${key}`)) return;
+  const source = { url, code, map: sourceMapFor(code, filename) };
+  const digest = createHash("sha256")
+    .update(url)
+    .update(code)
+    .update(JSON.stringify(source.map ?? null))
+    .digest("hex");
+  const key = `${directory}/${digest}`;
+  if (recorded.has(key)) return;
   const target = path.join(directory, "sources");
+  const variants = path.join(directory, "variants");
   mkdirSync(target, { recursive: true });
-  writeFileSync(
-    path.join(target, `${key}.json`),
-    JSON.stringify({ pid: process.pid, url, code, map: sourceMapFor(code, filename) })
-  );
-  recorded.add(`${directory}/${key}`);
+  mkdirSync(variants, { recursive: true });
+  const payload = path.join(variants, `${digest}.json`);
+  if (!existsSync(payload)) {
+    const temporary = `${payload}.${process.pid}.tmp`;
+    try {
+      writeFileSync(temporary, JSON.stringify(source), { flag: "wx" });
+      renameSync(temporary, payload);
+    } finally {
+      rmSync(temporary, { force: true });
+    }
+  }
+  appendFileSync(path.join(target, `${process.pid}.jsonl`), `${digest}\n`);
+  recorded.add(key);
 }

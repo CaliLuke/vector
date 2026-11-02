@@ -95,6 +95,8 @@ void test("source coverage combines worker runs and separately mapped build outp
   const f = fixture(t);
   await Promise.all([execute(f, true), execute(f, false), execute(f, false, { built: true, facade: true })]);
   const summary = await collectFrontendCoverage(f);
+  assert.equal(readdirSync(path.join(f.directory, "variants")).length, 3);
+  assert.equal(readdirSync(path.join(f.directory, "sources")).length, 3);
   assert.equal(summary[f.filename].branches.pct, 100);
   assert.equal(summary[f.filename].lines.pct, 100);
 });
@@ -113,4 +115,15 @@ void test("source coverage rejects executable build output without a map", async
   const f = fixture(t);
   await execute(f, true, { built: true, emitMap: false });
   await assert.rejects(collectFrontendCoverage(f), /Missing build source map/);
+});
+
+void test("source coverage rejects corrupted shared source payloads", async (t) => {
+  const f = fixture(t);
+  await execute(f);
+  const directory = path.join(f.directory, "variants");
+  const filename = path.join(directory, readdirSync(directory)[0]);
+  const captured = JSON.parse(readFileSync(filename, "utf8"));
+  captured.code += "\n// modified after execution";
+  writeFileSync(filename, JSON.stringify(captured));
+  await assert.rejects(collectFrontendCoverage(f), /source digest mismatch/);
 });

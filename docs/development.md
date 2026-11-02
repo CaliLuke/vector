@@ -291,9 +291,9 @@ The frontend pipeline completes before the full Go gate starts. Distinct Prek
 priorities keep frontend builds from competing with Docker-backed tests for host
 resources. Within the frontend pipeline,
 production builds run first, followed by TypeScript checks. Builds and checks remain
-sequential so generated package output is ready before typechecking. Frontend tests run in two sequential shards with two isolated workers each.
-The runner snapshots the file list and balances shards by test-source size.
-Each shard has a 384 MiB JavaScript heap limit, a 1 GiB sampled process-tree RSS ceiling, and an external five-minute deadline. Every frontend file runs once. Either shard failing fails the gate.
+sequential so generated package output is ready before typechecking. Frontend tests run in three sequential batches with two isolated workers each.
+The runner snapshots the file list and balances batches by test-source size.
+Each Node process has a 384 MiB heap limit. Each batch has a 1 GiB sampled process-tree RSS ceiling and a five-minute deadline. All batches share a ten-minute execution budget. Every frontend file runs once. Any batch failure fails the gate.
 Individual tests retain their 15-second timeout. Each TypeScript gate
 has a ten-minute deadline and 3 GiB RSS ceiling.
 The full typed-lint gate runs `apps/web` and then the remaining tree sequentially
@@ -335,8 +335,9 @@ Workers publish cache entries atomically under ignored `node_modules/.cache` dir
 These caches preserve worker isolation and do not cache test results.
 Node's compilation cache is scoped to behavior tests, because it can reduce V8 coverage precision.
 Coverage suites use separate commands without that cache setting.
-`pnpm test:frontend:coverage` runs the same two behavior shards with exact transform
-capture and build source maps. It merges worker coverage by executed code, maps
+`pnpm test:frontend:coverage` runs the same three behavior batches with exact transform
+capture and build source maps. Source payloads are shared by content hash; each
+worker records references to its exact executed variants. It merges worker coverage by executed code, maps
 statements and branches back to source, and includes unloaded source files at zero.
 It rejects missing captures and stale build maps. Rebuild shared packages before
 running it after a source change. Generated reports live in `coverage/frontend/`.

@@ -54,21 +54,33 @@ function readSources(directory) {
   const byProcess = new Map();
   const versions = new Map();
   for (const filename of readdirSync(path.join(directory, "sources"))) {
-    if (!filename.endsWith(".json")) continue;
-    const source = readJSON(path.join(directory, "sources", filename));
-    if (!Number.isInteger(source.pid) || typeof source.url !== "string" || typeof source.code !== "string")
-      throw new Error(`Invalid captured source: ${filename}`);
-    const key = `${source.pid}:${source.url}`;
-    const previous = byProcess.get(key);
-    if (previous && previous.code !== source.code)
-      throw new Error(`Multiple transforms for ${source.url} in process ${source.pid}`);
-    const digest = createHash("sha256")
-      .update(source.url)
-      .update(source.code)
-      .update(JSON.stringify(source.map ?? null))
-      .digest("hex");
-    if (!versions.has(digest)) versions.set(digest, source);
-    byProcess.set(key, versions.get(digest));
+    const pid = /^(\d+)\.jsonl$/.exec(filename)?.[1];
+    if (!pid) throw new Error(`Invalid captured source manifest: ${filename}`);
+    for (const digest of readFileSync(path.join(directory, "sources", filename), "utf8")
+      .trim()
+      .split("\n")) {
+      if (!/^[a-f0-9]{64}$/.test(digest)) throw new Error(`Invalid captured source reference: ${filename}`);
+      if (!versions.has(digest)) {
+        const payload = path.join(directory, "variants", `${digest}.json`);
+        if (!existsSync(payload)) throw new Error(`Missing captured source variant: ${digest}`);
+        const source = readJSON(payload);
+        if (typeof source.url !== "string" || typeof source.code !== "string")
+          throw new Error(`Invalid captured source: ${digest}`);
+        const actual = createHash("sha256")
+          .update(source.url)
+          .update(source.code)
+          .update(JSON.stringify(source.map ?? null))
+          .digest("hex");
+        if (actual !== digest) throw new Error(`Captured source digest mismatch: ${digest}`);
+        versions.set(digest, { ...source, digest });
+      }
+      const source = versions.get(digest);
+      const key = `${pid}:${source.url}`;
+      const previous = byProcess.get(key);
+      if (previous && previous.digest !== digest)
+        throw new Error(`Multiple transforms for ${source.url} in process ${pid}`);
+      byProcess.set(key, source);
+    }
   }
   return byProcess;
 }
@@ -111,11 +123,7 @@ function capturedScripts(directory, root, suites) {
         if (linkOnlyModule(source.code)) continue;
         throw new Error(`Missing build source map for ${coverage.url}`);
       }
-      const digest = createHash("sha256")
-        .update(source.url)
-        .update(source.code)
-        .update(JSON.stringify(source.map ?? null))
-        .digest("hex");
+      const digest = source.digest;
       const group = grouped.get(digest) ?? { source, coverage: [] };
       group.coverage.push(coverage);
       grouped.set(digest, group);

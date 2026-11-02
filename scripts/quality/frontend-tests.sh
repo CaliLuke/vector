@@ -23,12 +23,21 @@ shard_directory="$(mktemp -d "${TMPDIR:-/tmp}/vector-frontend-shards.XXXXXX")" |
 trap 'rm -rf -- "$shard_directory"' EXIT
 node scripts/quality/frontend-test-shards.mjs "$shard_directory" "${test_files[@]}" || exit 1
 failed=0
-for shard in 1 2; do
+budget_seconds=600
+budget_started=$SECONDS
+for shard in 1 2 3; do
   shard_files=()
   while IFS= read -r -d '' file; do shard_files+=("$file"); done < "$shard_directory/$shard"
   if ((${#shard_files[@]} == 0)); then continue; fi
-  printf '\n▶ Frontend behavior tests (shard %s/2)\n' "$shard"
-  node scripts/quality/run-bounded.mjs --seconds 300 --memory-mib 1024 --heap-mib 384 -- \
+  printf '\n▶ Frontend behavior tests (shard %s/3)\n' "$shard"
+  remaining=$((budget_seconds - SECONDS + budget_started))
+  if ((remaining <= 0)); then
+    printf '[frontend] cumulative test deadline exceeded %ss\n' "$budget_seconds" >&2
+    failed=1
+    break
+  fi
+  shard_seconds=$((remaining < 300 ? remaining : 300))
+  node scripts/quality/run-bounded.mjs --seconds "$shard_seconds" --memory-mib 1024 --heap-mib 384 -- \
     node "${node_options[@]}" --test --test-timeout=15000 --test-concurrency=2 \
     "${shard_files[@]}" || failed=1
 done

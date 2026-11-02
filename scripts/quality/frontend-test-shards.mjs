@@ -8,12 +8,12 @@ import path from "node:path";
  * @returns {string[][]}
  */
 export function partitionTestFiles(files) {
-  const shards = [[], []];
-  const sizes = [0, 0];
+  const shards = [[], [], []];
+  const sizes = [0, 0, 0];
   const weighted = files.map((file) => ({ file, size: statSync(file).size }));
   weighted.sort((left, right) => right.size - left.size || left.file.localeCompare(right.file));
   for (const { file, size } of weighted) {
-    const shard = sizes[0] <= sizes[1] ? 0 : 1;
+    const shard = sizes.indexOf(Math.min(...sizes));
     shards[shard].push(file);
     sizes[shard] += size;
   }
