@@ -283,6 +283,7 @@ priorities keep frontend builds from competing with Docker-backed tests for host
 resources. Within the frontend pipeline,
 production builds run first, followed by TypeScript checks. Builds and checks remain
 sequential so generated package output is ready before typechecking. Frontend tests run in two sequential shards with two isolated workers each.
+The runner snapshots the file list and balances shards by test-source size.
 Each shard has a 384 MiB JavaScript heap limit, a 1 GiB sampled process-tree RSS ceiling, and an external five-minute deadline. Every frontend file runs once. Either shard failing fails the gate.
 Individual tests retain their 15-second timeout. Each TypeScript gate
 has a ten-minute deadline and 3 GiB RSS ceiling.

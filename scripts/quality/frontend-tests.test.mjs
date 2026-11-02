@@ -4,6 +4,7 @@ import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync,
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { partitionTestFiles } from "./frontend-test-shards.mjs";
 
 function runFrontendFixture(t, failedFile, { addDuringRun = false, coverage = false, conversionFailure = false } = {}) {
   const root = mkdtempSync(path.join(os.tmpdir(), "vector frontend shards "));
@@ -11,7 +12,7 @@ function runFrontendFixture(t, failedFile, { addDuringRun = false, coverage = fa
   mkdirSync(path.join(root, "scripts/quality"), { recursive: true });
   mkdirSync(path.join(root, "tests/frontend"), { recursive: true });
   mkdirSync(path.join(root, "apps/web/tests"), { recursive: true });
-  for (const script of ["frontend-tests.sh", "run-bounded.mjs"]) {
+  for (const script of ["frontend-tests.sh", "frontend-test-shards.mjs", "run-bounded.mjs"]) {
     copyFileSync(new URL(script, import.meta.url), path.join(root, "scripts/quality", script));
   }
   if (coverage) {
@@ -76,6 +77,21 @@ test("${name}", () => {
 await test("frontend shards execute every discovered file exactly once", (t) => {
   const result = runFrontendFixture(t, null);
   assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+await test("frontend shards balance large files and preserve paths with spaces", (t) => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "vector shard weights "));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const files = [100, 10, 90, 10].map((size, index) => {
+    const file = path.join(root, `test ${index}.mjs`);
+    writeFileSync(file, " ".repeat(size));
+    return file;
+  });
+  const shards = partitionTestFiles(files);
+  assert.deepEqual(shards.flat().toSorted(), files.toSorted());
+  assert.ok(shards.every((shard) => shard.length === 2));
+  assert.ok(shards.every((shard) => !(shard.includes(files[0]) && shard.includes(files[2]))));
+  assert.deepEqual(partitionTestFiles(files.toReversed()), shards, "discovery order must not affect the split");
 });
 
 await test("a failed first frontend shard cannot be hidden by a passing second shard", (t) => {
