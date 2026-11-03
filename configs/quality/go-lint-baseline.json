@@ -16,46 +16,6 @@
     {
       "fingerprint": [
         "errorlint",
-        "cmd/durable-metadata/main.go",
-        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/assets/durable_metadata.go",
-        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/backgroundtasks/admission.go",
-        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/backgroundtasks/issue_export.go",
-        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/backgroundtasks/issue_version_task.go",
-        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
         "internal/htmlcompat/parse_test.go",
         "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
       ],

@@ -30,13 +30,9 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 	workspaceID, projectID := uuid.New(), uuid.New()
 	fixtureNow := time.Now().UTC()
 	username := "version-history-" + pageOwner.String()
-	if _, err := pool.Exec(ctx, `INSERT INTO users (id,password,username,display_name,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,user_timezone,is_email_valid) VALUES ($1,'!', $2,'Version Test','Version','Test','',$3,$3,$3,'','',false,false,false,true,false,true,false,false,$2,'','','','',false,'UTC',true)`, pageOwner, username, fixtureNow); err != nil {
-		t.Fatalf("insert version owner fixture: %v", err)
-	}
+	seedBackgroundTaskUser(t, ctx, pool, pageOwner, username, "Version", "Test", "", fixtureNow)
 	issueTaskUsername := "issue-version-task-" + issueTaskOwner.String()
-	if _, err := pool.Exec(ctx, `INSERT INTO users (id,password,username,display_name,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,user_timezone,is_email_valid) VALUES ($1,'!', $2,'Version Task','Version','Task','',$3,$3,$3,'','',false,false,false,true,false,true,false,false,$2,'','','','',false,'UTC',true)`, issueTaskOwner, issueTaskUsername, fixtureNow); err != nil {
-		t.Fatalf("insert issue version task owner fixture: %v", err)
-	}
+	seedBackgroundTaskUser(t, ctx, pool, issueTaskOwner, issueTaskUsername, "Version", "Task", "", fixtureNow)
 	if _, err := pool.Exec(ctx, `INSERT INTO workspaces (id,name,owner_id,slug,timezone,background_color,created_at,updated_at) VALUES ($1,'Version Test',$2,$3,'UTC','',$4,$4)`, workspaceID, pageOwner, "vh-"+pageID.String()[:8], fixtureNow); err != nil {
 		t.Fatalf("insert version workspace fixture: %v", err)
 	}
@@ -110,13 +106,53 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 	if startErr := app.Start(ctx); startErr != nil {
 		t.Fatal(startErr)
 	}
-	defer func() {
-		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer shutdownCancel()
-		if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
-			t.Errorf("shutdown version history runtime: %v", shutdownErr)
-		}
-	}()
+	defer shutdownVersionHistoryTestRuntime(t, app)
+
+	checkPageHistoryAndComponentLogs(t, pool, ctx, pageID, pageOwner, pageMarker, issueID, projectID, priorHTML, app, dispatcher, pageTransactionDispatcher)
+
+	checkIssueDescriptionHistoryCoalescing(t, pool, ctx, issueID, issueOwner, issueMarker, priorHTML, app, dispatcher)
+
+	checkIssueHistoryBatchSynchronization(t, pool, ctx, pageOwner, issueID, issueOwner, issueBatchID, app, syncDispatcher, issueVersionDispatcher)
+
+	checkIssueVersionTaskCoalescing(t, pool, ctx, issueTaskOwner, issueID, app, issueVersionTaskDispatcher)
+
+}
+
+func waitVersionWorkflow(t *testing.T, ctx context.Context, app *selvedge.App, instanceID string) {
+	t.Helper()
+	result, err := selvedge.WaitWorkflow[struct{}](ctx, app, instanceID)
+	if err != nil {
+		t.Fatalf("wait for workflow %q: %v", instanceID, err)
+	}
+	if result.Status != "completed" {
+		t.Fatalf("workflow %q status=%q error=%s", instanceID, result.Status, result.Error)
+	}
+}
+
+func queryPageVersion(t *testing.T, ctx context.Context, pool *pgxpool.Pool, pageID, userID uuid.UUID) (int, string, string) {
+	t.Helper()
+	var count int
+	var html, text string
+	err := pool.QueryRow(ctx, `SELECT COUNT(*),MAX(description_html),MAX(description_stripped) FROM page_versions WHERE page_id=$1 AND owned_by_id=$2`, pageID, userID).Scan(&count, &html, &text)
+	if err != nil {
+		t.Fatalf("query page version: %v", err)
+	}
+	return count, html, text
+}
+
+func shutdownVersionHistoryTestRuntime(t *testing.T, app *selvedge.App) {
+	t.Helper()
+
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+	if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
+		t.Errorf("shutdown version history runtime: %v", shutdownErr)
+	}
+
+}
+
+func checkPageHistoryAndComponentLogs(t *testing.T, pool *pgxpool.Pool, ctx context.Context, pageID uuid.UUID, pageOwner uuid.UUID, pageMarker string, issueID uuid.UUID, projectID uuid.UUID, priorHTML string, app *selvedge.App, dispatcher *VersionHistoryDispatcher, pageTransactionDispatcher *PageTransactionDispatcher) {
+	t.Helper()
 
 	pageSnapshot, pageSnapshotErr := json.Marshal(map[string]string{"description_html": priorHTML})
 	require.NoError(t, pageSnapshotErr)
@@ -180,6 +216,11 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 		t.Fatalf("replayed page snapshot created %d rows, want coalesced one", pageCount)
 	}
 
+}
+
+func checkIssueDescriptionHistoryCoalescing(t *testing.T, pool *pgxpool.Pool, ctx context.Context, issueID uuid.UUID, issueOwner uuid.UUID, issueMarker string, priorHTML string, app *selvedge.App, dispatcher *VersionHistoryDispatcher) {
+	t.Helper()
+
 	issueSnapshot, issueSnapshotErr := json.Marshal(map[string]string{"description_html": priorHTML})
 	require.NoError(t, issueSnapshotErr)
 	issueInput := IssueDescriptionVersionInput{IssueID: issueID.String(), UpdatedIssue: string(issueSnapshot), UserID: issueOwner.String()}
@@ -233,6 +274,11 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 	if issueCount != 1 {
 		t.Fatalf("native producer replay created %d rows, want one coalesced row", issueCount)
 	}
+
+}
+
+func checkIssueHistoryBatchSynchronization(t *testing.T, pool *pgxpool.Pool, ctx context.Context, pageOwner uuid.UUID, issueID uuid.UUID, issueOwner uuid.UUID, issueBatchID uuid.UUID, app *selvedge.App, syncDispatcher *IssueDescriptionSyncDispatcher, issueVersionDispatcher *IssueVersionSyncDispatcher) {
+	t.Helper()
 
 	syncRunID := uuid.NewString()
 	var totalIssues int
@@ -290,6 +336,11 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 		}
 	}
 
+}
+
+func checkIssueVersionTaskCoalescing(t *testing.T, pool *pgxpool.Pool, ctx context.Context, issueTaskOwner uuid.UUID, issueID uuid.UUID, app *selvedge.App, issueVersionTaskDispatcher *IssueVersionTaskDispatcher) {
+	t.Helper()
+
 	issueTaskEvent := uuid.NewString()
 	issueTaskInput := IssueVersionTaskInput{UpdatedIssue: `{"name":"Version Test before edit"}`, IssueID: issueID.String(), UserID: issueTaskOwner.String()}
 	issueTaskInstance, err := issueVersionTaskDispatcher.Admit(ctx, issueTaskEvent, issueTaskInput)
@@ -318,26 +369,4 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 	if issueTaskVersionCount != 1 || issueTaskName != "Version Test" || issueTaskPriority != "low" || string(issueTaskProperties) != "{}" || string(issueTaskMeta) != "{}" || !issueTaskActivityIsNull {
 		t.Fatalf("coalesced issue version rows=%d name=%q priority=%q properties=%s meta=%s activity_is_null=%t", issueTaskVersionCount, issueTaskName, issueTaskPriority, issueTaskProperties, issueTaskMeta, issueTaskActivityIsNull)
 	}
-}
-
-func waitVersionWorkflow(t *testing.T, ctx context.Context, app *selvedge.App, instanceID string) {
-	t.Helper()
-	result, err := selvedge.WaitWorkflow[struct{}](ctx, app, instanceID)
-	if err != nil {
-		t.Fatalf("wait for workflow %q: %v", instanceID, err)
-	}
-	if result.Status != "completed" {
-		t.Fatalf("workflow %q status=%q error=%s", instanceID, result.Status, result.Error)
-	}
-}
-
-func queryPageVersion(t *testing.T, ctx context.Context, pool *pgxpool.Pool, pageID, userID uuid.UUID) (int, string, string) {
-	t.Helper()
-	var count int
-	var html, text string
-	err := pool.QueryRow(ctx, `SELECT COUNT(*),MAX(description_html),MAX(description_stripped) FROM page_versions WHERE page_id=$1 AND owned_by_id=$2`, pageID, userID).Scan(&count, &html, &text)
-	if err != nil {
-		t.Fatalf("query page version: %v", err)
-	}
-	return count, html, text
 }

@@ -172,14 +172,8 @@ func validateIssueActivityInput(eventID string, input IssueActivityInput) error 
 	if input.Type == "" {
 		return fmt.Errorf("%w: activity type is required", ErrPermanentIssueActivity)
 	}
-	for name, raw := range map[string]json.RawMessage{"requested_data": input.RequestedData, "current_instance": input.CurrentInstance} {
-		if len(raw) == 0 || string(raw) == "null" {
-			continue
-		}
-		var object map[string]any
-		if err := json.Unmarshal(raw, &object); err != nil || object == nil {
-			return fmt.Errorf("%w: %s must be a JSON object or null", ErrPermanentIssueActivity, name)
-		}
+	if _, err := decodeIssueActivityEvent(input); err != nil {
+		return err
 	}
 	if !supportedIssueActivityType(input.Type) {
 		return fmt.Errorf("%w: unsupported activity type %q", ErrPermanentIssueActivity, input.Type)
@@ -282,13 +276,16 @@ func (store *PostgresIssueActivityStore) RecordIssueActivity(ctx context.Context
 		return nil, err
 	}
 	if input.IssueID != nil {
-		if _, err := tx.Exec(ctx, `UPDATE issues SET updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL`, *input.IssueID); err != nil {
-			return nil, fmt.Errorf("update issue activity timestamp: %w", err)
+		if _, updateErr := tx.Exec(ctx, `UPDATE issues SET updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL`, *input.IssueID); updateErr != nil {
+			return nil, fmt.Errorf("update issue activity timestamp: %w", updateErr)
 		}
 	}
-	requested, current := decodeActivityObject(input.RequestedData), decodeActivityObject(input.CurrentInstance)
+	event, err := decodeIssueActivityEvent(input)
+	if err != nil {
+		return nil, err
+	}
 	if input.Type == "issue.activity.updated" || input.Type == "issue.activity.created" {
-		requestedAssignees, currentAssignees := activityIDSet(requested, "assignee_ids", "assignees"), activityIDSet(current, "assignee_ids", "assignees")
+		requestedAssignees, currentAssignees := activityIDSet(event.requested, "assignee_ids", "assignees"), activityIDSet(event.current, "assignee_ids", "assignees")
 		for _, id := range sortedActivityIDs(requestedAssignees) {
 			if _, exists := currentAssignees[id]; exists {
 				continue
@@ -329,7 +326,10 @@ func (store *PostgresIssueActivityStore) RecordIssueActivity(ctx context.Context
 }
 
 func buildIssueActivityRows(ctx context.Context, tx pgx.Tx, input IssueActivityInput) ([]issueActivityRow, error) {
-	event := issueActivityEvent{IssueActivityInput: input, requested: decodeActivityObject(input.RequestedData), current: decodeActivityObject(input.CurrentInstance)}
+	event, err := decodeIssueActivityEvent(input)
+	if err != nil {
+		return nil, err
+	}
 	switch input.Type {
 	case "workitem_relation.activity.created", "workitem_relation.activity.deleted":
 		return relationActivityRows(input)
@@ -367,12 +367,60 @@ func buildIssueActivityRows(ctx context.Context, tx pgx.Tx, input IssueActivityI
 	return []issueActivityRow{event.baseRow()}, nil
 }
 
-func decodeActivityObject(raw json.RawMessage) map[string]json.RawMessage {
+func decodeIssueActivityEvent(input IssueActivityInput) (issueActivityEvent, error) {
+	event := issueActivityEvent{IssueActivityInput: input}
+	var err error
+	event.requested, err = decodeActivityObject(input.RequestedData)
+	if err != nil {
+		return event, err
+	}
+	event.current, err = decodeActivityObject(input.CurrentInstance)
+	if err != nil {
+		return event, err
+	}
+	err = event.decodeCollections()
+	return event, err
+}
+
+// Decode consumed legacy collections before any storage or Redis effects. A
+// malformed persisted payload is permanent; it cannot become valid on retry.
+func (event *issueActivityEvent) decodeCollections() error {
+	var err error
+	switch event.Type {
+	case "cycle.activity.created":
+		event.updatedCycles, err = rawObjectArray(event.current["updated_cycle_issues"])
+		if err != nil {
+			return err
+		}
+		created, decodeErr := rawObjectArray(event.current["created_cycle_issues"])
+		if decodeErr != nil {
+			return decodeErr
+		}
+		for _, record := range created {
+			fields, fieldsErr := decodeActivityObject(record["fields"])
+			if fieldsErr != nil {
+				return fieldsErr
+			}
+			event.createdCycles = append(event.createdCycles, fields)
+		}
+	case "cycle.activity.deleted":
+		event.issues, err = rawStringArray(event.requested["issues"])
+	case "issue_relation.activity.created":
+		if len(event.CurrentInstance) == 0 || string(event.CurrentInstance) == "null" {
+			event.issues, err = rawStringArray(event.requested["issues"])
+		}
+	}
+	return err
+}
+
+func decodeActivityObject(raw json.RawMessage) (map[string]json.RawMessage, error) {
 	var object map[string]json.RawMessage
 	if len(raw) > 0 && string(raw) != "null" {
-		_ = json.Unmarshal(raw, &object)
+		if err := json.Unmarshal(raw, &object); err != nil {
+			return nil, fmt.Errorf("%w: activity snapshot must be an object: %s", ErrPermanentIssueActivity, err.Error())
+		}
 	}
-	return object
+	return object, nil
 }
 
 func sameActivityJSON(left, right json.RawMessage) bool {
@@ -495,23 +543,30 @@ func sortedActivityIDs(ids map[string]struct{}) []string {
 	return result
 }
 
-func rawStringArray(raw json.RawMessage) []string {
+func rawStringArray(raw json.RawMessage) ([]string, error) {
+	if len(raw) == 0 {
+		return nil, nil
+	}
 	var values []string
-	_ = json.Unmarshal(raw, &values)
-	return values
+	if err := json.Unmarshal(raw, &values); err != nil {
+		return nil, fmt.Errorf("%w: activity identifiers must be a string array: %s", ErrPermanentIssueActivity, err.Error())
+	}
+	return values, nil
 }
 
-func rawObjectArray(raw json.RawMessage) []map[string]json.RawMessage {
+func rawObjectArray(raw json.RawMessage) ([]map[string]json.RawMessage, error) {
 	if len(raw) == 0 || string(raw) == "null" {
-		return nil
+		return nil, nil
 	}
 	var encoded string
 	if json.Unmarshal(raw, &encoded) == nil {
 		raw = []byte(encoded)
 	}
 	var values []map[string]json.RawMessage
-	_ = json.Unmarshal(raw, &values)
-	return values
+	if err := json.Unmarshal(raw, &values); err != nil {
+		return nil, fmt.Errorf("%w: activity records must be an object array: %s", ErrPermanentIssueActivity, err.Error())
+	}
+	return values, nil
 }
 
 func lookupActivityName(ctx context.Context, tx pgx.Tx, table string, id *string) (*string, error) {

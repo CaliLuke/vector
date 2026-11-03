@@ -11,7 +11,6 @@ import (
 
 	"github.com/CaliLuke/selvedge"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestPostgresInstanceMetricsCollectionAndDurableSchedule(t *testing.T) {
@@ -92,7 +91,7 @@ func TestPostgresInstanceMetricsCollectionAndDurableSchedule(t *testing.T) {
 	if err != nil {
 		t.Fatalf("admit instance metrics Beat schedule: %v", err)
 	}
-	waitForMetricBeatTimer(t, ctx, pool, scheduleID)
+	waitForBeatTimer(t, ctx, pool, scheduleID)
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
 		shutdownCancel()
@@ -128,7 +127,7 @@ func TestPostgresInstanceMetricsCollectionAndDurableSchedule(t *testing.T) {
 	if restartedID != scheduleID {
 		t.Fatalf("restarted schedule ID=%q, want stable ID %q", restartedID, scheduleID)
 	}
-	waitForMetricBeatTimer(t, ctx, pool, scheduleID)
+	waitForBeatTimer(t, ctx, pool, scheduleID)
 }
 
 type recordingInstanceMetricsExporter struct {
@@ -164,24 +163,4 @@ func metricValue(snapshot InstanceMetricsSnapshot, name, workspaceID string) int
 		}
 	}
 	return -1
-}
-
-func waitForMetricBeatTimer(t *testing.T, ctx context.Context, pool *pgxpool.Pool, scheduleID string) {
-	t.Helper()
-	deadline := time.Now().Add(3 * time.Second)
-	for time.Now().Before(deadline) {
-		var count int
-		if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM plane_execution.workflow_timer_subscriptions WHERE instance_id=$1`, scheduleID).Scan(&count); err != nil {
-			t.Fatalf("inspect instance metrics Beat timer: %v", err)
-		}
-		if count == 1 {
-			return
-		}
-		select {
-		case <-ctx.Done():
-			t.Fatalf("wait for instance metrics Beat timer: %v", ctx.Err())
-		case <-time.After(20 * time.Millisecond):
-		}
-	}
-	t.Fatal("durable instance metrics Beat schedule did not arm a PostgreSQL timer")
 }

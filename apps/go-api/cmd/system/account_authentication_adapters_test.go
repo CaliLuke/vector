@@ -107,7 +107,7 @@ func (accountAuthenticationHTTPRepository) UpdatePassword(context.Context, strin
 func (accountAuthenticationHTTPRepository) SetPassword(context.Context, string, string, bool) error {
 	return nil
 }
-func (accountAuthenticationHTTPRepository) UpdateLoginMetadata(context.Context, string, time.Time, string, string, string, time.Time) (bool, error) {
+func (accountAuthenticationHTTPRepository) UpdateLoginMetadata(context.Context, store.LoginMetadata) (bool, error) {
 	return false, nil
 }
 func (accountAuthenticationHTTPRepository) UserJSON(context.Context, string) (json.RawMessage, error) {

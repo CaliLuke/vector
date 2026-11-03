@@ -12,8 +12,11 @@ import (
 
 type issueActivityEvent struct {
 	IssueActivityInput
-	requested map[string]json.RawMessage
-	current   map[string]json.RawMessage
+	requested     map[string]json.RawMessage
+	current       map[string]json.RawMessage
+	updatedCycles []map[string]json.RawMessage
+	createdCycles []map[string]json.RawMessage
+	issues        []string
 }
 
 func (event issueActivityEvent) baseRow() issueActivityRow {
@@ -208,11 +211,10 @@ func collectionIssueActivityRows(ctx context.Context, tx pgx.Tx, event issueActi
 
 func cycleActivityRows(ctx context.Context, tx pgx.Tx, event issueActivityEvent) ([]issueActivityRow, error) {
 	requested := event.requested
-	current := event.current
 	switch event.Type {
 	case "cycle.activity.created":
 		rows := make([]issueActivityRow, 0)
-		for _, record := range rawObjectArray(current["updated_cycle_issues"]) {
+		for _, record := range event.updatedCycles {
 			issueID := activityText(record["issue_id"])
 			oldID := activityText(record["old_cycle_id"])
 			newID := activityText(record["new_cycle_id"])
@@ -227,8 +229,7 @@ func cycleActivityRows(ctx context.Context, tx pgx.Tx, event issueActivityEvent)
 			oldText, newText := stringOrEmpty(oldName), stringOrEmpty(newName)
 			rows = append(rows, issueActivityRow{IssueID: issueID, ActorID: event.ActorID, Verb: "updated", Field: "cycles", OldValue: oldText, NewValue: newText, Comment: fmt.Sprintf("updated cycle from %s\n                to %s", *oldText, *newText), OldIdentifier: oldID, NewIdentifier: newID, Epoch: event.Epoch})
 		}
-		for _, record := range rawObjectArray(current["created_cycle_issues"]) {
-			fields := decodeActivityObject(record["fields"])
+		for _, fields := range event.createdCycles {
 			issueID := activityText(fields["issue"])
 			cycleID := activityText(fields["cycle"])
 			name, err := lookupActivityName(ctx, tx, "cycles", cycleID)
@@ -249,7 +250,7 @@ func cycleActivityRows(ctx context.Context, tx pgx.Tx, event issueActivityEvent)
 			cycleName = stringOrEmpty(activityText(requested["cycle_name"]))
 		}
 		rows := make([]issueActivityRow, 0)
-		for _, issue := range rawStringArray(requested["issues"]) {
+		for _, issue := range event.issues {
 			name := stringOrEmpty(cycleName)
 			rows = append(rows, issueActivityRow{IssueID: &issue, ActorID: event.ActorID, Verb: "deleted", Field: "cycles", OldValue: name, NewValue: stringPointerValue(""), Comment: "removed this issue from " + *name, OldIdentifier: cycleID, Epoch: event.Epoch})
 		}
@@ -290,7 +291,7 @@ func legacyRelationActivityRows(ctx context.Context, tx pgx.Tx, event issueActiv
 		if len(event.CurrentInstance) == 0 || string(event.CurrentInstance) == "null" {
 			relation := stringOrEmpty(activityText(requested["relation_type"]))
 			rows := make([]issueActivityRow, 0)
-			for _, relatedID := range rawStringArray(requested["issues"]) {
+			for _, relatedID := range event.issues {
 				identifier, err := issueActivityIdentifier(ctx, tx, &relatedID)
 				if err != nil {
 					return nil, err

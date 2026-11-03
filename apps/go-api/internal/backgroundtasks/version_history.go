@@ -157,6 +157,13 @@ func (store *PostgresVersionHistoryStore) TrackPageVersion(ctx context.Context, 
 			return fmt.Errorf("%w: invalid existing page snapshot JSON", ErrPermanentVersionHistory)
 		}
 	}
+	var priorHTML string
+	priorRaw, exists := original["description_html"]
+	if exists {
+		if decodeErr := json.Unmarshal(priorRaw, &priorHTML); decodeErr != nil {
+			return fmt.Errorf("%w: prior page description must be text or null", ErrPermanentVersionHistory)
+		}
+	}
 	tx, err := store.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return fmt.Errorf("begin page version transaction: %w", err)
@@ -172,11 +179,6 @@ func (store *PostgresVersionHistoryStore) TrackPageVersion(ctx context.Context, 
 	}
 	if err != nil {
 		return fmt.Errorf("load page for version history: %w", err)
-	}
-	var priorHTML string
-	priorRaw, exists := original["description_html"]
-	if exists {
-		_ = json.Unmarshal(priorRaw, &priorHTML)
 	}
 	if exists && priorHTML == html {
 		return tx.Commit(ctx)

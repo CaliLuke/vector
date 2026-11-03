@@ -69,18 +69,7 @@ func TestPostgresWebhookModelActivityDeliversSignedPayloadAndRetries(t *testing.
 	t.Setenv("WEBHOOK_ALLOWED_HOSTS", "127.0.0.1")
 	t.Setenv("WEBHOOK_ALLOWED_IPS", "")
 
-	if _, err := pool.Exec(ctx, `INSERT INTO users (id,password,username,display_name,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,user_timezone,is_email_valid,email) VALUES ($1,'!', $2,'Webhook Owner','Webhook','Owner','',$3,$3,$3,'','',false,false,false,true,false,true,false,false,$2,'','','','',false,'UTC',true,$4)`, ownerID, username, now, username+"@example.test"); err != nil {
-		t.Fatalf("insert webhook owner: %v", err)
-	}
-	if _, err := pool.Exec(ctx, `INSERT INTO workspaces (id,name,owner_id,slug,timezone,background_color,created_at,updated_at) VALUES ($1,'Webhook Test',$2,$3,'UTC','',$4,$4)`, workspaceID, ownerID, slug, now); err != nil {
-		t.Fatalf("insert webhook workspace: %v", err)
-	}
-	if _, err := pool.Exec(ctx, `INSERT INTO projects (id,name,description,network,workspace_id,created_by_id,identifier,module_view,cycle_view,issue_views_view,page_view,intake_view,is_time_tracking_enabled,is_issue_type_enabled,guest_view_all_features,archive_in,close_in,logo_props,timezone,created_at,updated_at) VALUES ($1,'Webhook Project','',0,$2,$3,'WHK',false,false,false,true,false,false,false,false,0,0,'{}'::jsonb,'UTC',$4,$4)`, projectID, workspaceID, ownerID, now); err != nil {
-		t.Fatalf("insert webhook project: %v", err)
-	}
-	if _, err := pool.Exec(ctx, `INSERT INTO webhooks(id,created_at,updated_at,url,is_active,secret_key,project,issue,module,cycle,issue_comment,created_by_id,workspace_id,is_internal,version) VALUES($1,$2,$2,$3,true,'webhook-secret',true,false,false,false,false,$4,$5,false,'v1')`, webhookID, now, server.URL+"/hook", ownerID, workspaceID); err != nil {
-		t.Fatalf("insert test webhook: %v", err)
-	}
+	seedWebhookDeliveryScope(t, pool, ctx, ownerID, workspaceID, projectID, webhookID, now, username, slug, server)
 
 	store, err := NewPostgresWebhookTaskStore(pool)
 	if err != nil {
@@ -101,13 +90,7 @@ func TestPostgresWebhookModelActivityDeliversSignedPayloadAndRetries(t *testing.
 	if startErr := app.Start(ctx); startErr != nil {
 		t.Fatal(startErr)
 	}
-	defer func() {
-		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer shutdownCancel()
-		if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
-			t.Errorf("shutdown webhook workflow runtime: %v", shutdownErr)
-		}
-	}()
+	defer shutdownWebhookTestRuntime(t, app)
 	fallback := &recordingWebhookFallback{}
 	admission, err := NewWebhookTaskAdmission(dispatcher)
 	if err != nil {
@@ -231,4 +214,31 @@ func waitForWebhookLogCount(t *testing.T, ctx context.Context, pool *pgxpool.Poo
 		case <-ticker.C:
 		}
 	}
+}
+
+func seedWebhookDeliveryScope(t *testing.T, pool *pgxpool.Pool, ctx context.Context, ownerID uuid.UUID, workspaceID uuid.UUID, projectID uuid.UUID, webhookID uuid.UUID, now time.Time, username string, slug string, server *httptest.Server) {
+	t.Helper()
+
+	seedBackgroundTaskUser(t, ctx, pool, ownerID, username, "Webhook", "Owner", username+"@example.test", now)
+	if _, err := pool.Exec(ctx, `INSERT INTO workspaces (id,name,owner_id,slug,timezone,background_color,created_at,updated_at) VALUES ($1,'Webhook Test',$2,$3,'UTC','',$4,$4)`, workspaceID, ownerID, slug, now); err != nil {
+		t.Fatalf("insert webhook workspace: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO projects (id,name,description,network,workspace_id,created_by_id,identifier,module_view,cycle_view,issue_views_view,page_view,intake_view,is_time_tracking_enabled,is_issue_type_enabled,guest_view_all_features,archive_in,close_in,logo_props,timezone,created_at,updated_at) VALUES ($1,'Webhook Project','',0,$2,$3,'WHK',false,false,false,true,false,false,false,false,0,0,'{}'::jsonb,'UTC',$4,$4)`, projectID, workspaceID, ownerID, now); err != nil {
+		t.Fatalf("insert webhook project: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO webhooks(id,created_at,updated_at,url,is_active,secret_key,project,issue,module,cycle,issue_comment,created_by_id,workspace_id,is_internal,version) VALUES($1,$2,$2,$3,true,'webhook-secret',true,false,false,false,false,$4,$5,false,'v1')`, webhookID, now, server.URL+"/hook", ownerID, workspaceID); err != nil {
+		t.Fatalf("insert test webhook: %v", err)
+	}
+
+}
+
+func shutdownWebhookTestRuntime(t *testing.T, app *selvedge.App) {
+	t.Helper()
+
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+	if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
+		t.Errorf("shutdown webhook workflow runtime: %v", shutdownErr)
+	}
+
 }

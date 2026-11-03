@@ -13,75 +13,7 @@ import (
 )
 
 func TestRepositoryCreatesNativeAccountDefaultsAndUpdatesLoginMetadata(t *testing.T) {
-	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
-		connection, err := pgx.Connect(ctx, databaseURL)
-		if err != nil {
-			return err
-		}
-		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
-		_, err = connection.Exec(ctx, `
-CREATE TABLE users (
-  id uuid PRIMARY KEY, username varchar(128) UNIQUE NOT NULL, email varchar(255) UNIQUE NOT NULL,
-  display_name varchar(255) NOT NULL, first_name varchar(255) NOT NULL, last_name varchar(255) NOT NULL,
-  password varchar(128) NOT NULL, last_login timestamptz, avatar text NOT NULL, avatar_asset_id uuid,
-  cover_image varchar(800), cover_image_asset_id uuid, date_joined timestamptz NOT NULL,
-  created_at timestamptz NOT NULL, updated_at timestamptz NOT NULL, last_location varchar(255) NOT NULL,
-  created_location varchar(255) NOT NULL, is_superuser boolean NOT NULL, is_managed boolean NOT NULL,
-  is_password_expired boolean NOT NULL, is_active boolean NOT NULL, is_staff boolean NOT NULL,
-  is_email_verified boolean NOT NULL, is_password_autoset boolean NOT NULL,
-  is_password_reset_required boolean NOT NULL, token varchar(64) NOT NULL, last_active timestamptz,
-  last_login_time timestamptz, last_logout_time timestamptz, last_login_ip varchar(255) NOT NULL,
-  last_logout_ip varchar(255) NOT NULL, last_login_medium varchar(20) NOT NULL,
-  last_login_uagent text NOT NULL, token_updated_at timestamptz, is_bot boolean NOT NULL,
-  bot_type varchar(30), user_timezone varchar(255) NOT NULL, is_email_valid boolean NOT NULL,
-  masked_at timestamptz
-);
-CREATE TABLE profiles (
-  id uuid PRIMARY KEY, user_id uuid UNIQUE NOT NULL REFERENCES users(id), theme jsonb NOT NULL,
-  is_app_rail_docked boolean NOT NULL, is_tour_completed boolean NOT NULL, onboarding_step jsonb NOT NULL,
-  use_case text, role varchar(300), is_onboarded boolean NOT NULL, last_workspace_id uuid,
-  billing_address_country varchar(255) NOT NULL, billing_address jsonb, has_billing_address boolean NOT NULL,
-  company_name varchar(255) NOT NULL, notification_view_mode varchar(255) NOT NULL,
-  is_smooth_cursor_enabled boolean NOT NULL, is_mobile_onboarded boolean NOT NULL,
-  mobile_onboarding_step jsonb NOT NULL, mobile_timezone_auto_set boolean NOT NULL,
-  language varchar(255) NOT NULL, start_of_the_week smallint NOT NULL, goals jsonb NOT NULL,
-  background_color varchar(255) NOT NULL, is_navigation_tour_completed boolean NOT NULL,
-  has_marketing_email_consent boolean NOT NULL, is_subscribed_to_changelog boolean NOT NULL,
-  product_tour jsonb NOT NULL, created_at timestamptz NOT NULL, updated_at timestamptz NOT NULL
-);
-CREATE TABLE user_notification_preferences (
-  id uuid PRIMARY KEY, user_id uuid NOT NULL REFERENCES users(id), workspace_id uuid, project_id uuid,
-  property_change boolean NOT NULL, state_change boolean NOT NULL, comment boolean NOT NULL,
-  mention boolean NOT NULL, issue_completed boolean NOT NULL, created_at timestamptz NOT NULL,
-  updated_at timestamptz NOT NULL
-);
-CREATE TABLE workspaces (
-  id uuid PRIMARY KEY, slug text NOT NULL, created_at timestamptz NOT NULL, deleted_at timestamptz
-);
-CREATE TABLE workspace_members (
-  workspace_id uuid NOT NULL REFERENCES workspaces(id), member_id uuid NOT NULL REFERENCES users(id),
-  is_active boolean NOT NULL, deleted_at timestamptz
-);
-CREATE TABLE workspace_member_invites (
-  id uuid PRIMARY KEY, email varchar(255) NOT NULL, accepted boolean NOT NULL, deleted_at timestamptz
-);
-`)
-		return err
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testsupport.Close(t, pair)
-	connection, err := pgx.Connect(ctx, pair.SeedURL())
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
-	repository, err := NewRepository(connection, nil, false)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx, connection, repository := openAccountRepository(t)
 
 	created, err := repository.CreateUser(ctx, "new@example.test", "generated-user-name", "pbkdf2_sha256$hash", false, false)
 	if err != nil {
@@ -191,7 +123,7 @@ is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,
 		t.Fatal(err)
 	}
 	now := time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)
-	activated, err := repository.UpdateLoginMetadata(ctx, provisionedID, now, "192.0.2.4", "Fixture Agent", "github", now)
+	activated, err := repository.UpdateLoginMetadata(ctx, LoginMetadata{UserID: provisionedID, At: now, IP: "192.0.2.4", UserAgent: "Fixture Agent", Medium: "github"})
 	if err != nil || !activated {
 		t.Fatalf("provisioned activation=%v err=%v", activated, err)
 	}
@@ -207,4 +139,80 @@ is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,
 	if !active || len(token) != 64 || medium != "github" || ip != "192.0.2.4" || userAgent != "Fixture Agent" || !lastActive.Equal(now) || !tokenUpdated.Equal(now) {
 		t.Fatalf("login metadata active=%t token-len=%d medium=%q ip=%q ua=%q last_active=%v token_updated=%v", active, len(token), medium, ip, userAgent, lastActive, tokenUpdated)
 	}
+}
+
+func openAccountRepository(t *testing.T) (context.Context, *pgx.Conn, *Repository) {
+	t.Helper()
+	ctx := context.Background()
+	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
+		connection, err := pgx.Connect(ctx, databaseURL)
+		if err != nil {
+			return err
+		}
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
+		_, err = connection.Exec(ctx, `
+CREATE TABLE work_item_effects (id uuid PRIMARY KEY, kind text NOT NULL, payload jsonb NOT NULL);
+CREATE TABLE users (
+  id uuid PRIMARY KEY, username varchar(128) UNIQUE NOT NULL, email varchar(255) UNIQUE NOT NULL,
+  display_name varchar(255) NOT NULL, first_name varchar(255) NOT NULL, last_name varchar(255) NOT NULL,
+  password varchar(128) NOT NULL, last_login timestamptz, avatar text NOT NULL, avatar_asset_id uuid,
+  cover_image varchar(800), cover_image_asset_id uuid, date_joined timestamptz NOT NULL,
+  created_at timestamptz NOT NULL, updated_at timestamptz NOT NULL, last_location varchar(255) NOT NULL,
+  created_location varchar(255) NOT NULL, is_superuser boolean NOT NULL, is_managed boolean NOT NULL,
+  is_password_expired boolean NOT NULL, is_active boolean NOT NULL, is_staff boolean NOT NULL,
+  is_email_verified boolean NOT NULL, is_password_autoset boolean NOT NULL,
+  is_password_reset_required boolean NOT NULL, token varchar(64) NOT NULL, last_active timestamptz,
+  last_login_time timestamptz, last_logout_time timestamptz, last_login_ip varchar(255) NOT NULL,
+  last_logout_ip varchar(255) NOT NULL, last_login_medium varchar(20) NOT NULL,
+  last_login_uagent text NOT NULL, token_updated_at timestamptz, is_bot boolean NOT NULL,
+  bot_type varchar(30), user_timezone varchar(255) NOT NULL, is_email_valid boolean NOT NULL,
+  masked_at timestamptz
+);
+CREATE TABLE profiles (
+  id uuid PRIMARY KEY, user_id uuid UNIQUE NOT NULL REFERENCES users(id), theme jsonb NOT NULL,
+  is_app_rail_docked boolean NOT NULL, is_tour_completed boolean NOT NULL, onboarding_step jsonb NOT NULL,
+  use_case text, role varchar(300), is_onboarded boolean NOT NULL, last_workspace_id uuid,
+  billing_address_country varchar(255) NOT NULL, billing_address jsonb, has_billing_address boolean NOT NULL,
+  company_name varchar(255) NOT NULL, notification_view_mode varchar(255) NOT NULL,
+  is_smooth_cursor_enabled boolean NOT NULL, is_mobile_onboarded boolean NOT NULL,
+  mobile_onboarding_step jsonb NOT NULL, mobile_timezone_auto_set boolean NOT NULL,
+  language varchar(255) NOT NULL, start_of_the_week smallint NOT NULL, goals jsonb NOT NULL,
+  background_color varchar(255) NOT NULL, is_navigation_tour_completed boolean NOT NULL,
+  has_marketing_email_consent boolean NOT NULL, is_subscribed_to_changelog boolean NOT NULL,
+  product_tour jsonb NOT NULL, created_at timestamptz NOT NULL, updated_at timestamptz NOT NULL
+);
+CREATE TABLE user_notification_preferences (
+  id uuid PRIMARY KEY, user_id uuid NOT NULL REFERENCES users(id), workspace_id uuid, project_id uuid,
+  property_change boolean NOT NULL, state_change boolean NOT NULL, comment boolean NOT NULL,
+  mention boolean NOT NULL, issue_completed boolean NOT NULL, created_at timestamptz NOT NULL,
+  updated_at timestamptz NOT NULL
+);
+CREATE TABLE workspaces (
+  id uuid PRIMARY KEY, slug text NOT NULL, created_at timestamptz NOT NULL, deleted_at timestamptz
+);
+CREATE TABLE workspace_members (
+  workspace_id uuid NOT NULL REFERENCES workspaces(id), member_id uuid NOT NULL REFERENCES users(id),
+  is_active boolean NOT NULL, deleted_at timestamptz
+);
+CREATE TABLE workspace_member_invites (
+  id uuid PRIMARY KEY, email varchar(255) NOT NULL, accepted boolean NOT NULL, deleted_at timestamptz
+);
+`)
+		return err
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { testsupport.Close(t, pair) })
+	connection, err := pgx.Connect(ctx, pair.SeedURL())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) })
+	repository, err := NewRepository(connection, nil, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return ctx, connection, repository
 }

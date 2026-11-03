@@ -131,23 +131,7 @@ func TestCycleLiveLabelRelationContract(t *testing.T) {
 	none := []string{cycleCaseID("06"), cycleCaseID("07"), cycleCaseID("08"), cycleCaseID("10")}
 	live := []string{cycleCaseID("05"), cycleCaseID("09")}
 	t.Run("projection", func(t *testing.T) {
-		result := query(t, IssueListOptions{})
-		expected := map[string][]string{cycleCaseID("05"): {cycleCaseID("21")}, cycleCaseID("09"): {cycleCaseID("21")}, cycleCaseID("11"): {cycleCaseID("23")}}
-		for _, row := range result.rows {
-			raw, rawErr := json.Marshal(row["label_ids"])
-			require.NoError(t, rawErr)
-			var labels []string
-			if err := json.Unmarshal(raw, &labels); err != nil {
-				t.Fatal(err)
-			}
-			want := expected[row["id"].(string)]
-			if want == nil {
-				want = []string{}
-			}
-			if !reflect.DeepEqual(labels, want) {
-				t.Errorf("%s labels=%v want=%v", row["id"], labels, want)
-			}
-		}
+		checkCycleLabelsProjection(t, query)
 	})
 	t.Run("None filter", func(t *testing.T) {
 		if got := cycleLabelIDs(query(t, IssueListOptions{Filters: map[string]string{"labels": "None"}}).rows); !reflect.DeepEqual(got, none) {
@@ -170,98 +154,163 @@ func TestCycleLiveLabelRelationContract(t *testing.T) {
 	}
 
 	t.Run("standalone subgroup", func(t *testing.T) {
-		result := query(t, IssueListOptions{SubGroupBy: "labels__id"})
-		if got := cycleLabelIDs(result.rows); !reflect.DeepEqual(got, []string{cycleCaseID("05"), cycleCaseID("06"), cycleCaseID("07"), cycleCaseID("08"), cycleCaseID("09"), cycleCaseID("10"), cycleCaseID("11")}) || result.total != 7 {
-			t.Fatalf("standalone subgroup rows=%d total=%d", len(result.rows), result.total)
-		}
+		checkCycleLabelsStandaloneSubgroup(t, query)
 	})
 	t.Run("ordering", func(t *testing.T) {
-		result := query(t, IssueListOptions{OrderBy: "labels__name"})
-		if result.rows[0]["id"] != cycleCaseID("11") {
-			t.Fatalf("first label-ordered row=%v", result.rows[0])
-		}
-		if got := cycleLabelIDs(result.rows[1:3]); !reflect.DeepEqual(got, live) {
-			t.Fatalf("live sorted labels=%v want=%v", got, live)
-		}
+		checkCycleLabelsOrdering(t, query, live)
 	})
 	expected := map[string][]string{cycleCaseID("21"): live, cycleCaseID("23"): {cycleCaseID("11")}, "None": none}
 	for _, subgroup := range []bool{false, true} {
 		t.Run(map[bool]string{false: "grouped", true: "subgrouped"}[subgroup], func(t *testing.T) {
-			options := IssueListOptions{GroupBy: "labels__id"}
-			if subgroup {
-				options.GroupBy = "priority"
-				options.SubGroupBy = "labels__id"
-			}
-			raw, err := repository.groupedIssues(ctx, user, "demo", project, cycle, options, 30, 30, 30, 0)
-			if err != nil {
-				t.Fatal(err)
-			}
-			envelope, groups := cycleLabelGroups(t, raw, subgroup)
-			if !reflect.DeepEqual(groups, expected) || envelope.Total != 7 || envelope.Count != 7 {
-				t.Fatalf("groups=%v total=%d count=%d want=%v", groups, envelope.Total, envelope.Count, expected)
-			}
+			checkCycleLabelGrouping(t, repository, ctx, user, project, cycle, expected, subgroup)
 		})
 	}
 	t.Run("label universe", func(t *testing.T) {
-		var raw []byte
-		if err := repository.database.QueryRow(ctx, "SELECT "+strings.ReplaceAll(issueGroupUniverseSQL("labels__id"), "$3", "$1"), project).Scan(&raw); err != nil {
-			t.Fatal(err)
-		}
-		var ids []string
-		if err := json.Unmarshal(raw, &ids); err != nil {
-			t.Fatal(err)
-		}
-		sort.Strings(ids)
-		want := []string{cycleCaseID("21"), cycleCaseID("23"), "None"}
-		sort.Strings(want)
-		if !reflect.DeepEqual(ids, want) {
-			t.Fatalf("universe=%v want=%v", ids, want)
-		}
+		checkCycleLabelsLabelUniverse(t, repository, ctx, project)
 	})
 	for field, key := range map[string]string{"priority": "low", "state_id": "None", "state__group": "None", "assignees__id": "None", "issue_module__module_id": "None", "project_id": project.String(), "cycle_id": cycle.String()} {
 		t.Run("supported subgroup "+field, func(t *testing.T) {
-			raw, err := repository.groupedIssues(ctx, user, "demo", project, cycle, IssueListOptions{GroupBy: "labels__id", SubGroupBy: field}, 30, 30, 30, 0)
-			if err != nil {
-				t.Fatal(err)
-			}
-			var envelope cycleLabelEnvelope
-			if err := json.Unmarshal(raw, &envelope); err != nil {
-				t.Fatal(err)
-			}
-			for label, want := range expected {
-				var buckets map[string]cycleLabelBucket
-				if err := json.Unmarshal(envelope.Results[label].Results, &buckets); err != nil {
-					t.Fatal(err)
-				}
-				if len(buckets) != 1 {
-					t.Fatalf("subgroup %s buckets=%v", field, buckets)
-				}
-				bucket, exists := buckets[key]
-				if !exists {
-					t.Fatalf("subgroup %s missing key %s; buckets=%v", field, key, buckets)
-				}
-				var rows []map[string]any
-				if err := json.Unmarshal(bucket.Results, &rows); err != nil {
-					t.Fatal(err)
-				}
-				if got := cycleLabelIDs(rows); !reflect.DeepEqual(got, want) {
-					t.Fatalf("subgroup %s label %s ids=%v want=%v", field, label, got, want)
-				}
-			}
-			if envelope.Total != 7 || envelope.Count != 7 {
-				t.Fatalf("subgroup %s total=%d count=%d", field, envelope.Total, envelope.Count)
-			}
+			checkCycleLabelSubgroupField(t, repository, ctx, user, project, cycle, expected, field, key)
 		})
 	}
 
 	t.Run("group pagination", func(t *testing.T) {
-		raw, err := repository.groupedIssues(ctx, user, "demo", project, cycle, IssueListOptions{GroupBy: "labels__id"}, 1, 1, 1, 0)
-		if err != nil {
+		checkCycleLabelsGroupPagination(t, repository, ctx, user, project, cycle)
+	})
+}
+
+func checkCycleLabelsProjection(t *testing.T, query func(testingScope *testing.T, options IssueListOptions) issueQueryResult) {
+	t.Helper()
+
+	result := query(t, IssueListOptions{})
+	expected := map[string][]string{cycleCaseID("05"): {cycleCaseID("21")}, cycleCaseID("09"): {cycleCaseID("21")}, cycleCaseID("11"): {cycleCaseID("23")}}
+	for _, row := range result.rows {
+		raw, rawErr := json.Marshal(row["label_ids"])
+		require.NoError(t, rawErr)
+		var labels []string
+		if err := json.Unmarshal(raw, &labels); err != nil {
 			t.Fatal(err)
 		}
-		envelope, groups := cycleLabelGroups(t, raw, false)
-		if envelope.Total != 7 || envelope.Pages != 4 || !envelope.Next || envelope.Count != 3 {
-			t.Fatalf("page=%+v groups=%v", envelope, groups)
+		want := expected[row["id"].(string)]
+		if want == nil {
+			want = []string{}
 		}
-	})
+		if !reflect.DeepEqual(labels, want) {
+			t.Errorf("%s labels=%v want=%v", row["id"], labels, want)
+		}
+	}
+
+}
+
+func checkCycleLabelsStandaloneSubgroup(t *testing.T, query func(testingScope *testing.T, options IssueListOptions) issueQueryResult) {
+	t.Helper()
+
+	result := query(t, IssueListOptions{SubGroupBy: "labels__id"})
+	if got := cycleLabelIDs(result.rows); !reflect.DeepEqual(got, []string{cycleCaseID("05"), cycleCaseID("06"), cycleCaseID("07"), cycleCaseID("08"), cycleCaseID("09"), cycleCaseID("10"), cycleCaseID("11")}) || result.total != 7 {
+		t.Fatalf("standalone subgroup rows=%d total=%d", len(result.rows), result.total)
+	}
+
+}
+
+func checkCycleLabelsOrdering(t *testing.T, query func(testingScope *testing.T, options IssueListOptions) issueQueryResult, live []string) {
+	t.Helper()
+
+	result := query(t, IssueListOptions{OrderBy: "labels__name"})
+	if result.rows[0]["id"] != cycleCaseID("11") {
+		t.Fatalf("first label-ordered row=%v", result.rows[0])
+	}
+	if got := cycleLabelIDs(result.rows[1:3]); !reflect.DeepEqual(got, live) {
+		t.Fatalf("live sorted labels=%v want=%v", got, live)
+	}
+
+}
+
+func checkCycleLabelGrouping(t *testing.T, repository *Repository, ctx context.Context, user uuid.UUID, project uuid.UUID, cycle uuid.UUID, expected map[string][]string, subgroup bool) {
+	t.Helper()
+
+	options := IssueListOptions{GroupBy: "labels__id"}
+	if subgroup {
+		options.GroupBy = "priority"
+		options.SubGroupBy = "labels__id"
+	}
+	raw, err := repository.groupedIssues(ctx, user, "demo", project, cycle, options, 30, 30, 30, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	envelope, groups := cycleLabelGroups(t, raw, subgroup)
+	if !reflect.DeepEqual(groups, expected) || envelope.Total != 7 || envelope.Count != 7 {
+		t.Fatalf("groups=%v total=%d count=%d want=%v", groups, envelope.Total, envelope.Count, expected)
+	}
+
+}
+
+func checkCycleLabelsLabelUniverse(t *testing.T, repository *Repository, ctx context.Context, project uuid.UUID) {
+	t.Helper()
+
+	var raw []byte
+	if err := repository.database.QueryRow(ctx, "SELECT "+strings.ReplaceAll(issueGroupUniverseSQL("labels__id"), "$3", "$1"), project).Scan(&raw); err != nil {
+		t.Fatal(err)
+	}
+	var ids []string
+	if err := json.Unmarshal(raw, &ids); err != nil {
+		t.Fatal(err)
+	}
+	sort.Strings(ids)
+	want := []string{cycleCaseID("21"), cycleCaseID("23"), "None"}
+	sort.Strings(want)
+	if !reflect.DeepEqual(ids, want) {
+		t.Fatalf("universe=%v want=%v", ids, want)
+	}
+
+}
+
+func checkCycleLabelSubgroupField(t *testing.T, repository *Repository, ctx context.Context, user uuid.UUID, project uuid.UUID, cycle uuid.UUID, expected map[string][]string, field string, key string) {
+	t.Helper()
+
+	raw, err := repository.groupedIssues(ctx, user, "demo", project, cycle, IssueListOptions{GroupBy: "labels__id", SubGroupBy: field}, 30, 30, 30, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var envelope cycleLabelEnvelope
+	if err := json.Unmarshal(raw, &envelope); err != nil {
+		t.Fatal(err)
+	}
+	for label, want := range expected {
+		var buckets map[string]cycleLabelBucket
+		if err := json.Unmarshal(envelope.Results[label].Results, &buckets); err != nil {
+			t.Fatal(err)
+		}
+		if len(buckets) != 1 {
+			t.Fatalf("subgroup %s buckets=%v", field, buckets)
+		}
+		bucket, exists := buckets[key]
+		if !exists {
+			t.Fatalf("subgroup %s missing key %s; buckets=%v", field, key, buckets)
+		}
+		var rows []map[string]any
+		if err := json.Unmarshal(bucket.Results, &rows); err != nil {
+			t.Fatal(err)
+		}
+		if got := cycleLabelIDs(rows); !reflect.DeepEqual(got, want) {
+			t.Fatalf("subgroup %s label %s ids=%v want=%v", field, label, got, want)
+		}
+	}
+	if envelope.Total != 7 || envelope.Count != 7 {
+		t.Fatalf("subgroup %s total=%d count=%d", field, envelope.Total, envelope.Count)
+	}
+
+}
+
+func checkCycleLabelsGroupPagination(t *testing.T, repository *Repository, ctx context.Context, user uuid.UUID, project uuid.UUID, cycle uuid.UUID) {
+	t.Helper()
+
+	raw, err := repository.groupedIssues(ctx, user, "demo", project, cycle, IssueListOptions{GroupBy: "labels__id"}, 1, 1, 1, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	envelope, groups := cycleLabelGroups(t, raw, false)
+	if envelope.Total != 7 || envelope.Pages != 4 || !envelope.Next || envelope.Count != 3 {
+		t.Fatalf("page=%+v groups=%v", envelope, groups)
+	}
+
 }

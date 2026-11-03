@@ -61,7 +61,7 @@ func TestSignOutReportsRevocationFailuresAndRevokesDespiteMetadataFailure(t *tes
 			store := &logoutSessionStore{failure: scenario.deleteError, rows: map[string]bool{"current": true, "other": true}}
 			sessions, err := browsersession.New(store, browsersession.Config{SecretKey: "test-secret-key"})
 			require.NoError(t, err)
-			service, err := NewService(accounts, passwordStub{}, strengthStub(3), sessions, nil, nil)
+			service, err := NewService(accounts, passwordStub{}, strengthStub(3), sessions, nil)
 			require.NoError(t, err)
 			now := time.Date(2026, time.November, 2, 12, 0, 0, 0, time.UTC)
 			request := Request{BaseURL: "https://app.example.test", NextPath: "/shared/", AllowedHosts: []string{"app.example.test"}, IsSpace: scenario.space, Now: now,
@@ -89,7 +89,7 @@ func TestAnonymousSignOutPreservesRedirectWithoutStorage(t *testing.T) {
 	store := &logoutSessionStore{failure: errors.New("no session to revoke")}
 	sessions, err := browsersession.New(store, browsersession.Config{SecretKey: "test-secret-key"})
 	require.NoError(t, err)
-	service, err := NewService(accounts, passwordStub{}, strengthStub(3), sessions, nil, nil)
+	service, err := NewService(accounts, passwordStub{}, strengthStub(3), sessions, nil)
 	require.NoError(t, err)
 	request := Request{BaseURL: "https://app.example.test", NextPath: "/shared/", AllowedHosts: []string{"app.example.test"}}
 

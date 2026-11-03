@@ -70,9 +70,11 @@ func TestResourceCleanupContinuesAfterFailuresInReverseAcquisitionOrder(t *testi
 	middle := &cleanupResource{onClose: func() { order = append(order, "middle") }}
 	last := &cleanupResource{closeErr: lastErr, onClose: func() { order = append(order, "last") }}
 	resultErr := func() (resultErr error) {
-		defer closeResource(&resultErr, "first cache", first)
-		defer closeResource(&resultErr, "middle cache", middle)
-		defer closeResource(&resultErr, "last cache", last)
+		assembly := &systemAssembly{}
+		defer assembly.close(&resultErr)
+		assembly.onClose(func(result *error) { closeResource(result, "first cache", first) })
+		assembly.onClose(func(result *error) { closeResource(result, "middle cache", middle) })
+		assembly.onClose(func(result *error) { closeResource(result, "last cache", last) })
 		return serveErr
 	}()
 	if !errors.Is(resultErr, serveErr) || !errors.Is(resultErr, firstErr) || !errors.Is(resultErr, lastErr) {

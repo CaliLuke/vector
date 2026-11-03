@@ -34,7 +34,7 @@ type accountAuthenticationRepository interface {
 	UserByID(context.Context, string) (store.User, error)
 	UpdatePassword(context.Context, string, string, bool, time.Time) error
 	SetPassword(context.Context, string, string, bool) error
-	UpdateLoginMetadata(context.Context, string, time.Time, string, string, string, time.Time) (bool, error)
+	UpdateLoginMetadata(context.Context, store.LoginMetadata) (bool, error)
 	UserJSON(context.Context, string) (json.RawMessage, error)
 }
 type accountAuthenticationThrottle interface {

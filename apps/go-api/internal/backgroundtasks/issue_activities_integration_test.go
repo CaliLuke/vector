@@ -27,17 +27,11 @@ func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
 	ownerID, receiverID, mentionID, workspaceID, projectID, issueID := uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New()
 	now := time.Now().UTC()
 	username := "issue-activity-" + ownerID.String()
-	if _, err := pool.Exec(ctx, `INSERT INTO users (id,password,username,display_name,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,user_timezone,is_email_valid) VALUES ($1,'!', $2,'Activity Test','Activity','Test','',$3,$3,$3,'','',false,false,false,true,false,true,false,false,$2,'','','','',false,'UTC',true)`, ownerID, username, now); err != nil {
-		t.Fatalf("insert activity owner fixture: %v", err)
-	}
+	seedBackgroundTaskUser(t, ctx, pool, ownerID, username, "Activity", "Test", "", now)
 	receiverUsername := "issue-activity-receiver-" + receiverID.String()
-	if _, err := pool.Exec(ctx, `INSERT INTO users (id,password,username,display_name,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,user_timezone,is_email_valid) VALUES ($1,'!', $2,'Activity Receiver','Activity','Receiver','',$3,$3,$3,'','',false,false,false,true,false,true,false,false,$2,'','','','',false,'UTC',true)`, receiverID, receiverUsername, now); err != nil {
-		t.Fatalf("insert activity receiver fixture: %v", err)
-	}
+	seedBackgroundTaskUser(t, ctx, pool, receiverID, receiverUsername, "Activity", "Receiver", "", now)
 	mentionUsername := "issue-activity-mention-" + mentionID.String()
-	if _, err := pool.Exec(ctx, `INSERT INTO users (id,password,username,display_name,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,user_timezone,is_email_valid) VALUES ($1,'!', $2,'Activity Mention','Activity','Mention','',$3,$3,$3,'','',false,false,false,true,false,true,false,false,$2,'','','','',false,'UTC',true)`, mentionID, mentionUsername, now); err != nil {
-		t.Fatalf("insert activity mention fixture: %v", err)
-	}
+	seedBackgroundTaskUser(t, ctx, pool, mentionID, mentionUsername, "Activity", "Mention", "", now)
 	receiverEmail := "activity-receiver-" + receiverID.String() + "@example.test"
 	mentionEmail := "activity-mention-" + mentionID.String() + "@example.test"
 	if _, err := pool.Exec(ctx, `UPDATE users SET email=CASE id WHEN $1 THEN $3 WHEN $2 THEN $4 END WHERE id=ANY($5::uuid[])`, receiverID, mentionID, receiverEmail, mentionEmail, []uuid.UUID{receiverID, mentionID}); err != nil {
@@ -138,163 +132,11 @@ func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
 	}
 	assertCatalogueActivityWorkflows(t, ctx, app, dispatcher, store, pool, input)
 
-	update := IssueActivityInput{
-		Type: "issue.activity.updated", ProjectID: projectID.String(), IssueID: stringPointer(issueID.String()), ActorID: stringPointer(ownerID.String()), Notification: true, Origin: "https://plane.example.test",
-		RequestedData:   json.RawMessage(`{"name":"Activity Updated","priority":"high","description_html":"<p><mention-component entity_name=\"user_mention\" entity_identifier=\"` + mentionID.String() + `\"></mention-component></p>"}`),
-		CurrentInstance: json.RawMessage(`{"name":"Activity Test","priority":"medium","description_html":"<p>test</p>"}`),
-	}
-	updateID, err := dispatcher.Admit(ctx, uuid.NewString(), update)
-	if err != nil {
-		t.Fatalf("admit issue update activity: %v", err)
-	}
-	waitVersionWorkflow(t, ctx, app, updateID)
-	var updateCount int
-	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_activities WHERE issue_id=$1 AND actor_id=$2 AND verb='updated' AND field IN ('name','priority')`, issueID, ownerID).Scan(&updateCount); scanErr != nil {
-		t.Fatalf("count issue update activities: %v", scanErr)
-	}
-	if updateCount != 2 {
-		t.Fatalf("issue update created %d activity rows, want 2", updateCount)
-	}
-	var notificationCount, emailCount int
-	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM notifications WHERE receiver_id=$1 AND entity_identifier=$2`, receiverID, issueID).Scan(&notificationCount); scanErr != nil {
-		t.Fatalf("count native issue notifications: %v", scanErr)
-	}
-	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM email_notification_logs WHERE receiver_id=$1 AND entity_identifier=$2`, receiverID, issueID).Scan(&emailCount); scanErr != nil {
-		t.Fatalf("count native issue email logs: %v", scanErr)
-	}
-	if notificationCount != 3 || emailCount != 2 {
-		t.Fatalf("notification fanout created notifications=%d email logs=%d, want one per activity and email only for name and priority changes", notificationCount, emailCount)
-	}
-	var mentionNotifications, mentionEmailLogs, mentionSubscribers, issueMentions int
-	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM notifications WHERE receiver_id=$1 AND entity_identifier=$2 AND sender='in_app:issue_activities:mentioned'`, mentionID, issueID).Scan(&mentionNotifications); scanErr != nil {
-		t.Fatalf("count mention notifications: %v", scanErr)
-	}
-	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM email_notification_logs WHERE receiver_id=$1 AND entity_identifier=$2`, mentionID, issueID).Scan(&mentionEmailLogs); scanErr != nil {
-		t.Fatalf("count mention email logs: %v", scanErr)
-	}
-	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_subscribers WHERE issue_id=$1 AND subscriber_id=$2 AND deleted_at IS NULL`, issueID, mentionID).Scan(&mentionSubscribers); scanErr != nil {
-		t.Fatalf("count mention subscriber: %v", scanErr)
-	}
-	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_mentions WHERE issue_id=$1 AND mention_id=$2 AND deleted_at IS NULL`, issueID, mentionID).Scan(&issueMentions); scanErr != nil {
-		t.Fatalf("count issue mention: %v", scanErr)
-	}
-	if mentionNotifications != 1 || mentionEmailLogs != 1 || mentionSubscribers != 1 || issueMentions != 1 {
-		t.Fatalf("description mention effects notification=%d email=%d subscriber=%d issue_mention=%d, want one each", mentionNotifications, mentionEmailLogs, mentionSubscribers, issueMentions)
-	}
-	pendingBatches, err := emailStore.pendingBatches(ctx)
-	if err != nil {
-		t.Fatalf("collect email batches before durable admission: %v", err)
-	}
-	if len(pendingBatches) != 2 {
-		t.Fatalf("collected %d pending receiver batches, want two", len(pendingBatches))
-	}
-	var stillPending int
-	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM email_notification_logs WHERE receiver_id=ANY($1::uuid[]) AND entity_identifier=$2 AND processed_at IS NULL`, []uuid.UUID{receiverID, mentionID}, issueID).Scan(&stillPending); scanErr != nil {
-		t.Fatalf("check pending rows after collector-only pass: %v", scanErr)
-	}
-	if stillPending != 3 {
-		t.Fatalf("collector-only pass marked %d rows processed; want all three replayable until child admission and delivery", 3-stillPending)
-	}
-	emailWorkflowID, err := emailDispatcher.Admit(ctx, uuid.NewString())
-	if err != nil {
-		t.Fatalf("admit issue email delivery: %v", err)
-	}
-	waitVersionWorkflow(t, ctx, app, emailWorkflowID)
-	if got := emailSender.count(); got != 2 {
-		t.Fatalf("email delivery sent %d messages, want one per receiver/issue batch", got)
-	}
-	if got := emailSender.attempts(); got != 3 {
-		t.Fatalf("SMTP sender was called %d times, want one failed attempt and two successful batch deliveries", got)
-	}
-	if !emailSender.contains("@Activity Mention") {
-		t.Fatal("mention activity email did not render the mentioned user's display name")
-	}
-	var sentCount, processedCount int
-	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FILTER (WHERE sent_at IS NOT NULL),COUNT(*) FILTER (WHERE processed_at IS NOT NULL) FROM email_notification_logs WHERE receiver_id=ANY($1::uuid[]) AND entity_identifier=$2`, []uuid.UUID{receiverID, mentionID}, issueID).Scan(&sentCount, &processedCount); scanErr != nil {
-		t.Fatalf("count delivered email notification logs: %v", scanErr)
-	}
-	if sentCount != 3 || processedCount != 3 {
-		t.Fatalf("email delivery status sent=%d processed=%d, want three each", sentCount, processedCount)
-	}
-	// Re-admitting a new Beat firing after success must observe sent_at and not
-	// send the same logs a second time.
-	secondEmailWorkflowID, err := emailDispatcher.Admit(ctx, uuid.NewString())
-	if err != nil {
-		t.Fatalf("admit repeated issue email scan: %v", err)
-	}
-	waitVersionWorkflow(t, ctx, app, secondEmailWorkflowID)
-	if got := emailSender.count(); got != 2 {
-		t.Fatalf("repeated scan sent %d messages, want no duplicate delivery", got)
-	}
-	scheduleID, err := emailDispatcher.StartBeatSchedule(ctx)
-	if err != nil {
-		t.Fatalf("start durable five-minute email schedule: %v", err)
-	}
-	waitForEmailBeatTimer(t, ctx, pool, scheduleID)
-	duplicateScheduleID, err := emailDispatcher.StartBeatSchedule(ctx)
-	if err != nil {
-		t.Fatalf("reconcile durable email schedule start: %v", err)
-	}
-	if duplicateScheduleID != scheduleID {
-		t.Fatalf("duplicate schedule start returned %q, want stable ID %q", duplicateScheduleID, scheduleID)
-	}
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
-	if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
-		shutdownCancel()
-		t.Fatalf("stop email schedule worker for restart test: %v", shutdownErr)
-	}
-	shutdownCancel()
-	appStopped = true
+	checkIssueUpdateAndMentionEffects(t, pool, ctx, ownerID, receiverID, mentionID, projectID, issueID, app, dispatcher)
+	checkIssueEmailDeliveryAndReplay(t, pool, ctx, receiverID, mentionID, issueID, emailSender, emailStore, app, emailDispatcher)
 
-	restartedApp := selvedge.NewApp(
-		selvedge.WithDatabase(executionURL),
-		selvedge.WithServiceName("plane-issue-activity-integration-test"),
-		selvedge.WithActivityPollInterval(20*time.Millisecond),
-		selvedge.WithWorkflowResumptionInterval(20*time.Millisecond),
-		selvedge.WithTimerCheckInterval(20*time.Millisecond),
-	)
-	restartedEmailDispatcher, err := RegisterIssueEmailNotificationWorkflow(restartedApp, emailStore, retry.Exponential(3, 10*time.Millisecond, 30*time.Millisecond, 2))
-	if err != nil {
-		t.Fatalf("register restarted email worker: %v", err)
-	}
-	if startErr := restartedApp.Start(ctx); startErr != nil {
-		t.Fatalf("restart email worker: %v", startErr)
-	}
-	defer func() {
-		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer shutdownCancel()
-		if shutdownErr := restartedApp.Shutdown(shutdownCtx); shutdownErr != nil {
-			t.Errorf("shutdown restarted email worker: %v", shutdownErr)
-		}
-	}()
-	restartedScheduleID, err := restartedEmailDispatcher.StartBeatSchedule(ctx)
-	if err != nil {
-		t.Fatalf("recover durable email Beat schedule after worker restart: %v", err)
-	}
-	if restartedScheduleID != scheduleID {
-		t.Fatalf("restarted schedule ID = %q, want %q", restartedScheduleID, scheduleID)
-	}
-	waitForEmailBeatTimer(t, ctx, pool, scheduleID)
-}
+	checkIssueEmailScheduleRestart(t, executionURL, pool, ctx, emailStore, app, emailDispatcher, &appStopped)
 
-func waitForEmailBeatTimer(t *testing.T, ctx context.Context, pool *pgxpool.Pool, scheduleID string) {
-	t.Helper()
-	deadline := time.Now().Add(3 * time.Second)
-	for time.Now().Before(deadline) {
-		var count int
-		if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM plane_execution.workflow_timer_subscriptions WHERE instance_id=$1`, scheduleID).Scan(&count); err != nil {
-			t.Fatalf("inspect durable email Beat timer: %v", err)
-		}
-		if count == 1 {
-			return
-		}
-		select {
-		case <-ctx.Done():
-			t.Fatalf("wait for durable email Beat timer: %v", ctx.Err())
-		case <-time.After(20 * time.Millisecond):
-		}
-	}
-	t.Fatal("durable email Beat schedule did not arm a PostgreSQL timer")
 }
 
 type fixedIssueEmailConfig struct{}
@@ -346,4 +188,158 @@ func (sender *recordingIssueEmailSender) contains(value string) bool {
 		}
 	}
 	return false
+}
+
+func checkIssueEmailDeliveryAndReplay(t *testing.T, pool *pgxpool.Pool, ctx context.Context, receiverID uuid.UUID, mentionID uuid.UUID, issueID uuid.UUID, emailSender *recordingIssueEmailSender, emailStore *issueEmailStore, app *selvedge.App, emailDispatcher *IssueEmailDispatcher) {
+	t.Helper()
+
+	pendingBatches, err := emailStore.pendingBatches(ctx)
+	if err != nil {
+		t.Fatalf("collect email batches before durable admission: %v", err)
+	}
+	if len(pendingBatches) != 2 {
+		t.Fatalf("collected %d pending receiver batches, want two", len(pendingBatches))
+	}
+	var stillPending int
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM email_notification_logs WHERE receiver_id=ANY($1::uuid[]) AND entity_identifier=$2 AND processed_at IS NULL`, []uuid.UUID{receiverID, mentionID}, issueID).Scan(&stillPending); scanErr != nil {
+		t.Fatalf("check pending rows after collector-only pass: %v", scanErr)
+	}
+	if stillPending != 3 {
+		t.Fatalf("collector-only pass marked %d rows processed; want all three replayable until child admission and delivery", 3-stillPending)
+	}
+	emailWorkflowID, err := emailDispatcher.Admit(ctx, uuid.NewString())
+	if err != nil {
+		t.Fatalf("admit issue email delivery: %v", err)
+	}
+	waitVersionWorkflow(t, ctx, app, emailWorkflowID)
+	if got := emailSender.count(); got != 2 {
+		t.Fatalf("email delivery sent %d messages, want one per receiver/issue batch", got)
+	}
+	if got := emailSender.attempts(); got != 3 {
+		t.Fatalf("SMTP sender was called %d times, want one failed attempt and two successful batch deliveries", got)
+	}
+	if !emailSender.contains("@Activity Mention") {
+		t.Fatal("mention activity email did not render the mentioned user's display name")
+	}
+	var sentCount, processedCount int
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FILTER (WHERE sent_at IS NOT NULL),COUNT(*) FILTER (WHERE processed_at IS NOT NULL) FROM email_notification_logs WHERE receiver_id=ANY($1::uuid[]) AND entity_identifier=$2`, []uuid.UUID{receiverID, mentionID}, issueID).Scan(&sentCount, &processedCount); scanErr != nil {
+		t.Fatalf("count delivered email notification logs: %v", scanErr)
+	}
+	if sentCount != 3 || processedCount != 3 {
+		t.Fatalf("email delivery status sent=%d processed=%d, want three each", sentCount, processedCount)
+	}
+	// Re-admitting a new Beat firing after success must observe sent_at and not
+	// send the same logs a second time.
+	secondEmailWorkflowID, err := emailDispatcher.Admit(ctx, uuid.NewString())
+	if err != nil {
+		t.Fatalf("admit repeated issue email scan: %v", err)
+	}
+	waitVersionWorkflow(t, ctx, app, secondEmailWorkflowID)
+	if got := emailSender.count(); got != 2 {
+		t.Fatalf("repeated scan sent %d messages, want no duplicate delivery", got)
+	}
+
+}
+
+func checkIssueEmailScheduleRestart(t *testing.T, executionURL string, pool *pgxpool.Pool, ctx context.Context, emailStore *issueEmailStore, app *selvedge.App, emailDispatcher *IssueEmailDispatcher, appStopped *bool) {
+	t.Helper()
+
+	scheduleID, err := emailDispatcher.StartBeatSchedule(ctx)
+	if err != nil {
+		t.Fatalf("start durable five-minute email schedule: %v", err)
+	}
+	waitForBeatTimer(t, ctx, pool, scheduleID)
+	duplicateScheduleID, err := emailDispatcher.StartBeatSchedule(ctx)
+	if err != nil {
+		t.Fatalf("reconcile durable email schedule start: %v", err)
+	}
+	if duplicateScheduleID != scheduleID {
+		t.Fatalf("duplicate schedule start returned %q, want stable ID %q", duplicateScheduleID, scheduleID)
+	}
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
+		shutdownCancel()
+		t.Fatalf("stop email schedule worker for restart test: %v", shutdownErr)
+	}
+	shutdownCancel()
+	(*appStopped) = true
+
+	restartedApp := selvedge.NewApp(
+		selvedge.WithDatabase(executionURL),
+		selvedge.WithServiceName("plane-issue-activity-integration-test"),
+		selvedge.WithActivityPollInterval(20*time.Millisecond),
+		selvedge.WithWorkflowResumptionInterval(20*time.Millisecond),
+		selvedge.WithTimerCheckInterval(20*time.Millisecond),
+	)
+	restartedEmailDispatcher, err := RegisterIssueEmailNotificationWorkflow(restartedApp, emailStore, retry.Exponential(3, 10*time.Millisecond, 30*time.Millisecond, 2))
+	if err != nil {
+		t.Fatalf("register restarted email worker: %v", err)
+	}
+	if startErr := restartedApp.Start(ctx); startErr != nil {
+		t.Fatalf("restart email worker: %v", startErr)
+	}
+	defer func() {
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer shutdownCancel()
+		if shutdownErr := restartedApp.Shutdown(shutdownCtx); shutdownErr != nil {
+			t.Errorf("shutdown restarted email worker: %v", shutdownErr)
+		}
+	}()
+	restartedScheduleID, err := restartedEmailDispatcher.StartBeatSchedule(ctx)
+	if err != nil {
+		t.Fatalf("recover durable email Beat schedule after worker restart: %v", err)
+	}
+	if restartedScheduleID != scheduleID {
+		t.Fatalf("restarted schedule ID = %q, want %q", restartedScheduleID, scheduleID)
+	}
+	waitForBeatTimer(t, ctx, pool, scheduleID)
+}
+
+func checkIssueUpdateAndMentionEffects(t *testing.T, pool *pgxpool.Pool, ctx context.Context, ownerID uuid.UUID, receiverID uuid.UUID, mentionID uuid.UUID, projectID uuid.UUID, issueID uuid.UUID, app *selvedge.App, dispatcher *IssueActivityDispatcher) {
+	t.Helper()
+
+	update := IssueActivityInput{
+		Type: "issue.activity.updated", ProjectID: projectID.String(), IssueID: stringPointer(issueID.String()), ActorID: stringPointer(ownerID.String()), Notification: true, Origin: "https://plane.example.test",
+		RequestedData:   json.RawMessage(`{"name":"Activity Updated","priority":"high","description_html":"<p><mention-component entity_name=\"user_mention\" entity_identifier=\"` + mentionID.String() + `\"></mention-component></p>"}`),
+		CurrentInstance: json.RawMessage(`{"name":"Activity Test","priority":"medium","description_html":"<p>test</p>"}`),
+	}
+	updateID, err := dispatcher.Admit(ctx, uuid.NewString(), update)
+	if err != nil {
+		t.Fatalf("admit issue update activity: %v", err)
+	}
+	waitVersionWorkflow(t, ctx, app, updateID)
+	var updateCount int
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_activities WHERE issue_id=$1 AND actor_id=$2 AND verb='updated' AND field IN ('name','priority')`, issueID, ownerID).Scan(&updateCount); scanErr != nil {
+		t.Fatalf("count issue update activities: %v", scanErr)
+	}
+	if updateCount != 2 {
+		t.Fatalf("issue update created %d activity rows, want 2", updateCount)
+	}
+	var notificationCount, emailCount int
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM notifications WHERE receiver_id=$1 AND entity_identifier=$2`, receiverID, issueID).Scan(&notificationCount); scanErr != nil {
+		t.Fatalf("count native issue notifications: %v", scanErr)
+	}
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM email_notification_logs WHERE receiver_id=$1 AND entity_identifier=$2`, receiverID, issueID).Scan(&emailCount); scanErr != nil {
+		t.Fatalf("count native issue email logs: %v", scanErr)
+	}
+	if notificationCount != 3 || emailCount != 2 {
+		t.Fatalf("notification fanout created notifications=%d email logs=%d, want one per activity and email only for name and priority changes", notificationCount, emailCount)
+	}
+	var mentionNotifications, mentionEmailLogs, mentionSubscribers, issueMentions int
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM notifications WHERE receiver_id=$1 AND entity_identifier=$2 AND sender='in_app:issue_activities:mentioned'`, mentionID, issueID).Scan(&mentionNotifications); scanErr != nil {
+		t.Fatalf("count mention notifications: %v", scanErr)
+	}
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM email_notification_logs WHERE receiver_id=$1 AND entity_identifier=$2`, mentionID, issueID).Scan(&mentionEmailLogs); scanErr != nil {
+		t.Fatalf("count mention email logs: %v", scanErr)
+	}
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_subscribers WHERE issue_id=$1 AND subscriber_id=$2 AND deleted_at IS NULL`, issueID, mentionID).Scan(&mentionSubscribers); scanErr != nil {
+		t.Fatalf("count mention subscriber: %v", scanErr)
+	}
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_mentions WHERE issue_id=$1 AND mention_id=$2 AND deleted_at IS NULL`, issueID, mentionID).Scan(&issueMentions); scanErr != nil {
+		t.Fatalf("count issue mention: %v", scanErr)
+	}
+	if mentionNotifications != 1 || mentionEmailLogs != 1 || mentionSubscribers != 1 || issueMentions != 1 {
+		t.Fatalf("description mention effects notification=%d email=%d subscriber=%d issue_mention=%d, want one each", mentionNotifications, mentionEmailLogs, mentionSubscribers, issueMentions)
+	}
+
 }

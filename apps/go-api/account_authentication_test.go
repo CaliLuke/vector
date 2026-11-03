@@ -52,7 +52,7 @@ func (r *accountAuthenticationTestRepo) SetPassword(context.Context, string, str
 	r.setPasswordCalls++
 	return nil
 }
-func (r *accountAuthenticationTestRepo) UpdateLoginMetadata(context.Context, string, time.Time, string, string, string, time.Time) (bool, error) {
+func (r *accountAuthenticationTestRepo) UpdateLoginMetadata(context.Context, store.LoginMetadata) (bool, error) {
 	r.updateLoginCalls++
 	return false, nil
 }

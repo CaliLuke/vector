@@ -1,21 +1,21 @@
 {
   "version": 1,
   "catalog_id": "ERR-02",
-  "audit_date": "2026-11-02",
+  "audit_date": "2026-11-03",
   "tool": "golangci-lint 2.15.0 (Go 1.27.3)",
   "configuration": "Repository apps/go-api/.golangci.yml in the same Git revision as this inventory; add linters.settings.errcheck.check-blank=true and select --enable-only errcheck. Existing integration tags, test inclusion, generated-source exclusions and timeout retained.",
   "config_sha256": "50339d0f8ed7faa84b429fe70809295206325867ceea67a2b2843b2db32c2633",
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 158,
+    "findings": 153,
     "also_in_ERR_01": 0,
-    "additional_ERR_02": 158,
+    "additional_ERR_02": 153,
     "test_file_findings": 0,
-    "non_test_file_findings": 158,
+    "non_test_file_findings": 153,
     "dispositions": {
       "retained": 153,
-      "deferred": 5
+      "deferred": 0
     }
   },
   "findings": [
@@ -760,16 +760,6 @@
       "evidence": "func (request uploadRequest) Attributes(name, contentType string, size int64) []byte {"
     },
     {
-      "file": "apps/go-api/internal/authredirects/service.go",
-      "line": 601,
-      "column": 3,
-      "message": "Error return value of `service.activation.Task` is not checked",
-      "also_in_configured_audit": false,
-      "disposition": "deferred",
-      "reason": "Activation metadata is already updated before email admission. Durable retry requires atomic activation/outbox ownership; merely returning 500 would not restore the lost first-activation signal. Keep this as a separate transaction-design follow-up.",
-      "evidence": "func (service *Service) completeLogin(ctx context.Context, request Request, user accountauthentication.User, app bool, medium string, autoset bool) Result {"
-    },
-    {
       "file": "apps/go-api/internal/backgroundtasks/description_asset_copy.go",
       "line": 246,
       "column": 11,
@@ -821,7 +811,7 @@
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/issue_activities.go",
-      "line": 250,
+      "line": 244,
       "column": 13,
       "message": "Error return value of `uuid.Parse` is not checked",
       "also_in_configured_audit": false,
@@ -831,43 +821,13 @@
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/issue_activities.go",
-      "line": 251,
+      "line": 245,
       "column": 13,
       "message": "Error return value of `uuid.Parse` is not checked",
       "also_in_configured_audit": false,
       "disposition": "retained",
       "reason": "validateIssueActivityInput runs before transaction creation and validates both eventID and ProjectID.",
       "evidence": "func (store *PostgresIssueActivityStore) RecordIssueActivity(ctx context.Context, eventID string, input IssueActivityInput) (_ []string, resultErr error) {"
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/issue_activities.go",
-      "line": 373,
-      "column": 3,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false,
-      "disposition": "deferred",
-      "reason": "Optional activity snapshots/array decoders currently coerce malformed or differently shaped legacy payloads to partial/empty values. Define rejection/retry handling for persisted tasks before changing this contract.",
-      "evidence": "func decodeActivityObject(raw json.RawMessage) map[string]json.RawMessage {"
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/issue_activities.go",
-      "line": 500,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false,
-      "disposition": "deferred",
-      "reason": "Optional activity snapshots/array decoders currently coerce malformed or differently shaped legacy payloads to partial/empty values. Define rejection/retry handling for persisted tasks before changing this contract.",
-      "evidence": "func rawStringArray(raw json.RawMessage) []string {"
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/issue_activities.go",
-      "line": 513,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false,
-      "disposition": "deferred",
-      "reason": "Optional activity snapshots/array decoders currently coerce malformed or differently shaped legacy payloads to partial/empty values. Define rejection/retry handling for persisted tasks before changing this contract.",
-      "evidence": "func rawObjectArray(raw json.RawMessage) []map[string]json.RawMessage {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/issue_email_notifications.go",
@@ -968,16 +928,6 @@
       "disposition": "retained",
       "reason": "validateRecentVisitInput precedes these parses and validates optional IDs when present.",
       "evidence": "func (store *PostgresRecentVisitStore) RecordRecentVisit(ctx context.Context, input RecentVisitInput) (resultErr error) {"
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/version_history.go",
-      "line": 179,
-      "column": 3,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false,
-      "disposition": "deferred",
-      "reason": "Non-string prior description currently becomes empty text. Changing handling of already-persisted version payloads requires an explicit task rejection/retry policy.",
-      "evidence": "func (store *PostgresVersionHistoryStore) TrackPageVersion(ctx context.Context, input PageVersionInput) (resultErr error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/webhook_tasks.go",

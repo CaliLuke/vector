@@ -51,7 +51,7 @@ func (stub *accountStub) SetPassword(_ context.Context, _, encoded string, autos
 	stub.user.PasswordAutoset = autoset
 	return nil
 }
-func (stub *accountStub) UpdateLoginMetadata(context.Context, string, time.Time, string, string, string, time.Time) (bool, error) {
+func (stub *accountStub) UpdateLoginMetadata(context.Context, accountauthentication.LoginMetadata) (bool, error) {
 	stub.calls = append(stub.calls, "login-metadata")
 	return false, nil
 }
@@ -112,7 +112,7 @@ func newTestService(t *testing.T, accounts *accountStub, score int) *Service {
 	if err != nil {
 		t.Fatal(err)
 	}
-	service, err := NewService(accounts, passwordStub{valid: true}, strengthStub(score), sessions, nil, nil)
+	service, err := NewService(accounts, passwordStub{valid: true}, strengthStub(score), sessions, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -111,10 +111,7 @@ func TestPrivateItemChildrenRequireCurrentParentVisibility(t *testing.T) {
 	exec(db, `INSERT INTO issue_relations(id,workspace_id,project_id,issue_id,related_issue_id,relation_type) VALUES($1,$2,$3,$4,$5,'relates_to')`, uuid.NewString(), workspace, project, issue, target)
 	request := Request{Slug: "test", ProjectID: project, IssueID: issue, ActorID: actor, Method: "GET", Params: map[string]string{}}
 
-	for _, tc := range []struct {
-		name, change string
-		allowed      bool
-	}{
+	for _, tc := range []privateItemChildrenRequireCurrentParentVisibilityCase{
 		{"member", `SELECT 1`, true},
 		{"restricted guest", `UPDATE project_members SET role=5`, false},
 		{"guest creator", `UPDATE project_members SET role=5; UPDATE issues SET created_by_id=(SELECT member_id FROM project_members)`, true},
@@ -126,259 +123,335 @@ func TestPrivateItemChildrenRequireCurrentParentVisibility(t *testing.T) {
 		{"draft item", `UPDATE issues SET is_draft=true`, false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			tx, err := db.Begin(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer rollbackChildVisibilityTx(t, ctx, tx)
-			exec(tx, tc.change)
-			repository := &Repository{db: tx}
-			result, err := repository.readCollaboration(ctx, request, "link", "issue_links")
-			if tc.allowed {
-				if err != nil {
-					t.Fatal(err)
-				}
-				if len(result.Body.([]any)) != 1 {
-					t.Fatalf("visible links = %#v", result.Body)
-				}
-			} else {
-				requireChildHidden(t, err)
-			}
-			for _, table := range []string{"issue_reactions", "comment_reactions"} {
-				q := request
-				q.Method = "POST"
-				q.Params = map[string]string{"comment_id": comment}
-				row := collaborationDefault(table, q, workspace)
-				row["reaction"] = "heart"
-				err := writeCollaborationRecord(ctx, tx, q, table, row, true)
-				if tc.allowed {
-					if err != nil {
-						t.Fatal(err)
-					}
-				} else {
-					requireChildHidden(t, err)
-				}
-				var count int
-				if err := tx.QueryRow(ctx, `SELECT count(*) FROM `+table+` WHERE id=$1`, row["id"]).Scan(&count); err != nil {
-					t.Fatal(err)
-				}
-				if (count == 1) != tc.allowed {
-					t.Fatalf("%s persisted=%d allowed=%v", table, count, tc.allowed)
-				}
-			}
+			checkChildAccessCase(t, ctx, db, workspace, comment, exec, request, tc)
 		})
 	}
 	t.Run("a child moved after lookup cannot be overwritten through its former item", func(t *testing.T) {
-		tx, err := db.Begin(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer rollbackChildVisibilityTx(t, ctx, tx)
-		exec(tx, `UPDATE issue_links SET issue_id=$1 WHERE id=$2`, target, link)
-		row := collaborationDefault("issue_links", request, workspace)
-		row["id"], row["issue_id"], row["url"] = link, issue, "https://changed.test"
-		requireChildHidden(t, writeCollaborationRecord(ctx, tx, request, "issue_links", row, false))
-		var savedParent string
-		if err := tx.QueryRow(ctx, `SELECT issue_id::text FROM issue_links WHERE id=$1`, link).Scan(&savedParent); err != nil {
-			t.Fatal(err)
-		}
-		if savedParent != target {
-			t.Fatalf("child moved to %s; want %s", savedParent, target)
-		}
+		checkChildAChildMovedAfterLookupCannotBeOverwrittenThroughItsFormerItem(t, ctx, db, workspace, issue, link, target, exec, request)
 	})
 	t.Run("visible empty collection differs from denied parent", func(t *testing.T) {
-		tx, err := db.Begin(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer rollbackChildVisibilityTx(t, ctx, tx)
-		exec(tx, `DELETE FROM issue_links`)
-		repository := &Repository{db: tx}
-		result, err := repository.readCollaboration(ctx, request, "link", "issue_links")
-		if err != nil || len(result.Body.([]any)) != 0 {
-			t.Fatalf("empty visible collection: %#v, %v", result, err)
-		}
-		exec(tx, `UPDATE project_members SET role=5`)
-		_, err = repository.readCollaboration(ctx, request, "link", "issue_links")
-		requireChildHidden(t, err)
+		checkChildVisibleEmptyCollectionDiffersFromDeniedParent(t, ctx, db, exec, request)
 	})
 	t.Run("deleted parent comment rejects reactions", func(t *testing.T) {
-		tx, err := db.Begin(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer rollbackChildVisibilityTx(t, ctx, tx)
-		exec(tx, `UPDATE issue_comments SET deleted_at=now()`)
-		q := request
-		q.Params = map[string]string{"comment_id": comment}
-		row := collaborationDefault("comment_reactions", q, workspace)
-		requireChildHidden(t, writeCollaborationRecord(ctx, tx, q, "comment_reactions", row, true))
+		checkChildDeletedParentCommentRejectsReactions(t, ctx, db, workspace, comment, exec, request)
 	})
 	t.Run("late membership revocation prevents deletion and durable effects", func(t *testing.T) {
-		tx, err := db.Begin(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer rollbackChildVisibilityTx(t, ctx, tx)
-		publisher := &childVisibilityPublisher{}
-		repository := &Repository{db: revokeBeforeChildWrite{tx}, publisher: publisher, now: time.Now}
-		q := request
-		q.Method = "DELETE"
-		q.Params = map[string]string{"pk": link}
-		_, err = repository.destroyCollaboration(ctx, q, "link", "issue_links")
-		requireChildHidden(t, err)
-		var deleted bool
-		if err := tx.QueryRow(ctx, `SELECT deleted_at IS NOT NULL FROM issue_links WHERE id=$1`, link).Scan(&deleted); err != nil {
-			t.Fatal(err)
-		}
-		if deleted || publisher.activities != 0 || publisher.cleanup != 0 {
-			t.Fatalf("unauthorized effects: deleted=%v publisher=%+v", deleted, publisher)
-		}
+		checkChildLateMembershipRevocationPreventsDeletionAndDurableEffects(t, ctx, db, link, request)
 	})
 	t.Run("relations hide unauthorized targets and reject hidden sources", func(t *testing.T) {
-		tx, err := db.Begin(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer rollbackChildVisibilityTx(t, ctx, tx)
-		exec(tx, `UPDATE project_members SET role=5`)
-		exec(tx, `UPDATE issues SET created_by_id=$1 WHERE id=$2`, actor, issue)
-		q := request
-		q.API = true
-		repository := &Repository{db: tx}
-		result, err := repository.listRelations(ctx, q)
-		if err != nil {
-			t.Fatal(err)
-		}
-		for key, rows := range result.Body.(map[string]any) {
-			if len(rows.([]any)) != 0 {
-				t.Fatalf("hidden relation target leaked: %s=%v", key, rows)
-			}
-		}
-		q.IssueID = target
-		_, err = repository.listRelations(ctx, q)
-		requireChildHidden(t, err)
+		checkChildRelationsHideUnauthorizedTargetsAndRejectHiddenSources(t, ctx, db, actor, issue, target, exec, request)
 	})
 	t.Run("comment parent references are live same-issue and visible", func(t *testing.T) {
-		tx, err := db.Begin(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer rollbackChildVisibilityTx(t, ctx, tx)
-		sameIssueParent, otherIssueParent, deletedParent := uuid.NewString(), uuid.NewString(), uuid.NewString()
-		exec(tx, `INSERT INTO issue_comments(id,workspace_id,project_id,issue_id,deleted_at) VALUES($1,$2,$3,$4,NULL),($5,$2,$3,$6,NULL),($7,$2,$3,$4,now())`, sameIssueParent, workspace, project, issue, otherIssueParent, target, deletedParent)
-		exec(tx, `UPDATE project_members SET role=5`)
-		exec(tx, `UPDATE issues SET created_by_id=$1 WHERE id=$2`, actor, issue)
-		repository := &Repository{db: tx}
-		if validationErr := repository.validateCollaborationCommentReferences(ctx, request, map[string]any{"parent_id": sameIssueParent}, nil); validationErr != nil {
-			t.Fatalf("same-issue visible parent rejected: %v", validationErr)
-		}
-		for _, parentID := range []string{otherIssueParent, deletedParent} {
-			validationErr := repository.validateCollaborationCommentReferences(ctx, request, map[string]any{"parent_id": parentID}, nil)
-			requireChildHidden(t, validationErr)
-		}
-		err = repository.validateCollaborationCommentReferences(ctx, request, map[string]any{"parent_id": sameIssueParent}, map[string]any{"id": sameIssueParent, "description_id": nil})
-		requireChildHidden(t, err)
-		row := collaborationDefault("issue_comments", request, workspace)
-		row["parent_id"] = sameIssueParent
-		if err := writeCollaborationRecord(ctx, tx, request, "issue_comments", row, true); err != nil {
-			t.Fatalf("atomic valid parent write rejected: %v", err)
-		}
-		row["parent_id"] = row["id"]
-		requireChildHidden(t, writeCollaborationRecord(ctx, tx, request, "issue_comments", row, false))
-		row = collaborationDefault("issue_comments", request, workspace)
-		row["parent_id"] = otherIssueParent
-		requireChildHidden(t, writeCollaborationRecord(ctx, tx, request, "issue_comments", row, true))
+		checkChildCommentParentReferencesAreLiveSameIssueAndVisible(t, ctx, db, actor, workspace, project, issue, target, exec, request)
 	})
 	t.Run("comment parent projection masks mismatched deleted and internal public parents", func(t *testing.T) {
-		tx, err := db.Begin(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer rollbackChildVisibilityTx(t, ctx, tx)
-		sameIssueParent, otherIssueParent, deletedParent, internalParent := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
-		exec(tx, `INSERT INTO issue_comments(id,workspace_id,project_id,issue_id,access,deleted_at) VALUES($1,$2,$3,$4,'EXTERNAL',NULL),($5,$2,$3,$6,'EXTERNAL',NULL),($7,$2,$3,$4,'EXTERNAL',now()),($8,$2,$3,$4,'INTERNAL',NULL)`, sameIssueParent, workspace, project, issue, otherIssueParent, target, deletedParent, internalParent)
-		repository := &Repository{db: tx}
-		row := map[string]any{"parent_id": sameIssueParent}
-		parent, err := repository.collaborationCommentParent(ctx, request, row)
-		if err != nil || parent["id"] != sameIssueParent {
-			t.Fatalf("same-issue parent projection=%v, %v", parent, err)
-		}
-		for _, parentID := range []string{otherIssueParent, deletedParent} {
-			projectedParent, parentErr := repository.collaborationCommentParent(ctx, request, map[string]any{"parent_id": parentID})
-			if parentErr != nil || projectedParent != nil {
-				t.Fatalf("invalid parent %s projected as %v, %v", parentID, projectedParent, parentErr)
-			}
-		}
-		publicRequest := request
-		publicRequest.Params = map[string]string{"anchor": "board"}
-		publicRequest.ActorID = ""
-		parent, err = repository.collaborationCommentParent(ctx, publicRequest, map[string]any{"parent_id": internalParent})
-		if err != nil || parent != nil {
-			t.Fatalf("internal public parent projected as %v, %v", parent, err)
-		}
-		parent, err = repository.collaborationCommentParent(ctx, publicRequest, row)
-		if err != nil || parent["id"] != sameIssueParent {
-			t.Fatalf("external public parent projection=%v, %v", parent, err)
-		}
-		if err := repository.validateCollaborationCommentReferences(ctx, publicRequest, row, nil); err != nil {
-			t.Fatalf("external public parent write rejected: %v", err)
-		}
-		requireChildHidden(t, repository.validateCollaborationCommentReferences(ctx, publicRequest, map[string]any{"parent_id": internalParent}, nil))
+		checkChildCommentParentProjectionMasksMismatchedDeletedAndInternalPublicParents(t, ctx, db, workspace, project, issue, target, exec, request)
 	})
 	t.Run("comment description references remain within live comment scope", func(t *testing.T) {
-		tx, err := db.Begin(ctx)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer rollbackChildVisibilityTx(t, ctx, tx)
-		ownedDescription, deletedDescription, foreignDescription := uuid.NewString(), uuid.NewString(), uuid.NewString()
-		foreignProject, foreignWorkspace := uuid.NewString(), uuid.NewString()
-		exec(tx, `INSERT INTO workspaces(id,slug) VALUES($1,'foreign')`, foreignWorkspace)
-		exec(tx, `INSERT INTO projects(id,workspace_id) VALUES($1,$2)`, foreignProject, foreignWorkspace)
-		exec(tx, `INSERT INTO descriptions(id,workspace_id,project_id,deleted_at) VALUES($1,$2,$3,NULL),($4,$2,$3,now()),($5,$6,$7,NULL)`, ownedDescription, workspace, project, deletedDescription, foreignDescription, foreignWorkspace, foreignProject)
-		repository := &Repository{db: tx}
-		for _, tc := range []struct {
-			name string
-			id   string
-			want bool
-		}{{"owned live", ownedDescription, true}, {"deleted", deletedDescription, false}, {"foreign", foreignDescription, false}} {
-			t.Run(tc.name, func(t *testing.T) {
-				owned, err := repository.collaborationDescriptionOwned(ctx, request, map[string]any{"description_id": tc.id, "project_id": project, "workspace_id": workspace})
-				if err != nil || owned != tc.want {
-					t.Fatalf("description owned=%v, error=%v; want %v", owned, err, tc.want)
-				}
-			})
-		}
+		checkChildCommentDescriptionReferencesRemainWithinLiveCommentScope(t, ctx, db, workspace, project, exec, request)
 	})
 	t.Run("hidden external ID collision returns generic conflict without hidden identity", func(t *testing.T) {
-		tx, err := db.Begin(ctx)
+		checkChildHiddenExternalIDCollisionReturnsGenericConflictWithoutHiddenIdentity(t, ctx, db, actor, workspace, project, issue, target, exec)
+	})
+}
+
+type privateItemChildrenRequireCurrentParentVisibilityCase struct {
+	name    string
+	change  string
+	allowed bool
+}
+
+func checkChildAccessCase(t *testing.T, ctx context.Context, db *pgx.Conn, workspace string, comment string, exec func(db Database, sql string, args ...any), request Request, tc privateItemChildrenRequireCurrentParentVisibilityCase) {
+	t.Helper()
+
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rollbackChildVisibilityTx(t, ctx, tx)
+	exec(tx, tc.change)
+	repository := &Repository{db: tx}
+	result, err := repository.readCollaboration(ctx, request, "link", "issue_links")
+	if tc.allowed {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer rollbackChildVisibilityTx(t, ctx, tx)
-		hiddenComment := uuid.NewString()
-		exec(tx, `UPDATE project_members SET role=5`)
-		exec(tx, `UPDATE issues SET created_by_id=$1 WHERE id=$2`, actor, issue)
-		exec(tx, `INSERT INTO issue_comments(id,workspace_id,project_id,issue_id,external_source,external_id) VALUES($1,$2,$3,$4,'sync','external-1')`, hiddenComment, workspace, project, target)
-		query := Request{API: true, Operation: "post_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_comments", Slug: "test", ProjectID: project, IssueID: issue, ActorID: actor}
-		input := requestinput.Input{Fields: map[string]any{"external_source": "sync", "external_id": "external-1"}}
-		err = (&Repository{db: tx}).collaborationExternalConflict(ctx, query, input, nil)
-		var conflict *apicontract.HTTPError
-		if !errors.As(err, &conflict) || conflict.Status != 409 {
-			t.Fatalf("expected duplicate conflict, got %v", err)
+		if len(result.Body.([]any)) != 1 {
+			t.Fatalf("visible links = %#v", result.Body)
 		}
-		if _, leaksID := conflict.Body["id"]; leaksID {
-			t.Fatalf("hidden comment identity disclosed: %#v", conflict.Body)
+	} else {
+		requireChildHidden(t, err)
+	}
+	for _, table := range []string{"issue_reactions", "comment_reactions"} {
+		q := request
+		q.Method = "POST"
+		q.Params = map[string]string{"comment_id": comment}
+		row := collaborationDefault(table, q, workspace)
+		row["reaction"] = "heart"
+		err := writeCollaborationRecord(ctx, tx, q, table, row, true)
+		if tc.allowed {
+			if err != nil {
+				t.Fatal(err)
+			}
+		} else {
+			requireChildHidden(t, err)
 		}
-		exec(tx, `UPDATE issues SET created_by_id=$1 WHERE id=$2`, actor, target)
-		err = (&Repository{db: tx}).collaborationExternalConflict(ctx, query, input, nil)
-		if !errors.As(err, &conflict) {
-			t.Fatalf("visible duplicate identity missing: %#v, %v", conflict, err)
+		var count int
+		if err := tx.QueryRow(ctx, `SELECT count(*) FROM `+table+` WHERE id=$1`, row["id"]).Scan(&count); err != nil {
+			t.Fatal(err)
 		}
-		visibleID, ok := conflict.Body["id"].(string)
-		if !ok || visibleID != hiddenComment {
-			t.Fatalf("visible duplicate identity missing: %#v, %v", conflict, err)
+		if (count == 1) != tc.allowed {
+			t.Fatalf("%s persisted=%d allowed=%v", table, count, tc.allowed)
 		}
-	})
+	}
+
+}
+
+func checkChildAChildMovedAfterLookupCannotBeOverwrittenThroughItsFormerItem(t *testing.T, ctx context.Context, db *pgx.Conn, workspace string, issue string, link string, target string, exec func(db Database, sql string, args ...any), request Request) {
+	t.Helper()
+
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rollbackChildVisibilityTx(t, ctx, tx)
+	exec(tx, `UPDATE issue_links SET issue_id=$1 WHERE id=$2`, target, link)
+	row := collaborationDefault("issue_links", request, workspace)
+	row["id"], row["issue_id"], row["url"] = link, issue, "https://changed.test"
+	requireChildHidden(t, writeCollaborationRecord(ctx, tx, request, "issue_links", row, false))
+	var savedParent string
+	if err := tx.QueryRow(ctx, `SELECT issue_id::text FROM issue_links WHERE id=$1`, link).Scan(&savedParent); err != nil {
+		t.Fatal(err)
+	}
+	if savedParent != target {
+		t.Fatalf("child moved to %s; want %s", savedParent, target)
+	}
+
+}
+
+func checkChildVisibleEmptyCollectionDiffersFromDeniedParent(t *testing.T, ctx context.Context, db *pgx.Conn, exec func(db Database, sql string, args ...any), request Request) {
+	t.Helper()
+
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rollbackChildVisibilityTx(t, ctx, tx)
+	exec(tx, `DELETE FROM issue_links`)
+	repository := &Repository{db: tx}
+	result, err := repository.readCollaboration(ctx, request, "link", "issue_links")
+	if err != nil || len(result.Body.([]any)) != 0 {
+		t.Fatalf("empty visible collection: %#v, %v", result, err)
+	}
+	exec(tx, `UPDATE project_members SET role=5`)
+	_, err = repository.readCollaboration(ctx, request, "link", "issue_links")
+	requireChildHidden(t, err)
+
+}
+
+func checkChildDeletedParentCommentRejectsReactions(t *testing.T, ctx context.Context, db *pgx.Conn, workspace string, comment string, exec func(db Database, sql string, args ...any), request Request) {
+	t.Helper()
+
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rollbackChildVisibilityTx(t, ctx, tx)
+	exec(tx, `UPDATE issue_comments SET deleted_at=now()`)
+	q := request
+	q.Params = map[string]string{"comment_id": comment}
+	row := collaborationDefault("comment_reactions", q, workspace)
+	requireChildHidden(t, writeCollaborationRecord(ctx, tx, q, "comment_reactions", row, true))
+
+}
+
+func checkChildLateMembershipRevocationPreventsDeletionAndDurableEffects(t *testing.T, ctx context.Context, db *pgx.Conn, link string, request Request) {
+	t.Helper()
+
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rollbackChildVisibilityTx(t, ctx, tx)
+	publisher := &childVisibilityPublisher{}
+	repository := &Repository{db: revokeBeforeChildWrite{tx}, publisher: publisher, now: time.Now}
+	q := request
+	q.Method = "DELETE"
+	q.Params = map[string]string{"pk": link}
+	_, err = repository.destroyCollaboration(ctx, q, "link", "issue_links")
+	requireChildHidden(t, err)
+	var deleted bool
+	if err := tx.QueryRow(ctx, `SELECT deleted_at IS NOT NULL FROM issue_links WHERE id=$1`, link).Scan(&deleted); err != nil {
+		t.Fatal(err)
+	}
+	if deleted || publisher.activities != 0 || publisher.cleanup != 0 {
+		t.Fatalf("unauthorized effects: deleted=%v publisher=%+v", deleted, publisher)
+	}
+
+}
+
+func checkChildRelationsHideUnauthorizedTargetsAndRejectHiddenSources(t *testing.T, ctx context.Context, db *pgx.Conn, actor string, issue string, target string, exec func(db Database, sql string, args ...any), request Request) {
+	t.Helper()
+
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rollbackChildVisibilityTx(t, ctx, tx)
+	exec(tx, `UPDATE project_members SET role=5`)
+	exec(tx, `UPDATE issues SET created_by_id=$1 WHERE id=$2`, actor, issue)
+	q := request
+	q.API = true
+	repository := &Repository{db: tx}
+	result, err := repository.listRelations(ctx, q)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for key, rows := range result.Body.(map[string]any) {
+		if len(rows.([]any)) != 0 {
+			t.Fatalf("hidden relation target leaked: %s=%v", key, rows)
+		}
+	}
+	q.IssueID = target
+	_, err = repository.listRelations(ctx, q)
+	requireChildHidden(t, err)
+
+}
+
+func checkChildCommentParentReferencesAreLiveSameIssueAndVisible(t *testing.T, ctx context.Context, db *pgx.Conn, actor string, workspace string, project string, issue string, target string, exec func(db Database, sql string, args ...any), request Request) {
+	t.Helper()
+
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rollbackChildVisibilityTx(t, ctx, tx)
+	sameIssueParent, otherIssueParent, deletedParent := uuid.NewString(), uuid.NewString(), uuid.NewString()
+	exec(tx, `INSERT INTO issue_comments(id,workspace_id,project_id,issue_id,deleted_at) VALUES($1,$2,$3,$4,NULL),($5,$2,$3,$6,NULL),($7,$2,$3,$4,now())`, sameIssueParent, workspace, project, issue, otherIssueParent, target, deletedParent)
+	exec(tx, `UPDATE project_members SET role=5`)
+	exec(tx, `UPDATE issues SET created_by_id=$1 WHERE id=$2`, actor, issue)
+	repository := &Repository{db: tx}
+	if validationErr := repository.validateCollaborationCommentReferences(ctx, request, map[string]any{"parent_id": sameIssueParent}, nil); validationErr != nil {
+		t.Fatalf("same-issue visible parent rejected: %v", validationErr)
+	}
+	for _, parentID := range []string{otherIssueParent, deletedParent} {
+		validationErr := repository.validateCollaborationCommentReferences(ctx, request, map[string]any{"parent_id": parentID}, nil)
+		requireChildHidden(t, validationErr)
+	}
+	err = repository.validateCollaborationCommentReferences(ctx, request, map[string]any{"parent_id": sameIssueParent}, map[string]any{"id": sameIssueParent, "description_id": nil})
+	requireChildHidden(t, err)
+	row := collaborationDefault("issue_comments", request, workspace)
+	row["parent_id"] = sameIssueParent
+	if err := writeCollaborationRecord(ctx, tx, request, "issue_comments", row, true); err != nil {
+		t.Fatalf("atomic valid parent write rejected: %v", err)
+	}
+	row["parent_id"] = row["id"]
+	requireChildHidden(t, writeCollaborationRecord(ctx, tx, request, "issue_comments", row, false))
+	row = collaborationDefault("issue_comments", request, workspace)
+	row["parent_id"] = otherIssueParent
+	requireChildHidden(t, writeCollaborationRecord(ctx, tx, request, "issue_comments", row, true))
+
+}
+
+func checkChildCommentParentProjectionMasksMismatchedDeletedAndInternalPublicParents(t *testing.T, ctx context.Context, db *pgx.Conn, workspace string, project string, issue string, target string, exec func(db Database, sql string, args ...any), request Request) {
+	t.Helper()
+
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rollbackChildVisibilityTx(t, ctx, tx)
+	sameIssueParent, otherIssueParent, deletedParent, internalParent := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
+	exec(tx, `INSERT INTO issue_comments(id,workspace_id,project_id,issue_id,access,deleted_at) VALUES($1,$2,$3,$4,'EXTERNAL',NULL),($5,$2,$3,$6,'EXTERNAL',NULL),($7,$2,$3,$4,'EXTERNAL',now()),($8,$2,$3,$4,'INTERNAL',NULL)`, sameIssueParent, workspace, project, issue, otherIssueParent, target, deletedParent, internalParent)
+	repository := &Repository{db: tx}
+	row := map[string]any{"parent_id": sameIssueParent}
+	parent, err := repository.collaborationCommentParent(ctx, request, row)
+	if err != nil || parent["id"] != sameIssueParent {
+		t.Fatalf("same-issue parent projection=%v, %v", parent, err)
+	}
+	for _, parentID := range []string{otherIssueParent, deletedParent} {
+		projectedParent, parentErr := repository.collaborationCommentParent(ctx, request, map[string]any{"parent_id": parentID})
+		if parentErr != nil || projectedParent != nil {
+			t.Fatalf("invalid parent %s projected as %v, %v", parentID, projectedParent, parentErr)
+		}
+	}
+	publicRequest := request
+	publicRequest.Params = map[string]string{"anchor": "board"}
+	publicRequest.ActorID = ""
+	parent, err = repository.collaborationCommentParent(ctx, publicRequest, map[string]any{"parent_id": internalParent})
+	if err != nil || parent != nil {
+		t.Fatalf("internal public parent projected as %v, %v", parent, err)
+	}
+	parent, err = repository.collaborationCommentParent(ctx, publicRequest, row)
+	if err != nil || parent["id"] != sameIssueParent {
+		t.Fatalf("external public parent projection=%v, %v", parent, err)
+	}
+	if err := repository.validateCollaborationCommentReferences(ctx, publicRequest, row, nil); err != nil {
+		t.Fatalf("external public parent write rejected: %v", err)
+	}
+	requireChildHidden(t, repository.validateCollaborationCommentReferences(ctx, publicRequest, map[string]any{"parent_id": internalParent}, nil))
+
+}
+
+func checkChildCommentDescriptionReferencesRemainWithinLiveCommentScope(t *testing.T, ctx context.Context, db *pgx.Conn, workspace string, project string, exec func(db Database, sql string, args ...any), request Request) {
+	t.Helper()
+
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rollbackChildVisibilityTx(t, ctx, tx)
+	ownedDescription, deletedDescription, foreignDescription := uuid.NewString(), uuid.NewString(), uuid.NewString()
+	foreignProject, foreignWorkspace := uuid.NewString(), uuid.NewString()
+	exec(tx, `INSERT INTO workspaces(id,slug) VALUES($1,'foreign')`, foreignWorkspace)
+	exec(tx, `INSERT INTO projects(id,workspace_id) VALUES($1,$2)`, foreignProject, foreignWorkspace)
+	exec(tx, `INSERT INTO descriptions(id,workspace_id,project_id,deleted_at) VALUES($1,$2,$3,NULL),($4,$2,$3,now()),($5,$6,$7,NULL)`, ownedDescription, workspace, project, deletedDescription, foreignDescription, foreignWorkspace, foreignProject)
+	repository := &Repository{db: tx}
+	for _, tc := range []struct {
+		name string
+		id   string
+		want bool
+	}{{"owned live", ownedDescription, true}, {"deleted", deletedDescription, false}, {"foreign", foreignDescription, false}} {
+		t.Run(tc.name, func(t *testing.T) {
+			owned, err := repository.collaborationDescriptionOwned(ctx, request, map[string]any{"description_id": tc.id, "project_id": project, "workspace_id": workspace})
+			if err != nil || owned != tc.want {
+				t.Fatalf("description owned=%v, error=%v; want %v", owned, err, tc.want)
+			}
+		})
+	}
+
+}
+
+func checkChildHiddenExternalIDCollisionReturnsGenericConflictWithoutHiddenIdentity(t *testing.T, ctx context.Context, db *pgx.Conn, actor string, workspace string, project string, issue string, target string, exec func(db Database, sql string, args ...any)) {
+	t.Helper()
+
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rollbackChildVisibilityTx(t, ctx, tx)
+	hiddenComment := uuid.NewString()
+	exec(tx, `UPDATE project_members SET role=5`)
+	exec(tx, `UPDATE issues SET created_by_id=$1 WHERE id=$2`, actor, issue)
+	exec(tx, `INSERT INTO issue_comments(id,workspace_id,project_id,issue_id,external_source,external_id) VALUES($1,$2,$3,$4,'sync','external-1')`, hiddenComment, workspace, project, target)
+	query := Request{API: true, Operation: "post_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_comments", Slug: "test", ProjectID: project, IssueID: issue, ActorID: actor}
+	input := requestinput.Input{Fields: map[string]any{"external_source": "sync", "external_id": "external-1"}}
+	err = (&Repository{db: tx}).collaborationExternalConflict(ctx, query, input, nil)
+	var conflict *apicontract.HTTPError
+	if !errors.As(err, &conflict) || conflict.Status != 409 {
+		t.Fatalf("expected duplicate conflict, got %v", err)
+	}
+	if _, leaksID := conflict.Body["id"]; leaksID {
+		t.Fatalf("hidden comment identity disclosed: %#v", conflict.Body)
+	}
+	exec(tx, `UPDATE issues SET created_by_id=$1 WHERE id=$2`, actor, target)
+	err = (&Repository{db: tx}).collaborationExternalConflict(ctx, query, input, nil)
+	if !errors.As(err, &conflict) {
+		t.Fatalf("visible duplicate identity missing: %#v, %v", conflict, err)
+	}
+	visibleID, ok := conflict.Body["id"].(string)
+	if !ok || visibleID != hiddenComment {
+		t.Fatalf("visible duplicate identity missing: %#v, %v", conflict, err)
+	}
+
 }

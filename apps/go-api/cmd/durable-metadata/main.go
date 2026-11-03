@@ -114,7 +114,8 @@ func startOrReconcile(ctx context.Context, app *selvedge.App, workflow *selvedge
 	}
 	instance, lookupErr := app.GetInstance(ctx, runID)
 	if lookupErr != nil {
-		return "", false, fmt.Errorf("admit workflow %s: %w (reconcile stored run: %v)", runID, startErr, lookupErr)
+		// Admission owns retry classification; the failed lookup is diagnostic only.
+		return "", false, fmt.Errorf("admit workflow %s: %w (reconcile stored run: %s)", runID, startErr, lookupErr.Error())
 	}
 	expectedInput, marshalErr := json.Marshal(input)
 	if marshalErr != nil {

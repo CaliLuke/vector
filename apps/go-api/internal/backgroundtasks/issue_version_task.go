@@ -155,7 +155,7 @@ func (store *PostgresIssueVersionTaskStore) TrackIssueVersion(ctx context.Contex
 	var requested map[string]json.RawMessage
 	if input.UpdatedIssue != "" {
 		if err := json.Unmarshal([]byte(input.UpdatedIssue), &requested); err != nil {
-			return fmt.Errorf("%w: decode updated issue snapshot: %v", ErrPermanentIssueVersionTask, err)
+			return fmt.Errorf("%w: decode updated issue snapshot: %s", ErrPermanentIssueVersionTask, err.Error())
 		}
 	}
 	tx, err := store.pool.BeginTx(ctx, pgx.TxOptions{})

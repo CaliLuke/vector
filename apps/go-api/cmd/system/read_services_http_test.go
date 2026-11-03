@@ -891,59 +891,9 @@ func TestReadServiceProtocolRegistryOwnsDeclaredRoutes(t *testing.T) {
 	if len(readServiceProtocols) != 279 {
 		t.Fatalf("protocol routes = %d, want 279", len(readServiceProtocols))
 	}
-	telemetry := mustReadServiceProtocol("/api/instances/telemetry/")
-	if !telemetry.authenticateMethod || !telemetry.derivedHead || telemetry.allow != "GET, HEAD, OPTIONS" {
-		t.Fatal("instance telemetry must enforce authenticated reads with HEAD and OPTIONS")
-	}
-	for _, path := range []string{"/api/v1/workspaces/{slug}/roles/", "/api/v1/workspaces/{slug}/roles/{role_id}/"} {
-		protocol := mustReadServiceProtocol(path)
-		if protocol.allow != "GET" || !protocol.generatedMethods {
-			t.Fatalf("role catalogue route %s must use generated GET only", path)
-		}
-	}
 
-	draftAssets := mustReadServiceProtocol("/api/assets/v2/workspaces/{slug}/{entity_id}/bulk/")
-	if !draftAssets.authenticateMethod || !draftAssets.csrfForAuthenticatedSession || draftAssets.allow != "POST, OPTIONS" {
-		t.Fatal("draft association must enforce session authentication and CSRF")
-	}
-	for _, protocol := range readServiceProtocols {
-		if protocol.pattern == "/api/v1/workspaces/{slug}/projects/{project_id}/cycles/date-check/" {
-			t.Fatal("API-v1 cycle date-check has no source route and must not be registered")
-		}
-	}
-	for path, wantAllow := range map[string]string{
-		"/api/v1/workspaces/{slug}/stickies/":           "GET, POST, HEAD, OPTIONS",
-		"/api/v1/workspaces/{slug}/stickies/{pk}/":      "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
-		"/api/v1/workspaces/{slug}/stickies.json/":      "GET, POST, HEAD, OPTIONS",
-		"/api/v1/workspaces/{slug}/stickies/{pk}.json/": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
-	} {
-		protocol := mustReadServiceProtocol(path)
-		if protocol.allow != wantAllow || !protocol.generatedMethods {
-			t.Errorf("Sticky API protocol %s = %#v, want generated methods and Allow %q", path, protocol, wantAllow)
-		}
-	}
-	wantOptions := map[string]bool{
-		"/api/users/me/workspaces/":                                                                                true,
-		"/api/workspaces/{slug}/project-stats/":                                                                    true,
-		"/api/workspaces/{slug}/projects/details/":                                                                 true,
-		"/api/workspaces/{slug}/cycles/":                                                                           true,
-		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/analytics/":                                true,
-		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/progress/":                                 true,
-		"/api/workspaces/{slug}/modules/":                                                                          true,
-		"/api/workspaces/{slug}/estimates/":                                                                        true,
-		"/api/workspaces/{slug}/projects/{project_id}/pages-summary/":                                              true,
-		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/versions/":                                   true,
-		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/versions/{pk}/":                              true,
-		"/api/workspaces/{slug}/projects/{project_id}/intake-work-items/{work_item_id}/description-versions/":      true,
-		"/api/workspaces/{slug}/projects/{project_id}/intake-work-items/{work_item_id}/description-versions/{pk}/": true,
-		"/api/workspaces/{slug}/projects/{project_id}/pages/":                                                      true,
-		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/":                                            true,
-		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/description/":                                true,
-		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/access/":                                     true,
-		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/archive/":                                    true,
-		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/duplicate/":                                  true,
-		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/lock/":                                       true,
-	}
+	checkSpecialReadServiceProtocols(t)
+	wantOptions := readServiceOptionsExpectations()
 
 	seen := make(map[string]bool, len(readServiceProtocols))
 	derivedHeads := 0
@@ -1106,4 +1056,67 @@ func assertReadServiceProtocolHeaders(t *testing.T, response *httptest.ResponseR
 		!strings.Contains(headers.Get("Vary"), "origin") {
 		t.Errorf("protocol headers = %#v, want Allow %q and Django security headers", headers, allow)
 	}
+}
+
+func checkSpecialReadServiceProtocols(t *testing.T) {
+	t.Helper()
+
+	telemetry := mustReadServiceProtocol("/api/instances/telemetry/")
+	if !telemetry.authenticateMethod || !telemetry.derivedHead || telemetry.allow != "GET, HEAD, OPTIONS" {
+		t.Fatal("instance telemetry must enforce authenticated reads with HEAD and OPTIONS")
+	}
+	for _, path := range []string{"/api/v1/workspaces/{slug}/roles/", "/api/v1/workspaces/{slug}/roles/{role_id}/"} {
+		protocol := mustReadServiceProtocol(path)
+		if protocol.allow != "GET" || !protocol.generatedMethods {
+			t.Fatalf("role catalogue route %s must use generated GET only", path)
+		}
+	}
+
+	draftAssets := mustReadServiceProtocol("/api/assets/v2/workspaces/{slug}/{entity_id}/bulk/")
+	if !draftAssets.authenticateMethod || !draftAssets.csrfForAuthenticatedSession || draftAssets.allow != "POST, OPTIONS" {
+		t.Fatal("draft association must enforce session authentication and CSRF")
+	}
+	for _, protocol := range readServiceProtocols {
+		if protocol.pattern == "/api/v1/workspaces/{slug}/projects/{project_id}/cycles/date-check/" {
+			t.Fatal("API-v1 cycle date-check has no source route and must not be registered")
+		}
+	}
+	for path, wantAllow := range map[string]string{
+		"/api/v1/workspaces/{slug}/stickies/":           "GET, POST, HEAD, OPTIONS",
+		"/api/v1/workspaces/{slug}/stickies/{pk}/":      "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+		"/api/v1/workspaces/{slug}/stickies.json/":      "GET, POST, HEAD, OPTIONS",
+		"/api/v1/workspaces/{slug}/stickies/{pk}.json/": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+	} {
+		protocol := mustReadServiceProtocol(path)
+		if protocol.allow != wantAllow || !protocol.generatedMethods {
+			t.Errorf("Sticky API protocol %s = %#v, want generated methods and Allow %q", path, protocol, wantAllow)
+		}
+	}
+
+}
+
+func readServiceOptionsExpectations() map[string]bool {
+	return map[string]bool{
+		"/api/users/me/workspaces/":                                                                                true,
+		"/api/workspaces/{slug}/project-stats/":                                                                    true,
+		"/api/workspaces/{slug}/projects/details/":                                                                 true,
+		"/api/workspaces/{slug}/cycles/":                                                                           true,
+		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/analytics/":                                true,
+		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/progress/":                                 true,
+		"/api/workspaces/{slug}/modules/":                                                                          true,
+		"/api/workspaces/{slug}/estimates/":                                                                        true,
+		"/api/workspaces/{slug}/projects/{project_id}/pages-summary/":                                              true,
+		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/versions/":                                   true,
+		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/versions/{pk}/":                              true,
+		"/api/workspaces/{slug}/projects/{project_id}/intake-work-items/{work_item_id}/description-versions/":      true,
+		"/api/workspaces/{slug}/projects/{project_id}/intake-work-items/{work_item_id}/description-versions/{pk}/": true,
+		"/api/workspaces/{slug}/projects/{project_id}/pages/":                                                      true,
+		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/":                                            true,
+		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/description/":                                true,
+		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/access/":                                     true,
+		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/archive/":                                    true,
+		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/duplicate/":                                  true,
+		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/lock/":                                       true,
+	}
+
 }

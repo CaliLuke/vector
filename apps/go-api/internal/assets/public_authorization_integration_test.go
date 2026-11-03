@@ -17,37 +17,7 @@ import (
 )
 
 func TestPublicAssetAuthorizationPostgres(t *testing.T) {
-	databaseURL := postgresfixture.EmptyDatabase(t)
-	config, err := pgxpool.ParseConfig(databaseURL)
-	if err != nil {
-		t.Fatalf("parse isolated public assets database URL: %v", err)
-	}
-	config.MaxConns = 1 // Keep PostgreSQL TEMP tables visible to each repository call.
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	database, err := pgxpool.NewWithConfig(ctx, config)
-	if err != nil {
-		t.Fatalf("connect to isolated public assets database: %v", err)
-	}
-	defer database.Close()
-	if _, execErr := database.Exec(ctx, `
-CREATE TEMP TABLE workspaces (id uuid PRIMARY KEY, slug text, deleted_at timestamptz);
-CREATE TEMP TABLE projects (id uuid PRIMARY KEY, workspace_id uuid, deleted_at timestamptz, archived_at timestamptz);
-CREATE TEMP TABLE deploy_boards (id uuid PRIMARY KEY, workspace_id uuid, project_id uuid, entity_name text, entity_identifier uuid, anchor text, deleted_at timestamptz, is_disabled boolean, created_at timestamptz);
-CREATE TEMP TABLE issue_comments (id uuid PRIMARY KEY, workspace_id uuid, project_id uuid, created_by_id uuid, deleted_at timestamptz);
-CREATE TEMP TABLE issues (id uuid PRIMARY KEY, workspace_id uuid, project_id uuid, deleted_at timestamptz);
-CREATE TEMP TABLE file_assets (
- id uuid PRIMARY KEY, created_at timestamptz, updated_at timestamptz, attributes jsonb, asset text,
- workspace_id uuid, project_id uuid, comment_id uuid, issue_id uuid, draft_issue_id uuid, entity_type text, size double precision,
- is_uploaded boolean, is_deleted boolean, is_archived boolean, storage_metadata jsonb,
-	 user_id uuid, created_by_id uuid, deleted_at timestamptz
-)`); execErr != nil {
-		t.Fatalf("create isolated public assets TEMP tables: %v", execErr)
-	}
-	repository, err := NewPostgresRepository(database)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx, database, repository := openPublicAssetAuthorizationDatabase(t)
 	actorID, foreignID := uuid.New(), uuid.New()
 	workspaceID, projectID, foreignProjectID := uuid.New(), uuid.New(), uuid.New()
 	boardID, anchor := uuid.New(), "public-assets-"+uuid.NewString()
@@ -68,48 +38,7 @@ CREATE TEMP TABLE file_assets (
 			t.Fatalf("seed public assets authorization TEMP rows: %v", execErr)
 		}
 	}
-	gotWorkspaceID, gotProjectID, _, found, err := repository.PublicProjectBoard(ctx, anchor, false)
-	if err != nil || !found || gotWorkspaceID != workspaceID || gotProjectID != projectID {
-		t.Fatalf("resolve live enabled board = %s/%s found=%t err=%v", gotWorkspaceID, gotProjectID, found, err)
-	}
-	for _, disabled := range []struct {
-		name  string
-		setup string
-		clear string
-	}{
-		{"disabled board", `UPDATE deploy_boards SET is_disabled=true WHERE id=$1`, `UPDATE deploy_boards SET is_disabled=false WHERE id=$1`},
-		{"deleted board", `UPDATE deploy_boards SET deleted_at=NOW() WHERE id=$1`, `UPDATE deploy_boards SET deleted_at=NULL WHERE id=$1`},
-		{"mismatched board project", `UPDATE deploy_boards SET project_id=$2 WHERE id=$1`, `UPDATE deploy_boards SET project_id=$2 WHERE id=$1`},
-		{"deleted workspace", `UPDATE workspaces SET deleted_at=NOW() WHERE id=$1`, `UPDATE workspaces SET deleted_at=NULL WHERE id=$1`},
-		{"deleted project", `UPDATE projects SET deleted_at=NOW() WHERE id=$1`, `UPDATE projects SET deleted_at=NULL WHERE id=$1`},
-		{"archived project", `UPDATE projects SET archived_at=NOW() WHERE id=$1`, `UPDATE projects SET archived_at=NULL WHERE id=$1`},
-	} {
-		t.Run(disabled.name, func(t *testing.T) {
-			var args []any
-			if disabled.name == "mismatched board project" {
-				args = []any{boardID, foreignProjectID}
-			} else if strings.Contains(disabled.setup, "workspaces") {
-				args = []any{workspaceID}
-			} else if strings.Contains(disabled.setup, "projects") {
-				args = []any{projectID}
-			} else {
-				args = []any{boardID}
-			}
-			if _, execErr := database.Exec(ctx, disabled.setup, args...); execErr != nil {
-				t.Fatal(execErr)
-			}
-			if _, _, _, found, publicProjectBoardErr := repository.PublicProjectBoard(ctx, anchor, false); publicProjectBoardErr != nil || found {
-				t.Fatalf("unusable board found=%t err=%v, want unavailable", found, publicProjectBoardErr)
-			}
-			clearArgs := args
-			if disabled.name == "mismatched board project" {
-				clearArgs = []any{boardID, projectID}
-			}
-			if _, execErr := database.Exec(ctx, disabled.clear, clearArgs...); execErr != nil {
-				t.Fatal(execErr)
-			}
-		})
-	}
+	checkPublicAssetBoardAvailability(t, ctx, database, repository, workspaceID, projectID, foreignProjectID, boardID, anchor)
 
 	create := func(assetID, userID uuid.UUID, entityType string, entityID string) error {
 		return repository.CreatePublicUpload(ctx, assetID, userID, workspaceID, projectID, "asset-"+assetID.String(), []byte(`{"name":"image.png"}`), 10, entityType, entityID)
@@ -223,4 +152,88 @@ CREATE TEMP TABLE file_assets (
 func isPublicNotFound(err error) bool {
 	var httpErr *apicontract.HTTPError
 	return errors.As(err, &httpErr) && httpErr.Status == 404
+}
+
+func checkPublicAssetBoardAvailability(t *testing.T, ctx context.Context, database *pgxpool.Pool, repository *PostgresRepository, workspaceID uuid.UUID, projectID uuid.UUID, foreignProjectID uuid.UUID, boardID uuid.UUID, anchor string) {
+	t.Helper()
+
+	gotWorkspaceID, gotProjectID, _, found, err := repository.PublicProjectBoard(ctx, anchor, false)
+	if err != nil || !found || gotWorkspaceID != workspaceID || gotProjectID != projectID {
+		t.Fatalf("resolve live enabled board = %s/%s found=%t err=%v", gotWorkspaceID, gotProjectID, found, err)
+	}
+	for _, disabled := range []struct {
+		name  string
+		setup string
+		clear string
+	}{
+		{"disabled board", `UPDATE deploy_boards SET is_disabled=true WHERE id=$1`, `UPDATE deploy_boards SET is_disabled=false WHERE id=$1`},
+		{"deleted board", `UPDATE deploy_boards SET deleted_at=NOW() WHERE id=$1`, `UPDATE deploy_boards SET deleted_at=NULL WHERE id=$1`},
+		{"mismatched board project", `UPDATE deploy_boards SET project_id=$2 WHERE id=$1`, `UPDATE deploy_boards SET project_id=$2 WHERE id=$1`},
+		{"deleted workspace", `UPDATE workspaces SET deleted_at=NOW() WHERE id=$1`, `UPDATE workspaces SET deleted_at=NULL WHERE id=$1`},
+		{"deleted project", `UPDATE projects SET deleted_at=NOW() WHERE id=$1`, `UPDATE projects SET deleted_at=NULL WHERE id=$1`},
+		{"archived project", `UPDATE projects SET archived_at=NOW() WHERE id=$1`, `UPDATE projects SET archived_at=NULL WHERE id=$1`},
+	} {
+		t.Run(disabled.name, func(t *testing.T) {
+			var args []any
+			if disabled.name == "mismatched board project" {
+				args = []any{boardID, foreignProjectID}
+			} else if strings.Contains(disabled.setup, "workspaces") {
+				args = []any{workspaceID}
+			} else if strings.Contains(disabled.setup, "projects") {
+				args = []any{projectID}
+			} else {
+				args = []any{boardID}
+			}
+			if _, execErr := database.Exec(ctx, disabled.setup, args...); execErr != nil {
+				t.Fatal(execErr)
+			}
+			if _, _, _, found, publicProjectBoardErr := repository.PublicProjectBoard(ctx, anchor, false); publicProjectBoardErr != nil || found {
+				t.Fatalf("unusable board found=%t err=%v, want unavailable", found, publicProjectBoardErr)
+			}
+			clearArgs := args
+			if disabled.name == "mismatched board project" {
+				clearArgs = []any{boardID, projectID}
+			}
+			if _, execErr := database.Exec(ctx, disabled.clear, clearArgs...); execErr != nil {
+				t.Fatal(execErr)
+			}
+		})
+	}
+
+}
+
+func openPublicAssetAuthorizationDatabase(t *testing.T) (context.Context, *pgxpool.Pool, *PostgresRepository) {
+	t.Helper()
+	databaseURL := postgresfixture.EmptyDatabase(t)
+	config, err := pgxpool.ParseConfig(databaseURL)
+	if err != nil {
+		t.Fatalf("parse isolated public assets database URL: %v", err)
+	}
+	config.MaxConns = 1 // Keep PostgreSQL TEMP tables visible to each repository call.
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	t.Cleanup(cancel)
+	database, err := pgxpool.NewWithConfig(ctx, config)
+	if err != nil {
+		t.Fatalf("connect to isolated public assets database: %v", err)
+	}
+	t.Cleanup(database.Close)
+	if _, execErr := database.Exec(ctx, `
+CREATE TEMP TABLE workspaces (id uuid PRIMARY KEY, slug text, deleted_at timestamptz);
+CREATE TEMP TABLE projects (id uuid PRIMARY KEY, workspace_id uuid, deleted_at timestamptz, archived_at timestamptz);
+CREATE TEMP TABLE deploy_boards (id uuid PRIMARY KEY, workspace_id uuid, project_id uuid, entity_name text, entity_identifier uuid, anchor text, deleted_at timestamptz, is_disabled boolean, created_at timestamptz);
+CREATE TEMP TABLE issue_comments (id uuid PRIMARY KEY, workspace_id uuid, project_id uuid, created_by_id uuid, deleted_at timestamptz);
+CREATE TEMP TABLE issues (id uuid PRIMARY KEY, workspace_id uuid, project_id uuid, deleted_at timestamptz);
+CREATE TEMP TABLE file_assets (
+ id uuid PRIMARY KEY, created_at timestamptz, updated_at timestamptz, attributes jsonb, asset text,
+ workspace_id uuid, project_id uuid, comment_id uuid, issue_id uuid, draft_issue_id uuid, entity_type text, size double precision,
+ is_uploaded boolean, is_deleted boolean, is_archived boolean, storage_metadata jsonb,
+	 user_id uuid, created_by_id uuid, deleted_at timestamptz
+)`); execErr != nil {
+		t.Fatalf("create isolated public assets TEMP tables: %v", execErr)
+	}
+	repository, err := NewPostgresRepository(database)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return ctx, database, repository
 }

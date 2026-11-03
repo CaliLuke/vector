@@ -40,11 +40,7 @@ func (s *remainingReadMiddlewareSessions) InspectReadServiceSessionWithoutTimezo
 // Exercise the production middleware and generated services; only database and
 // session I/O are substituted. Domain calls must not happen before rejection.
 func TestRemainingReadFamiliesMiddlewareOrder(t *testing.T) {
-	families := []struct {
-		name, method, path string
-		success            int
-		prepare            func(*testing.T, *remainingReadMiddlewareSessions) (pendingReplacementEndpoints, func() int)
-	}{
+	families := []remainingReadFamiliesMiddlewareOrderCase{
 
 		{"member preferences", "PATCH", "/api/workspaces/demo/projects/11111111-1111-4111-8111-111111111111/preferences/member/22222222-2222-4222-8222-222222222222/", 200, func(t *testing.T, s *remainingReadMiddlewareSessions) (pendingReplacementEndpoints, func() int) {
 			r := extensionPreferencesRepository{recorder: &cycleMiddlewareRecorder{}}
@@ -145,66 +141,7 @@ func TestRemainingReadFamiliesMiddlewareOrder(t *testing.T) {
 	}
 	for _, family := range families {
 		t.Run(family.name, func(t *testing.T) {
-			for _, tc := range []struct {
-				name                                           string
-				authenticated, invalidZone, oversized, options bool
-				status                                         int
-			}{
-				{name: "request-size before authentication", oversized: true, status: 413},
-				{name: "authentication before timezone", invalidZone: true, status: 401},
-				{name: "timezone before authorization and dispatch", authenticated: true, invalidZone: true, status: 400},
-				{name: "OPTIONS validates timezone", authenticated: true, invalidZone: true, options: true, status: 400},
-				{name: "authorization permits dispatch", authenticated: true, status: family.success},
-			} {
-				t.Run(tc.name, func(t *testing.T) {
-					events := &cycleMiddlewareRecorder{}
-					sessions := &remainingReadMiddlewareSessions{searchMountSessions: searchMountSessions{&cycleMiddlewareSessions{recorder: events, userTimezone: "UTC", invalidZone: tc.invalidZone}}}
-					pending, calls := family.prepare(t, sessions)
-					audit := &cycleMiddlewareActivity{recorder: events}
-					pending.readServicesSession = sessions
-					pending.readServicesCookie = browserSessionCookieConfig{Name: "session-id", Configured: true}
-					pending.activityReadsBodyLimit = 64
-					pending.activityReadsActivity = audit
-					handler := extensionHTTPHandler(pending)
-					body := "{}"
-					if strings.Contains(family.path, "/export-issues/") {
-						body = `{"provider":"csv"}`
-					} else if strings.Contains(family.path, "/inboxes/") {
-						body = `{"name":"New intake"}`
-					}
-					if tc.oversized {
-						body = strings.Repeat("x", 65)
-					}
-					method := family.method
-					if tc.options {
-						method = "OPTIONS"
-					}
-					request := httptest.NewRequest(method, family.path, strings.NewReader(body))
-					request.Header.Set("Content-Type", "application/json")
-					if tc.authenticated {
-						request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
-					}
-					response := httptest.NewRecorder()
-					handler.ServeHTTP(response, request)
-					wantStatus := tc.status
-					if response.Code != wantStatus {
-						t.Fatalf("status=%d want=%d body=%s", response.Code, wantStatus, response.Body.String())
-					}
-					if tc.oversized && sessions.inspections != 0 {
-						t.Fatalf("oversized request performed %d session inspections", sessions.inspections)
-					}
-					dispatchExpected := tc.authenticated && !tc.invalidZone && !tc.oversized && !tc.options
-					if !dispatchExpected && calls() != 0 {
-						t.Fatalf("rejected request reached domain %d times", calls())
-					}
-					if dispatchExpected && calls() == 0 {
-						t.Fatal("authorized request did not reach domain")
-					}
-					if len(audit.records) != 0 {
-						t.Fatalf("session request emitted %d API-key audit records", len(audit.records))
-					}
-				})
-			}
+			checkReadFamilyMiddlewareOrder(t, family)
 		})
 	}
 }
@@ -270,4 +207,78 @@ func (r *remainingNotificationMiddlewareRepository) Set(context.Context, notific
 func (r *remainingNotificationMiddlewareRepository) MarkAllRead(context.Context, notificationstore.Principal, string, bool, bool, string) error {
 	r.dispatches++
 	return nil
+}
+
+type remainingReadFamiliesMiddlewareOrderCase struct {
+	name    string
+	method  string
+	path    string
+	success int
+	prepare func(*testing.T, *remainingReadMiddlewareSessions) (pendingReplacementEndpoints, func() int)
+}
+
+func checkReadFamilyMiddlewareOrder(t *testing.T, family remainingReadFamiliesMiddlewareOrderCase) {
+	t.Helper()
+
+	for _, tc := range []struct {
+		name                                           string
+		authenticated, invalidZone, oversized, options bool
+		status                                         int
+	}{
+		{name: "request-size before authentication", oversized: true, status: 413},
+		{name: "authentication before timezone", invalidZone: true, status: 401},
+		{name: "timezone before authorization and dispatch", authenticated: true, invalidZone: true, status: 400},
+		{name: "OPTIONS validates timezone", authenticated: true, invalidZone: true, options: true, status: 400},
+		{name: "authorization permits dispatch", authenticated: true, status: family.success},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			events := &cycleMiddlewareRecorder{}
+			sessions := &remainingReadMiddlewareSessions{searchMountSessions: searchMountSessions{&cycleMiddlewareSessions{recorder: events, userTimezone: "UTC", invalidZone: tc.invalidZone}}}
+			pending, calls := family.prepare(t, sessions)
+			audit := &cycleMiddlewareActivity{recorder: events}
+			pending.readServicesSession = sessions
+			pending.readServicesCookie = browserSessionCookieConfig{Name: "session-id", Configured: true}
+			pending.activityReadsBodyLimit = 64
+			pending.activityReadsActivity = audit
+			handler := extensionHTTPHandler(pending)
+			body := "{}"
+			if strings.Contains(family.path, "/export-issues/") {
+				body = `{"provider":"csv"}`
+			} else if strings.Contains(family.path, "/inboxes/") {
+				body = `{"name":"New intake"}`
+			}
+			if tc.oversized {
+				body = strings.Repeat("x", 65)
+			}
+			method := family.method
+			if tc.options {
+				method = "OPTIONS"
+			}
+			request := httptest.NewRequest(method, family.path, strings.NewReader(body))
+			request.Header.Set("Content-Type", "application/json")
+			if tc.authenticated {
+				request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
+			}
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, request)
+			wantStatus := tc.status
+			if response.Code != wantStatus {
+				t.Fatalf("status=%d want=%d body=%s", response.Code, wantStatus, response.Body.String())
+			}
+			if tc.oversized && sessions.inspections != 0 {
+				t.Fatalf("oversized request performed %d session inspections", sessions.inspections)
+			}
+			dispatchExpected := tc.authenticated && !tc.invalidZone && !tc.oversized && !tc.options
+			if !dispatchExpected && calls() != 0 {
+				t.Fatalf("rejected request reached domain %d times", calls())
+			}
+			if dispatchExpected && calls() == 0 {
+				t.Fatal("authorized request did not reach domain")
+			}
+			if len(audit.records) != 0 {
+				t.Fatalf("session request emitted %d API-key audit records", len(audit.records))
+			}
+		})
+	}
+
 }

@@ -70,7 +70,7 @@ func registerStorageMetadataWorkflow(app *selvedge.App, repository storageMetada
 	err = executionSelvedge.Register(activities, activity, func(ctx context.Context, input StorageMetadataWorkflowInput) (struct{}, error) {
 		assetID, metadataErr := uuid.Parse(input.AssetID)
 		if metadataErr != nil {
-			return struct{}{}, fmt.Errorf("%w: parse FileAsset ID: %v", ErrPermanentStorageMetadata, metadataErr)
+			return struct{}{}, fmt.Errorf("%w: parse FileAsset ID: %s", ErrPermanentStorageMetadata, metadataErr.Error())
 		}
 		key, found, metadataErr := repository.AssetKey(ctx, assetID)
 		if metadataErr != nil {

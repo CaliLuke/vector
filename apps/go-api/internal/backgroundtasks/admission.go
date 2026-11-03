@@ -22,7 +22,8 @@ func admitOrReconcile[I, O any](
 	}
 	instance, lookupErr := app.GetInstance(ctx, instanceID)
 	if lookupErr != nil {
-		return "", fmt.Errorf("start workflow %s: %w (reconcile existing instance: %v)", instanceID, startErr, lookupErr)
+		// Admission owns retry classification; the failed lookup is diagnostic only.
+		return "", fmt.Errorf("start workflow %s: %w (reconcile existing instance: %s)", instanceID, startErr, lookupErr.Error())
 	}
 	expectedInput, marshalErr := json.Marshal(input)
 	if marshalErr != nil {

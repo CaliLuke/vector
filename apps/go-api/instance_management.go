@@ -58,7 +58,7 @@ type InstanceManagementAdminAccounts interface {
 	IsInstanceAdmin(context.Context, bool, string) (bool, error)
 	CreateInitialAdmin(context.Context, string, string, string, string, string, string, string, bool, time.Time) (accountauthentication.InitialAdminResult, error)
 	UserByEmail(context.Context, string) (accountauthentication.User, error)
-	UpdateLoginMetadata(context.Context, string, time.Time, string, string, string, time.Time) (bool, error)
+	UpdateLoginMetadata(context.Context, accountauthentication.LoginMetadata) (bool, error)
 	UpdateLogoutMetadata(context.Context, string, string, time.Time) error
 }
 

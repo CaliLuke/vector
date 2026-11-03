@@ -168,7 +168,8 @@ func RegisterIssueExportWorkflow(app *selvedge.App, store *issueExportStore, pol
 		}
 		_, statusErr := markFailed.Execute(ctx.Context(), activities.Scope(ctx), issueExportFailureInput{TokenID: input.TokenID, Reason: err.Error()}, execution.ActivityOptions{})
 		if statusErr != nil {
-			return struct{}{}, fmt.Errorf("export failed (%v) and failure status could not be recorded: %w", err, statusErr)
+			// Persisting failure status is the outstanding operation to retry.
+			return struct{}{}, fmt.Errorf("export failed (%s) and failure status could not be recorded: %w", err.Error(), statusErr)
 		}
 		return struct{}{}, err
 	})

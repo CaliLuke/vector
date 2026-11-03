@@ -21,9 +21,12 @@ type catalogueStatusCall func(string, map[string]any, int) rpcResult
 // Share one migrated database across the credential matrix. Each case
 // owns its records and exercises the actual generated transport and repositories.
 func TestMCPWorkspaceCatalogueBatch(t *testing.T) {
-	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
+	f := newMilestoneFixture(t)
+	runCatalogueCredentials(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		t.Run("feature receipts and current authorization", func(t *testing.T) { catalogueFeatures(t, f, call) })
 		t.Run("customer identities and request binding", func(t *testing.T) { catalogueCustomers(t, f, call) })
+	})
+	runCatalogue(t, f, func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		t.Run("property cardinality and atomic values", func(t *testing.T) { catalogueCustomerProperties(t, call) })
 		t.Run("template merge and summary", func(t *testing.T) { catalogueTemplates(t, call) })
 		t.Run("initiative associations", func(t *testing.T) { catalogueInitiatives(t, f, call) })

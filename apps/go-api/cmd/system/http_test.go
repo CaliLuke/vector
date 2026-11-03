@@ -1925,199 +1925,9 @@ func TestProjectMembershipReadsHTTPMountsAndNativeProtocol(t *testing.T) {
 	}
 	handler := build(projectMembershipReadsHTTPStub{})
 
-	projectID := "00000000-0000-4000-8000-000000000003"
-	routes := []struct {
-		path               string
-		wantAcceptEncoding bool
-		bodyFragment       string
-		allow              string
-		optionsInGo        bool
-		optionsName        string
-	}{
-		{
-			path:               "/api/workspaces/acme/projects/" + projectID + "/project-members/me/",
-			wantAcceptEncoding: true,
-			bodyFragment:       `"role":15`,
-			allow:              "GET, HEAD, OPTIONS",
-			optionsInGo:        true,
-			optionsName:        "Project Member User Endpoint",
-		},
-		{
-			path:         "/api/users/me/workspaces/acme/project-roles/",
-			bodyFragment: `"00000000-0000-4000-8000-000000000003":15`,
-			allow:        "GET, HEAD, OPTIONS",
-			optionsInGo:  true,
-			optionsName:  "User Project Roles Endpoint",
-		},
-		{
-			path:               "/api/workspaces/acme/members/",
-			wantAcceptEncoding: true,
-			bodyFragment:       `"role":15`,
-			allow:              "GET, HEAD, OPTIONS",
-			optionsInGo:        true,
-			optionsName:        "Work Space Member",
-		},
-		{
-			path:               "/api/workspaces/acme/members/00000000-0000-4000-8000-000000000011/",
-			wantAcceptEncoding: true,
-			bodyFragment:       `"role":15`,
-			allow:              "GET, PATCH, DELETE, HEAD, OPTIONS",
-		},
-		{
-			path:               "/api/workspaces/acme/project-members/",
-			wantAcceptEncoding: true,
-			bodyFragment:       `00000000-0000-4000-8000-000000000003`,
-			allow:              "GET, HEAD, OPTIONS",
-			optionsInGo:        true,
-			optionsName:        "Workspace Project Member Endpoint",
-		},
-		{
-			path:               "/api/workspaces/acme/projects/" + projectID + "/members/",
-			wantAcceptEncoding: true,
-			bodyFragment:       `"role":15`,
-			allow:              "GET, POST, HEAD, OPTIONS",
-		},
-		{
-			path:               "/api/workspaces/acme/projects/" + projectID + "/members/00000000-0000-4000-8000-000000000012/",
-			wantAcceptEncoding: true,
-			bodyFragment:       `"role":15`,
-			allow:              "GET, PATCH, DELETE, HEAD, OPTIONS",
-		},
-		{
-			path:               "/api/workspaces/acme/projects/" + projectID + "/preferences/member/00000000-0000-4000-8000-000000000012/",
-			wantAcceptEncoding: true,
-			bodyFragment:       `"preferences"`,
-			allow:              "GET, PATCH, HEAD, OPTIONS",
-		},
-	}
-	for _, route := range routes {
-		request := httptest.NewRequest(http.MethodGet, route.path, nil)
-		request.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})
-		response := httptest.NewRecorder()
-		handler.ServeHTTP(response, request)
-		if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), route.bodyFragment) {
-			t.Errorf("GET %s = %d %q", route.path, response.Code, response.Body.String())
-		}
-		if response.Header().Get("Allow") != route.allow ||
-			!strings.Contains(response.Header().Get("Vary"), "origin") ||
-			!strings.Contains(response.Header().Get("Vary"), "Cookie") {
-			t.Errorf("GET %s headers = %v", route.path, response.Header())
-		}
-		hasAcceptEncoding := strings.Contains(response.Header().Get("Vary"), "Accept-Encoding")
-		if hasAcceptEncoding != route.wantAcceptEncoding {
-			t.Errorf("GET %s Vary=%q, want Accept-Encoding=%v", route.path, response.Header().Get("Vary"), route.wantAcceptEncoding)
-		}
+	checkMembershipReadRoutes(t, handler)
 
-		head := httptest.NewRecorder()
-		headRequest := httptest.NewRequest(http.MethodHead, route.path, nil)
-		headRequest.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})
-		handler.ServeHTTP(head, headRequest)
-		if head.Code != http.StatusOK || head.Body.Len() != 0 ||
-			!strings.Contains(head.Header().Get("Vary"), "Cookie") {
-			t.Errorf("HEAD %s = %d %q headers=%v", route.path, head.Code, head.Body.String(), head.Header())
-		}
-
-		if route.optionsInGo {
-			options := httptest.NewRecorder()
-			optionsRequest := httptest.NewRequest(http.MethodOptions, route.path, nil)
-			optionsRequest.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})
-			handler.ServeHTTP(options, optionsRequest)
-			if options.Code != http.StatusOK || options.Header().Get("Allow") != route.allow ||
-				!strings.Contains(options.Header().Get("Vary"), "Cookie") {
-				t.Errorf("OPTIONS %s = %d %q headers=%v", route.path, options.Code, options.Body.String(), options.Header())
-			}
-			var metadata map[string]any
-			if err := json.Unmarshal(options.Body.Bytes(), &metadata); err != nil || metadata["name"] != route.optionsName {
-				t.Errorf("OPTIONS %s metadata = %#v, err=%v", route.path, metadata, err)
-			}
-			if _, exists := metadata["actions"]; exists {
-				t.Errorf("OPTIONS %s unexpectedly describes actions: %#v", route.path, metadata)
-			}
-
-			anonymousOptions := httptest.NewRecorder()
-			handler.ServeHTTP(anonymousOptions, httptest.NewRequest(http.MethodOptions, route.path, nil))
-			if anonymousOptions.Code != http.StatusUnauthorized ||
-				anonymousOptions.Body.String() != "{\"detail\":\"Authentication credentials were not provided.\"}\n" ||
-				!strings.Contains(anonymousOptions.Header().Get("Vary"), "Cookie") ||
-				!strings.Contains(anonymousOptions.Header().Get("Vary"), "origin") {
-				t.Errorf(
-					"anonymous OPTIONS %s = %d %q headers=%v",
-					route.path,
-					anonymousOptions.Code,
-					anonymousOptions.Body.String(),
-					anonymousOptions.Header(),
-				)
-			}
-		}
-
-		unauthenticated := httptest.NewRecorder()
-		handler.ServeHTTP(unauthenticated, httptest.NewRequest(http.MethodGet, route.path, nil))
-		if unauthenticated.Code != http.StatusUnauthorized ||
-			!strings.Contains(unauthenticated.Header().Get("Vary"), "Cookie") ||
-			!strings.Contains(unauthenticated.Header().Get("Vary"), "origin") {
-			t.Errorf("unauthenticated GET %s = %d %q headers=%v", route.path, unauthenticated.Code, unauthenticated.Body.String(), unauthenticated.Header())
-		}
-	}
-
-	unsupportedAcceptRequest := httptest.NewRequest(http.MethodGet, "/api/workspaces/acme/members/", nil)
-	unsupportedAcceptRequest.Header.Set("Accept", "application/xml")
-	unsupportedAcceptRequest.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})
-	unsupportedAcceptResponse := httptest.NewRecorder()
-	handler.ServeHTTP(unsupportedAcceptResponse, unsupportedAcceptRequest)
-	if unsupportedAcceptResponse.Code != http.StatusNotAcceptable ||
-		unsupportedAcceptResponse.Header().Get("Content-Type") != "application/json" ||
-		unsupportedAcceptResponse.Body.String() != "{\"detail\":\"Could not satisfy the request Accept header.\"}\n" ||
-		strings.Contains(unsupportedAcceptResponse.Header().Get("Vary"), "Cookie") {
-		t.Fatalf("unsupported Accept response = %d %q headers=%v", unsupportedAcceptResponse.Code, unsupportedAcceptResponse.Body.String(), unsupportedAcceptResponse.Header())
-	}
-
-	indentedSuccessRequest := httptest.NewRequest(http.MethodGet, "/api/workspaces/acme/members/", nil)
-	indentedSuccessRequest.Header.Set("Accept", "application/json; indent=2")
-	indentedSuccessRequest.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})
-	indentedSuccessResponse := httptest.NewRecorder()
-	handler.ServeHTTP(indentedSuccessResponse, indentedSuccessRequest)
-	if indentedSuccessResponse.Code != http.StatusOK ||
-		!strings.HasPrefix(indentedSuccessResponse.Body.String(), "[\n  {") ||
-		!strings.Contains(indentedSuccessResponse.Body.String(), "\n    \"role\": 15") {
-		t.Fatalf("indented success response = %d %q", indentedSuccessResponse.Code, indentedSuccessResponse.Body.String())
-	}
-
-	for _, method := range []string{http.MethodGet, http.MethodHead, http.MethodOptions} {
-		unsupportedFormatResponse := httptest.NewRecorder()
-		handler.ServeHTTP(
-			unsupportedFormatResponse,
-			httptest.NewRequest(method, "/api/workspaces/acme/members/?format=xml", nil),
-		)
-		if unsupportedFormatResponse.Code != http.StatusNotFound ||
-			unsupportedFormatResponse.Header().Get("Content-Type") != "application/json" ||
-			strings.Contains(unsupportedFormatResponse.Header().Get("Vary"), "Cookie") {
-			t.Fatalf("unsupported %s format response = %d %q headers=%v", method, unsupportedFormatResponse.Code, unsupportedFormatResponse.Body.String(), unsupportedFormatResponse.Header())
-		}
-		if method != http.MethodHead && unsupportedFormatResponse.Body.String() != "{\"detail\":\"Not found.\"}\n" {
-			t.Fatalf("unsupported %s format body = %q", method, unsupportedFormatResponse.Body.String())
-		}
-	}
-
-	jsonFormatRequest := httptest.NewRequest(http.MethodGet, "/api/workspaces/acme/members/?format=xml&format=json", nil)
-	jsonFormatRequest.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})
-	jsonFormatResponse := httptest.NewRecorder()
-	handler.ServeHTTP(jsonFormatResponse, jsonFormatRequest)
-	if jsonFormatResponse.Code != http.StatusOK {
-		t.Fatalf("json format response = %d %q", jsonFormatResponse.Code, jsonFormatResponse.Body.String())
-	}
-
-	for _, query := range []string{"format=", "format=xml&format="} {
-		for _, method := range []string{http.MethodGet, http.MethodHead, http.MethodOptions} {
-			request := httptest.NewRequest(method, "/api/workspaces/acme/members/?"+query, nil)
-			request.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})
-			response := httptest.NewRecorder()
-			handler.ServeHTTP(response, request)
-			if response.Code != http.StatusOK {
-				t.Fatalf("empty final format %s %q = %d %q", method, query, response.Code, response.Body.String())
-			}
-		}
-	}
-
+	checkMembershipReadNegotiation(t, handler)
 	lastSearch := ""
 	duplicateSearchHandler := build(projectMembershipReadsHTTPStub{searchCapture: &lastSearch})
 	duplicateSearchRequest := httptest.NewRequest(
@@ -5392,84 +5202,17 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 
 	for _, method := range []string{http.MethodGet, http.MethodHead, http.MethodOptions} {
 		t.Run("expire invalid session on "+method, func(t *testing.T) {
-			sessions := &publicProjectMetadataThrottleStub{allowed: true, expire: true}
-			request := httptest.NewRequest(method, "/auth/get-csrf-token/", nil)
-			request.AddCookie(&http.Cookie{Name: "session-id", Value: "expired-session"})
-			response := httptest.NewRecorder()
-			newRoute(method, sessions).ServeHTTP(response, request)
-			if response.Code != http.StatusOK || sessions.calls != 1 {
-				t.Fatalf("%s status=%d session calls=%d body=%q", method, response.Code, sessions.calls, response.Body.String())
-			}
-			foundExpiredSession := false
-			for _, cookie := range response.Header().Values("Set-Cookie") {
-				if strings.HasPrefix(cookie, `session-id="";`) && strings.Contains(cookie, "Max-Age=0") {
-					foundExpiredSession = true
-				}
-			}
-			if !foundExpiredSession {
-				t.Fatalf("%s Set-Cookie=%q, want expired session cookie", method, response.Header().Values("Set-Cookie"))
-			}
+			checkCSRFInvalidSessionExpiry(t, newRoute, method)
 		})
 	}
 
 	for _, method := range []string{http.MethodGet, http.MethodHead, http.MethodOptions} {
 		t.Run("ignore invalid timezone on "+method, func(t *testing.T) {
-			sessions := &publicProjectMetadataThrottleStub{
-				allowed:     true,
-				userID:      "00000000-0000-4000-8000-000000000b01",
-				timezoneErr: browsersession.ErrInvalidTimezone,
-			}
-			request := httptest.NewRequest(method, "/auth/get-csrf-token/", nil)
-			request.AddCookie(&http.Cookie{Name: "session-id", Value: "authenticated-session"})
-			response := httptest.NewRecorder()
-			newRoute(method, sessions).ServeHTTP(response, request)
-			if response.Code != http.StatusOK || sessions.calls != 1 {
-				t.Fatalf("%s status=%d session calls=%d body=%q", method, response.Code, sessions.calls, response.Body.String())
-			}
+			checkCSRFInvalidTimezone(t, newRoute, method)
 		})
 	}
 
-	now := time.Date(2026, time.September, 2, 16, 0, 0, 0, time.UTC)
-	prepared := &browsersession.SessionRefresh{SessionKey: "existing-session"}
-	sessions := &publicProjectMetadataThrottleStub{
-		allowed: true,
-		rotated: prepared,
-		result: browsersession.SessionRefresh{
-			SessionKey:      "refreshed-session",
-			ExpiresAt:       now.Add(time.Hour),
-			CookieExpiresAt: now.Add(time.Hour),
-			MaxAgeSeconds:   3600,
-		},
-	}
-	request := httptest.NewRequest(http.MethodGet, "/auth/get-csrf-token/", nil)
-	request.AddCookie(&http.Cookie{Name: "session-id", Value: prepared.SessionKey})
-	response := httptest.NewRecorder()
-	newRoute(http.MethodGet, sessions).ServeHTTP(response, request)
-	if response.Code != http.StatusOK || sessions.calls != 1 || sessions.refreshCalls != 1 {
-		t.Fatalf("refreshed GET status=%d inspect calls=%d refresh calls=%d body=%q", response.Code, sessions.calls, sessions.refreshCalls, response.Body.String())
-	}
-	wantCookie := "session-id=refreshed-session; Domain=.example.test; expires=Wed, 02 Sep 2026 17:00:00 GMT; HttpOnly; Max-Age=3600; Path=/; SameSite=Lax; Secure"
-	if !slices.Contains(response.Header().Values("Set-Cookie"), wantCookie) {
-		t.Fatalf("refreshed GET Set-Cookie=%q, want %q", response.Header().Values("Set-Cookie"), wantCookie)
-	}
-
-	preflightSessions := &publicProjectMetadataThrottleStub{expire: true}
-	preflightRequest := httptest.NewRequest(http.MethodOptions, "/auth/get-csrf-token/", nil)
-	preflightRequest.Header.Set("Access-Control-Request-Method", http.MethodGet)
-	preflightResponse := httptest.NewRecorder()
-	newRoute(http.MethodOptions, preflightSessions).ServeHTTP(preflightResponse, preflightRequest)
-	if preflightResponse.Code != http.StatusOK || preflightSessions.calls != 0 || len(preflightResponse.Header().Values("Set-Cookie")) != 0 {
-		t.Fatalf("preflight status=%d session calls=%d cookies=%q", preflightResponse.Code, preflightSessions.calls, preflightResponse.Header().Values("Set-Cookie"))
-	}
-	for _, header := range []string{"Allow", "Cross-Origin-Opener-Policy", "Referrer-Policy", "X-Content-Type-Options", "X-Frame-Options"} {
-		if got := preflightResponse.Header().Get(header); got != "" {
-			t.Errorf("preflight %s=%q, want absent", header, got)
-		}
-	}
-	if strings.Contains(preflightResponse.Header().Get("Vary"), "Cookie") {
-		t.Errorf("preflight Vary=%q, must not include Cookie", preflightResponse.Header().Get("Vary"))
-	}
-
+	checkCSRFRefreshAndPreflight(t, newRoute)
 	assertNoCSRFCookie := func(t *testing.T, response *httptest.ResponseRecorder) {
 		t.Helper()
 		for _, cookie := range response.Result().Cookies() {
@@ -5490,23 +5233,10 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 
 	for name, request := range map[string]*http.Request{
 		"unsupported format": httptest.NewRequest(http.MethodGet, "/auth/get-csrf-token/?format=xml", nil),
-		"unacceptable media": func() *http.Request {
-			request := httptest.NewRequest(http.MethodGet, "/auth/get-csrf-token/", nil)
-			request.Header.Set("Accept", "text/plain")
-			return request
-		}(),
+		"unacceptable media": unacceptableCSRFRequest(t),
 	} {
 		t.Run(name, func(t *testing.T) {
-			response := httptest.NewRecorder()
-			newRoute(http.MethodGet, &publicProjectMetadataThrottleStub{allowed: true}).ServeHTTP(response, request)
-			wantStatus := http.StatusNotFound
-			if name == "unacceptable media" {
-				wantStatus = http.StatusNotAcceptable
-			}
-			if response.Code != wantStatus {
-				t.Fatalf("status=%d body=%q headers=%v", response.Code, response.Body.String(), response.Header())
-			}
-			assertNoCSRFCookie(t, response)
+			checkCSRFRejectedRequestCookies(t, newRoute, assertNoCSRFCookie, name, request)
 		})
 	}
 
@@ -5550,17 +5280,7 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 		"update race":     fmt.Errorf("refresh: %w", browsersession.ErrSessionUpdate),
 	} {
 		t.Run(name, func(t *testing.T) {
-			response := httptest.NewRecorder()
-			newRoute(http.MethodGet, &publicProjectMetadataThrottleStub{
-				allowed:    true,
-				rotated:    &browsersession.SessionRefresh{SessionKey: "existing-session"},
-				refreshErr: refreshErr,
-			}).ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/auth/get-csrf-token/", nil))
-			if response.Code != http.StatusBadRequest || response.Body.String() != string(nativeBadRequestBody) ||
-				response.Header().Get("Content-Length") != "" || response.Header().Get("Allow") != "" || response.Header().Get("X-Frame-Options") != "" {
-				t.Fatalf("session interruption status=%d body=%q headers=%v", response.Code, response.Body.String(), response.Header())
-			}
-			assertNoCSRFCookie(t, response)
+			checkCSRFFailedRefreshCookies(t, newRoute, assertNoCSRFCookie, refreshErr)
 		})
 	}
 
@@ -6671,4 +6391,336 @@ func TestParseConfigUsesDecimalFileSizeLimit(t *testing.T) {
 			}
 		})
 	}
+}
+
+func checkCSRFInvalidSessionExpiry(t *testing.T, newRoute func(method string, throttle publicProjectMetadataThrottle) http.Handler, method string) {
+	t.Helper()
+
+	sessions := &publicProjectMetadataThrottleStub{allowed: true, expire: true}
+	request := httptest.NewRequest(method, "/auth/get-csrf-token/", nil)
+	request.AddCookie(&http.Cookie{Name: "session-id", Value: "expired-session"})
+	response := httptest.NewRecorder()
+	newRoute(method, sessions).ServeHTTP(response, request)
+	if response.Code != http.StatusOK || sessions.calls != 1 {
+		t.Fatalf("%s status=%d session calls=%d body=%q", method, response.Code, sessions.calls, response.Body.String())
+	}
+	foundExpiredSession := false
+	for _, cookie := range response.Header().Values("Set-Cookie") {
+		if strings.HasPrefix(cookie, `session-id="";`) && strings.Contains(cookie, "Max-Age=0") {
+			foundExpiredSession = true
+		}
+	}
+	if !foundExpiredSession {
+		t.Fatalf("%s Set-Cookie=%q, want expired session cookie", method, response.Header().Values("Set-Cookie"))
+	}
+
+}
+
+func checkCSRFInvalidTimezone(t *testing.T, newRoute func(method string, throttle publicProjectMetadataThrottle) http.Handler, method string) {
+	t.Helper()
+
+	sessions := &publicProjectMetadataThrottleStub{
+		allowed:     true,
+		userID:      "00000000-0000-4000-8000-000000000b01",
+		timezoneErr: browsersession.ErrInvalidTimezone,
+	}
+	request := httptest.NewRequest(method, "/auth/get-csrf-token/", nil)
+	request.AddCookie(&http.Cookie{Name: "session-id", Value: "authenticated-session"})
+	response := httptest.NewRecorder()
+	newRoute(method, sessions).ServeHTTP(response, request)
+	if response.Code != http.StatusOK || sessions.calls != 1 {
+		t.Fatalf("%s status=%d session calls=%d body=%q", method, response.Code, sessions.calls, response.Body.String())
+	}
+
+}
+
+func checkCSRFRejectedRequestCookies(t *testing.T, newRoute func(method string, throttle publicProjectMetadataThrottle) http.Handler, assertNoCSRFCookie func(t *testing.T, response *httptest.ResponseRecorder), name string, request *http.Request) {
+	t.Helper()
+
+	response := httptest.NewRecorder()
+	newRoute(http.MethodGet, &publicProjectMetadataThrottleStub{allowed: true}).ServeHTTP(response, request)
+	wantStatus := http.StatusNotFound
+	if name == "unacceptable media" {
+		wantStatus = http.StatusNotAcceptable
+	}
+	if response.Code != wantStatus {
+		t.Fatalf("status=%d body=%q headers=%v", response.Code, response.Body.String(), response.Header())
+	}
+	assertNoCSRFCookie(t, response)
+
+}
+
+func checkCSRFFailedRefreshCookies(t *testing.T, newRoute func(method string, throttle publicProjectMetadataThrottle) http.Handler, assertNoCSRFCookie func(t *testing.T, response *httptest.ResponseRecorder), refreshErr error) {
+	t.Helper()
+
+	response := httptest.NewRecorder()
+	newRoute(http.MethodGet, &publicProjectMetadataThrottleStub{
+		allowed:    true,
+		rotated:    &browsersession.SessionRefresh{SessionKey: "existing-session"},
+		refreshErr: refreshErr,
+	}).ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/auth/get-csrf-token/", nil))
+	if response.Code != http.StatusBadRequest || response.Body.String() != string(nativeBadRequestBody) ||
+		response.Header().Get("Content-Length") != "" || response.Header().Get("Allow") != "" || response.Header().Get("X-Frame-Options") != "" {
+		t.Fatalf("session interruption status=%d body=%q headers=%v", response.Code, response.Body.String(), response.Header())
+	}
+	assertNoCSRFCookie(t, response)
+
+}
+
+func checkMembershipReadRoutes(t *testing.T, handler http.Handler) {
+	t.Helper()
+
+	projectID := "00000000-0000-4000-8000-000000000003"
+	routes := []struct {
+		path               string
+		wantAcceptEncoding bool
+		bodyFragment       string
+		allow              string
+		optionsInGo        bool
+		optionsName        string
+	}{
+		{
+			path:               "/api/workspaces/acme/projects/" + projectID + "/project-members/me/",
+			wantAcceptEncoding: true,
+			bodyFragment:       `"role":15`,
+			allow:              "GET, HEAD, OPTIONS",
+			optionsInGo:        true,
+			optionsName:        "Project Member User Endpoint",
+		},
+		{
+			path:         "/api/users/me/workspaces/acme/project-roles/",
+			bodyFragment: `"00000000-0000-4000-8000-000000000003":15`,
+			allow:        "GET, HEAD, OPTIONS",
+			optionsInGo:  true,
+			optionsName:  "User Project Roles Endpoint",
+		},
+		{
+			path:               "/api/workspaces/acme/members/",
+			wantAcceptEncoding: true,
+			bodyFragment:       `"role":15`,
+			allow:              "GET, HEAD, OPTIONS",
+			optionsInGo:        true,
+			optionsName:        "Work Space Member",
+		},
+		{
+			path:               "/api/workspaces/acme/members/00000000-0000-4000-8000-000000000011/",
+			wantAcceptEncoding: true,
+			bodyFragment:       `"role":15`,
+			allow:              "GET, PATCH, DELETE, HEAD, OPTIONS",
+		},
+		{
+			path:               "/api/workspaces/acme/project-members/",
+			wantAcceptEncoding: true,
+			bodyFragment:       `00000000-0000-4000-8000-000000000003`,
+			allow:              "GET, HEAD, OPTIONS",
+			optionsInGo:        true,
+			optionsName:        "Workspace Project Member Endpoint",
+		},
+		{
+			path:               "/api/workspaces/acme/projects/" + projectID + "/members/",
+			wantAcceptEncoding: true,
+			bodyFragment:       `"role":15`,
+			allow:              "GET, POST, HEAD, OPTIONS",
+		},
+		{
+			path:               "/api/workspaces/acme/projects/" + projectID + "/members/00000000-0000-4000-8000-000000000012/",
+			wantAcceptEncoding: true,
+			bodyFragment:       `"role":15`,
+			allow:              "GET, PATCH, DELETE, HEAD, OPTIONS",
+		},
+		{
+			path:               "/api/workspaces/acme/projects/" + projectID + "/preferences/member/00000000-0000-4000-8000-000000000012/",
+			wantAcceptEncoding: true,
+			bodyFragment:       `"preferences"`,
+			allow:              "GET, PATCH, HEAD, OPTIONS",
+		},
+	}
+	for _, route := range routes {
+		request := httptest.NewRequest(http.MethodGet, route.path, nil)
+		request.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})
+		response := httptest.NewRecorder()
+		handler.ServeHTTP(response, request)
+		if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), route.bodyFragment) {
+			t.Errorf("GET %s = %d %q", route.path, response.Code, response.Body.String())
+		}
+		if response.Header().Get("Allow") != route.allow ||
+			!strings.Contains(response.Header().Get("Vary"), "origin") ||
+			!strings.Contains(response.Header().Get("Vary"), "Cookie") {
+			t.Errorf("GET %s headers = %v", route.path, response.Header())
+		}
+		hasAcceptEncoding := strings.Contains(response.Header().Get("Vary"), "Accept-Encoding")
+		if hasAcceptEncoding != route.wantAcceptEncoding {
+			t.Errorf("GET %s Vary=%q, want Accept-Encoding=%v", route.path, response.Header().Get("Vary"), route.wantAcceptEncoding)
+		}
+
+		head := httptest.NewRecorder()
+		headRequest := httptest.NewRequest(http.MethodHead, route.path, nil)
+		headRequest.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})
+		handler.ServeHTTP(head, headRequest)
+		if head.Code != http.StatusOK || head.Body.Len() != 0 ||
+			!strings.Contains(head.Header().Get("Vary"), "Cookie") {
+			t.Errorf("HEAD %s = %d %q headers=%v", route.path, head.Code, head.Body.String(), head.Header())
+		}
+
+		if route.optionsInGo {
+			options := httptest.NewRecorder()
+			optionsRequest := httptest.NewRequest(http.MethodOptions, route.path, nil)
+			optionsRequest.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})
+			handler.ServeHTTP(options, optionsRequest)
+			if options.Code != http.StatusOK || options.Header().Get("Allow") != route.allow ||
+				!strings.Contains(options.Header().Get("Vary"), "Cookie") {
+				t.Errorf("OPTIONS %s = %d %q headers=%v", route.path, options.Code, options.Body.String(), options.Header())
+			}
+			var metadata map[string]any
+			if err := json.Unmarshal(options.Body.Bytes(), &metadata); err != nil || metadata["name"] != route.optionsName {
+				t.Errorf("OPTIONS %s metadata = %#v, err=%v", route.path, metadata, err)
+			}
+			if _, exists := metadata["actions"]; exists {
+				t.Errorf("OPTIONS %s unexpectedly describes actions: %#v", route.path, metadata)
+			}
+
+			anonymousOptions := httptest.NewRecorder()
+			handler.ServeHTTP(anonymousOptions, httptest.NewRequest(http.MethodOptions, route.path, nil))
+			if anonymousOptions.Code != http.StatusUnauthorized ||
+				anonymousOptions.Body.String() != "{\"detail\":\"Authentication credentials were not provided.\"}\n" ||
+				!strings.Contains(anonymousOptions.Header().Get("Vary"), "Cookie") ||
+				!strings.Contains(anonymousOptions.Header().Get("Vary"), "origin") {
+				t.Errorf(
+					"anonymous OPTIONS %s = %d %q headers=%v",
+					route.path,
+					anonymousOptions.Code,
+					anonymousOptions.Body.String(),
+					anonymousOptions.Header(),
+				)
+			}
+		}
+
+		unauthenticated := httptest.NewRecorder()
+		handler.ServeHTTP(unauthenticated, httptest.NewRequest(http.MethodGet, route.path, nil))
+		if unauthenticated.Code != http.StatusUnauthorized ||
+			!strings.Contains(unauthenticated.Header().Get("Vary"), "Cookie") ||
+			!strings.Contains(unauthenticated.Header().Get("Vary"), "origin") {
+			t.Errorf("unauthenticated GET %s = %d %q headers=%v", route.path, unauthenticated.Code, unauthenticated.Body.String(), unauthenticated.Header())
+		}
+	}
+
+}
+
+func checkMembershipReadNegotiation(t *testing.T, handler http.Handler) {
+	t.Helper()
+
+	unsupportedAcceptRequest := httptest.NewRequest(http.MethodGet, "/api/workspaces/acme/members/", nil)
+	unsupportedAcceptRequest.Header.Set("Accept", "application/xml")
+	unsupportedAcceptRequest.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})
+	unsupportedAcceptResponse := httptest.NewRecorder()
+	handler.ServeHTTP(unsupportedAcceptResponse, unsupportedAcceptRequest)
+	if unsupportedAcceptResponse.Code != http.StatusNotAcceptable ||
+		unsupportedAcceptResponse.Header().Get("Content-Type") != "application/json" ||
+		unsupportedAcceptResponse.Body.String() != "{\"detail\":\"Could not satisfy the request Accept header.\"}\n" ||
+		strings.Contains(unsupportedAcceptResponse.Header().Get("Vary"), "Cookie") {
+		t.Fatalf("unsupported Accept response = %d %q headers=%v", unsupportedAcceptResponse.Code, unsupportedAcceptResponse.Body.String(), unsupportedAcceptResponse.Header())
+	}
+
+	indentedSuccessRequest := httptest.NewRequest(http.MethodGet, "/api/workspaces/acme/members/", nil)
+	indentedSuccessRequest.Header.Set("Accept", "application/json; indent=2")
+	indentedSuccessRequest.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})
+	indentedSuccessResponse := httptest.NewRecorder()
+	handler.ServeHTTP(indentedSuccessResponse, indentedSuccessRequest)
+	if indentedSuccessResponse.Code != http.StatusOK ||
+		!strings.HasPrefix(indentedSuccessResponse.Body.String(), "[\n  {") ||
+		!strings.Contains(indentedSuccessResponse.Body.String(), "\n    \"role\": 15") {
+		t.Fatalf("indented success response = %d %q", indentedSuccessResponse.Code, indentedSuccessResponse.Body.String())
+	}
+
+	for _, method := range []string{http.MethodGet, http.MethodHead, http.MethodOptions} {
+		unsupportedFormatResponse := httptest.NewRecorder()
+		handler.ServeHTTP(
+			unsupportedFormatResponse,
+			httptest.NewRequest(method, "/api/workspaces/acme/members/?format=xml", nil),
+		)
+		if unsupportedFormatResponse.Code != http.StatusNotFound ||
+			unsupportedFormatResponse.Header().Get("Content-Type") != "application/json" ||
+			strings.Contains(unsupportedFormatResponse.Header().Get("Vary"), "Cookie") {
+			t.Fatalf("unsupported %s format response = %d %q headers=%v", method, unsupportedFormatResponse.Code, unsupportedFormatResponse.Body.String(), unsupportedFormatResponse.Header())
+		}
+		if method != http.MethodHead && unsupportedFormatResponse.Body.String() != "{\"detail\":\"Not found.\"}\n" {
+			t.Fatalf("unsupported %s format body = %q", method, unsupportedFormatResponse.Body.String())
+		}
+	}
+
+	jsonFormatRequest := httptest.NewRequest(http.MethodGet, "/api/workspaces/acme/members/?format=xml&format=json", nil)
+	jsonFormatRequest.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})
+	jsonFormatResponse := httptest.NewRecorder()
+	handler.ServeHTTP(jsonFormatResponse, jsonFormatRequest)
+	if jsonFormatResponse.Code != http.StatusOK {
+		t.Fatalf("json format response = %d %q", jsonFormatResponse.Code, jsonFormatResponse.Body.String())
+	}
+
+	for _, query := range []string{"format=", "format=xml&format="} {
+		for _, method := range []string{http.MethodGet, http.MethodHead, http.MethodOptions} {
+			request := httptest.NewRequest(method, "/api/workspaces/acme/members/?"+query, nil)
+			request.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, request)
+			if response.Code != http.StatusOK {
+				t.Fatalf("empty final format %s %q = %d %q", method, query, response.Code, response.Body.String())
+			}
+		}
+	}
+
+}
+
+func checkCSRFRefreshAndPreflight(t *testing.T, newRoute func(method string, throttle publicProjectMetadataThrottle) http.Handler) {
+	t.Helper()
+
+	now := time.Date(2026, time.September, 2, 16, 0, 0, 0, time.UTC)
+	prepared := &browsersession.SessionRefresh{SessionKey: "existing-session"}
+	sessions := &publicProjectMetadataThrottleStub{
+		allowed: true,
+		rotated: prepared,
+		result: browsersession.SessionRefresh{
+			SessionKey:      "refreshed-session",
+			ExpiresAt:       now.Add(time.Hour),
+			CookieExpiresAt: now.Add(time.Hour),
+			MaxAgeSeconds:   3600,
+		},
+	}
+	request := httptest.NewRequest(http.MethodGet, "/auth/get-csrf-token/", nil)
+	request.AddCookie(&http.Cookie{Name: "session-id", Value: prepared.SessionKey})
+	response := httptest.NewRecorder()
+	newRoute(http.MethodGet, sessions).ServeHTTP(response, request)
+	if response.Code != http.StatusOK || sessions.calls != 1 || sessions.refreshCalls != 1 {
+		t.Fatalf("refreshed GET status=%d inspect calls=%d refresh calls=%d body=%q", response.Code, sessions.calls, sessions.refreshCalls, response.Body.String())
+	}
+	wantCookie := "session-id=refreshed-session; Domain=.example.test; expires=Wed, 02 Sep 2026 17:00:00 GMT; HttpOnly; Max-Age=3600; Path=/; SameSite=Lax; Secure"
+	if !slices.Contains(response.Header().Values("Set-Cookie"), wantCookie) {
+		t.Fatalf("refreshed GET Set-Cookie=%q, want %q", response.Header().Values("Set-Cookie"), wantCookie)
+	}
+
+	preflightSessions := &publicProjectMetadataThrottleStub{expire: true}
+	preflightRequest := httptest.NewRequest(http.MethodOptions, "/auth/get-csrf-token/", nil)
+	preflightRequest.Header.Set("Access-Control-Request-Method", http.MethodGet)
+	preflightResponse := httptest.NewRecorder()
+	newRoute(http.MethodOptions, preflightSessions).ServeHTTP(preflightResponse, preflightRequest)
+	if preflightResponse.Code != http.StatusOK || preflightSessions.calls != 0 || len(preflightResponse.Header().Values("Set-Cookie")) != 0 {
+		t.Fatalf("preflight status=%d session calls=%d cookies=%q", preflightResponse.Code, preflightSessions.calls, preflightResponse.Header().Values("Set-Cookie"))
+	}
+	for _, header := range []string{"Allow", "Cross-Origin-Opener-Policy", "Referrer-Policy", "X-Content-Type-Options", "X-Frame-Options"} {
+		if got := preflightResponse.Header().Get(header); got != "" {
+			t.Errorf("preflight %s=%q, want absent", header, got)
+		}
+	}
+	if strings.Contains(preflightResponse.Header().Get("Vary"), "Cookie") {
+		t.Errorf("preflight Vary=%q, must not include Cookie", preflightResponse.Header().Get("Vary"))
+	}
+
+}
+
+func unacceptableCSRFRequest(t *testing.T) *http.Request {
+	t.Helper()
+
+	request := httptest.NewRequest(http.MethodGet, "/auth/get-csrf-token/", nil)
+	request.Header.Set("Accept", "text/plain")
+	return request
+
 }

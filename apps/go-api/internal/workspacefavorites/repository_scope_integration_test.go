@@ -89,29 +89,7 @@ func TestFavoriteWritesAndReadsEnforceEntityAndFolderScope(t *testing.T) {
 		t.Fatalf("create with unsupported active project role = %v, want ErrInvalidScope", err)
 	}
 
-	validPage, pageCreateErr := repository.Create(ctx, user, "demo", CreateInput{EntityType: "page", EntityIdentifier: &page, ProjectID: &project})
-	if pageCreateErr != nil || !strings.Contains(string(validPage), "Page One") {
-		t.Fatalf("create page favorite in its linked project = %s, %v", validPage, pageCreateErr)
-	}
-	globalPageFavorite, globalPageErr := repository.Create(ctx, user, "demo", CreateInput{EntityType: "page", EntityIdentifier: &globalPage})
-	if globalPageErr != nil || !strings.Contains(string(globalPageFavorite), "Page Global") {
-		t.Fatalf("create workspace-global page favorite = %s, %v", globalPageFavorite, globalPageErr)
-	}
-	guest := uuid.MustParse("00000000-0000-4000-8000-000000000003")
-	if _, err := repository.Create(ctx, guest, "demo", CreateInput{EntityType: "page", EntityIdentifier: &page, ProjectID: &project}); !errors.Is(err, ErrInvalidScope) {
-		t.Fatalf("guest favorite on feature-restricted page = %v, want ErrInvalidScope", err)
-	}
-	validCycle, cycleCreateErr := repository.Create(ctx, user, "demo", CreateInput{EntityType: "cycle", EntityIdentifier: &cycle, ProjectID: &project})
-	if cycleCreateErr != nil || !strings.Contains(string(validCycle), "Cycle One") {
-		t.Fatalf("create cycle favorite = %s, %v", validCycle, cycleCreateErr)
-	}
-	if _, err := repository.Create(ctx, user, "demo", CreateInput{EntityType: "module", EntityIdentifier: ptrUUID("00000000-0000-4000-8000-000000000060"), ProjectID: &project}); err != nil {
-		t.Fatalf("create module favorite: %v", err)
-	}
-	if _, err := repository.Create(ctx, user, "demo", CreateInput{EntityType: "view", EntityIdentifier: ptrUUID("00000000-0000-4000-8000-000000000070"), ProjectID: &project}); err != nil {
-		t.Fatalf("create view favorite: %v", err)
-	}
-
+	checkAccessibleFavoriteKinds(t, ctx, repository, user, project, page, globalPage, cycle)
 	folderID := uuid.MustParse(favoriteScopeFolder)
 	if _, err := repository.Create(ctx, user, "demo", CreateInput{EntityType: "folder", IsFolder: true}); err != nil {
 		t.Fatalf("create root folder: %v", err)
@@ -170,6 +148,114 @@ func TestFavoriteWritesAndReadsEnforceEntityAndFolderScope(t *testing.T) {
 	if err := connection.QueryRow(ctx, `SELECT id FROM user_favorites WHERE user_id=$1 AND workspace_id=$3 AND entity_type='folder' AND parent_id IS NULL AND id<>$2`, user, createdFolder, favoriteScopeWorkspace).Scan(&siblingFolderID); err != nil {
 		t.Fatal(err)
 	}
+
+	checkConcurrentFavoriteFolderMoves(t, ctx, pair, connection, repository, user, createdFolder, siblingFolderID)
+
+	checkFavoriteUpdatesRetainScope(t, ctx, connection, repository, user, project, foreignProject, folderID)
+
+	checkFavoritesRejectUnsupportedRole(t, ctx, connection, repository, project, unsupportedRoleUser)
+
+	checkFavoriteReadsHideMalformedScope(t, ctx, connection, repository, user, project, foreignProject, foreignPage, createdFolder, childFavoriteID)
+
+}
+
+func ptrString(value string) *string {
+	return &value
+}
+
+func ptrUUID(value string) *uuid.UUID {
+	parsed := uuid.MustParse(value)
+	return &parsed
+}
+
+func seedFavoriteScopeSchema(ctx context.Context, databaseURL string) (seedErr error) {
+	connection, connectErr := pgx.Connect(ctx, databaseURL)
+	if connectErr != nil {
+		return connectErr
+	}
+	defer func() {
+		if closeErr := connection.Close(context.WithoutCancel(ctx)); closeErr != nil && seedErr == nil {
+			seedErr = closeErr
+		}
+	}()
+	_, seedErr = connection.Exec(ctx, `
+CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL, deleted_at timestamptz);
+CREATE TABLE workspace_members (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, member_id uuid NOT NULL, role smallint NOT NULL, is_active boolean NOT NULL, deleted_at timestamptz);
+CREATE TABLE projects (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, name text NOT NULL, logo_props jsonb NOT NULL DEFAULT '{}', guest_view_all_features boolean NOT NULL DEFAULT false, deleted_at timestamptz);
+CREATE TABLE project_members (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, project_id uuid NOT NULL, member_id uuid NOT NULL, role smallint NOT NULL, is_active boolean NOT NULL, deleted_at timestamptz);
+CREATE TABLE pages (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, name text NOT NULL, owned_by_id uuid NOT NULL, access smallint NOT NULL DEFAULT 0, logo_props jsonb NOT NULL DEFAULT '{}', is_global boolean NOT NULL DEFAULT false, deleted_at timestamptz);
+CREATE TABLE project_pages (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, project_id uuid NOT NULL, page_id uuid NOT NULL, deleted_at timestamptz);
+CREATE TABLE cycles (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, project_id uuid NOT NULL, name text NOT NULL, logo_props jsonb NOT NULL DEFAULT '{}', deleted_at timestamptz);
+CREATE TABLE modules (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, project_id uuid NOT NULL, name text NOT NULL, logo_props jsonb NOT NULL DEFAULT '{}', deleted_at timestamptz);
+CREATE TABLE issue_views (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, project_id uuid, name text NOT NULL, logo_props jsonb NOT NULL DEFAULT '{}', deleted_at timestamptz);
+CREATE TABLE user_favorites (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, user_id uuid NOT NULL, entity_type text NOT NULL, entity_identifier uuid, name text, is_folder boolean NOT NULL, sequence double precision NOT NULL, parent_id uuid, project_id uuid, created_by_id uuid, updated_by_id uuid, created_at timestamptz NOT NULL, updated_at timestamptz NOT NULL, deleted_at timestamptz);
+INSERT INTO workspaces(id,slug) VALUES
+ ('00000000-0000-4000-8000-000000000010','demo'),
+ ('00000000-0000-4000-8000-000000000011','foreign');
+INSERT INTO workspace_members(id,workspace_id,member_id,role,is_active) VALUES ('00000000-0000-4000-8000-000000000012','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000001',20,true);
+INSERT INTO workspace_members(id,workspace_id,member_id,role,is_active) VALUES ('00000000-0000-4000-8000-000000000013','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000003',15,true);
+INSERT INTO projects(id,workspace_id,name) VALUES
+ ('00000000-0000-4000-8000-000000000020','00000000-0000-4000-8000-000000000010','Project One'),
+ ('00000000-0000-4000-8000-000000000021','00000000-0000-4000-8000-000000000011','Project Foreign'),
+ ('00000000-0000-4000-8000-000000000022','00000000-0000-4000-8000-000000000010','Project Unjoined');
+INSERT INTO project_members(id,workspace_id,project_id,member_id,role,is_active) VALUES
+ ('00000000-0000-4000-8000-000000000023','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','00000000-0000-4000-8000-000000000001',20,true),
+ ('00000000-0000-4000-8000-000000000024','00000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000021','00000000-0000-4000-8000-000000000001',20,true),
+ ('00000000-0000-4000-8000-000000000025','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','00000000-0000-4000-8000-000000000003',5,true);
+INSERT INTO pages(id,workspace_id,name,owned_by_id,access) VALUES
+ ('00000000-0000-4000-8000-000000000040','00000000-0000-4000-8000-000000000010','Page One','00000000-0000-4000-8000-000000000001',0),
+ ('00000000-0000-4000-8000-000000000041','00000000-0000-4000-8000-000000000010','Page Foreign','00000000-0000-4000-8000-000000000001',0),
+ ('00000000-0000-4000-8000-000000000045','00000000-0000-4000-8000-000000000010','Private Page','00000000-0000-4000-8000-000000000002',1);
+INSERT INTO pages(id,workspace_id,name,owned_by_id,is_global) VALUES ('00000000-0000-4000-8000-000000000044','00000000-0000-4000-8000-000000000010','Page Global','00000000-0000-4000-8000-000000000001',true);
+INSERT INTO project_pages(id,workspace_id,project_id,page_id) VALUES
+ ('00000000-0000-4000-8000-000000000042','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','00000000-0000-4000-8000-000000000040'),
+ ('00000000-0000-4000-8000-000000000043','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000021','00000000-0000-4000-8000-000000000041'),
+ ('00000000-0000-4000-8000-000000000046','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','00000000-0000-4000-8000-000000000045');
+INSERT INTO cycles(id,workspace_id,project_id,name) VALUES
+ ('00000000-0000-4000-8000-000000000050','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','Cycle One'),
+ ('00000000-0000-4000-8000-000000000051','00000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000021','Cycle Foreign');
+INSERT INTO modules(id,workspace_id,project_id,name) VALUES
+ ('00000000-0000-4000-8000-000000000060','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','Module One'),
+ ('00000000-0000-4000-8000-000000000061','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','Module Child'),
+ ('00000000-0000-4000-8000-000000000062','00000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000021','Module Foreign');
+INSERT INTO issue_views(id,workspace_id,project_id,name) VALUES
+ ('00000000-0000-4000-8000-000000000070','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','View One'),
+ ('00000000-0000-4000-8000-000000000072','00000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000021','View Foreign');
+`)
+	return seedErr
+}
+
+func checkAccessibleFavoriteKinds(t *testing.T, ctx context.Context, repository *Repository, user uuid.UUID, project uuid.UUID, page uuid.UUID, globalPage uuid.UUID, cycle uuid.UUID) {
+	t.Helper()
+
+	validPage, pageCreateErr := repository.Create(ctx, user, "demo", CreateInput{EntityType: "page", EntityIdentifier: &page, ProjectID: &project})
+	if pageCreateErr != nil || !strings.Contains(string(validPage), "Page One") {
+		t.Fatalf("create page favorite in its linked project = %s, %v", validPage, pageCreateErr)
+	}
+	globalPageFavorite, globalPageErr := repository.Create(ctx, user, "demo", CreateInput{EntityType: "page", EntityIdentifier: &globalPage})
+	if globalPageErr != nil || !strings.Contains(string(globalPageFavorite), "Page Global") {
+		t.Fatalf("create workspace-global page favorite = %s, %v", globalPageFavorite, globalPageErr)
+	}
+	guest := uuid.MustParse("00000000-0000-4000-8000-000000000003")
+	if _, err := repository.Create(ctx, guest, "demo", CreateInput{EntityType: "page", EntityIdentifier: &page, ProjectID: &project}); !errors.Is(err, ErrInvalidScope) {
+		t.Fatalf("guest favorite on feature-restricted page = %v, want ErrInvalidScope", err)
+	}
+	validCycle, cycleCreateErr := repository.Create(ctx, user, "demo", CreateInput{EntityType: "cycle", EntityIdentifier: &cycle, ProjectID: &project})
+	if cycleCreateErr != nil || !strings.Contains(string(validCycle), "Cycle One") {
+		t.Fatalf("create cycle favorite = %s, %v", validCycle, cycleCreateErr)
+	}
+	if _, err := repository.Create(ctx, user, "demo", CreateInput{EntityType: "module", EntityIdentifier: ptrUUID("00000000-0000-4000-8000-000000000060"), ProjectID: &project}); err != nil {
+		t.Fatalf("create module favorite: %v", err)
+	}
+	if _, err := repository.Create(ctx, user, "demo", CreateInput{EntityType: "view", EntityIdentifier: ptrUUID("00000000-0000-4000-8000-000000000070"), ProjectID: &project}); err != nil {
+		t.Fatalf("create view favorite: %v", err)
+	}
+
+}
+
+func checkConcurrentFavoriteFolderMoves(t *testing.T, ctx context.Context, pair *postgresfixture.Pair, connection *pgx.Conn, repository *Repository, user uuid.UUID, createdFolder uuid.UUID, siblingFolderID uuid.UUID) {
+	t.Helper()
+
 	secondConnection, secondConnectionErr := pgx.Connect(ctx, pair.SeedURL())
 	if secondConnectionErr != nil {
 		t.Fatal(secondConnectionErr)
@@ -246,6 +332,11 @@ func TestFavoriteWritesAndReadsEnforceEntityAndFolderScope(t *testing.T) {
 		t.Fatalf("concurrent reciprocal moves created invalid hierarchy: root_under_sibling=%t sibling_under_root=%t", rootUnderSibling, siblingUnderRoot)
 	}
 
+}
+
+func checkFavoriteUpdatesRetainScope(t *testing.T, ctx context.Context, connection *pgx.Conn, repository *Repository, user uuid.UUID, project uuid.UUID, foreignProject uuid.UUID, folderID uuid.UUID) {
+	t.Helper()
+
 	var validFavoriteID uuid.UUID
 	if err := connection.QueryRow(ctx, `SELECT id FROM user_favorites WHERE user_id=$1 AND entity_type='project' AND entity_identifier=$2`, user, project).Scan(&validFavoriteID); err != nil {
 		t.Fatal(err)
@@ -263,6 +354,11 @@ func TestFavoriteWritesAndReadsEnforceEntityAndFolderScope(t *testing.T) {
 		t.Fatalf("rejected updates changed the valid favorite: %v", err)
 	}
 
+}
+
+func checkFavoritesRejectUnsupportedRole(t *testing.T, ctx context.Context, connection *pgx.Conn, repository *Repository, project uuid.UUID, unsupportedRoleUser uuid.UUID) {
+	t.Helper()
+
 	unsupportedFavoriteID := "00000000-0000-4000-8000-000000000083"
 	if _, err := connection.Exec(ctx, `INSERT INTO user_favorites(id,workspace_id,user_id,entity_type,entity_identifier,is_folder,sequence,project_id,created_at,updated_at) VALUES ($1,$2,$3,'project',$4,false,30,$4,NOW(),NOW())`, unsupportedFavoriteID, favoriteScopeWorkspace, unsupportedRoleUser, project); err != nil {
 		t.Fatal(err)
@@ -277,6 +373,11 @@ func TestFavoriteWritesAndReadsEnforceEntityAndFolderScope(t *testing.T) {
 	if unsupportedListErr != nil || strings.Contains(string(unsupportedList), unsupportedFavoriteID) {
 		t.Fatalf("List exposed unsupported project role favorite: %s, err=%v", unsupportedList, unsupportedListErr)
 	}
+
+}
+
+func checkFavoriteReadsHideMalformedScope(t *testing.T, ctx context.Context, connection *pgx.Conn, repository *Repository, user uuid.UUID, project uuid.UUID, foreignProject uuid.UUID, foreignPage uuid.UUID, createdFolder uuid.UUID, childFavoriteID uuid.UUID) {
+	t.Helper()
 
 	malformedIDs := []string{
 		"00000000-0000-4000-8000-000000000080",
@@ -325,70 +426,4 @@ func TestFavoriteWritesAndReadsEnforceEntityAndFolderScope(t *testing.T) {
 	if !strings.Contains(string(grouped), childFavoriteID.String()) {
 		t.Fatalf("group omitted valid child favorite: %s", grouped)
 	}
-}
-
-func ptrString(value string) *string {
-	return &value
-}
-
-func ptrUUID(value string) *uuid.UUID {
-	parsed := uuid.MustParse(value)
-	return &parsed
-}
-
-func seedFavoriteScopeSchema(ctx context.Context, databaseURL string) (seedErr error) {
-	connection, connectErr := pgx.Connect(ctx, databaseURL)
-	if connectErr != nil {
-		return connectErr
-	}
-	defer func() {
-		if closeErr := connection.Close(context.WithoutCancel(ctx)); closeErr != nil && seedErr == nil {
-			seedErr = closeErr
-		}
-	}()
-	_, seedErr = connection.Exec(ctx, `
-CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL, deleted_at timestamptz);
-CREATE TABLE workspace_members (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, member_id uuid NOT NULL, role smallint NOT NULL, is_active boolean NOT NULL, deleted_at timestamptz);
-CREATE TABLE projects (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, name text NOT NULL, logo_props jsonb NOT NULL DEFAULT '{}', guest_view_all_features boolean NOT NULL DEFAULT false, deleted_at timestamptz);
-CREATE TABLE project_members (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, project_id uuid NOT NULL, member_id uuid NOT NULL, role smallint NOT NULL, is_active boolean NOT NULL, deleted_at timestamptz);
-CREATE TABLE pages (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, name text NOT NULL, owned_by_id uuid NOT NULL, access smallint NOT NULL DEFAULT 0, logo_props jsonb NOT NULL DEFAULT '{}', is_global boolean NOT NULL DEFAULT false, deleted_at timestamptz);
-CREATE TABLE project_pages (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, project_id uuid NOT NULL, page_id uuid NOT NULL, deleted_at timestamptz);
-CREATE TABLE cycles (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, project_id uuid NOT NULL, name text NOT NULL, logo_props jsonb NOT NULL DEFAULT '{}', deleted_at timestamptz);
-CREATE TABLE modules (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, project_id uuid NOT NULL, name text NOT NULL, logo_props jsonb NOT NULL DEFAULT '{}', deleted_at timestamptz);
-CREATE TABLE issue_views (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, project_id uuid, name text NOT NULL, logo_props jsonb NOT NULL DEFAULT '{}', deleted_at timestamptz);
-CREATE TABLE user_favorites (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, user_id uuid NOT NULL, entity_type text NOT NULL, entity_identifier uuid, name text, is_folder boolean NOT NULL, sequence double precision NOT NULL, parent_id uuid, project_id uuid, created_by_id uuid, updated_by_id uuid, created_at timestamptz NOT NULL, updated_at timestamptz NOT NULL, deleted_at timestamptz);
-INSERT INTO workspaces(id,slug) VALUES
- ('00000000-0000-4000-8000-000000000010','demo'),
- ('00000000-0000-4000-8000-000000000011','foreign');
-INSERT INTO workspace_members(id,workspace_id,member_id,role,is_active) VALUES ('00000000-0000-4000-8000-000000000012','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000001',20,true);
-INSERT INTO workspace_members(id,workspace_id,member_id,role,is_active) VALUES ('00000000-0000-4000-8000-000000000013','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000003',15,true);
-INSERT INTO projects(id,workspace_id,name) VALUES
- ('00000000-0000-4000-8000-000000000020','00000000-0000-4000-8000-000000000010','Project One'),
- ('00000000-0000-4000-8000-000000000021','00000000-0000-4000-8000-000000000011','Project Foreign'),
- ('00000000-0000-4000-8000-000000000022','00000000-0000-4000-8000-000000000010','Project Unjoined');
-INSERT INTO project_members(id,workspace_id,project_id,member_id,role,is_active) VALUES
- ('00000000-0000-4000-8000-000000000023','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','00000000-0000-4000-8000-000000000001',20,true),
- ('00000000-0000-4000-8000-000000000024','00000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000021','00000000-0000-4000-8000-000000000001',20,true),
- ('00000000-0000-4000-8000-000000000025','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','00000000-0000-4000-8000-000000000003',5,true);
-INSERT INTO pages(id,workspace_id,name,owned_by_id,access) VALUES
- ('00000000-0000-4000-8000-000000000040','00000000-0000-4000-8000-000000000010','Page One','00000000-0000-4000-8000-000000000001',0),
- ('00000000-0000-4000-8000-000000000041','00000000-0000-4000-8000-000000000010','Page Foreign','00000000-0000-4000-8000-000000000001',0),
- ('00000000-0000-4000-8000-000000000045','00000000-0000-4000-8000-000000000010','Private Page','00000000-0000-4000-8000-000000000002',1);
-INSERT INTO pages(id,workspace_id,name,owned_by_id,is_global) VALUES ('00000000-0000-4000-8000-000000000044','00000000-0000-4000-8000-000000000010','Page Global','00000000-0000-4000-8000-000000000001',true);
-INSERT INTO project_pages(id,workspace_id,project_id,page_id) VALUES
- ('00000000-0000-4000-8000-000000000042','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','00000000-0000-4000-8000-000000000040'),
- ('00000000-0000-4000-8000-000000000043','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000021','00000000-0000-4000-8000-000000000041'),
- ('00000000-0000-4000-8000-000000000046','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','00000000-0000-4000-8000-000000000045');
-INSERT INTO cycles(id,workspace_id,project_id,name) VALUES
- ('00000000-0000-4000-8000-000000000050','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','Cycle One'),
- ('00000000-0000-4000-8000-000000000051','00000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000021','Cycle Foreign');
-INSERT INTO modules(id,workspace_id,project_id,name) VALUES
- ('00000000-0000-4000-8000-000000000060','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','Module One'),
- ('00000000-0000-4000-8000-000000000061','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','Module Child'),
- ('00000000-0000-4000-8000-000000000062','00000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000021','Module Foreign');
-INSERT INTO issue_views(id,workspace_id,project_id,name) VALUES
- ('00000000-0000-4000-8000-000000000070','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000020','View One'),
- ('00000000-0000-4000-8000-000000000072','00000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000021','View Foreign');
-`)
-	return seedErr
 }

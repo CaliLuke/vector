@@ -138,6 +138,25 @@ INSERT INTO sessions VALUES ('invalid-auth-hash-session');
 	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 	repository, constructorErr := NewRepository(connection)
 	require.NoError(t, constructorErr)
+	checkPublicProjectMetadata(t, ctx, repository)
+	checkPublicProjectSettingsAndAnchors(t, ctx, connection, repository)
+	checkPublicProjectCollections(t, ctx, repository)
+	invalidator, err := NewPostgreSQLSessionInvalidator(connection)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := invalidator.InvalidateSession(ctx, "invalid-auth-hash-session"); err != nil {
+		t.Fatal(err)
+	}
+	var sessions int
+	if err := connection.QueryRow(ctx, "SELECT count(*) FROM sessions").Scan(&sessions); err != nil || sessions != 0 {
+		t.Fatalf("sessions=%d err=%v", sessions, err)
+	}
+}
+
+func checkPublicProjectMetadata(t *testing.T, ctx context.Context, repository *Repository) {
+	t.Helper()
+
 	metaData, err := repository.Meta(ctx, "anchor")
 	if err != nil {
 		t.Fatal(err)
@@ -156,6 +175,12 @@ INSERT INTO sessions VALUES ('invalid-auth-hash-session');
 	if _, metaErr := repository.Meta(ctx, "orphan-anchor"); !errors.Is(metaErr, ErrProjectNotPublished) {
 		t.Fatalf("orphan meta err=%v", metaErr)
 	}
+
+}
+
+func checkPublicProjectSettingsAndAnchors(t *testing.T, ctx context.Context, connection *pgx.Conn, repository *Repository) {
+	t.Helper()
+
 	settingsData, err := repository.Settings(ctx, "anchor")
 	if err != nil {
 		t.Fatal(err)
@@ -209,6 +234,11 @@ INSERT INTO deploy_boards VALUES (
 	if _, projectAnchorErr := repository.ProjectAnchor(ctx, "demo", uuid.MustParse("00000000-0000-4000-8000-000000000097")); !errors.Is(projectAnchorErr, ErrRequiredObject) {
 		t.Fatalf("wrong-project anchor err=%v", projectAnchorErr)
 	}
+
+}
+
+func checkPublicProjectCollections(t *testing.T, ctx context.Context, repository *Repository) {
+	t.Helper()
 
 	cyclesData, err := repository.Cycles(ctx, "anchor")
 	if err != nil {
@@ -288,15 +318,5 @@ INSERT INTO deploy_boards VALUES (
 	if _, labelsErr := repository.Labels(ctx, "missing"); !errors.Is(labelsErr, ErrInvalidAnchor) {
 		t.Fatalf("missing anchor err=%v", labelsErr)
 	}
-	invalidator, err := NewPostgreSQLSessionInvalidator(connection)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := invalidator.InvalidateSession(ctx, "invalid-auth-hash-session"); err != nil {
-		t.Fatal(err)
-	}
-	var sessions int
-	if err := connection.QueryRow(ctx, "SELECT count(*) FROM sessions").Scan(&sessions); err != nil || sessions != 0 {
-		t.Fatalf("sessions=%d err=%v", sessions, err)
-	}
+
 }

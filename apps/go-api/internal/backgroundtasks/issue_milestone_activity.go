@@ -11,11 +11,14 @@ import (
 )
 
 func validateMilestoneActivityInput(input IssueActivityInput) error {
-	requested := decodeActivityObject(input.RequestedData)
+	requested, err := decodeActivityObject(input.RequestedData)
+	if err != nil {
+		return err
+	}
 	_, milestone := requested["milestone"]
 	if input.WorkspaceID != "" || milestone {
-		id, err := uuid.Parse(input.WorkspaceID)
-		if err != nil || id == uuid.Nil {
+		id, parseErr := uuid.Parse(input.WorkspaceID)
+		if parseErr != nil || id == uuid.Nil {
 			return fmt.Errorf("%w: workspace ID is required for scoped activity", ErrPermanentIssueActivity)
 		}
 	}
@@ -25,12 +28,16 @@ func validateMilestoneActivityInput(input IssueActivityInput) error {
 	if input.Type != "issue.activity.updated" {
 		return fmt.Errorf("%w: milestone changes require issue update activity", ErrPermanentIssueActivity)
 	}
-	_, err := milestoneActivityRow(input)
+	_, err = milestoneActivityRow(input)
 	return err
 }
 
 func milestoneActivityRow(input IssueActivityInput) (*issueActivityRow, error) {
-	requested, current := decodeActivityObject(input.RequestedData), decodeActivityObject(input.CurrentInstance)
+	event, err := decodeIssueActivityEvent(input)
+	if err != nil {
+		return nil, err
+	}
+	requested, current := event.requested, event.current
 	if _, present := requested["milestone"]; !present {
 		return nil, nil
 	}

@@ -178,148 +178,7 @@ func TestWorkItemTypesHTTPProtection(t *testing.T) {
 		{name: "invalid definition", method: "POST", body: `{"revision":0,"name":"Bug"}`, session: "types-session", csrf: strings.Repeat("a", 32), status: 400},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			repo := &typeHTTPRepository{editError: test.editError}
-			service, err := systemapi.NewWorkItemTypes(repo, typeHTTPSessions{}, repo)
-			if err != nil {
-				t.Fatal(err)
-			}
-			handler := newHTTPHandlerWithPendingReplacements(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false,
-				nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-				pendingReplacementEndpoints{workItemTypes: api.NewEndpoints(service), activityReadsBodyLimit: 1 << 20})
-			base := "http://example.test/api/workspaces/acme/"
-			if test.project != "" {
-				base += "projects/" + test.project + "/"
-			}
-			resource := test.resource
-			if resource == "" {
-				resource = "work-item-types"
-			}
-			request := httptest.NewRequest(test.method, base+resource+"/"+test.path, strings.NewReader(test.body))
-			request.Header.Set("Content-Type", "application/json")
-			if test.session != "" {
-				request.AddCookie(&http.Cookie{Name: "session-id", Value: test.session})
-			}
-			if test.csrf != "" {
-				request.AddCookie(&http.Cookie{Name: "csrftoken", Value: test.csrf})
-				request.Header.Set("X-CSRFToken", test.csrf)
-			}
-			if test.origin != "" {
-				request.Header.Set("Origin", test.origin)
-			}
-			response := httptest.NewRecorder()
-			handler.ServeHTTP(response, request)
-			if response.Code != test.status {
-				t.Fatalf("status=%d want=%d body=%s", response.Code, test.status, response.Body.String())
-			}
-			if test.resource == "work-item-releases" && test.called && test.method == "POST" {
-				input := repo.releaseInput
-				if input.Revision != 4 || input.Action != "create" || input.ID != "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee" || input.Values.Name != "October" || input.Values.Description != "Notes" || input.Values.TargetDate != "2026-10-31" {
-					t.Fatalf("release mutation contract lost: %+v", input)
-				}
-			}
-			if strings.HasPrefix(test.name, "property restore") && test.called {
-				input := repo.itemEditInput
-				if input.Restore == nil || input.Restore.PropertyID != "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee" || input.Restore.VersionID != "ffffffff-ffff-4fff-8fff-ffffffffffff" || len(input.Changes) != 0 || input.ExpectedSourceVersion != strings.Repeat("a", 64) || input.Mode != "edit" {
-					t.Fatalf("restore contract lost: %+v", input)
-				}
-			}
-			if test.resource == "work-item-edits" && test.called && test.method == "POST" && !strings.HasPrefix(test.name, "property restore") {
-				input := repo.itemEditInput
-				values := input.Changes["custom_properties"].(map[string]any)
-				if input.ExpectedSourceVersion != strings.Repeat("a", 64) || input.Mode != "draft" || input.ProjectID != "" || input.Revision != 4 || values["zero"] != json.Number("0") || values["flag"] != false || values["large"] != json.Number("9007199254740993") {
-					t.Fatalf("edit contract lost values: %+v", input)
-				}
-				if value, present := values["clear"]; !present || value != nil {
-					t.Fatal("explicit clear lost")
-				}
-			}
-			if strings.HasPrefix(test.name, "canonical") {
-				if repo.itemSourceID != "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" || !strings.Contains(response.Body.String(), `"source_version":"saved-version"`) {
-					t.Fatalf("source contract lost: %s", response.Body.String())
-				}
-				if test.name == "canonical edit source" && (repo.itemSourceMode != "edit" || repo.itemSourceProject != "cccccccc-cccc-4ccc-8ccc-cccccccccccc") {
-					t.Fatal("edit source query params lost")
-				}
-				if test.name == "canonical draft source" && (repo.itemSourceMode != "draft" || repo.itemSourceProject != "") {
-					t.Fatal("draft source query params lost")
-				}
-			}
-			if strings.Contains(response.Body.String(), "private database detail") {
-				t.Fatal("private error leaked")
-			}
-			if strings.HasPrefix(test.path, "removal/") && test.called {
-				input := repo.typeRemovalInput
-				if input.Revision != 4 || input.TypeID != "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" || input.ReplacementID != "cccccccc-cccc-4ccc-8ccc-cccccccccccc" || input.ReviewID != "dddddddd-dddd-4ddd-8ddd-dddddddddddd" {
-					t.Fatalf("replacement command lost: %+v", input)
-				}
-				if test.name == "type removal retry marker" && !strings.Contains(response.Body.String(), `"review_again":true`) {
-					t.Fatalf("safe retry marker missing: %s", response.Body.String())
-				}
-			}
-			if test.name == "item edit field errors" && !strings.Contains(response.Body.String(), `"effort":"Enter a number."`) {
-				t.Fatalf("structured field error lost: %s", response.Body.String())
-			}
-			if test.resource == "work-item-schema" && test.called {
-				var body struct {
-					StoredValues  map[string]any `json:"stored_values"`
-					ItemUpdatedAt string         `json:"item_updated_at"`
-					Computed      map[string]struct {
-						Value any `json:"value"`
-					} `json:"computed"`
-				}
-				if err = json.Unmarshal(response.Body.Bytes(), &body); err != nil || body.Computed["zero"].Value != float64(0) || body.Computed["flag"].Value != false {
-					t.Fatalf("computed scalar values lost: %s %v", response.Body.String(), err)
-				}
-				if body.StoredValues["zero"] != float64(0) || body.StoredValues["flag"] != false || body.ItemUpdatedAt == "" {
-					t.Fatalf("saved snapshot lost: %s", response.Body.String())
-				}
-				if test.name == "schema preview retains scalar values" {
-					values := repo.schemaInput.Preview.Values
-					if value, exists := values["empty"]; !exists || value != nil || values["zero"] != float64(0) || values["flag"] != false {
-						t.Fatalf("preview input values lost: %#v", values)
-					}
-				}
-
-				if (repo.schemaInput.ParentID != nil) != test.parentPresent || repo.schemaInput.ParentID != nil && *repo.schemaInput.ParentID != test.selectedParent {
-					t.Fatalf("parent presence/value lost: %+v", repo.schemaInput)
-				}
-				if (repo.schemaInput.TypeID != nil) != test.typePresent || repo.schemaInput.TypeID != nil && *repo.schemaInput.TypeID != test.selectedType {
-					t.Fatalf("type presence/value lost: %+v", repo.schemaInput)
-				}
-			}
-
-			if test.name == "hierarchy review" || test.name == "hierarchy commit" {
-				input := repo.hierarchyInput
-				if input.Revision != 4 || input.DefaultLevel != 0 || input.ReviewID != "dddddddd-dddd-4ddd-8ddd-dddddddddddd" || input.Confirm != "confirm" || len(input.Placements) != 1 || input.Placements[0].TypeID != "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" || input.Placements[0].Level != 1 {
-					t.Fatalf("hierarchy command changed: %+v", input)
-				}
-				if test.name == "hierarchy review" {
-					var result store.HierarchyReview
-					if err = json.Unmarshal(response.Body.Bytes(), &result); err != nil || result.Links != 1 || result.RestrictedLinks != 1 || result.Pairs == nil {
-						t.Fatalf("hierarchy impact serialization: %s %v", response.Body.String(), err)
-					}
-				}
-			}
-			if test.name == "formula preview" {
-				if repo.formulaInput.TypeID != "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" || repo.formulaInput.Revision != 4 || repo.formulaInput.Definition.Name != "calculation" {
-					t.Fatalf("formula authoring input lost: %+v", repo.formulaInput)
-				}
-				var body struct {
-					Valid  bool `json:"valid"`
-					Result struct {
-						Value any `json:"value"`
-					} `json:"result"`
-				}
-				if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil || !body.Valid || body.Result.Value != float64(0) {
-					t.Fatalf("formula preview result lost: %s %v", response.Body.String(), err)
-				}
-			}
-			if (repo.calls > 0) != test.called {
-				t.Fatalf("protected operation dispatch=%d", repo.calls)
-			}
-			if test.called && (repo.actor != "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" || repo.slug != "acme") {
-				t.Fatalf("wrong request scope: %s %s", repo.actor, repo.slug)
-			}
+			checkWorkItemTypesHTTPRequest(t, test)
 		})
 	}
 }
@@ -403,4 +262,202 @@ func (r *typeHTTPRepository) TypeIdentities(ctx context.Context, actor, slug, pr
 func (r *typeHTTPRepository) DiscoveryProperties(ctx context.Context, actor, slug, project string) (store.PropertyDiscoveryCatalog, error) {
 	_, err := r.Catalog(ctx, actor, slug)
 	return store.PropertyDiscoveryCatalog{Enabled: true, Revision: 7, Fields: []store.DiscoveryProperty{}}, err
+}
+
+type workItemTypesHTTPProtectionCase struct {
+	name           string
+	method         string
+	path           string
+	body           string
+	session        string
+	csrf           string
+	origin         string
+	project        string
+	resource       string
+	editError      error
+	status         int
+	called         bool
+	typePresent    bool
+	parentPresent  bool
+	selectedType   string
+	selectedParent string
+}
+
+func checkWorkItemTypesHTTPRequest(t *testing.T, test workItemTypesHTTPProtectionCase) {
+	t.Helper()
+
+	repo := &typeHTTPRepository{editError: test.editError}
+	service, err := systemapi.NewWorkItemTypes(repo, typeHTTPSessions{}, repo)
+	if err != nil {
+		t.Fatal(err)
+	}
+	handler := newHTTPHandlerWithPendingReplacements(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false,
+		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+		pendingReplacementEndpoints{workItemTypes: api.NewEndpoints(service), activityReadsBodyLimit: 1 << 20})
+	base := "http://example.test/api/workspaces/acme/"
+	if test.project != "" {
+		base += "projects/" + test.project + "/"
+	}
+	resource := test.resource
+	if resource == "" {
+		resource = "work-item-types"
+	}
+	request := httptest.NewRequest(test.method, base+resource+"/"+test.path, strings.NewReader(test.body))
+	request.Header.Set("Content-Type", "application/json")
+	if test.session != "" {
+		request.AddCookie(&http.Cookie{Name: "session-id", Value: test.session})
+	}
+	if test.csrf != "" {
+		request.AddCookie(&http.Cookie{Name: "csrftoken", Value: test.csrf})
+		request.Header.Set("X-CSRFToken", test.csrf)
+	}
+	if test.origin != "" {
+		request.Header.Set("Origin", test.origin)
+	}
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+	if response.Code != test.status {
+		t.Fatalf("status=%d want=%d body=%s", response.Code, test.status, response.Body.String())
+	}
+
+	checkWorkItemMutationInputs(t, test, repo, response)
+	if strings.Contains(response.Body.String(), "private database detail") {
+		t.Fatal("private error leaked")
+	}
+
+	checkWorkItemRemovalAndFieldErrors(t, test, repo, response)
+
+	checkWorkItemSchemaValues(t, test, repo, response)
+
+	checkWorkItemHierarchyAndFormula(t, test, repo, response)
+	if (repo.calls > 0) != test.called {
+		t.Fatalf("protected operation dispatch=%d", repo.calls)
+	}
+	if test.called && (repo.actor != "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" || repo.slug != "acme") {
+		t.Fatalf("wrong request scope: %s %s", repo.actor, repo.slug)
+	}
+
+}
+
+func checkWorkItemMutationInputs(t *testing.T, test workItemTypesHTTPProtectionCase, repo *typeHTTPRepository, response *httptest.ResponseRecorder) {
+	t.Helper()
+
+	if test.resource == "work-item-releases" && test.called && test.method == "POST" {
+		input := repo.releaseInput
+		if input.Revision != 4 || input.Action != "create" || input.ID != "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee" || input.Values.Name != "October" || input.Values.Description != "Notes" || input.Values.TargetDate != "2026-10-31" {
+			t.Fatalf("release mutation contract lost: %+v", input)
+		}
+	}
+	if strings.HasPrefix(test.name, "property restore") && test.called {
+		input := repo.itemEditInput
+		if input.Restore == nil || input.Restore.PropertyID != "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee" || input.Restore.VersionID != "ffffffff-ffff-4fff-8fff-ffffffffffff" || len(input.Changes) != 0 || input.ExpectedSourceVersion != strings.Repeat("a", 64) || input.Mode != "edit" {
+			t.Fatalf("restore contract lost: %+v", input)
+		}
+	}
+	if test.resource == "work-item-edits" && test.called && test.method == "POST" && !strings.HasPrefix(test.name, "property restore") {
+		input := repo.itemEditInput
+		values := input.Changes["custom_properties"].(map[string]any)
+		if input.ExpectedSourceVersion != strings.Repeat("a", 64) || input.Mode != "draft" || input.ProjectID != "" || input.Revision != 4 || values["zero"] != json.Number("0") || values["flag"] != false || values["large"] != json.Number("9007199254740993") {
+			t.Fatalf("edit contract lost values: %+v", input)
+		}
+		if value, present := values["clear"]; !present || value != nil {
+			t.Fatal("explicit clear lost")
+		}
+	}
+	if strings.HasPrefix(test.name, "canonical") {
+		if repo.itemSourceID != "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" || !strings.Contains(response.Body.String(), `"source_version":"saved-version"`) {
+			t.Fatalf("source contract lost: %s", response.Body.String())
+		}
+		if test.name == "canonical edit source" && (repo.itemSourceMode != "edit" || repo.itemSourceProject != "cccccccc-cccc-4ccc-8ccc-cccccccccccc") {
+			t.Fatal("edit source query params lost")
+		}
+		if test.name == "canonical draft source" && (repo.itemSourceMode != "draft" || repo.itemSourceProject != "") {
+			t.Fatal("draft source query params lost")
+		}
+	}
+
+}
+
+func checkWorkItemRemovalAndFieldErrors(t *testing.T, test workItemTypesHTTPProtectionCase, repo *typeHTTPRepository, response *httptest.ResponseRecorder) {
+	t.Helper()
+
+	if strings.HasPrefix(test.path, "removal/") && test.called {
+		input := repo.typeRemovalInput
+		if input.Revision != 4 || input.TypeID != "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" || input.ReplacementID != "cccccccc-cccc-4ccc-8ccc-cccccccccccc" || input.ReviewID != "dddddddd-dddd-4ddd-8ddd-dddddddddddd" {
+			t.Fatalf("replacement command lost: %+v", input)
+		}
+		if test.name == "type removal retry marker" && !strings.Contains(response.Body.String(), `"review_again":true`) {
+			t.Fatalf("safe retry marker missing: %s", response.Body.String())
+		}
+	}
+	if test.name == "item edit field errors" && !strings.Contains(response.Body.String(), `"effort":"Enter a number."`) {
+		t.Fatalf("structured field error lost: %s", response.Body.String())
+	}
+
+}
+
+func checkWorkItemHierarchyAndFormula(t *testing.T, test workItemTypesHTTPProtectionCase, repo *typeHTTPRepository, response *httptest.ResponseRecorder) {
+	t.Helper()
+
+	if test.name == "hierarchy review" || test.name == "hierarchy commit" {
+		input := repo.hierarchyInput
+		if input.Revision != 4 || input.DefaultLevel != 0 || input.ReviewID != "dddddddd-dddd-4ddd-8ddd-dddddddddddd" || input.Confirm != "confirm" || len(input.Placements) != 1 || input.Placements[0].TypeID != "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" || input.Placements[0].Level != 1 {
+			t.Fatalf("hierarchy command changed: %+v", input)
+		}
+		if test.name == "hierarchy review" {
+			var result store.HierarchyReview
+			if err := json.Unmarshal(response.Body.Bytes(), &result); err != nil || result.Links != 1 || result.RestrictedLinks != 1 || result.Pairs == nil {
+				t.Fatalf("hierarchy impact serialization: %s %v", response.Body.String(), err)
+			}
+		}
+	}
+	if test.name == "formula preview" {
+		if repo.formulaInput.TypeID != "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" || repo.formulaInput.Revision != 4 || repo.formulaInput.Definition.Name != "calculation" {
+			t.Fatalf("formula authoring input lost: %+v", repo.formulaInput)
+		}
+		var body struct {
+			Valid  bool `json:"valid"`
+			Result struct {
+				Value any `json:"value"`
+			} `json:"result"`
+		}
+		if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil || !body.Valid || body.Result.Value != float64(0) {
+			t.Fatalf("formula preview result lost: %s %v", response.Body.String(), err)
+		}
+	}
+
+}
+
+func checkWorkItemSchemaValues(t *testing.T, test workItemTypesHTTPProtectionCase, repo *typeHTTPRepository, response *httptest.ResponseRecorder) {
+	t.Helper()
+
+	if test.resource == "work-item-schema" && test.called {
+		var body struct {
+			StoredValues  map[string]any `json:"stored_values"`
+			ItemUpdatedAt string         `json:"item_updated_at"`
+			Computed      map[string]struct {
+				Value any `json:"value"`
+			} `json:"computed"`
+		}
+		if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil || body.Computed["zero"].Value != float64(0) || body.Computed["flag"].Value != false {
+			t.Fatalf("computed scalar values lost: %s %v", response.Body.String(), err)
+		}
+		if body.StoredValues["zero"] != float64(0) || body.StoredValues["flag"] != false || body.ItemUpdatedAt == "" {
+			t.Fatalf("saved snapshot lost: %s", response.Body.String())
+		}
+		if test.name == "schema preview retains scalar values" {
+			values := repo.schemaInput.Preview.Values
+			if value, exists := values["empty"]; !exists || value != nil || values["zero"] != float64(0) || values["flag"] != false {
+				t.Fatalf("preview input values lost: %#v", values)
+			}
+		}
+
+		if (repo.schemaInput.ParentID != nil) != test.parentPresent || repo.schemaInput.ParentID != nil && *repo.schemaInput.ParentID != test.selectedParent {
+			t.Fatalf("parent presence/value lost: %+v", repo.schemaInput)
+		}
+		if (repo.schemaInput.TypeID != nil) != test.typePresent || repo.schemaInput.TypeID != nil && *repo.schemaInput.TypeID != test.selectedType {
+			t.Fatalf("type presence/value lost: %+v", repo.schemaInput)
+		}
+	}
+
 }

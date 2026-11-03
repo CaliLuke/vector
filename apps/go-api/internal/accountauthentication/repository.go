@@ -10,6 +10,7 @@ import (
 	"time"
 
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
+	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -353,31 +354,47 @@ WHERE id=@user_id`, pgx.StrictNamedArgs{"user_id": userID, "ip": ip, "now": now}
 	return nil
 }
 
+type LoginMetadata struct {
+	UserID, IP, UserAgent, Medium, ActivationOrigin string
+	At                                              time.Time
+}
+
 // UpdateLoginMetadata persists the provider-specific login fields and activates
-// only a provisioned account that has never been explicitly deactivated.
-func (repository *Repository) UpdateLoginMetadata(ctx context.Context, userID string, now time.Time, ip, userAgent, medium string, tokenUpdatedAt time.Time) (bool, error) {
-	token := strings.ReplaceAll(uuid.NewString(), "-", "") + strings.ReplaceAll(uuid.NewString(), "-", "")
-	var activated bool
-	err := repository.db.QueryRow(ctx, `
-WITH current AS (
-  SELECT is_active,last_logout_time FROM users WHERE id=@user_id FOR UPDATE
-), updated AS (
-  UPDATE users SET last_login_medium=@medium,last_active=@now,last_login_time=@now,
-    last_login_ip=@ip,last_login_uagent=@user_agent,token=@token,token_updated_at=@token_updated_at,
-    is_active=CASE WHEN last_logout_time IS NULL THEN TRUE ELSE is_active END,updated_at=@now
-  WHERE id=@user_id
-  RETURNING id
-)
-SELECT (NOT current.is_active AND current.last_logout_time IS NULL)
-FROM current CROSS JOIN updated`, pgx.StrictNamedArgs{
-		"user_id": userID, "medium": medium, "now": now, "ip": ip, "user_agent": userAgent,
-		"token": token, "token_updated_at": tokenUpdatedAt,
-	}).Scan(&activated)
+// only a provisioned account that has never been explicitly deactivated. The
+// activation email intent commits with the account change, so failed admission
+// leaves the first activation retryable and concurrent logins cannot duplicate it.
+func (repository *Repository) UpdateLoginMetadata(ctx context.Context, input LoginMetadata) (activated bool, resultErr error) {
+	tx, err := repository.db.Begin(ctx)
+	if err != nil {
+		return false, fmt.Errorf("begin account login metadata: %w", err)
+	}
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
+	err = tx.QueryRow(ctx, `SELECT NOT is_active AND last_logout_time IS NULL FROM users WHERE id=$1 FOR UPDATE`, input.UserID).Scan(&activated)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return false, ErrUserNotFound
 	}
 	if err != nil {
+		return false, fmt.Errorf("lock account login metadata: %w", err)
+	}
+	token := strings.ReplaceAll(uuid.NewString(), "-", "") + strings.ReplaceAll(uuid.NewString(), "-", "")
+	_, err = tx.Exec(ctx, `
+  UPDATE users SET last_login_medium=@medium,last_active=@now,last_login_time=@now,
+    last_login_ip=@ip,last_login_uagent=@user_agent,token=@token,token_updated_at=@token_updated_at,
+    is_active=CASE WHEN last_logout_time IS NULL THEN TRUE ELSE is_active END,updated_at=@now
+  WHERE id=@user_id`, pgx.StrictNamedArgs{
+		"user_id": input.UserID, "medium": input.Medium, "now": input.At, "ip": input.IP, "user_agent": input.UserAgent,
+		"token": token, "token_updated_at": input.At,
+	})
+	if err != nil {
 		return false, fmt.Errorf("update account login metadata: %w", err)
+	}
+	if activated && input.ActivationOrigin != "" {
+		if err := (projectmutations.Effects{Tx: tx}).Email(ctx, "plane.bgtasks.user_activation_email_task.user_activation_email", []any{input.ActivationOrigin, input.UserID}); err != nil {
+			return false, fmt.Errorf("record account activation email: %w", err)
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return false, fmt.Errorf("commit account login metadata: %w", err)
 	}
 	return activated, nil
 }

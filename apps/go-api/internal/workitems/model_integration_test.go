@@ -89,161 +89,196 @@ INSERT INTO issue_sequences(id,project_id,sequence,deleted,deleted_at) VALUES
 	const backlog = "00000000-0000-4000-8000-000000000022"
 	const completed = "00000000-0000-4000-8000-000000000023"
 	t.Run("concurrent allocation keeps ledger and sort order", func(t *testing.T) {
-		const count = 16
-		start := make(chan struct{})
-		failures := make(chan error, count)
-		var writers sync.WaitGroup
-		for n := range count {
-			writers.Go(func() {
-				<-start
-				row := defaultIssue(project)
-				row["name"] = fmt.Sprintf("Concurrent %d", n)
-				row["description_html"] = "<p>A &amp; B</p>"
-				_, err := repo.saveIssue(ctx, actor, row, nil)
-				failures <- err
-			})
-		}
-		close(start)
-		writers.Wait()
-		close(failures)
-		for err := range failures {
-			if err != nil {
-				t.Fatal(err)
-			}
-		}
-		var rows, distinct, minSeq, maxSeq, mismatches int
-		err := pool.QueryRow(ctx, `SELECT count(*),count(DISTINCT i.sequence_id),min(i.sequence_id),max(i.sequence_id),count(*) FILTER(WHERE s.sequence<>i.sequence_id OR s.workspace_id<>i.workspace_id OR i.sort_order<>65535+(i.sequence_id-81)*10000 OR i.state_id<>$2 OR i.created_by_id<>$3 OR i.updated_by_id IS NOT NULL OR i.description_stripped<>'A & B') FROM issues i JOIN issue_sequences s ON s.issue_id=i.id WHERE i.project_id=$1`, project, backlog, actor).Scan(&rows, &distinct, &minSeq, &maxSeq, &mismatches)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if rows != count || distinct != count || minSeq != 81 || maxSeq != 96 || mismatches != 0 {
-			t.Fatalf("rows=%d distinct=%d sequences=%d..%d mismatches=%d", rows, distinct, minSeq, maxSeq, mismatches)
-		}
+		checkIssueModelConcurrentAllocationKeepsLedgerAndSortOrder(t, ctx, pool, repo, project, actor, backlog)
 	})
 	t.Run("completion only changes on state transition", func(t *testing.T) {
-		row := defaultIssue(project)
-		row["name"] = "Completed"
-		row["state_id"] = completed
-		saved, err := repo.saveIssue(ctx, actor, row, nil)
-		if err != nil {
-			t.Fatal(err)
-		}
-		var completion time.Time
-		if scanErr := pool.QueryRow(ctx, `SELECT completed_at FROM issues WHERE id=$1`, saved["id"]).Scan(&completion); scanErr != nil {
-			t.Fatal(scanErr)
-		}
-		if !completion.Equal(now) {
-			t.Fatalf("completion=%s; want %s", completion, now)
-		}
-		now = now.Add(time.Hour)
-		changed := maps.Clone(saved)
-		changed["name"] = "Name only"
-		saved, err = repo.saveIssue(ctx, actor, changed, saved)
-		if err != nil {
-			t.Fatal(err)
-		}
-		var touched time.Time
-		var updater string
-		if scanErr := pool.QueryRow(ctx, `SELECT completed_at,updated_at,updated_by_id FROM issues WHERE id=$1`, saved["id"]).Scan(&completion, &touched, &updater); scanErr != nil {
-			t.Fatal(scanErr)
-		}
-		if !completion.Equal(now.Add(-time.Hour)) || !touched.Equal(now) || updater != actor {
-			t.Fatalf("completion=%s touched=%s updater=%s", completion, touched, updater)
-		}
-		changed = maps.Clone(saved)
-		changed["state_id"] = backlog
-		saved, err = repo.saveIssue(ctx, actor, changed, saved)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if saved["completed_at"] != nil {
-			t.Fatalf("reopened completion=%v", saved["completed_at"])
-		}
+		checkIssueModelCompletionOnlyChangesOnStateTransition(t, ctx, pool, repo, &now, project, actor, backlog, completed)
 	})
 	t.Run("ledger failure rolls back issue and does not consume sequence", func(t *testing.T) {
-		var next int64
-		if err := pool.QueryRow(ctx, `SELECT max(sequence)+1 FROM issue_sequences WHERE project_id=$1 AND deleted_at IS NULL`, project).Scan(&next); err != nil {
-			t.Fatal(err)
-		}
-		// Fail the second insert inside Issue.save's transaction, after the
-		// issue itself has already been inserted.
-		if _, err := pool.Exec(ctx, fmt.Sprintf(`ALTER TABLE issue_sequences ADD CONSTRAINT reject_test_sequence CHECK(sequence<>%d)`, next)); err != nil {
-			t.Fatal(err)
-		}
-		row := defaultIssue(project)
-		row["name"] = "Ledger failure"
-		_, saveErr := repo.saveIssue(ctx, actor, row, nil)
-		if _, err := pool.Exec(ctx, `ALTER TABLE issue_sequences DROP CONSTRAINT reject_test_sequence`); err != nil {
-			t.Fatal(err)
-		}
-		if saveErr == nil {
-			t.Fatal("expected ledger insert failure")
-		}
-		var persisted bool
-		if err := pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issues WHERE id=$1)`, row["id"]).Scan(&persisted); err != nil {
-			t.Fatal(err)
-		}
-		if persisted {
-			t.Fatal("issue survived failed ledger insert")
-		}
-		saved, err := repo.saveIssue(ctx, actor, row, nil)
-		if err != nil {
-			t.Fatal(err)
-		}
-		var allocated int64
-		if err := pool.QueryRow(ctx, `SELECT sequence_id FROM issues WHERE id=$1`, saved["id"]).Scan(&allocated); err != nil {
-			t.Fatal(err)
-		}
-		if allocated != next {
-			t.Fatalf("allocated=%d after rollback; want %d", allocated, next)
-		}
+		checkIssueModelLedgerFailureRollsBackIssueAndDoesNotConsumeSequence(t, ctx, pool, repo, project, actor)
 	})
 	t.Run("no usable state keeps nullable model state", func(t *testing.T) {
-		row := defaultIssue("00000000-0000-4000-8000-000000000002")
-		row["name"] = "No state"
-		row["description_html"] = ""
-		saved, err := repo.saveIssue(ctx, actor, row, nil)
+		checkIssueModelNoUsableStateKeepsNullableModelState(t, ctx, repo, actor)
+	})
+	t.Run("rejected model update rolls back relationship edits", func(t *testing.T) {
+		checkIssueModelRejectedModelUpdateRollsBackRelationshipEdits(t, ctx, pool, repo, project, actor)
+	})
+}
+
+func checkIssueModelConcurrentAllocationKeepsLedgerAndSortOrder(t *testing.T, ctx context.Context, pool *pgxpool.Pool, repo *Repository, project string, actor string, backlog string) {
+	t.Helper()
+
+	const count = 16
+	start := make(chan struct{})
+	failures := make(chan error, count)
+	var writers sync.WaitGroup
+	for n := range count {
+		writers.Go(func() {
+			<-start
+			row := defaultIssue(project)
+			row["name"] = fmt.Sprintf("Concurrent %d", n)
+			row["description_html"] = "<p>A &amp; B</p>"
+			_, err := repo.saveIssue(ctx, actor, row, nil)
+			failures <- err
+		})
+	}
+	close(start)
+	writers.Wait()
+	close(failures)
+	for err := range failures {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if saved["state_id"] != nil || saved["completed_at"] != nil || saved["description_stripped"] != nil {
-			t.Fatalf("nullable model values=%v", saved)
-		}
-	})
-	t.Run("rejected model update rolls back relationship edits", func(t *testing.T) {
-		row := defaultIssue(project)
-		row["name"] = "Keep this item"
-		saved, saveErr := repo.saveIssue(ctx, actor, row, nil)
-		if saveErr != nil {
-			t.Fatal(saveErr)
-		}
-		if _, seedErr := pool.Exec(ctx, `INSERT INTO issue_assignees(issue_id,assignee_id) VALUES($1,$2)`, saved["id"], actor); seedErr != nil {
-			t.Fatal(seedErr)
-		}
-		changed := maps.Clone(saved)
-		changed["name"] = nil // The real NOT NULL constraint rejects the model write.
-		_, updateErr := repo.updateIssueWithRelations(ctx, actor, changed, saved, issueChanges{assigneesSet: true})
-		var constraint *pgconn.PgError
-		if !errors.As(updateErr, &constraint) || constraint.Code != "23502" {
-			t.Fatalf("want model constraint rejection, got %v", updateErr)
-		}
-		var name string
-		var assignees int
-		if readErr := pool.QueryRow(ctx, `SELECT name,(SELECT count(*) FROM issue_assignees WHERE issue_id=$1 AND deleted_at IS NULL) FROM issues WHERE id=$1`, saved["id"]).Scan(&name, &assignees); readErr != nil {
-			t.Fatal(readErr)
-		}
-		if name != "Keep this item" || assignees != 1 {
-			t.Fatalf("rejected edit persisted: name=%s assignees=%d", name, assignees)
-		}
-		changed["name"] = "Retry succeeds"
-		if _, retryErr := repo.updateIssueWithRelations(ctx, actor, changed, saved, issueChanges{assigneesSet: true}); retryErr != nil {
-			t.Fatal(retryErr)
-		}
-		if readErr := pool.QueryRow(ctx, `SELECT name,(SELECT count(*) FROM issue_assignees WHERE issue_id=$1 AND deleted_at IS NULL) FROM issues WHERE id=$1`, saved["id"]).Scan(&name, &assignees); readErr != nil {
-			t.Fatal(readErr)
-		}
-		if name != "Retry succeeds" || assignees != 0 {
-			t.Fatalf("successful retry not committed: name=%s assignees=%d", name, assignees)
-		}
-	})
+	}
+	var rows, distinct, minSeq, maxSeq, mismatches int
+	err := pool.QueryRow(ctx, `SELECT count(*),count(DISTINCT i.sequence_id),min(i.sequence_id),max(i.sequence_id),count(*) FILTER(WHERE s.sequence<>i.sequence_id OR s.workspace_id<>i.workspace_id OR i.sort_order<>65535+(i.sequence_id-81)*10000 OR i.state_id<>$2 OR i.created_by_id<>$3 OR i.updated_by_id IS NOT NULL OR i.description_stripped<>'A & B') FROM issues i JOIN issue_sequences s ON s.issue_id=i.id WHERE i.project_id=$1`, project, backlog, actor).Scan(&rows, &distinct, &minSeq, &maxSeq, &mismatches)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rows != count || distinct != count || minSeq != 81 || maxSeq != 96 || mismatches != 0 {
+		t.Fatalf("rows=%d distinct=%d sequences=%d..%d mismatches=%d", rows, distinct, minSeq, maxSeq, mismatches)
+	}
+
+}
+
+func checkIssueModelCompletionOnlyChangesOnStateTransition(t *testing.T, ctx context.Context, pool *pgxpool.Pool, repo *Repository, now *time.Time, project string, actor string, backlog string, completed string) {
+	t.Helper()
+
+	row := defaultIssue(project)
+	row["name"] = "Completed"
+	row["state_id"] = completed
+	saved, err := repo.saveIssue(ctx, actor, row, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var completion time.Time
+	if scanErr := pool.QueryRow(ctx, `SELECT completed_at FROM issues WHERE id=$1`, saved["id"]).Scan(&completion); scanErr != nil {
+		t.Fatal(scanErr)
+	}
+	if !completion.Equal((*now)) {
+		t.Fatalf("completion=%s; want %s", completion, (*now))
+	}
+	(*now) = (*now).Add(time.Hour)
+	changed := maps.Clone(saved)
+	changed["name"] = "Name only"
+	saved, err = repo.saveIssue(ctx, actor, changed, saved)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var touched time.Time
+	var updater string
+	if scanErr := pool.QueryRow(ctx, `SELECT completed_at,updated_at,updated_by_id FROM issues WHERE id=$1`, saved["id"]).Scan(&completion, &touched, &updater); scanErr != nil {
+		t.Fatal(scanErr)
+	}
+	if !completion.Equal((*now).Add(-time.Hour)) || !touched.Equal((*now)) || updater != actor {
+		t.Fatalf("completion=%s touched=%s updater=%s", completion, touched, updater)
+	}
+	changed = maps.Clone(saved)
+	changed["state_id"] = backlog
+	saved, err = repo.saveIssue(ctx, actor, changed, saved)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if saved["completed_at"] != nil {
+		t.Fatalf("reopened completion=%v", saved["completed_at"])
+	}
+
+}
+
+func checkIssueModelLedgerFailureRollsBackIssueAndDoesNotConsumeSequence(t *testing.T, ctx context.Context, pool *pgxpool.Pool, repo *Repository, project string, actor string) {
+	t.Helper()
+
+	var next int64
+	if err := pool.QueryRow(ctx, `SELECT max(sequence)+1 FROM issue_sequences WHERE project_id=$1 AND deleted_at IS NULL`, project).Scan(&next); err != nil {
+		t.Fatal(err)
+	}
+	// Fail the second insert inside Issue.save's transaction, after the
+	// issue itself has already been inserted.
+	if _, err := pool.Exec(ctx, fmt.Sprintf(`ALTER TABLE issue_sequences ADD CONSTRAINT reject_test_sequence CHECK(sequence<>%d)`, next)); err != nil {
+		t.Fatal(err)
+	}
+	row := defaultIssue(project)
+	row["name"] = "Ledger failure"
+	_, saveErr := repo.saveIssue(ctx, actor, row, nil)
+	if _, err := pool.Exec(ctx, `ALTER TABLE issue_sequences DROP CONSTRAINT reject_test_sequence`); err != nil {
+		t.Fatal(err)
+	}
+	if saveErr == nil {
+		t.Fatal("expected ledger insert failure")
+	}
+	var persisted bool
+	if err := pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issues WHERE id=$1)`, row["id"]).Scan(&persisted); err != nil {
+		t.Fatal(err)
+	}
+	if persisted {
+		t.Fatal("issue survived failed ledger insert")
+	}
+	saved, err := repo.saveIssue(ctx, actor, row, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var allocated int64
+	if err := pool.QueryRow(ctx, `SELECT sequence_id FROM issues WHERE id=$1`, saved["id"]).Scan(&allocated); err != nil {
+		t.Fatal(err)
+	}
+	if allocated != next {
+		t.Fatalf("allocated=%d after rollback; want %d", allocated, next)
+	}
+
+}
+
+func checkIssueModelNoUsableStateKeepsNullableModelState(t *testing.T, ctx context.Context, repo *Repository, actor string) {
+	t.Helper()
+
+	row := defaultIssue("00000000-0000-4000-8000-000000000002")
+	row["name"] = "No state"
+	row["description_html"] = ""
+	saved, err := repo.saveIssue(ctx, actor, row, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if saved["state_id"] != nil || saved["completed_at"] != nil || saved["description_stripped"] != nil {
+		t.Fatalf("nullable model values=%v", saved)
+	}
+
+}
+
+func checkIssueModelRejectedModelUpdateRollsBackRelationshipEdits(t *testing.T, ctx context.Context, pool *pgxpool.Pool, repo *Repository, project string, actor string) {
+	t.Helper()
+
+	row := defaultIssue(project)
+	row["name"] = "Keep this item"
+	saved, saveErr := repo.saveIssue(ctx, actor, row, nil)
+	if saveErr != nil {
+		t.Fatal(saveErr)
+	}
+	if _, seedErr := pool.Exec(ctx, `INSERT INTO issue_assignees(issue_id,assignee_id) VALUES($1,$2)`, saved["id"], actor); seedErr != nil {
+		t.Fatal(seedErr)
+	}
+	changed := maps.Clone(saved)
+	changed["name"] = nil // The real NOT NULL constraint rejects the model write.
+	_, updateErr := repo.updateIssueWithRelations(ctx, actor, changed, saved, issueChanges{assigneesSet: true})
+	var constraint *pgconn.PgError
+	if !errors.As(updateErr, &constraint) || constraint.Code != "23502" {
+		t.Fatalf("want model constraint rejection, got %v", updateErr)
+	}
+	var name string
+	var assignees int
+	if readErr := pool.QueryRow(ctx, `SELECT name,(SELECT count(*) FROM issue_assignees WHERE issue_id=$1 AND deleted_at IS NULL) FROM issues WHERE id=$1`, saved["id"]).Scan(&name, &assignees); readErr != nil {
+		t.Fatal(readErr)
+	}
+	if name != "Keep this item" || assignees != 1 {
+		t.Fatalf("rejected edit persisted: name=%s assignees=%d", name, assignees)
+	}
+	changed["name"] = "Retry succeeds"
+	if _, retryErr := repo.updateIssueWithRelations(ctx, actor, changed, saved, issueChanges{assigneesSet: true}); retryErr != nil {
+		t.Fatal(retryErr)
+	}
+	if readErr := pool.QueryRow(ctx, `SELECT name,(SELECT count(*) FROM issue_assignees WHERE issue_id=$1 AND deleted_at IS NULL) FROM issues WHERE id=$1`, saved["id"]).Scan(&name, &assignees); readErr != nil {
+		t.Fatal(readErr)
+	}
+	if name != "Retry succeeds" || assignees != 0 {
+		t.Fatalf("successful retry not committed: name=%s assignees=%d", name, assignees)
+	}
+
 }

@@ -56,7 +56,7 @@ type AccountRepository interface {
 	UserByID(context.Context, string) (accountauthentication.User, error)
 	CreateUser(context.Context, string, string, string, bool, bool) (accountauthentication.User, error)
 	SetPassword(context.Context, string, string, bool) error
-	UpdateLoginMetadata(context.Context, string, time.Time, string, string, string, time.Time) (bool, error)
+	UpdateLoginMetadata(context.Context, accountauthentication.LoginMetadata) (bool, error)
 	HasWorkspaceInvite(context.Context, string) (bool, error)
 	RedirectProfile(context.Context, string) (onboarded bool, lastWorkspace, earliestWorkspace string, inviteCount int, err error)
 	EnsureProfile(context.Context, string) error
@@ -106,22 +106,17 @@ type Service struct {
 	strength    PasswordStrength
 	sessions    *browsersession.Validator
 	workflow    *authworkflow.PostUserAuthWorkflow
-	activation  ActivationPublisher
 	resetTokens PasswordResetTokenVerifier
 	magic       MagicCodeVerifier
 	throttle    AuthenticationThrottle
 	now         func() time.Time
 }
 
-type ActivationPublisher interface {
-	Task(context.Context, string, []any, map[string]any) error
-}
-
-func NewService(accounts AccountRepository, passwords PasswordHasher, strength PasswordStrength, sessions *browsersession.Validator, workflow *authworkflow.PostUserAuthWorkflow, activation ActivationPublisher) (*Service, error) {
+func NewService(accounts AccountRepository, passwords PasswordHasher, strength PasswordStrength, sessions *browsersession.Validator, workflow *authworkflow.PostUserAuthWorkflow) (*Service, error) {
 	if accounts == nil || passwords == nil || strength == nil || sessions == nil {
 		return nil, errors.New("auth redirect service requires accounts, password, strength, and session dependencies")
 	}
-	return &Service{accounts: accounts, passwords: passwords, strength: strength, sessions: sessions, workflow: workflow, activation: activation, now: time.Now}, nil
+	return &Service{accounts: accounts, passwords: passwords, strength: strength, sessions: sessions, workflow: workflow, now: time.Now}, nil
 }
 
 func (service *Service) SetMagicCodeDependencies(verifier MagicCodeVerifier, throttle AuthenticationThrottle) error {
@@ -474,7 +469,7 @@ func (service *Service) AdminSignIn(ctx context.Context, request Request) Result
 		return service.failure(request, 5175, "ADMIN_AUTHENTICATION_FAILED", map[string]string{"email": request.Email})
 	}
 	now := service.requestNow(request)
-	if _, updateLoginMetadataErr := service.accounts.UpdateLoginMetadata(ctx, user.ID, now, request.ClientIP, request.UserAgent, "email", now); updateLoginMetadataErr != nil {
+	if _, updateLoginMetadataErr := service.accounts.UpdateLoginMetadata(ctx, accountauthentication.LoginMetadata{UserID: user.ID, At: now, IP: request.ClientIP, UserAgent: request.UserAgent, Medium: "email"}); updateLoginMetadataErr != nil {
 		return Result{Status: http.StatusInternalServerError}
 	}
 	device := map[string]string{"user_agent": request.UserAgent, "ip_address": request.ClientIP, "domain": request.BaseURL}
@@ -562,7 +557,7 @@ func (service *Service) AdminSignUp(ctx context.Context, request Request) Result
 	}
 	user := created.User
 	now := service.requestNow(request)
-	if _, updateLoginMetadataErr := service.accounts.UpdateLoginMetadata(ctx, user.ID, now, request.ClientIP, request.UserAgent, "email", now); updateLoginMetadataErr != nil {
+	if _, updateLoginMetadataErr := service.accounts.UpdateLoginMetadata(ctx, accountauthentication.LoginMetadata{UserID: user.ID, At: now, IP: request.ClientIP, UserAgent: request.UserAgent, Medium: "email"}); updateLoginMetadataErr != nil {
 		return Result{Status: http.StatusInternalServerError}
 	}
 	device := map[string]string{"user_agent": request.UserAgent, "ip_address": request.ClientIP, "domain": request.BaseURL}
@@ -589,16 +584,13 @@ func (service *Service) AdminSignOut(ctx context.Context, request Request, userI
 
 func (service *Service) completeLogin(ctx context.Context, request Request, user accountauthentication.User, app bool, medium string, autoset bool) Result {
 	now := service.requestNow(request)
-	activated, err := service.accounts.UpdateLoginMetadata(ctx, user.ID, now, request.ClientIP, request.UserAgent, medium, now)
+	baseOrigin := request.BaseOrigin
+	if baseOrigin == "" {
+		baseOrigin = request.BaseURL
+	}
+	_, err := service.accounts.UpdateLoginMetadata(ctx, accountauthentication.LoginMetadata{UserID: user.ID, At: now, IP: request.ClientIP, UserAgent: request.UserAgent, Medium: medium, ActivationOrigin: baseOrigin})
 	if err != nil {
 		return Result{Status: http.StatusInternalServerError}
-	}
-	if activated && service.activation != nil {
-		baseOrigin := request.BaseOrigin
-		if baseOrigin == "" {
-			baseOrigin = request.BaseURL
-		}
-		_ = service.activation.Task(ctx, "plane.bgtasks.user_activation_email_task.user_activation_email", []any{baseOrigin, user.ID}, map[string]any{})
 	}
 	if app && service.workflow != nil {
 		if runErr := service.workflow.Run(ctx, user.ID, user.Email); runErr != nil {

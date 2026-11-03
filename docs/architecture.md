@@ -19,6 +19,9 @@ Invitation acceptance and post-login joins share a membership transaction that
 checks the current account, recipient, tenant and role. Membership removal and
 account deactivation revoke outstanding invitations under the same lock order.
 Workspace-join tracking enters the durable effect outbox with the membership write.
+First-login activation and its email intent commit with login metadata under the
+account row lock. Failed email admission rolls back activation, and concurrent
+first logins create one activation intent. Session creation follows that commit.
 
 Input uses shared decimal, boolean, calendar-date and datetime validation. JSON
 keeps exact submitted numeric text; response serializers do not round numbers to
@@ -119,6 +122,11 @@ in order through their `*_routes.go` owners, then applies the shared request
 pipeline in `http_middleware.go`. `http_server.go` owns listening and shutdown.
 Protocol matching, headers, CORS, encoding, and session helpers have separate
 files; test-only endpoint constructors live in `http_test_helpers_test.go`.
+Startup composition lives in `system_assembly.go` and the `system_*_services.go`
+owners. Constructors register their route metadata and retain only dependencies
+needed by later domains. Startup stops on the first failure; acquired resources
+close in reverse order and retain cleanup errors. Task publishers share their
+common admission chain while preserving each caller's additional task handlers.
 Public metadata session effects remain request-local: audit logging captures the
 inner response before cookie refresh failures can replace the final response.
 
