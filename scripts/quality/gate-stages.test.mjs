@@ -57,6 +57,26 @@ function fixture(t) {
   return { root, directory, write, calls, stages, options };
 }
 
+await test("manual and Git hook entry points use the same tool path", (t) => {
+  const f = fixture(t);
+  const root = fs.realpathSync(f.root);
+  f.write("check.sh", fs.readFileSync(new URL("../../check.sh", import.meta.url)));
+  f.write("fixture-bin/bun", '#!/bin/sh\nprintf "%s" "$PATH"\n');
+  fs.chmodSync(path.join(f.root, "fixture-bin/bun"), 0o755);
+  const toolPath = `${f.root}/fixture-bin:${process.env.PATH}`;
+  const gitPath = execFileSync("git", ["--exec-path"], { encoding: "utf8" }).trim();
+  const run = (PATH) =>
+    execFileSync("bash", ["check.sh", "--status"], {
+      cwd: f.root,
+      env: { ...process.env, PATH },
+      encoding: "utf8",
+    });
+  const manual = run(toolPath);
+  assert.equal(manual, `${root}/node_modules/.bin:${toolPath}`);
+  assert.equal(run(`node_modules/.bin:${gitPath}:${toolPath}`), manual);
+  assert.equal(run(`${root}/node_modules/.bin:${gitPath}:${toolPath}`), manual);
+});
+
 await test("a failing affected test prevents all expensive stages and never creates a success receipt", async (t) => {
   const f = fixture(t);
   await assert.rejects(
