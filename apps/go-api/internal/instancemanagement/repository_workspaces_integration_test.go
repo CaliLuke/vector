@@ -11,15 +11,13 @@ import (
 
 	"uuid"
 
-	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func TestWorkspacesUsesDjangoCursorAndEscapedSearchAgainstPostgres(t *testing.T) {
+func TestWorkspacesUsesNativeCursorAndEscapedSearchAgainstPostgres(t *testing.T) {
 	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, databaseURL string) error {
 		pool, err := pgxpool.New(ctx, databaseURL)
 		if err != nil {
 			return err
@@ -45,12 +43,8 @@ INSERT INTO users(id,email,first_name,last_name,is_bot) VALUES('00000000-0000-40
 		}
 		return nil
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testsupport.Close(t, pair)
 
-	pool, err := pgxpool.New(ctx, pair.SeedURL())
+	pool, err := pgxpool.New(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,7 +104,7 @@ INSERT INTO users(id,email,first_name,last_name,is_bot) VALUES('00000000-0000-40
 
 func TestCreateWorkspacePersistsNativeCompanyRoleValues(t *testing.T) {
 	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, databaseURL string) error {
 		pool, err := pgxpool.New(ctx, databaseURL)
 		if err != nil {
 			return err
@@ -124,12 +118,8 @@ CREATE TABLE workspace_members (id uuid PRIMARY KEY,workspace_id uuid NOT NULL,m
 INSERT INTO users(id,email,first_name,last_name) VALUES('00000000-0000-4000-8000-000000000001','admin@example.test','Admin','User');`)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testsupport.Close(t, pair)
 
-	pool, err := pgxpool.New(ctx, pair.SeedURL())
+	pool, err := pgxpool.New(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

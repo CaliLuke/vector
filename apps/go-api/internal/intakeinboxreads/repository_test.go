@@ -248,7 +248,7 @@ func TestIssueDetailAliasesUseIssueIDAndDetailedProjection(t *testing.T) {
 	}
 }
 
-func TestIssueDetailMissingActiveIntakePreservesDjangoInternalFailure(t *testing.T) {
+func TestIssueDetailMissingActiveIntakePreservesNativeInternalFailure(t *testing.T) {
 	for _, inbox := range []bool{true, false} {
 		database := &repositoryDatabaseStub{rows: []pgx.Row{
 			repositoryBoolRow(true),
@@ -582,7 +582,7 @@ func TestAbsoluteDateFiltersRequireNativeCalendarDates(t *testing.T) {
 		t.Fatal("signed relative duration was accepted")
 	}
 }
-func TestDjangoContainsFiltersEscapeLikeMetacharacters(t *testing.T) {
+func TestNativeContainsFiltersEscapeLikeMetacharacters(t *testing.T) {
 	const raw = `%_\`
 	const escaped = `\%\_\\`
 
@@ -603,7 +603,7 @@ func TestDjangoContainsFiltersEscapeLikeMetacharacters(t *testing.T) {
 	}
 }
 
-func TestDateFilterNullTokenMatchesDjangoContainsFilter(t *testing.T) {
+func TestDateFilterNullTokenMatchesNativeContainsFilter(t *testing.T) {
 	builder := newWhereBuilder(uuid.New(), "demo")
 	if err := addDateFilter(builder, "issue.start_date", "null", "UTC", false, time.Now()); err != nil {
 		t.Fatal(err)
@@ -693,7 +693,7 @@ func TestUnrelatedModuleAndAssigneeProjectionSemanticsRemainUnchanged(t *testing
 	}
 }
 
-func TestSoftDeletedDuplicateAndPendingRowsPreserveDjangoProjection(t *testing.T) {
+func TestSoftDeletedDuplicateAndPendingRowsPreserveNativeProjection(t *testing.T) {
 	if strings.Contains(intakeIssueDetailSQL, "duplicate_issue.deleted_at IS NULL") {
 		t.Fatalf("detail excludes soft-deleted duplicate target: %s", intakeIssueDetailSQL)
 	}
@@ -730,7 +730,7 @@ func TestTypeFilterOverwritesStateGroupWithoutExcludingSoftDeletedStateTarget(t 
 	}
 }
 
-func TestExplicitEmptyTypeAndRelationPresencePreserveDjangoFiltering(t *testing.T) {
+func TestExplicitEmptyTypeAndRelationPresencePreserveNativeFiltering(t *testing.T) {
 	options := ListOptions{Filters: map[string]string{"type": ""}, PresentFilters: map[string]bool{"type": true}}
 	if err := validateIntakeIssueFilters(options); err != nil {
 		t.Fatal(err)
@@ -783,7 +783,7 @@ func TestMalformedStatusFiltersReturnClientErrors(t *testing.T) {
 
 }
 
-func TestProjectionOrderingAndCoverAssetURLsPreserveDjangoProperties(t *testing.T) {
+func TestProjectionOrderingAndCoverAssetURLsPreserveNativeProperties(t *testing.T) {
 	if !strings.Contains(draftIssueProjection, "ORDER BY relation.created_at DESC LIMIT 1") {
 		t.Fatalf("draft cycle projection does not select newest relation: %s", draftIssueProjection)
 	}
@@ -804,7 +804,7 @@ func TestProjectionOrderingAndCoverAssetURLsPreserveDjangoProperties(t *testing.
 	}
 }
 
-func TestIssueAndDescriptionQueriesKeepDjangoRelatedIssueManagerSemantics(t *testing.T) {
+func TestIssueAndDescriptionQueriesKeepNativeRelatedIssueManagerSemantics(t *testing.T) {
 	for name, query := range map[string]string{
 		"intake detail": intakeIssueDetailSQL,
 		"guest access":  guestIntakeIssueAccessSQL,

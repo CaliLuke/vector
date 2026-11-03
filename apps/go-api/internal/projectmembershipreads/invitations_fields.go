@@ -5,14 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/datetime"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
@@ -29,68 +26,19 @@ func invitationCommandFields(c *InvitationCommand) (map[string]any, error) {
 }
 
 func invitationRole(value any) (int, bool) {
-	// ChoiceField uses Python str(value), so a JSON floating token is not an
-	// integer choice even when its mathematical value is integral.
-	switch v := value.(type) {
-	case json.Number:
-		return invitationRole(string(v))
-	case int:
-		if v == 5 || v == 15 || v == 20 {
-			return v, true
-		}
-	case string:
-		switch v {
-		case "5":
-			return 5, true
-		case "15":
-			return 15, true
-		case "20":
-			return 20, true
-		}
-	}
-	return 0, false
+	role, err := memberRole(value)
+	return role, err == nil
 }
 
 func invitationInt(value any) (int, error) {
-	switch v := value.(type) {
-	case json.Number:
-		f, e := strconv.ParseFloat(string(v), 64)
-		return int(f), e
-	case float64:
-		return int(v), nil
-	case bool:
-		if v {
-			return 1, nil
-		}
-		return 0, nil
-	case string:
-		return strconv.Atoi(strings.TrimSpace(v))
-	default:
-		return 0, errors.New("invalid integer")
+	number, err := requestinput.IntegerField(value)
+	if err != nil || !number.IsInt64() {
+		return 0, inviteFailure(400, "Invalid integer")
 	}
+	return int(number.Int64()), nil
 }
 
-func invitationTruth(value any) bool {
-	switch v := value.(type) {
-	case nil:
-		return false
-	case bool:
-		return v
-	case string:
-		return v != ""
-	case json.Number:
-		f, floatErr := pythoncompat.DecimalFloat64(string(v))
-		return floatErr != nil || f != 0
-	case float64:
-		return v != 0
-	case []any:
-		return len(v) != 0
-	case map[string]any:
-		return len(v) != 0
-	default:
-		return true
-	}
-}
+func invitationTruth(value any) bool { return requestinput.Nonempty(value) }
 
 var workspaceInvitationFields = []string{"role", "accepted", "created_by", "updated_by", "deleted_at"}
 
@@ -99,12 +47,6 @@ func invitationChoiceMessages(value any) []string {
 		return []string{"This field may not be null."}
 	}
 	label := fmt.Sprint(value)
-	if flag, ok := value.(bool); ok {
-		label = "False"
-		if flag {
-			label = "True"
-		}
-	}
 	return []string{fmt.Sprintf("\"%s\" is not a valid choice.", label)}
 }
 
@@ -249,52 +191,6 @@ func invitationValidationErrors(left, right error) error {
 }
 
 func invitationBoolean(value any) (bool, bool) {
-	switch v := value.(type) {
-	case bool:
-		return v, true
-	case string:
-		switch strings.ToLower(v) {
-		case "true", "1", "yes", "t", "on":
-			return true, true
-		case "false", "0", "no", "f", "off":
-			return false, true
-		}
-	case json.Number:
-		number, err := strconv.ParseFloat(string(v), 64)
-		if err == nil && (number == 0 || number == 1) {
-			return number == 1, true
-		}
-	case float64:
-		if v == 1 {
-			return true, true
-		}
-		if v == 0 {
-			return false, true
-		}
-	}
-	return false, false
-}
-
-// Model BooleanField coercion differs from DRF BooleanField and from Python
-// truthiness. Django leaves the instance attribute uncoerced after saving.
-func invitationModelBoolean(value any) (bool, bool) {
-	switch v := value.(type) {
-	case bool:
-		return v, true
-	case json.Number:
-		if v == "1" || v == "1.0" {
-			return true, true
-		}
-		if v == "0" || v == "0.0" {
-			return false, true
-		}
-	case string:
-		switch v {
-		case "t", "True", "1":
-			return true, true
-		case "f", "False", "0":
-			return false, true
-		}
-	}
-	return false, false
+	boolean, message := requestinput.BooleanField(value)
+	return boolean, message == ""
 }

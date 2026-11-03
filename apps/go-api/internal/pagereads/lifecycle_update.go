@@ -117,9 +117,8 @@ func (repository *Repository) validatePageUpdateFields(ctx context.Context, user
 		handlerParent = parent
 		serializerPrecheckedParent = &parent
 	}
-	// The source view compares the raw request scalar for this ownership guard
-	// before DRF applies ChoiceField coercion. Thus, for example, raw "0" is
-	// distinct from the stored integer 0 for a non-owner.
+	// Only the owner may change access. Equivalent integer inputs do not
+	// change the stored access level.
 	if raw, present := fields["access"]; present && lifecycleRawAccessChanged(raw, state, user) {
 		return nil, lifecycleLabelList{}, lifecycleError(http.StatusBadRequest, "Access cannot be updated since this page is owned by someone else")
 	}
@@ -153,15 +152,6 @@ func (repository *Repository) validatePageUpdateFields(ctx context.Context, user
 	}
 	if len(fieldErrors) > 0 {
 		return nil, lifecycleLabelList{}, &apicontract.HTTPError{Status: 400, Body: fieldErrors}
-	}
-	if value, ok := fields["access"]; ok {
-		access, valid := lifecycleChoice(value)
-		if !valid {
-			return nil, lifecycleLabelList{}, &apicontract.HTTPError{Status: 400, Body: map[string]any{"access": []string{lifecycleChoiceMessage(value)}}}
-		}
-		if access != state.access && state.ownerID != user {
-			return nil, lifecycleLabelList{}, lifecycleError(http.StatusBadRequest, "Access cannot be updated since this page is owned by someone else")
-		}
 	}
 	return fields, labelList, nil
 }

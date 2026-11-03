@@ -8,13 +8,12 @@ import (
 	"reflect"
 	"testing"
 
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestTelemetryReportsEffectiveServerConfiguration(t *testing.T) {
 	ctx := t.Context()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, databaseURL string) error {
 		pool, err := pgxpool.New(ctx, databaseURL)
 		if err != nil {
 			return err
@@ -27,15 +26,8 @@ CREATE TABLE instance_configurations (key text, value text, is_encrypted boolean
 INSERT INTO instance_configurations VALUES ('POSTHOG_HOST','https://db.example.test/secret?token=secret',true,NULL), ('POSTHOG_API_KEY','test-key',true,NULL);`)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if closeErr := pair.Close(); closeErr != nil {
-			t.Error(closeErr)
-		}
-	})
-	pool, err := pgxpool.New(ctx, pair.SeedURL())
+
+	pool, err := pgxpool.New(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

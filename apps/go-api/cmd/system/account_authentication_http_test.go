@@ -134,7 +134,7 @@ func TestAccountAuthenticationOptionsUseAPIViewMetadataWithoutTimezoneLookup(t *
 }
 
 func TestAccountAuthenticationAPIViewThrottleCoversOptionsAndUnsupportedMethods(t *testing.T) {
-	policy, err := djangoRuntimeCORSPolicy(nil)
+	policy, err := nativeRuntimeCORSPolicy(nil)
 	if err != nil {
 		t.Fatal(err)
 	}

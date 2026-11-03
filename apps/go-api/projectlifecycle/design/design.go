@@ -845,7 +845,7 @@ var ImportedTimezoneEnum = Type("TimezoneEnum", String, func() {
 })
 
 var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
-	Description("Plane API token authentication.")
+	Description("Vector API token authentication.")
 })
 
 var ImportedPlaneSessionCookieSecurity = APIKeySecurity("PlaneSessionCookie", func() {

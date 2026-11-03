@@ -29,7 +29,7 @@ func TestPublicFeedbackAllowMethodsMatchRouteTemplate(t *testing.T) {
 	}
 }
 
-func TestClassifyPublicFeedbackPathUsesDjangoUUIDSpelling(t *testing.T) {
+func TestClassifyPublicFeedbackPathUsesNativeUUIDSpelling(t *testing.T) {
 	valid := []string{
 		"/api/public/anchor/a/issues/00000000-0000-4000-8000-000000000001/",
 		"/api/public/anchor/a/issues/00000000-0000-4000-8000-000000000001/votes/",

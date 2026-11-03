@@ -11,7 +11,7 @@ import (
 func mountInvitationsMembershipRoutes(pending pendingReplacementEndpoints, mux loomhttp.Muxer, readServicesCORSPolicy loomhttp.RuntimeCORSPolicy) {
 	if pending.invitationsMembership != nil {
 		options := apiV1CompatibilityOptions{activityLogger: pending.activityReadsActivity, activitySecret: pending.activityReadsSecret, bodySizeLimit: pending.activityReadsBodyLimit}
-		server := invitationssvr.New(pending.invitationsMembership, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
+		server := invitationssvr.New(pending.invitationsMembership, mux, nativeRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 		apiStack := activityReadsMiddlewareStack(options, pending.readServicesSession, pending.readServicesCookie)
 		sessionStack := sessionServiceMiddlewareStack(options, pending.readServicesSession, pending.readServicesCookie)
 		server.Use(func(next http.Handler) http.Handler {

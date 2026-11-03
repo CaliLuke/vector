@@ -518,7 +518,7 @@ func TestAPIV1StickyMalformedDetailOptionsOmitsUpdateAction(t *testing.T) {
 	}
 }
 
-func TestAPIV1StickySoftDeletedWorkspaceScopeMatchesDjangoQueryset(t *testing.T) {
+func TestAPIV1StickySoftDeletedWorkspaceScopeMatchesNativeQueryset(t *testing.T) {
 	userID := stickystore.UserID(uuid.MustParse("0198a28d-d227-7752-82ac-bc4c1c290702"))
 	workspaceID := stickystore.WorkspaceID(uuid.MustParse("0198a28d-d227-7752-82ac-bc4c1c290701"))
 	for _, operation := range []stickystore.Operation{

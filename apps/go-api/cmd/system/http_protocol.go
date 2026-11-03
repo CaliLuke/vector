@@ -16,11 +16,11 @@ func mountProtocolHandler(mux loomhttp.Muxer, method, pattern string, handler ht
 	loomhttp.MountHandler(mux, method, pattern, handler)
 }
 
-type djangoPreflightResponseWriter struct {
+type nativePreflightResponseWriter struct {
 	http.ResponseWriter
 }
 
-func (writer djangoPreflightResponseWriter) WriteHeader(status int) {
+func (writer nativePreflightResponseWriter) WriteHeader(status int) {
 	if status == http.StatusNoContent {
 		removeVary(writer.Header(), "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers")
 		mergeVary(writer.Header(), "origin")
@@ -31,49 +31,49 @@ func (writer djangoPreflightResponseWriter) WriteHeader(status int) {
 	writer.ResponseWriter.WriteHeader(status)
 }
 
-func djangoProtocolCORSOptionsHandler(policy loomhttp.RuntimeCORSPolicy, methods []string, next http.Handler) http.Handler {
+func nativeProtocolCORSOptionsHandler(policy loomhttp.RuntimeCORSPolicy, methods []string, next http.Handler) http.Handler {
 	options := policy.OptionsHandler(loomhttp.AsHandlerFunc(next), methods)
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		if request.Method == http.MethodOptions && len(request.Header.Values("Access-Control-Request-Method")) > 0 {
 			request = request.Clone(request.Context())
 			request.Header = request.Header.Clone()
 			request.Header.Set("Access-Control-Request-Method", http.MethodGet)
-			options.ServeHTTP(djangoPreflightResponseWriter{response}, request)
+			options.ServeHTTP(nativePreflightResponseWriter{response}, request)
 			return
 		}
 		next.ServeHTTP(response, request)
 	})
 }
 
-func djangoProtocolCompatibilityMiddleware(allow func(string) string) func(http.Handler) http.Handler {
+func nativeProtocolCompatibilityMiddleware(allow func(string) string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-			setDjangoProtocolCompatibilityHeaders(response.Header(), allow(request.URL.Path))
+			setNativeProtocolCompatibilityHeaders(response.Header(), allow(request.URL.Path))
 			next.ServeHTTP(&workspaceContentResponseWriter{ResponseWriter: response}, request)
 		})
 	}
 }
 
-func djangoProtocolHeadHandler(middleware func(http.Handler) http.Handler, next http.Handler) http.Handler {
+func nativeProtocolHeadHandler(middleware func(http.Handler) http.Handler, next http.Handler) http.Handler {
 	return middleware(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		next.ServeHTTP(workspaceSlugHeadWriter{response}, request)
 	}))
 }
 
-func djangoBufferedProtocolHeadHandler(next http.Handler) http.Handler {
+func nativeBufferedProtocolHeadHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		next.ServeHTTP(workspaceSlugHeadWriter{response}, request)
 	})
 }
 
-func djangoProtocolOptionsHandler(middleware func(http.Handler) http.Handler, name string, patch bool) http.Handler {
+func nativeProtocolOptionsHandler(middleware func(http.Handler) http.Handler, name string, patch bool) http.Handler {
 	if patch {
-		return djangoProtocolOptionsActionsHandler(middleware, name, http.MethodPatch)
+		return nativeProtocolOptionsActionsHandler(middleware, name, http.MethodPatch)
 	}
-	return djangoProtocolOptionsActionsHandler(middleware, name)
+	return nativeProtocolOptionsActionsHandler(middleware, name)
 }
 
-func djangoProtocolOptionsActionsHandler(middleware func(http.Handler) http.Handler, name string, actionMethods ...string) http.Handler {
+func nativeProtocolOptionsActionsHandler(middleware func(http.Handler) http.Handler, name string, actionMethods ...string) http.Handler {
 	return middleware(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 		actions := make(map[string]any, len(actionMethods))
 		for _, method := range actionMethods {
@@ -87,7 +87,7 @@ func djangoProtocolOptionsActionsHandler(middleware func(http.Handler) http.Hand
 	}))
 }
 
-func djangoProtocolOptionsWithoutActionsHandler(middleware func(http.Handler) http.Handler, name string) http.Handler {
+func nativeProtocolOptionsWithoutActionsHandler(middleware func(http.Handler) http.Handler, name string) http.Handler {
 	return middleware(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 		writeStickyJSON(response, http.StatusOK, struct {
 			Name        string   `json:"name"`
@@ -103,26 +103,17 @@ func djangoProtocolOptionsWithoutActionsHandler(middleware func(http.Handler) ht
 	}))
 }
 
-func djangoProtocolOptionsJSONNegotiationMiddleware(next http.Handler) http.Handler {
+func nativeProtocolOptionsJSONNegotiationMiddleware(next http.Handler) http.Handler {
 	notAcceptable := http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 		mergeVary(response.Header(), "Accept")
 		writeStickyJSON(response, http.StatusNotAcceptable, map[string]string{
 			"detail": "Could not satisfy the request Accept header.",
 		})
 	})
-	serverError := http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
-		mergeVary(response.Header(), "Accept")
-		writeStickyJSON(response, http.StatusInternalServerError, map[string]string{
-			"error": "Something went wrong please try again later",
-		})
-	})
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		accept, present := djangoRequestAcceptHeader(request)
-		acceptsJSON, _, err := projectMembershipReadsJSONNegotiation(accept, present)
-		if err != nil {
-			serverError.ServeHTTP(response, request)
-			return
-		}
+		accept, present := nativeRequestAcceptHeader(request)
+		acceptsJSON, _ := projectMembershipReadsJSONNegotiation(accept, present)
+
 		if !acceptsJSON {
 			notAcceptable.ServeHTTP(response, request)
 			return
@@ -131,7 +122,7 @@ func djangoProtocolOptionsJSONNegotiationMiddleware(next http.Handler) http.Hand
 	})
 }
 
-func djangoReadOnlyOptionsHandler(
+func nativeReadOnlyOptionsHandler(
 	mux loomhttp.Muxer,
 	middleware func(http.Handler) http.Handler,
 	name string,
@@ -174,14 +165,7 @@ func djangoReadOnlyOptionsHandler(
 	}))
 }
 
-func writeDjangoAPIViewServerError(response http.ResponseWriter, request *http.Request) {
-	response.Header().Set("Content-Type", "application/json")
-	writeProjectMembershipReadsJSON(response, request, http.StatusInternalServerError, map[string]string{
-		"error": "Something went wrong please try again later",
-	})
-}
-
-func djangoJSONCompatibilityMiddleware(next http.Handler) http.Handler {
+func nativeJSONCompatibilityMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		headers := response.Header()
 		headers.Set("Allow", "GET, HEAD, OPTIONS")
@@ -194,13 +178,13 @@ func djangoJSONCompatibilityMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func djangoJSONHeadHandler(next http.Handler) http.Handler {
+func nativeJSONHeadHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		djangoJSONCompatibilityMiddleware(next).ServeHTTP(workspaceSlugHeadWriter{response}, request)
+		nativeJSONCompatibilityMiddleware(next).ServeHTTP(workspaceSlugHeadWriter{response}, request)
 	})
 }
 
-func djangoBooleanValue(raw json.RawMessage) (bool, int, map[string]string) {
+func nativeBooleanValue(raw json.RawMessage) (bool, int, map[string]string) {
 	switch string(bytes.TrimSpace(raw)) {
 	case "true", "1":
 		return true, 0, nil

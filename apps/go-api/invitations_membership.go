@@ -12,13 +12,14 @@ import (
 	"time"
 	stduuid "uuid"
 
+	"github.com/CaliLuke/go-plane/internal/requestinput"
+
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	api "github.com/CaliLuke/go-plane/invitationsmembership/gen/invitations_membership"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"github.com/CaliLuke/loom/security"
@@ -81,8 +82,8 @@ type InvitationsMembershipProtocolAuthorizer interface {
 }
 
 func (service *invitationsMembershipService) AuthorizeInvitationsMembershipProtocol(ctx context.Context, credential string, resource SessionProtocolResource, apiKey bool) (int, map[string]any) {
-	// Public join lookups deliberately allow anonymous requests. Their POST
-	// handlers check the invitation token before authentication, as Django does.
+	// Invitation previews allow anonymous requests. Acceptance additionally
+	// binds the token to a current active account inside the membership transaction.
 	if strings.Contains(resource.Pattern, "/join") {
 		userID, timezone, inspected := readServiceSessionPrincipal(ctx)
 		if !inspected && credential != "" {
@@ -446,7 +447,7 @@ func (service *invitationsMembershipService) GetAPIV1WorkspacesBySlugMembersLite
 	}
 
 	if original, present := ReadServiceQueryValues(ctx)["per_page"]; present && len(original) > 0 {
-		parsed, parseErr := pythoncompat.DecimalInteger(original[len(original)-1])
+		parsed, parseErr := requestinput.IntegerField(original[len(original)-1])
 		if parseErr != nil {
 			return nil, invitationsMembershipError(400, map[string]any{"detail": "Invalid per_page parameter."})
 		}

@@ -15,7 +15,6 @@ import (
 	systemapi "github.com/CaliLuke/go-plane"
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
@@ -171,25 +170,6 @@ func (service *Service) taskOrigin(ctx context.Context) string {
 	}
 	scheme, host := RequestOrigin(ctx)
 	return scheme + "://" + host
-}
-
-func pythonJSONNumbers(value any) any {
-	switch typed := value.(type) {
-	case float64:
-		return json.Number(pythoncompat.FloatString(typed))
-	case map[string]any:
-		for key, child := range typed {
-			typed[key] = pythonJSONNumbers(child)
-		}
-		return typed
-	case []any:
-		for index, child := range typed {
-			typed[index] = pythonJSONNumbers(child)
-		}
-		return typed
-	default:
-		return value
-	}
 }
 
 func (service *Service) publishTask(ctx context.Context, task string, args []any, kwargs map[string]any) error {

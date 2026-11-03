@@ -39,7 +39,7 @@ for shard in 1 2 3; do
   shard_seconds=$((remaining < 300 ? remaining : 300))
   node scripts/quality/run-bounded.mjs --seconds "$shard_seconds" --memory-mib 1024 --heap-mib 384 -- \
     node "${node_options[@]}" --test --test-timeout=15000 --test-concurrency=2 \
-    "${shard_files[@]}" || failed=1
+    "${shard_files[@]}" || { failed=1; break; }
 done
 if [[ "${1:-}" == --coverage && "$failed" == 0 ]]; then
   node scripts/quality/run-bounded.mjs --seconds 600 --memory-mib 3072 --heap-mib 1024 -- \

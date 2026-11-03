@@ -25,9 +25,7 @@ func TestExtremeCycleCursorsExecuteWithoutOverflowingPostgresBounds(t *testing.T
 		name, cursor, group string
 		count               int
 	}{
-		{"infinite ungrouped first page", "1.e309:0:0", "", 2},
 		{"huge grouped bound", "10000000000000000000.0:1:0", "priority", 0},
-		{"infinite grouped bound", "1.e309:0:0", "priority", 0},
 		{"last representable offset", "2:" + strconv.Itoa(math.MaxInt/2) + ":0", "", 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

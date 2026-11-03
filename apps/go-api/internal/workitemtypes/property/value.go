@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"golang.org/x/net/html"
 )
@@ -126,13 +128,7 @@ func textValue(kind Kind, c Configuration, value any) (any, error) {
 // ParseDate accepts calendar dates and date-time property values without losing
 // their time component. An input without an explicit offset uses UTC.
 func ParseDate(value string) (time.Time, error) {
-	for _, layout := range []string{time.DateOnly, time.DateTime, time.RFC3339Nano} {
-		parsed, err := time.Parse(layout, value)
-		if err == nil && parsed.Year() >= 1 && parsed.Year() <= 9999 && parsed.UTC().Year() >= 1 && parsed.UTC().Year() <= 9999 && (layout == time.RFC3339Nano || parsed.Format(layout) == value) {
-			return parsed, nil
-		}
-	}
-	return time.Time{}, fmt.Errorf("enter a date as YYYY-MM-DD or a date-time as YYYY-MM-DD HH:MM:SS or RFC3339")
+	return datetime.Parse(value, time.UTC)
 }
 
 func meaningfulHTML(clean string) bool {

@@ -37,7 +37,7 @@ func (stub *databaseStub) Exec(_ context.Context, query string, args ...any) (pg
 	return stub.tag, stub.err
 }
 
-func TestRepositoryListPreservesDjangoShapeOrderingAndOwnership(t *testing.T) {
+func TestRepositoryListPreservesNativeShapeOrderingAndOwnership(t *testing.T) {
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	body := `[{"id":"00000000-0000-4000-8000-000000000021"}]`
 	stub := &databaseStub{row: rowFunc(func(dest ...any) error {

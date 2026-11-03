@@ -57,10 +57,11 @@ type PostgresWorkItemEffectStore struct {
 	assetUploads  effectFileAssetUpload
 	emails        TemplatedEmailTaskAdmitter
 	pages         effectPageAdmission
+	events        EventTrackingTaskAdmitter
 }
 
-func NewPostgresWorkItemEffectStore(pool *pgxpool.Pool, activities effectActivityAdmission, versions effectVersionAdmission, deletions effectDeletionAdmission, webhooks effectWebhookAdmission, assetDeletes effectFileAssetDeleteAdmission, assetMetadata effectFileAssetMetadataAdmission, linkPreviews effectLinkPreviewAdmission, assetUploads effectFileAssetUpload, emails TemplatedEmailTaskAdmitter, pages ...effectPageAdmission) (*PostgresWorkItemEffectStore, error) {
-	if pool == nil || activities == nil || versions == nil || deletions == nil || webhooks == nil || assetDeletes == nil || assetMetadata == nil || linkPreviews == nil || assetUploads == nil || emails == nil {
+func NewPostgresWorkItemEffectStore(pool *pgxpool.Pool, activities effectActivityAdmission, versions effectVersionAdmission, deletions effectDeletionAdmission, webhooks effectWebhookAdmission, assetDeletes effectFileAssetDeleteAdmission, assetMetadata effectFileAssetMetadataAdmission, linkPreviews effectLinkPreviewAdmission, assetUploads effectFileAssetUpload, emails TemplatedEmailTaskAdmitter, events EventTrackingTaskAdmitter, pages ...effectPageAdmission) (*PostgresWorkItemEffectStore, error) {
+	if pool == nil || activities == nil || versions == nil || deletions == nil || webhooks == nil || assetDeletes == nil || assetMetadata == nil || linkPreviews == nil || assetUploads == nil || emails == nil || events == nil {
 		return nil, errors.New("work item effect database and native admissions are required")
 	}
 	if len(pages) > 1 {
@@ -73,7 +74,7 @@ func NewPostgresWorkItemEffectStore(pool *pgxpool.Pool, activities effectActivit
 	return &PostgresWorkItemEffectStore{
 		pool: pool, activities: activities, versions: versions, deletions: deletions,
 		webhooks: webhooks, assetDeletes: assetDeletes, assetMetadata: assetMetadata,
-		linkPreviews: linkPreviews, assetUploads: assetUploads, emails: emails, pages: pageAdmission,
+		linkPreviews: linkPreviews, assetUploads: assetUploads, emails: emails, pages: pageAdmission, events: events,
 	}, nil
 }
 
@@ -121,6 +122,12 @@ func (s *PostgresWorkItemEffectStore) admitNext(ctx context.Context) (_ bool, re
 
 func (s *PostgresWorkItemEffectStore) admit(ctx context.Context, id, kind string, raw []byte) error {
 	switch kind {
+	case "event_tracking":
+		var payload EventTrackingInput
+		if err := json.Unmarshal(raw, &payload); err != nil {
+			return err
+		}
+		return s.events.AdmitEventTracking(ctx, id, payload)
 	case "email_task":
 		var payload struct {
 			Name string `json:"name"`

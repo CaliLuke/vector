@@ -5,14 +5,14 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 
 MODE="${1:---full}"
-FAILED=()
 
 run_gate() {
   local name="$1"
   shift
   printf '\n▶ %s\n' "$name"
   if ! node scripts/quality/run-bounded.mjs --seconds 600 --memory-mib 3072 --heap-mib 1024 -- "$@"; then
-    FAILED+=("$name")
+    printf '\nFailed gate: %s; stopping before later stages.\n' "$name" >&2
+    exit 1
   fi
   return 0
 }
@@ -46,7 +46,7 @@ case "$MODE" in
     run_gate "UI tests with coverage" pnpm --filter @plane/ui test:coverage
     run_gate "UI coverage ratchet" node scripts/quality/check-coverage-ratchet.mjs --root packages/ui --summary coverage/coverage-summary.json --baseline ../../.quality/coverage-ui-baseline.json --scope-file .quality/coverage-scope.json --scope-key packages/ui --new-file-min 80
     # test:frontend has its own tighter process guard; avoid nested process groups.
-    pnpm test:frontend:coverage || FAILED+=("Frontend behavior tests with source coverage")
+    pnpm test:frontend:coverage || exit 1
     run_gate "Frontend source coverage ratchets" node scripts/quality/check-frontend-coverage.mjs
     ;;
   --fix)
@@ -58,11 +58,5 @@ case "$MODE" in
     exit 2
     ;;
 esac
-
-if ((${#FAILED[@]})); then
-  printf '\nFailed gates:\n'
-  printf '  - %s\n' "${FAILED[@]}"
-  exit 1
-fi
 
 printf '\nTypeScript quality gates passed.\n'

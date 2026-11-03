@@ -67,7 +67,7 @@ func TestIntakeInboxReadsExposeAllTwelveGETOperations(t *testing.T) {
 	}
 }
 
-func TestIntakeCollectionContractsAllowDjangoEmptyObjectWhileDetailsStayModeled(t *testing.T) {
+func TestIntakeCollectionContractsAllowNativeEmptyObjectWhileDetailsStayModeled(t *testing.T) {
 	document := readIntakeContract(t)
 	for _, path := range []string{
 		"/api/workspaces/{slug}/projects/{project_id}/inboxes/",

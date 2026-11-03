@@ -35,7 +35,7 @@ func TestCSRFTokenUsesStableCookieSecretAndFreshMask(t *testing.T) {
 	}
 }
 
-func TestNormalizeCSRFSecretHandlesDjangoCookieFormats(t *testing.T) {
+func TestNormalizeCSRFSecretHandlesNativeCookieFormats(t *testing.T) {
 	const secret = "abcdefghijklmnopqrstuvwxyzABCDEF"
 	masked, err := maskCSRFSecret(secret)
 	if err != nil {
@@ -60,7 +60,7 @@ func TestNormalizeCSRFSecretHandlesDjangoCookieFormats(t *testing.T) {
 	}
 }
 
-func TestValidCSRFTokenAcceptsDjangoCookieAndMaskedToken(t *testing.T) {
+func TestValidCSRFTokenAcceptsNativeCookieAndMaskedToken(t *testing.T) {
 	const secret = "abcdefghijklmnopqrstuvwxyzABCDEF"
 	token, err := maskCSRFSecret(secret)
 	if err != nil {

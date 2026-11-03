@@ -65,13 +65,10 @@ test("${name}", () => {
   assert.ifError(result.error);
   assert.equal(result.signal, null);
   assert.ok(existsSync(path.join(root, "executed.txt")), result.stdout + result.stderr);
-  assert.deepEqual(readFileSync(path.join(root, "executed.txt"), "utf8").trim().split("\n").toSorted(), [
-    "a",
-    "b",
-    "c",
-    "d",
-  ]);
-  return { ...result, collected: existsSync(path.join(root, "collected.txt")) };
+  const executed = readFileSync(path.join(root, "executed.txt"), "utf8").trim().split("\n").toSorted();
+  if (!failedFile) assert.deepEqual(executed, ["a", "b", "c", "d"]);
+
+  return { ...result, executed, collected: existsSync(path.join(root, "collected.txt")) };
 }
 
 await test("frontend shards execute every discovered file exactly once", (t) => {
@@ -94,9 +91,12 @@ await test("frontend shards balance large files and preserve paths with spaces",
   assert.deepEqual(partitionTestFiles(files.toReversed()), shards, "discovery order must not affect the split");
 });
 
-await test("a failed first frontend batch cannot be hidden by later passing batches", (t) => {
+await test("a failed first frontend batch stops later batches", (t) => {
   const result = runFrontendFixture(t, "d");
   assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.ok(result.executed.includes("d"));
+  assert.ok(!result.executed.includes("a"));
+  assert.ok(!result.executed.includes("b"));
 });
 
 await test("a failed second frontend shard fails the complete suite", (t) => {

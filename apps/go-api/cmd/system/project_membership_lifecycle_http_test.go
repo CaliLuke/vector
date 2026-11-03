@@ -127,7 +127,7 @@ func TestProjectMembershipLifecycleMiddlewareOrderAndEffects(t *testing.T) {
 }
 
 func TestProjectMembershipLifecycleSessionOptionsRetainsSourceSerializerMetadata(t *testing.T) {
-	policy, err := djangoRuntimeCORSPolicy(nil)
+	policy, err := nativeRuntimeCORSPolicy(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,7 +168,7 @@ func TestProjectMembershipLifecycleSessionOptionsRetainsSourceSerializerMetadata
 }
 
 func TestProjectMembershipLifecycleRetainsExistingReadAndHeadOwnership(t *testing.T) {
-	policy, err := djangoRuntimeCORSPolicy(nil)
+	policy, err := nativeRuntimeCORSPolicy(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -197,7 +197,7 @@ func TestProjectMembershipLifecycleRetainsExistingReadAndHeadOwnership(t *testin
 }
 
 func TestProjectMembershipLifecycleRetainedReadsRedirectSlashlessPaths(t *testing.T) {
-	policy, err := djangoRuntimeCORSPolicy(nil)
+	policy, err := nativeRuntimeCORSPolicy(nil)
 	if err != nil {
 		t.Fatal(err)
 	}

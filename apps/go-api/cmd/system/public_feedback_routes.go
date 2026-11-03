@@ -38,13 +38,13 @@ func classifyPublicFeedbackPath(requestPath string) (publicFeedbackRoute, bool) 
 	case len(segments) == 5 && segments[2] == "anchor" && segments[3] != "" && segments[4] == "issues":
 		return publicFeedbackRoute{allowMethods: "GET, HEAD, OPTIONS"}, true
 	case len(segments) == 6 && segments[2] == "anchor" && segments[3] != "" && segments[4] == "issues":
-		return publicFeedbackRoute{allowMethods: "GET, HEAD, OPTIONS", malformedUUID: !djangoUUIDPathSegment(segments[5])}, true
+		return publicFeedbackRoute{allowMethods: "GET, HEAD, OPTIONS", malformedUUID: !nativeUUIDPathSegment(segments[5])}, true
 	case len(segments) == 7 && segments[2] == "anchor" && segments[3] != "" && segments[4] == "issues" && segments[6] == "votes":
-		return publicFeedbackRoute{allowMethods: "GET, POST, DELETE, HEAD, OPTIONS", requiresSession: true, malformedUUID: !djangoUUIDPathSegment(segments[5])}, true
+		return publicFeedbackRoute{allowMethods: "GET, POST, DELETE, HEAD, OPTIONS", requiresSession: true, malformedUUID: !nativeUUIDPathSegment(segments[5])}, true
 	case len(segments) == 7 && segments[2] == "anchor" && segments[3] != "" && segments[4] == "intakes" && segments[5] != "" && (segments[6] == "inbox-issues" || segments[6] == "intake-issues"):
-		return publicFeedbackRoute{allowMethods: "GET, POST, HEAD, OPTIONS", requiresSession: true, malformedUUID: !djangoUUIDPathSegment(segments[5])}, true
+		return publicFeedbackRoute{allowMethods: "GET, POST, HEAD, OPTIONS", requiresSession: true, malformedUUID: !nativeUUIDPathSegment(segments[5])}, true
 	case len(segments) == 8 && segments[2] == "anchor" && segments[3] != "" && segments[4] == "intakes" && segments[6] == "intake-issues":
-		return publicFeedbackRoute{allowMethods: "GET, PATCH, DELETE, HEAD, OPTIONS", requiresSession: true, malformedUUID: !djangoUUIDPathSegment(segments[5]) || !djangoUUIDPathSegment(segments[7])}, true
+		return publicFeedbackRoute{allowMethods: "GET, PATCH, DELETE, HEAD, OPTIONS", requiresSession: true, malformedUUID: !nativeUUIDPathSegment(segments[5]) || !nativeUUIDPathSegment(segments[7])}, true
 	case len(segments) == 5 && segments[2] == "workspaces" && segments[3] != "" && segments[4] == "project-boards":
 		return publicFeedbackRoute{allowMethods: "GET, HEAD, OPTIONS"}, true
 	default:

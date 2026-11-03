@@ -17,9 +17,9 @@ func TestModuleActivitySnapshotUsesAppSerializerFieldOrder(t *testing.T) {
 		"id": "module", "workspace_id": "workspace", "project_id": "project", "name": "Roadmap",
 		"description": "", "description_text": nil, "description_html": nil, "start_date": nil,
 		"target_date": nil, "status": "planned", "lead_id": nil, "member_ids": []any{},
-		"view_props": map[string]any{"layout": "list"}, "sort_order": 65535.0,
+		"view_props": map[string]any{"layout": "list"}, "sort_order": 65535,
 		"external_source": nil, "external_id": nil, "logo_props": map[string]any{},
-		"total_estimate_points": 0.0, "completed_estimate_points": 0.0, "is_favorite": false,
+		"total_estimate_points": 0, "completed_estimate_points": 0, "is_favorite": false,
 		"total_issues": json.Number("0"), "cancelled_issues": json.Number("0"),
 		"completed_issues": json.Number("0"), "started_issues": json.Number("0"),
 		"unstarted_issues": json.Number("0"), "backlog_issues": json.Number("0"),
@@ -32,7 +32,7 @@ func TestModuleActivitySnapshotUsesAppSerializerFieldOrder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := `{"id": "module", "workspace_id": "workspace", "project_id": "project", "name": "Roadmap", "description": "", "description_text": null, "description_html": null, "start_date": null, "target_date": null, "status": "planned", "lead_id": null, "member_ids": [], "view_props": {"layout": "list"}, "sort_order": 65535.0, "external_source": null, "external_id": null, "logo_props": {}, "total_estimate_points": 0.0, "completed_estimate_points": 0.0, "is_favorite": false, "total_issues": 0, "cancelled_issues": 0, "completed_issues": 0, "started_issues": 0, "unstarted_issues": 0, "backlog_issues": 0, "created_at": "2026-10-20T01:00:00-07:00", "updated_at": "2026-10-20T01:00:00-07:00", "archived_at": null}`
+	want := `{"id": "module", "workspace_id": "workspace", "project_id": "project", "name": "Roadmap", "description": "", "description_text": null, "description_html": null, "start_date": null, "target_date": null, "status": "planned", "lead_id": null, "member_ids": [], "view_props": {"layout": "list"}, "sort_order": 65535, "external_source": null, "external_id": null, "logo_props": {}, "total_estimate_points": 0, "completed_estimate_points": 0, "is_favorite": false, "total_issues": 0, "cancelled_issues": 0, "completed_issues": 0, "started_issues": 0, "unstarted_issues": 0, "backlog_issues": 0, "created_at": "2026-10-20T01:00:00-07:00", "updated_at": "2026-10-20T01:00:00-07:00", "archived_at": null}`
 	if got != want {
 		t.Fatalf("activity snapshot = %s\nwant %s", got, want)
 	}

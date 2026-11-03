@@ -11,7 +11,6 @@ import (
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -76,7 +75,7 @@ func rollbackChildVisibilityTx(t *testing.T, ctx context.Context, tx pgx.Tx) {
 
 func TestPrivateItemChildrenRequireCurrentParentVisibility(t *testing.T) {
 	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, url string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, url string) error {
 		db, err := pgx.Connect(ctx, url)
 		if err != nil {
 			return err
@@ -89,15 +88,8 @@ func TestPrivateItemChildrenRequireCurrentParentVisibility(t *testing.T) {
 		_, err = db.Exec(ctx, childVisibilitySchema)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if closeErr := pair.Close(); closeErr != nil {
-			t.Error(closeErr)
-		}
-	})
-	db, err := pgx.Connect(ctx, pair.SeedURL())
+
+	db, err := pgx.Connect(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

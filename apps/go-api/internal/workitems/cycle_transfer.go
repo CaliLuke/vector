@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
@@ -79,7 +79,7 @@ func (r *Repository) transferCycle(ctx context.Context, q Request, body io.Reade
 	if err != nil {
 		return Result{}, err
 	}
-	requested, _ := pythoncompat.Dumps(map[string]any{"cycles_list": []any{}}, nil)
+	requested, _ := jsonvalue.Ordered(map[string]any{"cycles_list": []any{}}, nil)
 	err = r.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{"type": "cycle.activity.created", "requested_data": requested, "actor_id": q.ActorID, "issue_id": nil, "project_id": q.ProjectID, "current_instance": current, "epoch": r.now().Unix(), "notification": true, "origin": r.origin})
 	return Result{200, map[string]any{"message": "Success"}}, err
 }

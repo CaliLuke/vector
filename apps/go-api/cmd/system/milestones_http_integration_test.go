@@ -14,10 +14,8 @@ import (
 
 	systemapi "github.com/CaliLuke/go-plane"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/bootstrap"
 	store "github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	api "github.com/CaliLuke/go-plane/milestones/gen/milestones"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -42,10 +40,9 @@ func newMilestoneHTTPFixture(t *testing.T) milestoneHTTPFixture {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	t.Cleanup(cancel)
-	pair, err := postgresfixture.StartUncloned(ctx, bootstrap.MigrateSchema)
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, pair.Close()) })
-	pool, err := pgxpool.New(ctx, pair.SeedURL())
+	pairURL := migratedDatabases.SeedDatabase(t, func(context.Context, string) error { return nil })
+
+	pool, err := pgxpool.New(ctx, pairURL)
 	require.NoError(t, err)
 	t.Cleanup(pool.Close)
 	_, err = pool.Exec(ctx, testsupport.MilestoneWriteSeed)

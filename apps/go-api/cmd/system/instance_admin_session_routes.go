@@ -12,10 +12,10 @@ import (
 func mountInstanceAdminSessionRoutes(ctx context.Context, instanceAdminSessionEndpoints *instanceadminsession.Endpoints, mux loomhttp.Muxer) {
 	if instanceAdminSessionEndpoints != nil {
 		server := instanceadminsessionsvr.New(instanceAdminSessionEndpoints, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
-		server.Use(djangoJSONCompatibilityMiddleware)
+		server.Use(nativeJSONCompatibilityMiddleware)
 		instanceadminsessionsvr.Mount(mux, server)
-		mountProtocolHandler(mux, "HEAD", "/api/instances/admins/me/", djangoJSONHeadHandler(server.Me))
-		mountProtocolHandler(mux, "HEAD", "/api/instances/admins/session/", djangoJSONHeadHandler(server.Session))
+		mountProtocolHandler(mux, "HEAD", "/api/instances/admins/me/", nativeJSONHeadHandler(server.Me))
+		mountProtocolHandler(mux, "HEAD", "/api/instances/admins/session/", nativeJSONHeadHandler(server.Session))
 		mountProtocolHandler(mux, "OPTIONS", "/api/instances/admins/me/", http.HandlerFunc(workspaceSlugOptionsHandler))
 		mountProtocolHandler(mux, "OPTIONS", "/api/instances/admins/session/", http.HandlerFunc(workspaceSlugOptionsHandler))
 		for _, mount := range server.Mounts {

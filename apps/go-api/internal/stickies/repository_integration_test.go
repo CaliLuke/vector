@@ -10,23 +10,15 @@ import (
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/database"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestRepositoryPostgresOperationsAndIsolation(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
-	pair, err := postgresfixture.Start(ctx, createRepositoryTestSchema)
-	if err != nil {
-		t.Fatalf("start PostgreSQL fixture: %v", err)
-	}
-	t.Cleanup(func() {
-		if closeErr := pair.Close(); closeErr != nil {
-			t.Errorf("close PostgreSQL fixture: %v", closeErr)
-		}
-	})
-	config, err := pgxpool.ParseConfig(pair.SourceURL)
+	pairURL := suiteDatabases.SeedDatabase(t, createRepositoryTestSchema)
+
+	config, err := pgxpool.ParseConfig(pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

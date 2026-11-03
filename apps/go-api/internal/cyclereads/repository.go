@@ -10,8 +10,10 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
-	"time"
-	"unicode"
+
+	"github.com/CaliLuke/go-plane/internal/requestinput"
+
+	"github.com/CaliLuke/go-plane/internal/datetime"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
@@ -511,12 +513,12 @@ func pagination(
 		return 0, 0, 0, 0, false, ErrInvalidPagination
 	}
 	cursorLimit, limitError := parseCursorValue(parts[0])
-	cursorPageNumber, pageError := parsePythonInteger(parts[1])
-	previousNumber, previousError := parsePythonInteger(parts[2])
+	cursorPageNumber, pageError := requestinput.IntegerField(parts[1])
+	previous, previousError := strconv.ParseBool(parts[2])
 	if limitError != nil || pageError != nil || previousError != nil {
 		return 0, 0, 0, 0, false, ErrInvalidPagination
 	}
-	cursorPage, pageFits := pythonIntegerAsInt(cursorPageNumber)
+	cursorPage, pageFits := nativeIntegerAsInt(cursorPageNumber)
 	// Every envelope emits both adjacent cursors, even on an empty page.
 	if !pageFits || cursorPage == math.MaxInt || cursorPage == math.MinInt {
 		return 0, 0, 0, 0, false, ErrPaginationOverflow
@@ -525,107 +527,36 @@ func pagination(
 	if windowLimit == 0 {
 		windowLimit = float64(perPage)
 	}
-	return perPage, cursorLimit, windowLimit, cursorPage, previousNumber.Sign() != 0, nil
+	return perPage, cursorLimit, windowLimit, cursorPage, previous, nil
 }
 
 func ParsePageSize(value string) (int, bool, error) {
-	integer, err := parsePythonInteger(value)
+	integer, err := requestinput.IntegerField(value)
 	if err != nil {
 		return 0, false, err
 	}
 	if integer.Cmp(big.NewInt(1000)) > 0 {
 		return 0, true, nil
 	}
-	if result, ok := pythonIntegerAsInt(integer); ok {
+	if result, ok := nativeIntegerAsInt(integer); ok {
 		return result, false, nil
 	}
 	return -1, false, nil
 }
 
 func parseCursorValue(value string) (float64, error) {
-	value = strings.TrimFunc(value, pythonIntegerWhitespace)
-	if strings.Contains(value, ".") {
-		result, err := strconv.ParseFloat(value, 64)
-		if err != nil && !math.IsInf(result, 0) {
-			return 0, err
-		}
-		return result, nil
+	value = strings.TrimSpace(value)
+	if !json.Valid([]byte(value)) {
+		return 0, ErrInvalidPagination
 	}
-	integer, err := parsePythonInteger(value)
-	if err != nil {
-		return 0, err
+	number, err := strconv.ParseFloat(value, 64)
+	if err != nil || math.IsNaN(number) || math.IsInf(number, 0) {
+		return 0, ErrInvalidPagination
 	}
-	result, _ := new(big.Float).SetInt(integer).Float64()
-	return result, nil
+	return number, nil
 }
 
-func parsePythonInteger(value string) (*big.Int, error) {
-	runes := []rune(strings.TrimFunc(value, pythonIntegerWhitespace))
-	if len(runes) == 0 {
-		return nil, ErrInvalidPagination
-	}
-	start := 0
-	var normalized strings.Builder
-	if runes[0] == '+' || runes[0] == '-' {
-		normalized.WriteRune(runes[0])
-		start = 1
-	}
-	if start == len(runes) {
-		return nil, ErrInvalidPagination
-	}
-	digits := 0
-	previousDigit := false
-	for index := start; index < len(runes); index++ {
-		if digit, ok := pythonDecimalDigit(runes[index]); ok {
-			normalized.WriteByte('0' + digit)
-			digits++
-			previousDigit = true
-			continue
-		}
-		if runes[index] != '_' || !previousDigit || index+1 == len(runes) {
-			return nil, ErrInvalidPagination
-		}
-		if _, ok := pythonDecimalDigit(runes[index+1]); !ok {
-			return nil, ErrInvalidPagination
-		}
-		previousDigit = false
-	}
-	if digits > 4300 {
-		return nil, ErrInvalidPagination
-	}
-	integer, ok := new(big.Int).SetString(normalized.String(), 10)
-	if !ok {
-		return nil, ErrInvalidPagination
-	}
-	return integer, nil
-}
-
-func pythonIntegerWhitespace(value rune) bool {
-	return unicode.IsSpace(value) || value >= '\u001c' && value <= '\u001f'
-}
-
-func pythonDecimalDigit(value rune) (byte, bool) {
-	if value >= '0' && value <= '9' {
-		return byte(value - '0'), true
-	}
-	for _, digitRange := range unicode.Nd.R16 {
-		unsigned := uint32(value)
-		if unsigned >= uint32(digitRange.Lo) && unsigned <= uint32(digitRange.Hi) &&
-			(unsigned-uint32(digitRange.Lo))%uint32(digitRange.Stride) == 0 {
-			return byte(((unsigned - uint32(digitRange.Lo)) / uint32(digitRange.Stride)) % 10), true
-		}
-	}
-	for _, digitRange := range unicode.Nd.R32 {
-		unsigned := uint32(value)
-		if unsigned >= digitRange.Lo && unsigned <= digitRange.Hi &&
-			(unsigned-digitRange.Lo)%digitRange.Stride == 0 {
-			return byte(((unsigned - digitRange.Lo) / digitRange.Stride) % 10), true
-		}
-	}
-	return 0, false
-}
-
-func pythonIntegerAsInt(value *big.Int) (int, bool) {
+func nativeIntegerAsInt(value *big.Int) (int, bool) {
 	if !value.IsInt64() {
 		return 0, false
 	}
@@ -1702,35 +1633,13 @@ func issueFilterBoolean(value any) (bool, bool) {
 		}
 		return issueFilterBoolean(values[len(values)-1])
 	}
-	switch typed := value.(type) {
-	case bool:
-		return typed, true
-	case string:
-		switch typed {
-		case "true", "True", "2":
-			return true, true
-		case "false", "False", "3":
-			return false, true
-		}
-	}
-	return false, false
+	boolean, message := requestinput.BooleanField(value)
+	return boolean, message == ""
 }
 
 func normalizeIssueFilterDate(value string) (string, bool) {
-	value = strings.TrimSpace(value)
-	for _, layout := range []string{
-		"2006-01-02", "2006-1-2",
-		"01/02/2006", "1/2/2006", "01/02/06", "1/2/06",
-		"Jan 2 2006", "Jan 2, 2006",
-		"2 Jan 2006", "2 Jan, 2006",
-		"January 2 2006", "January 2, 2006",
-		"2 January 2006", "2 January, 2006",
-	} {
-		if date, err := time.Parse(layout, value); err == nil {
-			return date.Format("2006-01-02"), true
-		}
-	}
-	return "", false
+	date, err := datetime.Date(value)
+	return date, err == nil
 }
 
 func isIssueFilterScalar(value any) bool {

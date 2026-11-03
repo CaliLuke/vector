@@ -38,7 +38,7 @@ func TestWorkspaceLifecycleUnsupportedMethodsStillUseSessionProtocol(t *testing.
 }
 
 func TestWorkspaceLifecycleTransportUsesBrowserSessionProtocol(t *testing.T) {
-	policy, err := djangoRuntimeCORSPolicy([]string{"https://app.example.test"})
+	policy, err := nativeRuntimeCORSPolicy([]string{"https://app.example.test"})
 	if err != nil {
 		t.Fatal(err)
 	}

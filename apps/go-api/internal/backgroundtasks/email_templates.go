@@ -21,7 +21,7 @@ import (
 var emailTemplates embed.FS
 
 var (
-	djangoVariablePattern = regexp.MustCompile(`\{\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\}\}`)
+	nativeVariablePattern = regexp.MustCompile(`\{\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\}\}`)
 	styleBlockPattern     = regexp.MustCompile(`(?is)<style\b[^>]*>.*?</style\s*>`)
 	emptyLinesPattern     = regexp.MustCompile(`\n[\t \r]*\n[\t \r]*\n+`)
 )
@@ -31,7 +31,7 @@ func renderPlaneEmail(templateName string, values map[string]string) (string, st
 	if err != nil {
 		return "", "", fmt.Errorf("read email template %q: %w", templateName, err)
 	}
-	translated := djangoVariablePattern.ReplaceAllString(string(content), "{{.$1}}")
+	translated := nativeVariablePattern.ReplaceAllString(string(content), "{{.$1}}")
 	template, err := htmltemplate.New(templateName).Option("missingkey=zero").Parse(translated)
 	if err != nil {
 		return "", "", fmt.Errorf("parse email template %q: %w", templateName, err)

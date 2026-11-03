@@ -9432,7 +9432,7 @@ components:
         PathIdentifier:
             name: identifier
             in: path
-            description: Project identifier and issue sequence in one segment; Django lookup preserves the complete spelling.
+            description: Project identifier and issue sequence in one segment; Lookup preserves the complete identifier spelling.
             required: true
             schema:
                 type: string
@@ -9939,7 +9939,7 @@ components:
     securitySchemes:
         ApiKeyAuth:
             type: apiKey
-            description: Plane API token authentication.
+            description: Vector API token authentication.
             name: X-Api-Key
             in: header
         PlaneSessionCookie:

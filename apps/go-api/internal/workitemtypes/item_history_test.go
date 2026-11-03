@@ -20,7 +20,7 @@ func TestHistoryValueEqualityPreservesMeaning(t *testing.T) {
 		{"false is not empty", property.Boolean, false, false, nil, false},
 		{"empty text is empty", property.Text, false, "", nil, true},
 		{"empty selection is empty", property.Dropdown, true, []any{}, nil, true},
-		{"multiple selection order is immaterial", property.Dropdown, true, []any{"b", "a"}, []string{"a", "b"}, true},
+		{"multiple selection order is immaterial", property.Dropdown, true, []any{"b", "a", "c"}, []string{"c", "b", "a"}, true},
 		{"cascading order remains meaningful", property.Cascading, false, []any{"b", "a"}, []string{"a", "b"}, false},
 		{"rich text formatting is meaningful", property.RichText, false, "<p>Text</p>", "<p><strong>Text</strong></p>", false},
 	} {

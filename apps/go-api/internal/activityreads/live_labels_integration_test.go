@@ -6,11 +6,10 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 )
 
 func TestActivityExpansionUsesCurrentLiveLabels(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
+	ctx, connection := suiteDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
 	for _, id := range []string{testsupport.LabelIssue, testsupport.LabelEmptyIssue} {
 		var raw []byte
 		if err := connection.QueryRow(ctx, "SELECT "+activityIssueExpansion+" FROM (VALUES($1::uuid)) a(issue_id)", id).Scan(&raw); err != nil {

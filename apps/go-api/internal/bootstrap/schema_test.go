@@ -46,6 +46,22 @@ func TestPostgresSchemaBootstrapFreshAndRepeat(t *testing.T) {
 			t.Fatalf("application migration ledger: version=%d dirty=%t error=%v", version, dirty, scanErr)
 		}
 	}
+	var metadata bool
+	if err := connection.QueryRow(ctx, `SELECT to_regclass('public.django_migrations') IS NOT NULL OR to_regclass('public.django_session') IS NOT NULL OR to_regclass('public.auth_permission') IS NOT NULL`).Scan(&metadata); err != nil || metadata {
+		t.Fatalf("fresh installation requires retired framework metadata: present=%v error=%v", metadata, err)
+	}
+	// Older managed databases may retain metadata and must keep its data. It
+	// is neither an acceptance prerequisite nor permission to delete it.
+	if _, err := connection.Exec(ctx, `CREATE TABLE public.django_migrations(name text); INSERT INTO public.django_migrations VALUES('retained');`); err != nil {
+		t.Fatal(err)
+	}
+	if err := MigrateSchema(ctx, databaseURL); err != nil {
+		t.Fatal(err)
+	}
+	var name string
+	if err := connection.QueryRow(ctx, `SELECT name FROM public.django_migrations`).Scan(&name); err != nil || name != "retained" {
+		t.Fatalf("existing metadata changed: %q %v", name, err)
+	}
 }
 
 func TestPostgresSchemaBootstrapRejectsUnmanagedApplicationTables(t *testing.T) {
@@ -78,7 +94,7 @@ func TestPostgresSchemaBootstrapRejectsUnmanagedApplicationTables(t *testing.T) 
 			if _, execErr := connection.Exec(ctx, string(baseline)); execErr != nil {
 				t.Fatal(execErr)
 			}
-			if _, execErr := connection.Exec(ctx, `CREATE TABLE public.schema_migrations(version bigint, dirty boolean); INSERT INTO public.schema_migrations VALUES(9,false); INSERT INTO public.django_migrations(app,name,applied) VALUES('bootstrap_test','preserved',CURRENT_TIMESTAMP);`+test.setup); execErr != nil {
+			if _, execErr := connection.Exec(ctx, `CREATE TABLE public.schema_migrations(version bigint, dirty boolean); INSERT INTO public.schema_migrations VALUES(9,false); CREATE TABLE public.django_migrations(app text,name text,applied timestamptz); INSERT INTO public.django_migrations(app,name,applied) VALUES('bootstrap_test','preserved',CURRENT_TIMESTAMP);`+test.setup); execErr != nil {
 				t.Fatal(execErr)
 			}
 			migrateErr := MigrateSchema(ctx, databaseURL)

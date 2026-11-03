@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"math"
 	"strings"
 	"testing"
 
@@ -61,7 +60,7 @@ func TestNewRepositoryRequiresDatabase(t *testing.T) {
 	}
 }
 
-func TestPublicCataloguesResolveAnchorAndPreserveDjangoOrdering(t *testing.T) {
+func TestPublicCataloguesResolveAnchorAndPreserveNativeOrdering(t *testing.T) {
 	for _, test := range []struct {
 		name      string
 		read      func(*Repository, context.Context, string) (json.RawMessage, error)
@@ -184,7 +183,7 @@ func TestIssueDetailUsesPublicScopeAndReactionActorForAvatarURL(t *testing.T) {
 	}
 }
 
-func TestMembersApplyDjangoManagerAndEndpointFilters(t *testing.T) {
+func TestMembersApplyNativeManagerAndEndpointFilters(t *testing.T) {
 	projectID := uuid.New()
 	database := &databaseStub{rows: []pgx.Row{anchorRow(&projectID), jsonRow(`[]`)}}
 	repository, constructorErr := NewRepository(database)
@@ -219,7 +218,7 @@ func TestSettingsCarriesAuthenticatedUserToTimezoneLookup(t *testing.T) {
 	}
 }
 
-func TestMetaUsesPublishedEntityIdentifierAndDjangoManagerFilters(t *testing.T) {
+func TestMetaUsesPublishedEntityIdentifierAndNativeManagerFilters(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{jsonRow(`{"id":"00000000-0000-4000-8000-000000000001"}`)}}
 	repository, constructorErr := NewRepository(database)
 	require.NoError(t, constructorErr)
@@ -250,7 +249,7 @@ func TestMetaMissingProjectMapsToNotPublished(t *testing.T) {
 	}
 }
 
-func TestSettingsUsesDjangoRelationsFiltersAndRendering(t *testing.T) {
+func TestSettingsUsesNativeRelationsFiltersAndRendering(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{jsonRow(`{ "id" : "00000000-0000-4000-8000-000000000001", "project_details" : null }`)}}
 	repository, constructorErr := NewRepository(database)
 	require.NoError(t, constructorErr)
@@ -343,7 +342,7 @@ func TestStatesApplyManagerAndEndpointFilters(t *testing.T) {
 	}
 }
 
-func TestStatesPreserveDjangoStringAndFloatEncoding(t *testing.T) {
+func TestStatesPreserveNativeStringAndFloatEncoding(t *testing.T) {
 	projectID := uuid.New()
 	database := &databaseStub{rows: []pgx.Row{
 		anchorRow(&projectID),
@@ -355,40 +354,22 @@ func TestStatesPreserveDjangoStringAndFloatEncoding(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := `[{"name":"<&>","group":"backlog","color":"#000","id":"00000000-0000-4000-8000-000000000001","sequence":100.0}]`
+	want := `[{"name":"<&>","group":"backlog","color":"#000","id":"00000000-0000-4000-8000-000000000001","sequence":100}]`
 	if string(data) != want {
 		t.Fatalf("states=%s want=%s", data, want)
 	}
 }
 
-func TestPythonFloatJSONMatchesDjangoRenderingBoundaries(t *testing.T) {
-	for _, testCase := range []struct {
-		value float64
-		want  string
-	}{
-		{0, "0.0"},
-		{math.Copysign(0, -1), "-0.0"},
-		{100, "100.0"},
-		{1.25, "1.25"},
-		{1e-4, "0.0001"},
-		{1e-5, "1e-05"},
-		{1e15, "1000000000000000.0"},
-		{1.234e15, "1234000000000000.0"},
-		{1e16, "1e+16"},
-		{1e20, "1e+20"},
-	} {
-		got, err := pythonFloatJSON(testCase.value)
-		if err != nil || string(got) != testCase.want {
-			t.Errorf("pythonFloatJSON(%v) = %q, %v; want %q", testCase.value, got, err, testCase.want)
-		}
-	}
-}
-
-func TestPythonFloatJSONRejectsNonFiniteValues(t *testing.T) {
-	for _, value := range []float64{math.NaN(), math.Inf(1), math.Inf(-1)} {
-		if _, err := pythonFloatJSON(value); err == nil {
-			t.Errorf("pythonFloatJSON(%v) returned nil error", value)
-		}
+func TestPublicStateMetadataRejectsNonfiniteStoredSequence(t *testing.T) {
+	for _, value := range []string{"NaN", "Infinity", "-Infinity"} {
+		t.Run(value, func(t *testing.T) {
+			projectID := uuid.New()
+			database := &databaseStub{rows: []pgx.Row{anchorRow(&projectID), jsonRow(`[{"sequence":"` + value + `"}]`)}}
+			repository, err := NewRepository(database)
+			require.NoError(t, err)
+			_, err = repository.States(context.Background(), "anchor")
+			require.ErrorIs(t, err, ErrRender)
+		})
 	}
 }
 

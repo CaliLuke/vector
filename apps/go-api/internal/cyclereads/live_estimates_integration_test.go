@@ -6,11 +6,10 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 )
 
 func TestCycleEstimatesExcludeDeletedAndForeignCatalogueRows(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, testsupport.EstimateReadSchema)
+	ctx, connection := suiteDatabases.OpenSQL(t, testsupport.EstimateReadSchema)
 	progress := "SELECT (stats->>'total_estimate_points')::float8 FROM (" + cycleProgressSQL + ") result(stats)"
 	from := " FROM cycles cycle JOIN projects project ON project.id=cycle.project_id JOIN workspaces workspace ON workspace.id=cycle.workspace_id WHERE $1::uuid IS NOT NULL"
 	distribution := "(" + estimateDistributionSQL + ")"

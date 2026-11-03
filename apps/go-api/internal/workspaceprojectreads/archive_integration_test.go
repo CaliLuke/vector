@@ -11,7 +11,6 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	"github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	projects "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -39,7 +38,7 @@ func newArchiveFixture(t *testing.T) archiveFixture {
 	require.NoError(t, err)
 	revisionSQL, err := os.ReadFile("../bootstrap/schema_migrations/000017_project_edit_revisions.up.sql")
 	require.NoError(t, err)
-	ctx, conn := postgres.OpenSQL(t, projectReadSchema+`
+	ctx, conn := projectDatabases.OpenSQL(t, projectReadSchema+`
 ALTER TABLE user_favorites ADD COLUMN workspace_id uuid;
 INSERT INTO user_favorites(user_id,project_id,workspace_id) VALUES('10000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001');
 `+string(receiptSQL)+string(revisionSQL))

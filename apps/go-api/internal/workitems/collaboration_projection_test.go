@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -49,7 +49,7 @@ func TestCollaborationAPIParentExpansionUsesCommentRelation(t *testing.T) {
 func TestCollaborationAPIDumpPreservesSerializerFieldOrder(t *testing.T) {
 	row := map[string]any{
 		"id": "comment-id", "created_at": "2026-01-02T03:04:05Z", "updated_at": "2026-01-02T03:04:06Z", "deleted_at": nil,
-		"comment_html": "<p>hello</p>", "attachments": []any{}, "access": "EXTERNAL", "external_source": "fixture", "external_id": "external-1", "edited_at": nil,
+		"comment_html": "\u003cp\u003ehello\u003c/p\u003e", "attachments": []any{}, "access": "EXTERNAL", "external_source": "fixture", "external_id": "external-1", "edited_at": nil,
 		"created_by_id": nil, "updated_by_id": nil, "project_id": "project-id", "workspace_id": "workspace-id", "description_id": "description-id", "issue_id": "issue-id", "actor_id": "actor-id", "parent_id": nil,
 	}
 	r := &Repository{db: &collaborationAuthorizationDB{}}
@@ -57,7 +57,7 @@ func TestCollaborationAPIDumpPreservesSerializerFieldOrder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := `{"id": "comment-id", "created_at": "2026-01-02T03:04:05Z", "updated_at": "2026-01-02T03:04:06Z", "deleted_at": null, "comment_html": "<p>hello</p>", "attachments": [], "access": "EXTERNAL", "external_source": "fixture", "external_id": "external-1", "edited_at": null, "created_by": null, "updated_by": null, "project": "project-id", "workspace": "workspace-id", "description": "description-id", "issue": "issue-id", "actor": "actor-id", "parent": null}`
+	want := `{"id": "comment-id", "created_at": "2026-01-02T03:04:05Z", "updated_at": "2026-01-02T03:04:06Z", "deleted_at": null, "comment_html": "\u003cp\u003ehello\u003c/p\u003e", "attachments": [], "access": "EXTERNAL", "external_source": "fixture", "external_id": "external-1", "edited_at": null, "created_by": null, "updated_by": null, "project": "project-id", "workspace": "workspace-id", "description": "description-id", "issue": "issue-id", "actor": "actor-id", "parent": null}`
 	if got != want {
 		t.Fatalf("serialized API activity dump differs\n got: %s\nwant: %s", got, want)
 	}
@@ -88,7 +88,7 @@ func TestCollaborationTimestampProjectionLeavesCommentJSONUntouched(t *testing.T
 func TestCollaborationNestedProjectionDumpRetainsDeclaredChildOrder(t *testing.T) {
 	row := map[string]any{"id": "u", "first_name": "A", "last_name": "B", "avatar": "", "avatar_url": nil, "is_bot": false, "display_name": "ab"}
 	keys := []string{"id", "first_name", "last_name", "avatar", "avatar_url", "is_bot", "display_name"}
-	got, err := pythoncompat.Dumps(row, jsonOrder(keys, nil))
+	got, err := jsonvalue.Ordered(row, jsonOrder(keys, nil))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -17,7 +17,7 @@ func TestAttachmentSerializerVariantsPreserveSourceAssetURLAndFloat(t *testing.T
 	if got, want := app["asset_url"], "/api/assets/v2/workspaces/demo/projects/project-id/issues/issue-id/attachments/asset-id/"; got != want {
 		t.Fatalf("app asset_url = %#v, want %q", got, want)
 	}
-	if got, want := app["size"], json.Number("68.0"); got != want {
+	if got, want := app["size"], json.Number("68"); got != want {
 		t.Fatalf("app size = %#v, want %v", got, want)
 	}
 
@@ -25,7 +25,7 @@ func TestAttachmentSerializerVariantsPreserveSourceAssetURLAndFloat(t *testing.T
 	if _, ok := api["asset_url"]; ok {
 		t.Fatalf("API serializer unexpectedly includes asset_url: %#v", api)
 	}
-	if got, want := api["size"], json.Number("68.0"); got != want {
+	if got, want := api["size"], json.Number("68"); got != want {
 		t.Fatalf("API size = %#v, want %v", got, want)
 	}
 }

@@ -10,7 +10,6 @@ import (
 	"strings"
 	"testing"
 
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -29,7 +28,7 @@ const (
 
 func apiLabelFixture(t *testing.T) *pgx.Conn {
 	t.Helper()
-	_, connection := postgresfixture.OpenSQL(t, `
+	_, connection := suiteDatabases.OpenSQL(t, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL);
 CREATE TABLE projects (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, archived_at timestamptz);
 CREATE TABLE project_members (project_id uuid NOT NULL, member_id uuid NOT NULL, is_active boolean NOT NULL);

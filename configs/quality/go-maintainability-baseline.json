@@ -11,7 +11,7 @@
     {
       "file": "cmd/system/http_test.go",
       "package": "main",
-      "function": "TestProjectMembershipReadsHTTPMountsAndDjangoProtocol",
+      "function": "TestProjectMembershipReadsHTTPMountsAndNativeProtocol",
       "score": 9
     },
     {
@@ -19,7 +19,7 @@
       "package": "main",
       "function": "run",
       "score": 0,
-      "sourceHash": "a8701337cefac5375be02ff82462c1d853ce586ad9c00a044ebac47140b00958"
+      "sourceHash": "1d32731ae9fd99c655c8938fe3b29488361653c98ab82ca29c9b942c745562ee"
     },
     {
       "file": "cmd/system/read_services_http_test.go",
@@ -42,7 +42,7 @@
     {
       "file": "internal/accountauthentication/repository_integration_test.go",
       "package": "accountauthentication",
-      "function": "TestRepositoryCreatesDjangoAccountDefaultsAndUpdatesLoginMetadata",
+      "function": "TestRepositoryCreatesNativeAccountDefaultsAndUpdatesLoginMetadata",
       "score": 16
     },
     {

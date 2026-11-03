@@ -201,6 +201,11 @@ func (r *LifecycleRepository) mutateProjectMembers(ctx context.Context, c Lifecy
 		if _, err = m.tx.Exec(ctx, `UPDATE project_members SET role=$2,is_active=$3,updated_at=clock_timestamp(),updated_by_id=$4 WHERE id=$1`, id, currentRole, active, c.UserID); err != nil {
 			return nil, err
 		}
+		if !active {
+			if _, err = m.tx.Exec(ctx, `UPDATE project_member_invites SET deleted_at=clock_timestamp(),updated_at=clock_timestamp() WHERE project_id=$1 AND workspace_id=$2 AND lower(email)=lower((SELECT email FROM users WHERE id=$3)) AND deleted_at IS NULL`, c.ProjectID, m.workspace, member); err != nil {
+				return nil, err
+			}
+		}
 		if c.Method != http.MethodDelete && !leave {
 			result, err = projectMemberRepresentation(ctx, m.tx, id)
 		}

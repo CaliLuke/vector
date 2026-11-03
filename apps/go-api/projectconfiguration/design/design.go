@@ -9,8 +9,8 @@ import (
 	. "github.com/CaliLuke/loom/dsl"
 )
 
-var apiKeyAuth = APIKeySecurity("ApiKeyAuth", func() { Description("Plane API token authentication.") })
-var sessionAuth = APIKeySecurity("PlaneSessionCookie", func() { Description("Plane session cookie authentication.") })
+var apiKeyAuth = APIKeySecurity("ApiKeyAuth", func() { Description("Vector API token authentication.") })
+var sessionAuth = APIKeySecurity("PlaneSessionCookie", func() { Description("Vector browser session cookie authentication.") })
 
 var rawMetadata = Type("ProjectConfigurationRawJSON", func() {
 	Attribute("content_type", String)

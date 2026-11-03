@@ -9,9 +9,8 @@ import (
 	"io"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/datetime"
 
 	"uuid"
 )
@@ -241,49 +240,6 @@ func decodeOrderedIssueFilter(decoder *json.Decoder) (any, error) {
 	}
 }
 
-func normalizePythonJSONConstants(raw string) string {
-	var output strings.Builder
-	output.Grow(len(raw))
-	inString, escaped := false, false
-	for index := 0; index < len(raw); {
-		character := raw[index]
-		if inString {
-			output.WriteByte(character)
-			index++
-			if escaped {
-				escaped = false
-			} else if character == '\\' {
-				escaped = true
-			} else if character == '"' {
-				inString = false
-			}
-			continue
-		}
-		if character == '"' {
-			inString = true
-			output.WriteByte(character)
-			index++
-			continue
-		}
-		const sentinel = `"\u0000python-json:`
-		switch {
-		case strings.HasPrefix(raw[index:], "-Infinity"):
-			output.WriteString(sentinel + `-Infinity"`)
-			index += len("-Infinity")
-		case strings.HasPrefix(raw[index:], "Infinity"):
-			output.WriteString(sentinel + `Infinity"`)
-			index += len("Infinity")
-		case strings.HasPrefix(raw[index:], "NaN"):
-			output.WriteString(sentinel + `NaN"`)
-			index += len("NaN")
-		default:
-			output.WriteByte(character)
-			index++
-		}
-	}
-	return output.String()
-}
-
 func BuildComplexFilter(raw string, args *[]any) (string, error) {
 	return buildComplexFilter(raw, args, nil)
 }
@@ -325,8 +281,8 @@ func emptyComplexFilter(decoded any) bool {
 			return true
 		}
 	case json.Number:
-		number, numberErr := pythoncompat.DecimalFloat64(value.String())
-		if numberErr == nil && number == 0 {
+		coefficient, _, _ := strings.Cut(strings.ToLower(string(value)), "e")
+		if strings.Trim(coefficient, "+-0.") == "" {
 			return true
 		}
 	case []any:
@@ -734,20 +690,7 @@ func issueFilterValues(value any) []string {
 }
 
 func issueFilterScalarValue(value any) string {
-	if number, ok := value.(json.Number); ok && number.String() == "-0" {
-		return "0"
-	}
-	result := fmt.Sprint(value)
-	switch result {
-	case "\x00python-json:NaN":
-		return "nan"
-	case "\x00python-json:Infinity":
-		return "inf"
-	case "\x00python-json:-Infinity":
-		return "-inf"
-	default:
-		return result
-	}
+	return fmt.Sprint(value)
 }
 
 func issueFilterUUIDs(values []string, field string) ([]string, error) {
@@ -790,7 +733,7 @@ func issueFilterBoolean(value string) (bool, bool) {
 }
 
 func issueFilterDate(value string) bool {
-	_, err := time.Parse("2006-01-02", value)
+	_, err := datetime.Date(value)
 	return err == nil
 }
 
@@ -1081,7 +1024,7 @@ func issueComplexOrderConstraint(raw, targetField, targetAlias string, args *[]a
 	if raw == "" {
 		return "", "", false, nil
 	}
-	decoder := json.NewDecoder(strings.NewReader(normalizePythonJSONConstants(raw)))
+	decoder := json.NewDecoder(strings.NewReader(raw))
 	decoder.UseNumber()
 	decoded, err := decodeOrderedIssueFilter(decoder)
 	if err != nil {
@@ -1126,7 +1069,7 @@ func issueFilterOrderBindings(object orderedIssueFilterObject, targetField, targ
 }
 
 func parseComplexFilter(raw string) (any, error) {
-	decoder := json.NewDecoder(strings.NewReader(normalizePythonJSONConstants(raw)))
+	decoder := json.NewDecoder(strings.NewReader(raw))
 	decoder.UseNumber()
 	decoded, err := decodeOrderedIssueFilter(decoder)
 	if err != nil {

@@ -9,14 +9,12 @@ import (
 
 	"uuid"
 
-	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestSoftDeleteWorkspacePersistsTimestampAndReleasesSlug(t *testing.T) {
 	ctx := t.Context()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, databaseURL string) error {
 		pool, err := pgxpool.New(ctx, databaseURL)
 		if err != nil {
 			return err
@@ -28,11 +26,8 @@ INSERT INTO workspaces(id,slug) VALUES('00000000-0000-4000-8000-000000000001','w
 `)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testsupport.Close(t, pair)
-	pool, err := pgxpool.New(ctx, pair.SeedURL())
+
+	pool, err := pgxpool.New(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

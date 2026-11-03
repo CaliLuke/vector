@@ -97,7 +97,7 @@ type GetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedModulesPayload struct {
 	Fields *string `json:"fields,omitzero"`
 	// Field to order results by. Prefix with '-' for descending order
 	OrderBy *string `json:"orderBy,omitzero"`
-	// Pagination input interpreted by Django-compatible pagination (default and
+	// Pagination input interpreted by shared cursor pagination (default and
 	// maximum: 1000)
 	PerPage *string `json:"perPage,omitzero"`
 	// Project ID
@@ -122,7 +122,7 @@ type GetAPIV1WorkspacesBySlugProjectsByProjectIDModulesByModuleIDModuleIssuesPay
 	ModuleID string `json:"module_id"`
 	// Field to order results by. Prefix with '-' for descending order
 	OrderBy *string `json:"orderBy,omitzero"`
-	// Pagination input interpreted by Django-compatible pagination (default and
+	// Pagination input interpreted by shared cursor pagination (default and
 	// maximum: 1000)
 	PerPage *string `json:"perPage,omitzero"`
 	// Project ID
@@ -155,7 +155,7 @@ type GetAPIV1WorkspacesBySlugProjectsByProjectIDModulesLitePayload struct {
 	Cursor *string `json:"cursor,omitzero"`
 	// Field to order results by. Prefix with '-' for descending order
 	OrderBy *string `json:"orderBy,omitzero"`
-	// Pagination input interpreted by Django-compatible pagination (default and
+	// Pagination input interpreted by shared cursor pagination (default and
 	// maximum: 1000)
 	PerPage *string `json:"perPage,omitzero"`
 	// Project ID
@@ -177,7 +177,7 @@ type GetAPIV1WorkspacesBySlugProjectsByProjectIDModulesPayload struct {
 	Fields *string `json:"fields,omitzero"`
 	// Field to order results by. Prefix with '-' for descending order
 	OrderBy *string `json:"orderBy,omitzero"`
-	// Pagination input interpreted by Django-compatible pagination (default and
+	// Pagination input interpreted by shared cursor pagination (default and
 	// maximum: 1000)
 	PerPage *string `json:"perPage,omitzero"`
 	// Project ID

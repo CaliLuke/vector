@@ -19,7 +19,7 @@ func mountAccountAuthenticationRoutes(ctx context.Context, pending pendingReplac
 		server.Use(passwordLoginCSRFCookieMiddleware(pending.csrfTokenCookie))
 		server.Use(accountAuthenticationProtocolMiddleware)
 		server.Use(accountAuthenticationCSRFMiddleware(pending.accountAuthenticationCSRFTrustedOrigins))
-		server.Use(djangoAuthSessionMiddleware(pending.readServicesAuthSession, pending.readServicesAuthCookie, accountAuthenticationSessionPath))
+		server.Use(nativeAuthSessionMiddleware(pending.readServicesAuthSession, pending.readServicesAuthCookie, accountAuthenticationSessionPath))
 		server.Use(activityReadsAuditFallbackMiddleware(compatibilityOptions))
 		server.Use(activityReadsRequestSizeMiddleware(bodySizeLimit))
 		accountauthsvr.Mount(mux, server)

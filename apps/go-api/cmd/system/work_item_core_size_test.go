@@ -18,7 +18,7 @@ func TestWorkItemRequestSizeFailurePrecedesViewAndSessionHeaders(t *testing.T) {
 			})))
 			response := httptest.NewRecorder()
 			handler.ServeHTTP(response, httptest.NewRequest(http.MethodPost, path, strings.NewReader("12345")))
-			if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(djangoRequestTooLargeBody) {
+			if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(nativeRequestTooLargeBody) {
 				t.Fatalf("response = %d %s", response.Code, response.Body.String())
 			}
 			if response.Header().Get("Allow") != "" || response.Header().Get("Vary") != "origin" {

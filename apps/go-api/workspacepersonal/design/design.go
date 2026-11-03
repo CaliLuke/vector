@@ -10,7 +10,7 @@ import (
 	. "github.com/CaliLuke/loom/dsl"
 )
 
-var sessionCookie = APIKeySecurity("PlaneSessionCookie", func() { Description("Plane session cookie authentication.") })
+var sessionCookie = APIKeySecurity("PlaneSessionCookie", func() { Description("Vector browser session cookie authentication.") })
 
 var rawResponse = Type("PersonalDashboardRawJSON", func() {
 	Attribute("content_type", String)

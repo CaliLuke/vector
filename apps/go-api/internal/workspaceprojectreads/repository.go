@@ -225,7 +225,7 @@ FROM (
     'logo_props', project.logo_props,
     'member_role', (SELECT member.role FROM project_members member WHERE member.project_id=project.id AND member.workspace_id=project.workspace_id AND member.member_id=$1 AND member.is_active=true AND member.deleted_at IS NULL ORDER BY member.created_at DESC LIMIT 1),
     'intake_count', (SELECT count(*) FROM intake_issues intake WHERE intake.project_id=project.id AND intake.status=-2 AND intake.deleted_at IS NULL),
-    'archived_at', `+djangoTimestamp("project.archived_at")+`,
+    'archived_at', `+nativeTimestamp("project.archived_at")+`,
     'workspace', project.workspace_id,
     'cycle_view', project.cycle_view,
     'issue_views_view', project.issue_views_view,
@@ -235,8 +235,8 @@ FROM (
     'guest_view_all_features', project.guest_view_all_features,
     'project_lead', project.project_lead_id,
     'network', project.network,
-    'created_at', `+djangoTimestamp("project.created_at")+`,
-    'updated_at', `+djangoTimestamp("project.updated_at")+`,
+    'created_at', `+nativeTimestamp("project.created_at")+`,
+    'updated_at', `+nativeTimestamp("project.updated_at")+`,
     'created_by', project.created_by_id,
     'updated_by', project.updated_by_id
   ) AS item, project.created_at
@@ -394,7 +394,7 @@ LIMIT 1
 	return role, nil
 }
 
-func djangoTimestamp(column string) string {
+func nativeTimestamp(column string) string {
 	return apicontract.TimestampSQL(column)
 }
 
@@ -405,9 +405,9 @@ func workspaceJSON(includeRole bool) string {
 	}
 	return `json_build_object(
   'background_color', workspace.background_color,
-  'created_at', ` + djangoTimestamp("workspace.created_at") + `,
+  'created_at', ` + nativeTimestamp("workspace.created_at") + `,
   'created_by', workspace.created_by_id,
-  'deleted_at', ` + djangoTimestamp("workspace.deleted_at") + `,
+  'deleted_at', ` + nativeTimestamp("workspace.deleted_at") + `,
   'id', workspace.id,
   'logo', workspace.logo,
   'logo_asset', workspace.logo_asset_id,
@@ -427,7 +427,7 @@ func workspaceJSON(includeRole bool) string {
   'slug', workspace.slug,
   'timezone', workspace.timezone,
   'total_members', (SELECT count(*) FROM workspace_members counted_membership JOIN users counted_user ON counted_user.id=counted_membership.member_id WHERE counted_membership.workspace_id=workspace.id AND counted_membership.is_active=true AND counted_membership.deleted_at IS NULL AND counted_user.is_bot=false),
-  'updated_at', ` + djangoTimestamp("workspace.updated_at") + `,
+  'updated_at', ` + nativeTimestamp("workspace.updated_at") + `,
   'updated_by', workspace.updated_by_id
 )`
 }
@@ -435,7 +435,7 @@ func workspaceJSON(includeRole bool) string {
 var projectJSON = `json_build_object(
   'anchor', (SELECT board.anchor FROM deploy_boards board WHERE board.entity_name='project' AND board.entity_identifier=project.id AND board.workspace_id=project.workspace_id AND board.deleted_at IS NULL ORDER BY board.created_at DESC LIMIT 1),
   'archive_in', project.archive_in,
-  'archived_at', ` + djangoTimestamp("project.archived_at") + `,
+  'archived_at', ` + nativeTimestamp("project.archived_at") + `,
   'close_in', project.close_in,
   'cover_image', project.cover_image,
   'cover_image_asset', project.cover_image_asset_id,
@@ -449,12 +449,12 @@ var projectJSON = `json_build_object(
       THEN (SELECT '/api/assets/v2/workspaces/' || asset_workspace.slug || '/projects/' || COALESCE(asset.project_id::text,'None') || '/' || asset.id::text || '/' FROM file_assets asset LEFT JOIN workspaces asset_workspace ON asset_workspace.id=asset.workspace_id WHERE asset.id=project.cover_image_asset_id)
     ELSE NULL
   END,
-  'created_at', ` + djangoTimestamp("project.created_at") + `,
+  'created_at', ` + nativeTimestamp("project.created_at") + `,
   'created_by', project.created_by_id,
   'cycle_view', project.cycle_view,
   'default_assignee', project.default_assignee_id,
   'default_state', project.default_state_id,
-  'deleted_at', ` + djangoTimestamp("project.deleted_at") + `,
+  'deleted_at', ` + nativeTimestamp("project.deleted_at") + `,
   'description', project.description,
   'description_html', project.description_html,
   'description_text', project.description_text,
@@ -483,7 +483,7 @@ var projectJSON = `json_build_object(
   'project_lead', project.project_lead_id,
   'sort_order', (SELECT property.sort_order FROM project_user_properties property WHERE property.project_id=project.id AND property.workspace_id=project.workspace_id AND property.user_id=$1 AND property.deleted_at IS NULL ORDER BY property.created_at DESC LIMIT 1),
   'timezone', project.timezone,
-  'updated_at', ` + djangoTimestamp("project.updated_at") + `,
+  'updated_at', ` + nativeTimestamp("project.updated_at") + `,
   'updated_by', project.updated_by_id,
   'workspace', project.workspace_id
 )`

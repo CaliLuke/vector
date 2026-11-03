@@ -80,7 +80,7 @@ type oauthRedirectService struct {
 
 func NewOAuthRedirects(repository oauthRedirectRepository, sessions *browsersession.Validator, workflow *authworkflow.PostUserAuthWorkflow, client *http.Client) (oauthredirects.Service, error) {
 	if repository == nil || sessions == nil || workflow == nil {
-		return nil, errors.New("OAuth redirects require a repository, Django sessions, and post-login workflow")
+		return nil, errors.New("OAuth redirects require a repository, browser sessions, and post-login workflow")
 	}
 	if client == nil {
 		client = http.DefaultClient

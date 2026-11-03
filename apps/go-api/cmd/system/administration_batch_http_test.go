@@ -135,7 +135,7 @@ func TestWebhookProductionAuthenticationPrecedesParsingAndProtocolDispatch(t *te
 	}
 }
 
-func TestWebhookMalformedLogUUIDUsesDjangoConverter404BeforeAuth(t *testing.T) {
+func TestWebhookMalformedLogUUIDUsesNativeConverter404BeforeAuth(t *testing.T) {
 	for _, authenticated := range []bool{false, true} {
 		name := "anonymous"
 		if authenticated {

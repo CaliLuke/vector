@@ -50,7 +50,7 @@ func TestWithExecutionSearchPathRejectsUnownedOptions(t *testing.T) {
 	}
 }
 
-func TestNullableTextMatchesDjangoTextFieldInputs(t *testing.T) {
+func TestNullableTextMatchesNativeTextFieldInputs(t *testing.T) {
 	for _, test := range []struct {
 		name  string
 		value any

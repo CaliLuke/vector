@@ -111,7 +111,7 @@ func projectLifecycleResponseCompatibilityMiddleware(next http.Handler) http.Han
 	})
 }
 func mountProjectLifecycle(mux loomhttp.Muxer, endpoints *api.Endpoints, cors loomhttp.RuntimeCORSPolicy, options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie browserSessionCookieConfig) {
-	server := svr.New(endpoints, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
+	server := svr.New(endpoints, mux, nativeRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 	server.Use(func(next http.Handler) http.Handler {
 		apiStack := activityReadsMiddlewareStack(options, sessions, cookie)(projectLifecycleResponseCompatibilityMiddleware(projectLifecycleQueryCompatibilityMiddleware(next)))
 		sessionStack := sessionServiceMiddlewareStack(options, sessions, cookie)(next)

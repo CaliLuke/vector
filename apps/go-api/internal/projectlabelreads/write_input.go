@@ -29,7 +29,7 @@ func parseLabelInput(body io.Reader, contentType string) (labelInput, error) {
 	}
 	return labelInput{input.Fields, input.Kind, input.Null, input.Form}, err
 }
-func pythonScalarString(value any) string { return requestinput.ScalarString(value) }
+func nativeScalarString(value any) string { return requestinput.ScalarString(value) }
 func charField(value any, allowBlank bool) (string, []string) {
 	return requestinput.CharField(value, allowBlank)
 }
@@ -47,7 +47,7 @@ func (r *WriteRepository) validateInput(ctx context.Context, tx pgx.Tx, input la
 		if parent == nil || parent == "" {
 			label.Parent = nil
 		} else {
-			text := pythonScalarString(parent)
+			text := nativeScalarString(parent)
 			parsed, err := labelParentUUID(parent)
 			if _, boolean := parent.(bool); boolean {
 				failures["parent"] = []string{"Incorrect type. Expected pk value, received bool."}

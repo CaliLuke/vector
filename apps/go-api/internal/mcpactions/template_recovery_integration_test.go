@@ -8,6 +8,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/stretchr/testify/require"
 )
 
@@ -53,12 +54,21 @@ CREATE CONSTRAINT TRIGGER reject_template_commit AFTER INSERT OR UPDATE OR DELET
 	}
 }
 
+// Template kinds share templates.scope and the same pre-dispatch revalidator.
+// Exercise both SQL scope branches here. Every kind/action is still covered by
+// TestMCPTemplateWritesAndReplayRecheckScopeRoleAndGovernance, and every projection
+// by TestMCPTemplateSDKRecordsPreserveBodyAndMergeFields.
 func TestMCPTemplateWritesReauthorizeAfterWaiting(t *testing.T) {
-	for _, scope := range templateScopes() {
+	for _, scope := range []templateScope{{"workitem", ""}, {"workitem", testsupport.LabelProject}} {
 		for _, action := range []string{"create", "update", "delete"} {
 			t.Run(scope.kind+"/"+scope.project+"/"+action, func(t *testing.T) {
+				changes := mutationCredentialChanges()
+				if action == "create" {
+					changes = nil // Full membership matrix once per workspace/project scope.
+				}
 				runMutationAuthorizationWait(t, mutationWaitScenario{
-					tool: "template", schemaLock: true, fixture: templateFixture, snapshot: templateStorageSnapshot,
+					changes: changes,
+					tool:    "template", schemaLock: true, fixture: templateFixture, snapshot: templateStorageSnapshot,
 					prepare: func(t *testing.T, _ milestoneFixture, call catalogueCall) map[string]any {
 						return templateWriteInput(t, call, scope, action)
 					},

@@ -24,7 +24,7 @@ func writeAPIActivityLog(
 	responseCode int,
 	responseBody []byte,
 ) {
-	apiKey := djangoJoinedHeader(request, "X-Api-Key")
+	apiKey := nativeJoinedHeader(request, "X-Api-Key")
 	if logger == nil || apiKey == "" {
 		return
 	}
@@ -33,12 +33,12 @@ func writeAPIActivityLog(
 		Path:            request.URL.Path,
 		Method:          request.Method,
 		QueryParams:     readServicesOriginalRawQuery(request),
-		Headers:         djangoRequestHeaders(request),
+		Headers:         nativeRequestHeaders(request),
 		Body:            safeDecodeAPIActivityBody(requestBody),
 		ResponseCode:    responseCode,
 		ResponseBody:    safeDecodeAPIActivityBody(responseBody),
 		IPAddress:       nullableString(apiActivityIPAddress(request)),
-		UserAgent:       nullableString(djangoJoinedHeader(request, "User-Agent")),
+		UserAgent:       nullableString(nativeJoinedHeader(request, "User-Agent")),
 	}
 	// Wait for the durable publisher confirmation. Ignore client cancellation as
 	// Django does while submitting the task, but retain the request log values.

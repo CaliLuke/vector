@@ -3006,11 +3006,7 @@ var ImportedTimezoneEnum = Type("TimezoneEnum", String, func() {
 })
 
 var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
-	Description("Plane API token authentication.")
-})
-
-var ImportedPlaneAdminSessionCookieSecurity = APIKeySecurity("PlaneAdminSessionCookie", func() {
-	Description("Plane instance-administration session authentication without CSRF enforcement.")
+	Description("Vector API token authentication.")
 })
 
 var ImportedPlaneSessionCookieSecurity = APIKeySecurity("PlaneSessionCookie", func() {
@@ -3134,7 +3130,7 @@ var _ = Service("WorkItemCore", func() {
 		Security(ImportedAPIKeyAuthSecurity)
 		Payload(func() {
 			Attribute("identifier", String, func() {
-				Description("Project identifier and issue sequence in one segment; Django lookup preserves the complete spelling.")
+				Description("Project identifier and issue sequence in one segment; Lookup preserves the complete identifier spelling.")
 				Example("IC-1")
 			})
 			Attribute("slug", String, func() {
@@ -4411,7 +4407,7 @@ var _ = Service("WorkItemCore", func() {
 		Security(ImportedAPIKeyAuthSecurity)
 		Payload(func() {
 			Attribute("identifier", String, func() {
-				Description("Project identifier and issue sequence in one segment; Django lookup preserves the complete spelling.")
+				Description("Project identifier and issue sequence in one segment; Lookup preserves the complete identifier spelling.")
 				Example("IC-1")
 			})
 			Attribute("slug", String, func() {
@@ -6074,7 +6070,7 @@ var _ = Service("WorkItemCore", func() {
 		SessionSecurity(PlaneSession)
 		Payload(func() {
 			Attribute("identifier", String, func() {
-				Description("Project identifier and issue sequence in one segment; Django lookup preserves the complete spelling.")
+				Description("Project identifier and issue sequence in one segment; Lookup preserves the complete identifier spelling.")
 				Example("IC-1")
 			})
 			Attribute("slug", String)
@@ -6097,13 +6093,13 @@ var _ = Service("WorkItemCore", func() {
 })
 
 // The source payloads accept JSON, form and multipart bodies. Their imported
-// raw request streams preserve parser precedence and Django field coercions.
+// raw request streams preserve parser precedence and shared native input validation.
 var PlaneSession = SessionAuth("PlaneSession", func() {
 	CookieTransport(ImportedPlaneSessionCookieSecurity, "", func() { CookieName("session-id") })
 })
 var workItemResponse = Type("WorkItemResponse", func() {})
 
-// Django errors include field-keyed objects, nested relation errors, and scalar
+// API errors include field-keyed objects, nested relation errors, and scalar
 // values. Project the complete JSON body without changing its shape or precision.
 var workItemError = Type("WorkItemError", func() {
 	ErrorName("kind", String, func() { Meta("struct:tag:json", "-") })

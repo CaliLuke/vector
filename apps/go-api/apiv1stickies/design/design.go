@@ -10,7 +10,7 @@ import (
 )
 
 var apiKeyAuth = APIKeySecurity("ApiKeyAuth", func() {
-	Description("Plane API token authentication.")
+	Description("Vector API token authentication.")
 })
 
 var stickyErrorResponse = Type("APIV1StickyErrorResponse", func() {
@@ -150,7 +150,7 @@ func stickyPayload(detail, query bool) {
 }
 
 var _ = Service("api_v1_stickies", func() {
-	Description("Serves the Django API v1 Sticky contract.")
+	Description("Serves the Vector API v1 Sticky contract.")
 
 	Method("list", func() {
 		Meta("openapi:operationId", "get_api_v1_workspaces_by_slug_stickies(.{routeIndex})")

@@ -1,5 +1,5 @@
 {
-  "loom_version": "v1.10.0-alpha.17",
+  "loom_version": "v1.10.0-alpha.22",
   "design_package": "github.com/CaliLuke/go-plane/accountauthentication/design",
-  "design_digest": "06fc43d309c66116e6c5280ec3f72b1d4a6fe1bdeb2d3f8be72a37bc4004377f"
+  "design_digest": "da0072bc1420706bd15d33799c96b7308216f4ec2c03e479ca6106f9e1bc381d"
 }

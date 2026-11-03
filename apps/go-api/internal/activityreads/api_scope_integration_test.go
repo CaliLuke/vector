@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -32,7 +31,7 @@ INSERT INTO issue_activities(id,created_at,project_id,workspace_id,issue_id,verb
 `
 
 func TestScopedActivityReadsPreserveVisibilityAndDistinguishMissing(t *testing.T) {
-	ctx, db := postgresfixture.OpenSQL(t, scopedActivitySchema)
+	ctx, db := suiteDatabases.OpenSQL(t, scopedActivitySchema)
 	repo, err := NewRepository(db)
 	require.NoError(t, err)
 	workspace := uuid.MustParse("20000000-0000-4000-8000-000000000001")

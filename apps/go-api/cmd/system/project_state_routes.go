@@ -33,7 +33,7 @@ func mountProjectStateReadsProtocolRoutes(
 			mux,
 			http.MethodHead,
 			route.path,
-			djangoProtocolHeadHandler(projectStateReadsCompatibilityMiddleware, route.get),
+			nativeProtocolHeadHandler(projectStateReadsCompatibilityMiddleware, route.get),
 		)
 	}
 	mountProtocolHandler(
@@ -154,12 +154,9 @@ func projectStateReadsCompatibilityMiddleware(next http.Handler) http.Handler {
 				return
 			}
 		}
-		accept, acceptPresent := djangoRequestAcceptHeader(request)
-		acceptsJSON, jsonIndent, negotiationErr := projectMembershipReadsJSONNegotiation(accept, acceptPresent)
-		if negotiationErr != nil {
-			writeDjangoAPIViewServerError(response, request)
-			return
-		}
+		accept, acceptPresent := nativeRequestAcceptHeader(request)
+		acceptsJSON, jsonIndent := projectMembershipReadsJSONNegotiation(accept, acceptPresent)
+
 		if !acceptsJSON {
 			headers.Set("Content-Type", "application/json")
 			writeProjectStateReadsJSON(response, request, http.StatusNotAcceptable, map[string]string{

@@ -304,11 +304,11 @@ func emailVerificationCode() (string, error) {
 }
 
 func validEmail(value string) bool {
-	return emailvalidation.ValidDjangoEmail(value)
+	return emailvalidation.Valid(value)
 }
 
 func normalizeUserAccountEmail(value string) string {
-	return emailvalidation.NormalizePythonEmail(value)
+	return emailvalidation.Normalize(value)
 }
 
 func userAccountStringValue(value any) (string, bool) {

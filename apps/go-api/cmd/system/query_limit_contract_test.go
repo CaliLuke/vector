@@ -20,24 +20,24 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
-type djangoOriginalQueryLimitFixture struct {
+type nativeOriginalQueryLimitFixture struct {
 	Name       string `json:"limit_case"`
 	RawQuery   string `json:"limit_raw_query"`
 	FieldCount int    `json:"limit_field_count"`
 	Accepted   bool   `json:"accepted"`
 }
 
-func originalQueryLimitFixtures(t *testing.T) []djangoOriginalQueryLimitFixture {
+func originalQueryLimitFixtures(t *testing.T) []nativeOriginalQueryLimitFixture {
 	t.Helper()
 	data, err := os.ReadFile("testdata/query_compatibility.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	var all []djangoOriginalQueryLimitFixture
+	var all []nativeOriginalQueryLimitFixture
 	if err := json.Unmarshal(data, &all); err != nil {
 		t.Fatal(err)
 	}
-	var fixtures []djangoOriginalQueryLimitFixture
+	var fixtures []nativeOriginalQueryLimitFixture
 	for _, fixture := range all {
 		if fixture.Name != "" {
 			fixtures = append(fixtures, fixture)
@@ -60,7 +60,7 @@ func queryLimitProductionHandler(pending pendingReplacementEndpoints) http.Handl
 // These requests pass through the shipping mount and its complete middleware
 // stack. The fixture count is from Django, before empty fields or duplicates
 // are removed. Negotiation must still reject excess fields before authentication.
-func TestDjangoQueryOriginalFieldLimitThroughReadMount(t *testing.T) {
+func TestNativeQueryOriginalFieldLimitThroughReadMount(t *testing.T) {
 	const path = "/api/v1/workspaces/demo/projects/00000000-0000-4000-8000-000000000001/issues/00000000-0000-4000-8000-000000000002/activities/"
 	for _, fixture := range originalQueryLimitFixtures(t) {
 		for _, method := range []string{http.MethodGet, http.MethodHead} {
@@ -104,7 +104,7 @@ func TestDjangoQueryOriginalFieldLimitThroughReadMount(t *testing.T) {
 						if response.Header().Get("Content-Type") != "text/html; charset=utf-8" {
 							t.Errorf("Content-Type=%q", response.Header().Get("Content-Type"))
 						}
-						if method == http.MethodGet && response.Body.String() != string(djangoServerErrorBody) {
+						if method == http.MethodGet && response.Body.String() != string(nativeServerErrorBody) {
 							t.Errorf("limit body=%q", response.Body.String())
 						}
 					}
@@ -135,7 +135,7 @@ func (sessions *queryLimitMetadataSession) AllowRequestWithoutTimezone(ctx conte
 // Public metadata has a separate negotiation/session stack: excess fields
 // produce its existing JSON 500, still inspect the session, and never refresh
 // it. The same request under the limit can refresh a valid session.
-func TestDjangoQueryOriginalFieldLimitThroughPublicMetadataMount(t *testing.T) {
+func TestNativeQueryOriginalFieldLimitThroughPublicMetadataMount(t *testing.T) {
 	for _, fixture := range originalQueryLimitFixtures(t) {
 		for _, method := range []string{http.MethodGet, http.MethodHead} {
 			for _, accept := range []string{"application/json", "application/xml"} {
@@ -190,7 +190,7 @@ func TestDjangoQueryOriginalFieldLimitThroughPublicMetadataMount(t *testing.T) {
 }
 
 // User-me uses its own format/limit consumer and lazy session lifecycle.
-func TestDjangoQueryOriginalFieldLimitThroughUserMeMount(t *testing.T) {
+func TestNativeQueryOriginalFieldLimitThroughUserMeMount(t *testing.T) {
 	for _, fixture := range originalQueryLimitFixtures(t) {
 		t.Run(fixture.Name+"/"+strconv.Itoa(fixture.FieldCount), func(t *testing.T) {
 			sessions := &publicProjectMetadataThrottleStub{}

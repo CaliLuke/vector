@@ -7,9 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"strconv"
-	"strings"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
@@ -495,7 +493,7 @@ WHERE workspace.slug = $1
 		if err != nil {
 			return nil, fmt.Errorf("%w: decode public project state sequence: %w", ErrRender, err)
 		}
-		encodedSequence, err := pythonFloatJSON(sequence)
+		encodedSequence, err := json.Marshal(sequence)
 		if err != nil {
 			return nil, fmt.Errorf("%w: encode public project state sequence: %w", ErrRender, err)
 		}
@@ -514,22 +512,6 @@ WHERE workspace.slug = $1
 		return nil, fmt.Errorf("%w: encode public project states: %w", ErrRender, err)
 	}
 	return bytes.TrimSuffix(encoded.Bytes(), []byte("\n")), nil
-}
-
-func pythonFloatJSON(value float64) (json.RawMessage, error) {
-	if math.IsNaN(value) || math.IsInf(value, 0) {
-		return nil, fmt.Errorf("non-finite float %v", value)
-	}
-	abs := math.Abs(value)
-	format := byte('f')
-	if abs != 0 && (abs < 1e-4 || abs >= 1e16) {
-		format = 'e'
-	}
-	encoded := strconv.FormatFloat(value, format, -1, 64)
-	if format == 'f' && !strings.Contains(encoded, ".") {
-		encoded += ".0"
-	}
-	return json.RawMessage(encoded), nil
 }
 
 func (repository *Repository) resolveAnchor(ctx context.Context, anchor string) (string, *uuid.UUID, error) {

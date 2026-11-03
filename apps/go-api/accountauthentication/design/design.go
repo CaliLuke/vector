@@ -10,7 +10,7 @@ import (
 )
 
 var accountAuthenticationSession = APIKeySecurity("PlaneSessionCookie", func() {
-	Description("Plane application session cookie authentication.")
+	Description("Vector browser session cookie authentication.")
 })
 
 var accountAuthenticationRawResponse = Type("AccountAuthenticationRawResponse", func() {

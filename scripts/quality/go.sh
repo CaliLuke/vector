@@ -11,10 +11,11 @@ mkdir -p "$REPORTS"
 
 usage() {
   cat <<'USAGE'
-Usage: scripts/quality/go.sh [--fast|--full|--tests|--maintainability|--fix|--write-lint-baseline|--write-static-baselines|--write-coverage-baseline|--write-maintainability-baseline|--check-tools]
+Usage: scripts/quality/go.sh [--fast|--full|--static|--tests|--maintainability|--fix|--write-lint-baseline|--write-static-baselines|--write-coverage-baseline|--write-maintainability-baseline|--check-tools]
   --fast                  Format, build, vet, and lint with the existing-issue ratchet.
   --full                  Run all fast gates, mod tidy drift, deadcode, duplication,
                           integration-tagged tests with coverage. Maintainability scores are enforced.
+  --static                Run full static checks without integration tests.
   --tests                 Run only integration-tagged tests and write fresh coverage output.
   --maintainability            Enforce maintainability index floors and reviewed function allowances.
   --fix                   Apply goimports formatting, then rerun formatting and lint checks.
@@ -100,11 +101,16 @@ test_gate() {
     "$ROOT/scripts/quality/go-maintainability-ratchet.test.mjs"
   local coverage_packages
   coverage_packages="$(node "$ROOT/scripts/quality/go-coverage-inventory.mjs" "$MODULE")"
+  local ordered_packages
+  ordered_packages="$(node "$ROOT/scripts/quality/full-check.mjs" --go-test-packages)" || return "$?"
+  local -a test_packages
+  read -r -a test_packages <<< "$ordered_packages"
+  ((${#test_packages[@]})) || { printf 'no packages selected for full Go coverage\n' >&2; return 1; }
   rm -f "$coverage" "$test_json"
   (
     cd "$MODULE"
-    go test -json -tags=integration -count=1 -p 1 -parallel 2 -timeout=20m \
-      -coverpkg="$coverage_packages" -coverprofile="$coverage" ./...
+    go test -json -failfast -tags=integration -count=1 -p 1 -parallel 2 -timeout=20m \
+      -coverpkg="$coverage_packages" -coverprofile="$coverage" "${test_packages[@]}"
   ) >"$test_json" || test_status=$?
   node "$ROOT/scripts/quality/go-test-results.mjs" "$test_json" "$ROOT/.quality/go-test-skips.json"
   [[ "$test_status" -eq 0 ]] || return "$test_status"
@@ -183,12 +189,12 @@ case "$mode" in
   --fast)
     run_fast
     ;;
-  --full)
+  --full|--static)
     run_fast
     tidy_gate
     deadcode_gate
     dupl_gate
-    test_gate
+    if [[ "$mode" == --full ]]; then test_gate; fi
     ;;
   --tests)
     require_tools

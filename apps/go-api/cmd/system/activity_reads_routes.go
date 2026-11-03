@@ -8,9 +8,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/requestinput"
+
 	systemapi "github.com/CaliLuke/go-plane"
 	activityreadssvr "github.com/CaliLuke/go-plane/activityreads/gen/http/activity_reads/server"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	loomhttp "github.com/CaliLuke/loom/http"
 )
 
@@ -53,9 +54,9 @@ func newActivityReadsProtocolMiddleware(
 ) func(http.Handler) http.Handler {
 	apiMethodNotAllowed := activityReadsAPIMethodNotAllowedHandler(authorizer)
 	apiOrdinary := corsPolicy.Handler(loomhttp.AsHandlerFunc(stack(apiMethodNotAllowed)))
-	apiPreflight := djangoProtocolCORSOptionsHandler(corsPolicy, []string{http.MethodGet}, apiMethodNotAllowed)
+	apiPreflight := nativeProtocolCORSOptionsHandler(corsPolicy, []string{http.MethodGet}, apiMethodNotAllowed)
 	userOrdinary := corsPolicy.Handler(loomhttp.AsHandlerFunc(stack(activityReadsUserMethodNotAllowedHandler(authorizer, cookieConfig))))
-	userPreflight := djangoProtocolCORSOptionsHandler(corsPolicy, []string{http.MethodGet}, userOrdinary)
+	userPreflight := nativeProtocolCORSOptionsHandler(corsPolicy, []string{http.MethodGet}, userOrdinary)
 	return func(next http.Handler) http.Handler {
 		slashRedirect := activityReadsSlashRedirectMiddleware(next, debugMode)
 		apiSlashlessHandler := activityReadsSlashlessCompatibilityHandler(stack, slashRedirect)
@@ -126,7 +127,7 @@ func activityReadsAPIMethodNotAllowedHandler(authorizer systemapi.ActivityReadsP
 		switch protocol.apiAuthorization {
 		case "stickies":
 			if stickies, ok := authorizer.(systemapi.APIV1StickyProtocolAuthorizer); ok {
-				status, body = stickies.AuthorizeAPIV1StickyProtocol(request.Context(), djangoJoinedHeader(request, "X-Api-Key"), request.PathValue("slug"))
+				status, body = stickies.AuthorizeAPIV1StickyProtocol(request.Context(), nativeJoinedHeader(request, "X-Api-Key"), request.PathValue("slug"))
 			} else {
 				status, body = 500, map[string]any{"error": "Something went wrong please try again later"}
 			}
@@ -134,7 +135,7 @@ func activityReadsAPIMethodNotAllowedHandler(authorizer systemapi.ActivityReadsP
 			if configuration, ok := authorizer.(interface {
 				AuthorizeAPIV1LabelProtocol(context.Context, string, string, string) (int, map[string]any)
 			}); ok {
-				status, body = configuration.AuthorizeAPIV1LabelProtocol(request.Context(), djangoJoinedHeader(request, "X-Api-Key"), request.PathValue("slug"), request.PathValue("project_id"))
+				status, body = configuration.AuthorizeAPIV1LabelProtocol(request.Context(), nativeJoinedHeader(request, "X-Api-Key"), request.PathValue("slug"), request.PathValue("project_id"))
 			} else {
 				status, body = 500, map[string]any{"error": "Something went wrong please try again later"}
 			}
@@ -142,26 +143,26 @@ func activityReadsAPIMethodNotAllowedHandler(authorizer systemapi.ActivityReadsP
 			if project, ok := authorizer.(interface {
 				AuthorizeProjectLifecycleAPIProtocol(context.Context, string, systemapi.SessionProtocolResource) (int, map[string]any)
 			}); ok {
-				status, body = project.AuthorizeProjectLifecycleAPIProtocol(request.Context(), djangoJoinedHeader(request, "X-Api-Key"), sessionProtocolResource(request, protocol))
+				status, body = project.AuthorizeProjectLifecycleAPIProtocol(request.Context(), nativeJoinedHeader(request, "X-Api-Key"), sessionProtocolResource(request, protocol))
 			} else {
 				status, body = 500, map[string]any{"error": "Something went wrong please try again later"}
 			}
 		case "assets":
 			if assets, ok := authorizer.(systemapi.AssetsAPIProtocolAuthorizer); ok {
-				status, body = assets.AuthorizeAssetsAPIProtocol(request.Context(), djangoJoinedHeader(request, "X-Api-Key"), sessionProtocolResource(request, protocol))
+				status, body = assets.AuthorizeAssetsAPIProtocol(request.Context(), nativeJoinedHeader(request, "X-Api-Key"), sessionProtocolResource(request, protocol))
 			} else {
 				status = 500
 				body = map[string]any{"error": "Something went wrong please try again later"}
 			}
 		case "invitations":
 			if invitations, ok := authorizer.(systemapi.InvitationsMembershipProtocolAuthorizer); ok {
-				status, body = invitations.AuthorizeInvitationsMembershipProtocol(request.Context(), djangoJoinedHeader(request, "X-Api-Key"), sessionProtocolResource(request, protocol), true)
+				status, body = invitations.AuthorizeInvitationsMembershipProtocol(request.Context(), nativeJoinedHeader(request, "X-Api-Key"), sessionProtocolResource(request, protocol), true)
 			} else {
 				status, body = 500, map[string]any{"error": "Something went wrong please try again later"}
 			}
 		case "membership":
 			if membership, ok := authorizer.(systemapi.MembershipLifecycleProtocolAuthorizer); ok {
-				status, body = membership.AuthorizeMembershipLifecycleProtocol(request.Context(), djangoJoinedHeader(request, "X-Api-Key"), systemapi.SessionProtocolResource{Method: request.Method, Pattern: protocol.pattern, Slug: request.PathValue("slug"), ProjectID: request.PathValue("project_id")}, true)
+				status, body = membership.AuthorizeMembershipLifecycleProtocol(request.Context(), nativeJoinedHeader(request, "X-Api-Key"), systemapi.SessionProtocolResource{Method: request.Method, Pattern: protocol.pattern, Slug: request.PathValue("slug"), ProjectID: request.PathValue("project_id")}, true)
 			} else {
 				status = 500
 				body = map[string]any{"error": "Something went wrong please try again later"}
@@ -172,9 +173,9 @@ func activityReadsAPIMethodNotAllowedHandler(authorizer systemapi.ActivityReadsP
 				writeReadServiceJSON(response, 500, map[string]string{"error": "Something went wrong please try again later"})
 				return
 			}
-			status, body = identity.AuthorizeAPIIdentityProtocol(request.Context(), djangoJoinedHeader(request, "X-Api-Key"))
+			status, body = identity.AuthorizeAPIIdentityProtocol(request.Context(), nativeJoinedHeader(request, "X-Api-Key"))
 		default:
-			status, body = authorizer.AuthorizeAPIActivityProtocol(request.Context(), djangoJoinedHeader(request, "X-Api-Key"), request.PathValue("slug"), request.PathValue("project_id"), request.Method)
+			status, body = authorizer.AuthorizeAPIActivityProtocol(request.Context(), nativeJoinedHeader(request, "X-Api-Key"), request.PathValue("slug"), request.PathValue("project_id"), request.Method)
 		}
 
 		if status != 0 {
@@ -277,7 +278,7 @@ func activityReadsSessionFinalizationMiddleware(sessions readServicesSessionLife
 				return
 			}
 			access := &activityReadsSessionAccess{}
-			request = normalizeDjangoCookie(request, sessionCookieName(cookie))
+			request = normalizeNativeCookie(request, sessionCookieName(cookie))
 			request = request.WithContext(context.WithValue(request.Context(), activityReadsSessionAccessKey{}, access))
 			next.ServeHTTP(&activityReadsSessionFinalizationResponseWriter{
 				ResponseWriter: response,
@@ -336,7 +337,7 @@ func activityReadsSlashRedirectMiddleware(next http.Handler, debugMode bool) htt
 		switch request.Method {
 		case http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete:
 			if debugMode {
-				body, contentType := djangoDebugAppendSlashResponse(request)
+				body, contentType := nativeDebugAppendSlashResponse(request)
 				response.Header().Set("Content-Type", contentType)
 				response.WriteHeader(http.StatusInternalServerError)
 				_, _ = response.Write(body)
@@ -355,9 +356,9 @@ func activityReadsSlashRedirectMiddleware(next http.Handler, debugMode bool) htt
 func activityReadsSlashlessCompatibilityHandler(stack func(http.Handler) http.Handler, redirect http.Handler) http.Handler {
 	innerNotFound := http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		response.Header().Set("Content-Type", "text/html; charset=utf-8")
-		response.Header().Set("Content-Length", strconv.Itoa(len(djangoNotFoundBody)))
+		response.Header().Set("Content-Length", strconv.Itoa(len(nativeNotFoundBody)))
 		response.WriteHeader(http.StatusNotFound)
-		_, _ = response.Write(djangoNotFoundBody)
+		_, _ = response.Write(nativeNotFoundBody)
 	})
 	inner := stack(innerNotFound)
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
@@ -411,7 +412,7 @@ func activityReadsIntegerQueryMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		normalized := "1"
-		if value, err := pythoncompat.DecimalInteger(rawValues[len(rawValues)-1]); err == nil && value.IsInt64() {
+		if value, err := requestinput.IntegerField(rawValues[len(rawValues)-1]); err == nil && value.IsInt64() {
 			normalized = value.String()
 		}
 		query := request.URL.Query()
@@ -450,17 +451,17 @@ func activityReadsRequestSizeMiddleware(limit int64) func(http.Handler) http.Han
 				response.Header().Del("Allow")
 				removeVary(response.Header(), "Cookie")
 				response.Header().Set("Content-Type", "application/json")
-				response.Header().Set("Content-Length", strconv.Itoa(len(djangoRequestTooLargeBody)))
+				response.Header().Set("Content-Length", strconv.Itoa(len(nativeRequestTooLargeBody)))
 				response.WriteHeader(http.StatusRequestEntityTooLarge)
-				_, _ = response.Write(djangoRequestTooLargeBody)
+				_, _ = response.Write(nativeRequestTooLargeBody)
 				return
 			}
 			if err != nil {
 				response.Header().Set("Content-Type", "text/html; charset=utf-8")
-				response.Header().Set("Content-Length", strconv.Itoa(len(djangoServerErrorBody)))
+				response.Header().Set("Content-Length", strconv.Itoa(len(nativeServerErrorBody)))
 				response.WriteHeader(http.StatusInternalServerError)
 				if request.Method != http.MethodHead {
-					_, _ = response.Write(djangoServerErrorBody)
+					_, _ = response.Write(nativeServerErrorBody)
 				}
 				return
 			}
@@ -472,7 +473,7 @@ func activityReadsRequestSizeMiddleware(limit int64) func(http.Handler) http.Han
 func activityReadsAuditFallbackMiddleware(options apiV1CompatibilityOptions) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-			if djangoJoinedHeader(request, "X-Api-Key") == "" {
+			if nativeJoinedHeader(request, "X-Api-Key") == "" {
 				next.ServeHTTP(response, request)
 				return
 			}
@@ -513,21 +514,21 @@ func activityReadsCompatibilityMiddleware(options apiV1CompatibilityOptions) fun
 			requestBody, tooLarge, err := readPublicProjectMetadataRequestBody(request, options.bodySizeLimit)
 			if tooLarge {
 				response.Header().Set("Content-Type", "application/json")
-				response.Header().Set("Content-Length", strconv.Itoa(len(djangoRequestTooLargeBody)))
+				response.Header().Set("Content-Length", strconv.Itoa(len(nativeRequestTooLargeBody)))
 				response.WriteHeader(http.StatusRequestEntityTooLarge)
-				_, _ = response.Write(djangoRequestTooLargeBody)
+				_, _ = response.Write(nativeRequestTooLargeBody)
 				return
 			}
 			if err != nil {
 				response.Header().Set("Content-Type", "text/html; charset=utf-8")
-				response.Header().Set("Content-Length", strconv.Itoa(len(djangoServerErrorBody)))
+				response.Header().Set("Content-Length", strconv.Itoa(len(nativeServerErrorBody)))
 				response.WriteHeader(http.StatusInternalServerError)
 				if request.Method != http.MethodHead {
-					_, _ = response.Write(djangoServerErrorBody)
+					_, _ = response.Write(nativeServerErrorBody)
 				}
 				return
 			}
-			if djangoJoinedHeader(request, "X-Api-Key") == "" {
+			if nativeJoinedHeader(request, "X-Api-Key") == "" {
 				next.ServeHTTP(response, request)
 				return
 			}

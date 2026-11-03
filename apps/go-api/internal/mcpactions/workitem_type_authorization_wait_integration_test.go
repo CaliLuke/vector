@@ -13,7 +13,13 @@ import (
 func TestMCPTypeWaitRechecksAuthorizationBeforeWriteAndReplay(t *testing.T) {
 	for _, action := range []string{"create", "update", "delete", "resolve", "import_to_project"} {
 		t.Run(action, func(t *testing.T) {
+			// Resolution and project import select different authorization policies.
+			changes := mutationCredentialChanges()
+			if action == "create" || action == "resolve" || action == "import_to_project" {
+				changes = nil
+			}
 			runMutationAuthorizationWait(t, mutationWaitScenario{
+				changes:    changes,
 				schemaLock: true, tool: "workitem_type", action: action,
 				fixture: newMilestoneFixture, snapshot: typeStorageSnapshot,
 				prepare: func(t *testing.T, f milestoneFixture, _ catalogueCall) map[string]any {

@@ -11,7 +11,6 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,7 +32,7 @@ UPDATE issues SET external_id='external-one',external_source='source-one' WHERE 
 `
 
 func TestAPIPQLFiltersBeforePaginationWithinExistingScope(t *testing.T) {
-	ctx, db := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed+pqlReadSeed)
+	ctx, db := suiteDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed+pqlReadSeed)
 	repo, err := NewRepository(db, modelPublisher{}, "https://example.test")
 	require.NoError(t, err)
 	repo.now = func() time.Time { return time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC) }

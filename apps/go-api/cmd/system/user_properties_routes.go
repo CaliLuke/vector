@@ -8,7 +8,7 @@ import (
 )
 
 func userPropertiesCompatibilityMiddleware(next http.Handler) http.Handler {
-	return djangoProtocolCompatibilityMiddleware(func(string) string { return "GET, PATCH, HEAD, OPTIONS" })(next)
+	return nativeProtocolCompatibilityMiddleware(func(string) string { return "GET, PATCH, HEAD, OPTIONS" })(next)
 }
 
 func mountUserPropertiesProtocolRoutes(mux loomhttp.Muxer, server *userpropertiessvr.Server) {
@@ -23,14 +23,14 @@ func mountUserPropertiesProtocolRoutes(mux loomhttp.Muxer, server *userpropertie
 		{"/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/user-properties/", "Module User Properties Endpoint", server.ModuleGet},
 	}
 	for _, route := range routes {
-		mountProtocolHandler(mux, http.MethodHead, route.path, djangoProtocolHeadHandler(userPropertiesCompatibilityMiddleware, route.get))
-		mountProtocolHandler(mux, http.MethodOptions, route.path, djangoProtocolOptionsHandler(userPropertiesCompatibilityMiddleware, route.name, true))
+		mountProtocolHandler(mux, http.MethodHead, route.path, nativeProtocolHeadHandler(userPropertiesCompatibilityMiddleware, route.get))
+		mountProtocolHandler(mux, http.MethodOptions, route.path, nativeProtocolOptionsHandler(userPropertiesCompatibilityMiddleware, route.name, true))
 	}
 }
 
 func mountUserPropertiesRoutes(pending pendingReplacementEndpoints, mux loomhttp.Muxer) {
 	if pending.userProperties != nil {
-		server := userpropertiessvr.New(pending.userProperties, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
+		server := userpropertiessvr.New(pending.userProperties, mux, nativeRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 		server.Use(userPropertiesCompatibilityMiddleware)
 		userpropertiessvr.Mount(mux, server)
 		mountUserPropertiesProtocolRoutes(mux, server)

@@ -16,16 +16,28 @@ import (
 
 type retryDeletionStore struct {
 	*PostgresDeletionStore
-	failed atomic.Bool
+	failed           atomic.Bool
+	failPlanning     atomic.Bool
+	planningFailures atomic.Int32
+	applications     atomic.Int32
 }
 
 func (s *retryDeletionStore) Apply(ctx context.Context, plan deletionPlan) ([]DeletionInput, error) {
+	s.applications.Add(1)
 	children, err := s.PostgresDeletionStore.Apply(ctx, plan)
 	if err == nil && len(children) > 0 && s.failed.CompareAndSwap(false, true) {
 		return nil, errors.New("simulate lost response after committed child marks")
 	}
 	return children, err
 }
+func (s *retryDeletionStore) Plan(ctx context.Context, input deletionPlanInput) (deletionPlan, error) {
+	if s.failPlanning.Load() {
+		s.planningFailures.Add(1)
+		return deletionPlan{}, errors.New("injected planning failure")
+	}
+	return s.PostgresDeletionStore.Plan(ctx, input)
+}
+
 func TestPostgresDeletionDurableCascadeRetryAndRetention(t *testing.T) {
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
 	defer pool.Close()
@@ -126,4 +138,36 @@ func TestPostgresDeletionDurableCascadeRetryAndRetention(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT count(*) FROM workspaces WHERE id=$1`, sibling).Scan(&count); err != nil || count != 1 {
 		t.Fatalf("retention removed young row: %d %v", count, err)
 	}
+	// Missing roots and exhausted planning retries are workflow contracts, not
+	// incidental coverage from shutting down an unrelated catalogue worker.
+	t.Run("missing root is an idempotent no-op", func(t *testing.T) {
+		before := store.applications.Load()
+		run, admitErr := dispatcher.Admit(ctx, DeletionInput{EventID: uuid.NewString(), App: "db", Model: "workspace", ID: workspace.String()})
+		if admitErr != nil {
+			t.Fatal(admitErr)
+		}
+		waitVersionWorkflow(t, ctx, app, run)
+		if store.applications.Load() != before {
+			t.Fatal("missing root dispatched cascade writes")
+		}
+	})
+	t.Run("exhausted planning retries cannot apply a cascade", func(t *testing.T) {
+		before := store.applications.Load()
+		store.failPlanning.Store(true)
+		defer store.failPlanning.Store(false)
+		run, admitErr := dispatcher.Admit(ctx, DeletionInput{EventID: uuid.NewString(), App: "db", Model: "workspace", ID: sibling.String()})
+		if admitErr != nil {
+			t.Fatal(admitErr)
+		}
+		result, waitErr := selvedge.WaitWorkflow[struct{}](ctx, app, run)
+		if waitErr != nil {
+			t.Fatal(waitErr)
+		}
+		if result.Status != "failed" || result.Error == nil {
+			t.Fatalf("planning failure status=%s error=%s", result.Status, result.Error)
+		}
+		if store.planningFailures.Load() != 3 || store.applications.Load() != before {
+			t.Fatalf("planning attempts=%d cascade writes=%d", store.planningFailures.Load(), store.applications.Load()-before)
+		}
+	})
 }

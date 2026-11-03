@@ -80,14 +80,14 @@ func TestStickyHTTPOversizedIntegerKeepsAuthenticationPrecedence(t *testing.T) {
 	}
 }
 
-func TestDjangoRequestDecoderKeepsDecimalAndExponentTokens(t *testing.T) {
+func TestNativeRequestDecoderKeepsDecimalAndExponentTokens(t *testing.T) {
 	digits := strings.Repeat("7", 4301)
 	for _, token := range []string{digits + ".0", digits + "e0", "-" + digits + "E-1"} {
 		t.Run(token[len(token)-2:], func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodPatch, "/", strings.NewReader(token))
 			request.Header.Set("Content-Type", "application/json")
 			var value loom.JSONValue
-			if err := djangoRequestDecoder(request).Decode(&value); err != nil {
+			if err := nativeRequestDecoder(request).Decode(&value); err != nil {
 				t.Fatalf("non-integer number rejected: %v", err)
 			}
 			if string(value) != token {
@@ -97,7 +97,7 @@ func TestDjangoRequestDecoderKeepsDecimalAndExponentTokens(t *testing.T) {
 	}
 }
 
-func TestDjangoRequestDecoderPreservesRequestLimitError(t *testing.T) {
+func TestNativeRequestDecoderPreservesRequestLimitError(t *testing.T) {
 	policy, err := loomhttp.NewRequestBodyPolicy(32)
 	if err != nil {
 		t.Fatal(err)
@@ -105,7 +105,7 @@ func TestDjangoRequestDecoderPreservesRequestLimitError(t *testing.T) {
 	var decodeErr error
 	var value loom.JSONValue
 	handler := policy.Handler(http.HandlerFunc(func(_ http.ResponseWriter, request *http.Request) {
-		decodeErr = djangoRequestDecoder(request).Decode(&value)
+		decodeErr = nativeRequestDecoder(request).Decode(&value)
 	}))
 	request := httptest.NewRequest(http.MethodPatch, "/", strings.NewReader(strings.Repeat("7", 4301)))
 	request.Header.Set("Content-Type", "application/json")
@@ -119,11 +119,11 @@ func TestDjangoRequestDecoderPreservesRequestLimitError(t *testing.T) {
 	}
 }
 
-func TestDjangoRequestDecoderPreservesNonNullableBodyError(t *testing.T) {
+func TestNativeRequestDecoderPreservesNonNullableBodyError(t *testing.T) {
 	request := httptest.NewRequest(http.MethodPatch, "/", strings.NewReader("null"))
 	request = loomhttp.WithNonNullableBody(request)
 	var value loom.JSONValue
-	got := djangoRequestDecoder(request).Decode(&value)
+	got := nativeRequestDecoder(request).Decode(&value)
 	reference := loomhttp.WithNonNullableBody(httptest.NewRequest(http.MethodPatch, "/", strings.NewReader("null")))
 	var referenceValue loom.JSONValue
 	want := loomhttp.RequestDecoder(reference).Decode(&referenceValue)
@@ -132,23 +132,23 @@ func TestDjangoRequestDecoderPreservesNonNullableBodyError(t *testing.T) {
 	}
 }
 
-func TestDjangoRequestDecoderPreservesUnsupportedMediaError(t *testing.T) {
+func TestNativeRequestDecoderPreservesUnsupportedMediaError(t *testing.T) {
 	request := httptest.NewRequest(http.MethodPatch, "/", strings.NewReader(strings.Repeat("7", 4301)))
 	request.Header.Set("Content-Type", "application/octet-stream")
 	var value loom.JSONValue
-	err := djangoRequestDecoder(request).Decode(&value)
+	err := nativeRequestDecoder(request).Decode(&value)
 	var serviceErr *loom.ServiceError
 	if !errors.As(err, &serviceErr) || serviceErr.Name != loom.UnsupportedMediaType {
 		t.Fatalf("decode error = %v, want unsupported media type", err)
 	}
 }
 
-func TestDjangoRequestDecoderPreservesTextBody(t *testing.T) {
+func TestNativeRequestDecoderPreservesTextBody(t *testing.T) {
 	body := strings.Repeat("7", 4301)
 	request := httptest.NewRequest(http.MethodPatch, "/", strings.NewReader(body))
 	request.Header.Set("Content-Type", "text/plain")
 	var value string
-	if err := djangoRequestDecoder(request).Decode(&value); err != nil {
+	if err := nativeRequestDecoder(request).Decode(&value); err != nil {
 		t.Fatal(err)
 	}
 	if value != body {
@@ -156,24 +156,24 @@ func TestDjangoRequestDecoderPreservesTextBody(t *testing.T) {
 	}
 }
 
-func TestDjangoRequestDecoderLimitsDefaultAndParameterizedJSON(t *testing.T) {
+func TestNativeRequestDecoderLimitsDefaultAndParameterizedJSON(t *testing.T) {
 	for _, contentType := range []string{"", "application/json; charset=utf-8"} {
 		t.Run(contentType, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodPatch, "/", strings.NewReader(strings.Repeat("7", 4301)))
 			request.Header.Set("Content-Type", contentType)
 			var value loom.JSONValue
-			if err := djangoRequestDecoder(request).Decode(&value); err == nil {
+			if err := nativeRequestDecoder(request).Decode(&value); err == nil {
 				t.Fatal("oversized JSON integer was accepted")
 			}
 		})
 	}
 }
 
-func TestDjangoRequestDecoderPreservesEmptyBodyEOF(t *testing.T) {
+func TestNativeRequestDecoderPreservesEmptyBodyEOF(t *testing.T) {
 	request := httptest.NewRequest(http.MethodPatch, "/", nil)
 	request.Header.Set("Content-Type", "application/json")
 	var value loom.JSONValue
-	if err := djangoRequestDecoder(request).Decode(&value); !errors.Is(err, io.EOF) {
+	if err := nativeRequestDecoder(request).Decode(&value); !errors.Is(err, io.EOF) {
 		t.Fatalf("decode error = %v, want EOF", err)
 	}
 }

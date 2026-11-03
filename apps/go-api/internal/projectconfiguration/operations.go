@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/CaliLuke/go-plane/internal/labelhierarchy"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -311,11 +311,11 @@ func (r *Repository) deleteEstimatePoint(ctx context.Context, user, slug, projec
 		return nil, err
 	}
 	for _, issue := range issues {
-		requestedData, dumpsErr := pythoncompat.Dumps(map[string]any{"estimate_point": requested}, nil)
+		requestedData, dumpsErr := jsonvalue.Ordered(map[string]any{"estimate_point": requested}, nil)
 		if dumpsErr != nil {
 			return nil, dumpsErr
 		}
-		current, dumpsErr := pythoncompat.Dumps(map[string]any{"estimate_point": issue.CurrentPoint}, nil)
+		current, dumpsErr := jsonvalue.Ordered(map[string]any{"estimate_point": issue.CurrentPoint}, nil)
 		if dumpsErr != nil {
 			return nil, dumpsErr
 		}
@@ -340,7 +340,7 @@ func (r *Repository) deleteEstimatePoint(ctx context.Context, user, slug, projec
 	if err != nil {
 		return nil, err
 	}
-	data, err := djangoJSON(ctx, r.db, `SELECT COALESCE(jsonb_agg(jsonb_build_object('id',ep.id,'created_at',ep.created_at,'updated_at',ep.updated_at,'created_by',ep.created_by_id,'updated_by',ep.updated_by_id,'deleted_at',ep.deleted_at,'estimate',ep.estimate_id,'workspace',ep.workspace_id,'project',ep.project_id,'key',ep.key,'value',ep.value,'description',ep.description) ORDER BY ep.key),'[]'::jsonb) FROM estimate_points ep WHERE ep.estimate_id=$1 AND ep.project_id=$2 AND ep.workspace_id=(SELECT id FROM workspaces WHERE slug=$3) AND ep.deleted_at IS NULL`, estimateID, project, slug)
+	data, err := nativeJSON(ctx, r.db, `SELECT COALESCE(jsonb_agg(jsonb_build_object('id',ep.id,'created_at',ep.created_at,'updated_at',ep.updated_at,'created_by',ep.created_by_id,'updated_by',ep.updated_by_id,'deleted_at',ep.deleted_at,'estimate',ep.estimate_id,'workspace',ep.workspace_id,'project',ep.project_id,'key',ep.key,'value',ep.value,'description',ep.description) ORDER BY ep.key),'[]'::jsonb) FROM estimate_points ep WHERE ep.estimate_id=$1 AND ep.project_id=$2 AND ep.workspace_id=(SELECT id FROM workspaces WHERE slug=$3) AND ep.deleted_at IS NULL`, estimateID, project, slug)
 	return json.RawMessage(data), err
 }
 
@@ -357,7 +357,7 @@ func scanJSON(ctx context.Context, db database, query, id string) (json.RawMessa
 	}
 	return json.RawMessage(data), err
 }
-func djangoJSON(ctx context.Context, db database, query string, args ...any) ([]byte, error) {
+func nativeJSON(ctx context.Context, db database, query string, args ...any) ([]byte, error) {
 	var data []byte
 	err := db.QueryRow(ctx, query, args...).Scan(&data)
 	return data, err

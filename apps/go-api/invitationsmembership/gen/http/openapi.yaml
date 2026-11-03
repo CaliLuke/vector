@@ -1644,7 +1644,7 @@ components:
                     type: string
                     format: email
                 role:
-                    description: Invitation role. Project invitations accept canonical choices 5, 15, or 20; workspace invitations preserve Django integer coercion and the caller role cap.
+                    description: 'Invitation role: integer 5, 15, or 20, constrained by the inviter and existing workspace role.'
             required:
                 - email
         InvitationsMembershipHTTPError_855d3c76670f86d1:
@@ -2697,7 +2697,7 @@ components:
     securitySchemes:
         ApiKeyAuth:
             type: apiKey
-            description: Plane API token authentication.
+            description: Vector API token authentication.
             name: X-Api-Key
             in: header
         PlaneSessionCookie:

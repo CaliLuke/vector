@@ -3,7 +3,7 @@ package systemapi
 import (
 	"encoding/json"
 
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 )
 
 func normalizeJSONFields(fields map[string]json.RawMessage, names ...string) map[string][]string {
@@ -13,7 +13,7 @@ func normalizeJSONFields(fields map[string]json.RawMessage, names ...string) map
 		if !exists || len(raw) == 0 {
 			continue
 		}
-		normalized, err := pythoncompat.NormalizeJSONNumbers(raw)
+		normalized, err := jsonvalue.Validate(raw)
 		if err != nil {
 			if invalid == nil {
 				invalid = make(map[string][]string)

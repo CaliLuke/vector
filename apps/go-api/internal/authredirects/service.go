@@ -160,11 +160,11 @@ func (service *Service) EmailSignIn(ctx context.Context, request Request, app bo
 	if request.Email == "" || request.Password == "" {
 		return service.failure(request, 5070, "REQUIRED_EMAIL_PASSWORD_SIGN_IN", map[string]string{"email": request.Email})
 	}
-	email, ok := normalizeEmail(request.Email)
-	if !ok {
-		return service.failure(request, 5075, "INVALID_EMAIL_SIGN_IN", map[string]string{"email": strings.ToLower(strings.TrimSpace(request.Email))})
-	}
+	email := emailvalidation.Normalize(request.Email)
 	user, err := service.accounts.UserByEmail(ctx, email)
+	if errors.Is(err, accountauthentication.ErrUserNotFound) && !emailvalidation.Valid(email) {
+		return service.failure(request, 5075, "INVALID_EMAIL_SIGN_IN", map[string]string{"email": email})
+	}
 	if errors.Is(err, accountauthentication.ErrUserNotFound) {
 		return service.failure(request, 5060, "USER_DOES_NOT_EXIST", map[string]string{"email": email})
 	}
@@ -254,7 +254,7 @@ func (service *Service) EmailSignUp(ctx context.Context, request Request, app bo
 	return service.completeLogin(ctx, request, user, app, "email", false)
 }
 
-// ResetPassword verifies a Django password-reset token and follows the
+// ResetPassword verifies a versioned password-reset token and follows the
 // source app/space redirect behavior. A missing or malformed user identifier
 // is treated as an invalid reset token rather than exposing account existence.
 func (service *Service) ResetPassword(ctx context.Context, request Request) Result {
@@ -436,11 +436,11 @@ func (service *Service) AdminSignIn(ctx context.Context, request Request) Result
 	if request.Email == "" || request.Password == "" {
 		return service.failure(request, 5170, "REQUIRED_ADMIN_EMAIL_PASSWORD", map[string]string{"email": request.Email})
 	}
-	request.Email = emailvalidation.NormalizePythonEmail(request.Email)
-	if !emailvalidation.ValidDjangoEmail(request.Email) {
+	request.Email = emailvalidation.Normalize(request.Email)
+	user, err := service.accounts.UserByEmail(ctx, request.Email)
+	if errors.Is(err, accountauthentication.ErrUserNotFound) && !emailvalidation.Valid(request.Email) {
 		return service.failure(request, 5160, "INVALID_ADMIN_EMAIL", map[string]string{"email": request.Email})
 	}
-	user, err := service.accounts.UserByEmail(ctx, request.Email)
 	if errors.Is(err, accountauthentication.ErrUserNotFound) {
 		return service.failure(request, 5185, "ADMIN_USER_DOES_NOT_EXIST", map[string]string{"email": request.Email})
 	}
@@ -503,8 +503,8 @@ func (service *Service) AdminSignUp(ctx context.Context, request Request) Result
 			"company_name": request.CompanyName,
 		})
 	}
-	request.Email = emailvalidation.NormalizePythonEmail(request.Email)
-	if !emailvalidation.ValidDjangoEmail(request.Email) {
+	request.Email = emailvalidation.Normalize(request.Email)
+	if !emailvalidation.Valid(request.Email) {
 		return service.failure(request, 5160, "INVALID_ADMIN_EMAIL", map[string]string{
 			"email": request.Email, "first_name": request.FirstName, "last_name": request.LastName,
 			"company_name": request.CompanyName,
@@ -695,6 +695,6 @@ func (service *Service) baseRedirect(request Request) string {
 }
 
 func normalizeEmail(value string) (string, bool) {
-	value = emailvalidation.NormalizePythonEmail(value)
-	return value, value != "" && emailvalidation.ValidDjangoEmail(value)
+	value = emailvalidation.Normalize(value)
+	return value, value != "" && emailvalidation.Valid(value)
 }

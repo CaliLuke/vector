@@ -13,8 +13,14 @@ import (
 func TestMCPEstimateWaitRechecksAuthorizationBeforeWriteAndReplay(t *testing.T) {
 	for _, action := range []string{"create", "update", "delete", "link", "create_points", "update_point", "delete_point"} {
 		t.Run(action, func(t *testing.T) {
+			// Catalogue writes share admission; link uses the project mutation boundary.
+			changes := mutationCredentialChanges()
+			if action == "create" || action == "link" {
+				changes = nil
+			}
 			runMutationAuthorizationWait(t, mutationWaitScenario{
-				tool: "project_estimate", fixture: func(t *testing.T) milestoneFixture {
+				changes: changes,
+				tool:    "project_estimate", fixture: func(t *testing.T) milestoneFixture {
 					f := newMilestoneFixture(t)
 					_, err := f.pool.Exec(t.Context(), `UPDATE workspace_members SET role=20; UPDATE project_members SET role=20`)
 					require.NoError(t, err)

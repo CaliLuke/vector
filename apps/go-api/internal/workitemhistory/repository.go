@@ -11,11 +11,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/requestinput"
+
 	"github.com/CaliLuke/go-plane/internal/datetime"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -274,7 +275,7 @@ func parseCursor(raw *string) (cursorPage, error) {
 	}
 	values := make([]*big.Int, len(parts))
 	for index, part := range parts {
-		value, err := pythoncompat.DecimalInteger(part)
+		value, err := requestinput.IntegerField(part)
 		if err != nil {
 			return cursorPage{}, invalidCursor()
 		}

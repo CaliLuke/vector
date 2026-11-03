@@ -10,9 +10,6 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
-	"github.com/CaliLuke/go-plane/internal/bootstrap"
-	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/require"
@@ -20,10 +17,9 @@ import (
 
 func TestPublicVotesCommitMembershipAndEffectsAtomically(t *testing.T) {
 	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, bootstrap.MigrateSchema)
-	require.NoError(t, err)
-	t.Cleanup(func() { testsupport.Close(t, pair) })
-	db, err := pgxpool.New(ctx, pair.SeedURL())
+	pairURL := migratedDatabases.SeedDatabase(t, func(context.Context, string) error { return nil })
+
+	db, err := pgxpool.New(ctx, pairURL)
 	require.NoError(t, err)
 	t.Cleanup(db.Close)
 	actor, workspace, project, issue := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()

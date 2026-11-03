@@ -13,7 +13,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
@@ -240,11 +240,11 @@ func (r *Repository) issueDates(ctx context.Context, q Request, body io.Reader, 
 	for _, change := range activities {
 		local := q
 		local.IssueID = change.issueID
-		data, dumpErr := pythoncompat.Dumps(map[string]any{change.field: change.value}, nil)
+		data, dumpErr := jsonvalue.Ordered(map[string]any{change.field: change.value}, nil)
 		if dumpErr != nil {
 			return Result{}, dumpErr
 		}
-		previous, dumpErr := pythoncompat.Dumps(map[string]any{change.field: requestinput.ScalarString(change.previous)}, nil)
+		previous, dumpErr := jsonvalue.Ordered(map[string]any{change.field: requestinput.ScalarString(change.previous)}, nil)
 		if dumpErr != nil {
 			return Result{}, dumpErr
 		}

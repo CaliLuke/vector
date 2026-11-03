@@ -1,7 +1,6 @@
 package cyclereads
 
 import (
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
@@ -97,7 +96,7 @@ func ValidateCreateInput(fields map[string]any, apiV1 bool) (CycleCreate, map[st
 			}
 		}
 		if value, present := fields["version"]; present {
-			integer, err := pythoncompat.DecimalInteger(requestinput.ScalarString(value))
+			integer, err := requestinput.IntegerField(requestinput.ScalarString(value))
 			if err != nil || !integer.IsInt64() {
 				errorsByField["version"] = []string{"A valid integer is required."}
 			} else if number := integer.Int64(); number < -2147483648 || number > 2147483647 {
@@ -194,7 +193,7 @@ func ValidatePatchInput(fields map[string]any, apiV1 bool) (map[string]any, map[
 			}
 			validated[key] = owner.String()
 		case "version":
-			integer, err := pythoncompat.DecimalInteger(requestinput.ScalarString(value))
+			integer, err := requestinput.IntegerField(requestinput.ScalarString(value))
 			if err != nil || !integer.IsInt64() {
 				errorsByField[key] = []string{"A valid integer is required."}
 				continue

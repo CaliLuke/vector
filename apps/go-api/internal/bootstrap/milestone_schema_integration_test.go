@@ -10,7 +10,6 @@ import (
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/bootstrap"
-	"github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/require"
@@ -27,13 +26,17 @@ func newMilestoneSchemaFixture(t *testing.T) milestoneSchemaFixture {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	t.Cleanup(cancel)
-	pair, err := postgres.StartUncloned(ctx, bootstrap.MigrateSchema)
+	database, err := migratedSchema.CloneDatabase(ctx)
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, pair.Close()) })
-	db, err := pgx.Connect(ctx, pair.SeedURL())
+	t.Cleanup(func() {
+		cleanup, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		require.NoError(t, database.Close(cleanup))
+	})
+	db, err := pgx.Connect(ctx, database.URL)
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, db.Close(context.WithoutCancel(ctx))) })
-	f := milestoneSchemaFixture{ctx: ctx, db: db, url: pair.SeedURL(), workspace: uuid.New().String(), project: uuid.New().String(), otherProject: uuid.New().String(), milestone: uuid.New().String(), otherMilestone: uuid.New().String(), item: uuid.New().String()}
+	f := milestoneSchemaFixture{ctx: ctx, db: db, url: database.URL, workspace: uuid.New().String(), project: uuid.New().String(), otherProject: uuid.New().String(), milestone: uuid.New().String(), otherMilestone: uuid.New().String(), item: uuid.New().String()}
 	owner := uuid.New().String()
 	f.exec(t, `INSERT INTO users(id,username,email,password,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,token,user_timezone,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,display_name,is_email_valid,is_password_reset_required) VALUES($1::uuid,$1::text,$1::text||'@example.test','!','','','',now(),now(),now(),'','',false,false,false,true,false,true,false,'','UTC','','','','',false,'Milestones',true,false)`, owner)
 	f.exec(t, `INSERT INTO workspaces(id,name,owner_id,slug,timezone,background_color,created_at,updated_at) VALUES($1,'Milestones',$2,'milestones','UTC','',now(),now())`, f.workspace, owner)

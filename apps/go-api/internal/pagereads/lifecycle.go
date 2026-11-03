@@ -10,11 +10,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/jackc/pgx/v5"
@@ -372,16 +374,11 @@ func pageLifecycleDatabaseError(err error) error {
 }
 
 func lifecycleChoice(value any) (int, bool) {
-	// DRF ChoiceField compares the Python string spelling with its choices;
-	// an integral-looking JSON float is still "0.0", not choice "0".
-	switch requestinput.ScalarString(value) {
-	case "0":
-		return 0, true
-	case "1":
-		return 1, true
-	default:
+	number, err := requestinput.IntegerField(value)
+	if err != nil || !number.IsInt64() || number.Int64() < 0 || number.Int64() > 1 {
 		return 0, false
 	}
+	return int(number.Int64()), true
 }
 
 func lifecycleChoiceMessage(value any) string {
@@ -461,59 +458,17 @@ func lifecycleJSONFieldMessage(err error) string {
 }
 
 func lifecycleBoolean(value any) (bool, bool) {
-	text := strings.ToLower(requestinput.ScalarString(value))
-	switch text {
-	case "true", "t", "yes", "y", "on", "1":
-		return true, true
-	case "false", "f", "no", "n", "off", "0":
-		return false, true
-	default:
-		if number, ok := value.(json.Number); ok {
-			if parsed, err := number.Float64(); err == nil {
-				if parsed == 1 {
-					return true, true
-				}
-				if parsed == 0 {
-					return false, true
-				}
-			}
-		}
-		return false, false
-	}
+	boolean, message := requestinput.BooleanField(value)
+	return boolean, message == ""
 }
 
 func lifecycleRawAccessChanged(raw any, state pageLifecycleState, user uuid.UUID) bool {
 	if state.ownerID == user {
 		return false
 	}
-	// Python compares the raw request value with the model integer before
-	// ChoiceField coercion. Numeric JSON values compare equal (including bool,
-	// which is an int subclass in Python); strings never equal the integer.
-	switch value := raw.(type) {
-	case string, nil:
-		return true
-	case bool:
-		return (value && state.access != 1) || (!value && state.access != 0)
-	case json.Number:
-		number, err := value.Float64()
-		return err != nil || number != float64(state.access)
-	case float64:
-		return value != float64(state.access)
-	case float32:
-		return float64(value) != float64(state.access)
-	case int:
-		return value != state.access
-	case int8:
-		return int(value) != state.access
-	case int16:
-		return int(value) != state.access
-	case int32:
-		return int(value) != state.access
-	case int64:
-		return value != int64(state.access)
-	default:
-		return true
-	}
+	// Compare the validated access value; its JSON/form spelling is irrelevant.
+	access, valid := lifecycleChoice(raw)
+	return !valid || access != state.access
 }
 
 func validatePageLifecycleFields(input requestinput.Input) (map[string]any, map[string]any, lifecycleLabelList) {
@@ -587,7 +542,7 @@ func validatePageLifecycleFields(input requestinput.Input) (map[string]any, map[
 			values["archived_at"] = nil
 		} else if date, ok := value.(string); !ok {
 			errorsByField["archived_at"] = []string{"Date has wrong format. Use one of these formats instead: YYYY-MM-DD."}
-		} else if _, err := time.Parse(time.DateOnly, date); err != nil {
+		} else if _, err := datetime.Date(date); err != nil {
 			errorsByField["archived_at"] = []string{"Date has wrong format. Use one of these formats instead: YYYY-MM-DD."}
 		} else {
 			values["archived_at"] = date
@@ -684,7 +639,7 @@ func (repository *Repository) updatePageDescription(ctx context.Context, db life
 				return 0, nil, err
 			}
 		}
-		existing, _ := pythoncompat.Dumps(map[string]any{"description_html": oldHTML}, nil)
+		existing, _ := jsonvalue.Ordered(map[string]any{"description_html": oldHTML}, nil)
 		if err := repository.admitPageVersion(ctx, page.String(), existing, user.String()); err != nil {
 			return 0, nil, err
 		}
@@ -783,8 +738,8 @@ SELECT json_build_object(
   ),
   'is_locked', page.is_locked, 'archived_at', page.archived_at,
   'workspace', page.workspace_id,
-	  'created_at', ` + djangoDateTimeSQL("page.created_at", "$5") + `,
-	  'updated_at', ` + djangoDateTimeSQL("page.updated_at", "$5") + `,
+	  'created_at', ` + nativeDateTimeSQL("page.created_at", "$5") + `,
+	  'updated_at', ` + nativeDateTimeSQL("page.updated_at", "$5") + `,
   'created_by', page.created_by_id, 'updated_by', page.updated_by_id,
   'view_props', page.view_props, 'logo_props', page.logo_props,
   'label_ids', COALESCE((

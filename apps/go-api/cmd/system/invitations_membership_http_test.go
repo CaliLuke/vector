@@ -9,7 +9,7 @@ import (
 )
 
 func TestReadServiceMalformedSlashlessPathsKeepResolver404(t *testing.T) {
-	policy, err := djangoRuntimeCORSPolicy(nil)
+	policy, err := nativeRuntimeCORSPolicy(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +31,7 @@ func TestReadServiceMalformedSlashlessPathsKeepResolver404(t *testing.T) {
 		{"/api/workspaces/demo/invitations/00000000-0000-4000-8000-00000000abcd", 204, false},
 	} {
 		t.Run(test.path, func(t *testing.T) {
-			handler := readServicesDjangoPathConverterMiddleware(policy, &apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit})(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(204) }))
+			handler := readServicesNativePathConverterMiddleware(policy, &apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit})(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(204) }))
 			response := httptest.NewRecorder()
 			handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, test.path, nil))
 			if response.Code != test.status {

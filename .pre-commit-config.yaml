@@ -1,4 +1,5 @@
 minimum_prek_version: "0.5.7"
+fail_fast: true
 repos:
   - repo: local
     hooks:
@@ -21,7 +22,7 @@ repos:
         stages: [pre-commit]
         groups: [fast, typescript]
       - id: vector-typescript-full
-        priority: 20
+        priority: 30
         name: TypeScript full gates
         entry: ./check.sh --typescript --full
         language: system
@@ -30,7 +31,7 @@ repos:
         stages: [pre-push, manual]
         groups: [full, ci, typescript]
       - id: vector-go-full
-        priority: 30
+        priority: 20
         name: Go full gates
         entry: ./check.sh --go --full
         language: system

@@ -14,7 +14,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/datetime"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5"
 )
@@ -243,11 +243,11 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 		return nil, scanErr
 	}
 	var updated map[string]any
-	updated, err = pythoncompat.DecodeObject(raw)
+	updated, err = jsonvalue.DecodeObject(raw)
 	if err != nil {
 		return nil, err
 	}
-	current, err := pythonCycleCurrentInstance(currentInstance, api)
+	current, err := nativeCycleCurrentInstance(currentInstance, api)
 	if err != nil {
 		return nil, err
 	}
@@ -488,7 +488,7 @@ func timestampValue(value any) *time.Time {
 	return &parsed
 }
 
-func pythonCycleCurrentInstance(cycle map[string]any, api bool) (string, error) {
+func nativeCycleCurrentInstance(cycle map[string]any, api bool) (string, error) {
 	order := []string{"id", "created_at", "updated_at", "deleted_at", "name", "description", "start_date", "end_date", "sub_issues", "view_props", "sort_order", "external_source", "external_id", "progress_snapshot", "archived_at", "logo_props", "timezone", "version", "created_by", "updated_by", "project", "workspace", "owned_by"}
 	if !api {
 		order = []string{"id", "workspace_id", "project_id", "name", "description", "start_date", "end_date", "owned_by_id", "view_props", "sort_order", "external_source", "external_id", "progress_snapshot", "logo_props", "is_favorite", "total_issues", "cancelled_issues", "completed_issues", "status"}
@@ -515,7 +515,7 @@ func pythonCycleCurrentInstance(cycle map[string]any, api bool) (string, error) 
 		skeleton.WriteString(":null")
 	}
 	skeleton.WriteByte('}')
-	return pythoncompat.Dumps(projection, []byte(skeleton.String()))
+	return jsonvalue.Ordered(projection, []byte(skeleton.String()))
 }
 
 func (repository *LifecycleRepository) Cycle(ctx context.Context, slug, projectID, cycleID string) (CycleLifecycleResource, error) {
@@ -805,7 +805,7 @@ func parseCycleDate(value *string, zone string, start bool) (*time.Time, error) 
 		var location *time.Location
 		location, err = time.LoadLocation(zone)
 		if err == nil {
-			date, parseErr := time.Parse("2006-01-02", *value)
+			date, parseErr := datetime.Parse(*value, time.UTC)
 			err = parseErr
 			if err == nil {
 				hour, minute, second := 23, 59, 0

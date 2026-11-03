@@ -9,8 +9,6 @@ import (
 	"testing"
 	"time"
 
-	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -49,7 +47,7 @@ func (tr *rollbackContextTracer) TraceQueryEnd(ctx context.Context, _ *pgx.Conn,
 }
 
 func TestConfigurationFailureRollsBackAfterCallerCancellation(t *testing.T) {
-	pair, err := postgresfixture.StartUncloned(t.Context(), func(ctx context.Context, url string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, url string) error {
 		pool, err := pgxpool.New(ctx, url)
 		if err != nil {
 			return err
@@ -58,11 +56,8 @@ func TestConfigurationFailureRollsBackAfterCallerCancellation(t *testing.T) {
 		_, err = pool.Exec(ctx, `CREATE TABLE instance_configurations(id uuid PRIMARY KEY,key text,value text,category text,is_encrypted boolean,deleted_at timestamptz); INSERT INTO instance_configurations VALUES('00000000-0000-4000-8000-000000000001','SECRET','original','email',true,NULL)`)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testsupport.Close(t, pair)
-	config, err := pgxpool.ParseConfig(pair.SeedURL())
+
+	config, err := pgxpool.ParseConfig(pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

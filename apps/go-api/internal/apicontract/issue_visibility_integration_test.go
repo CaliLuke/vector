@@ -9,7 +9,6 @@ import (
 	"time"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -20,12 +19,9 @@ func visibilityDatabase(t *testing.T) (context.Context, *pgx.Conn, string, map[s
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	t.Cleanup(cancel)
-	pair, err := postgresfixture.StartUncloned(ctx, func(context.Context, string) error { return nil })
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { testsupport.Close(t, pair) })
-	db, err := pgx.Connect(ctx, pair.SeedURL())
+	pairURL := suiteDatabases.SeedDatabase(t, func(context.Context, string) error { return nil })
+
+	db, err := pgx.Connect(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

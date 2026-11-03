@@ -11,7 +11,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/google/uuid"
@@ -148,7 +148,7 @@ func (repository *Repository) publicIntakeCreate(ctx context.Context, scope Publ
 		return Result{}, err
 	}
 	q := Request{ProjectID: scope.ProjectID, Slug: scope.WorkspaceSlug, ActorID: actorID, IssueID: row["id"].(string)}
-	requested, err := pythoncompat.Dumps(input.Fields, input.Raw)
+	requested, err := jsonvalue.Ordered(input.Fields, input.Raw)
 	if err != nil {
 		return Result{}, err
 	}
@@ -251,7 +251,7 @@ func (repository *Repository) publicIntakeUpdate(ctx context.Context, scope Publ
 	if unmarshalErr := json.Unmarshal(input.Raw, &rawFields); unmarshalErr != nil {
 		return Result{}, unmarshalErr
 	}
-	requested, err := pythoncompat.Dumps(issueData, rawFields["issue"])
+	requested, err := jsonvalue.Ordered(issueData, rawFields["issue"])
 	if err != nil {
 		return Result{}, err
 	}
@@ -335,11 +335,6 @@ var publicIssueActivityOrder = strings.Fields("id name state_id sort_order compl
 
 func publicIssueActivitySnapshot(row map[string]any) map[string]any {
 	sortOrder := row["sort_order"]
-	if number, ok := sortOrder.(json.Number); ok {
-		if value, err := number.Float64(); err == nil {
-			sortOrder = json.Number(pythoncompat.FloatString(value))
-		}
-	}
 	return map[string]any{
 		"id": row["id"], "name": row["name"], "state_id": row["state_id"], "sort_order": sortOrder,
 		"completed_at": row["completed_at"], "estimate_point": row["estimate_point_id"], "priority": row["priority"],

@@ -181,8 +181,10 @@ func (s *accountAuthenticationService) emailCheck(ctx context.Context, contentTy
 	if !ok || !authenticationTruthy(emailValue) {
 		return nil, nil, s.failure(400, authAuthenticationBody(5010, "EMAIL_REQUIRED", nil))
 	}
-	email := emailvalidation.NormalizePythonEmail(authenticationString(emailValue))
-	if !emailvalidation.ValidDjangoEmail(email) {
+	email := emailvalidation.Normalize(authenticationString(emailValue))
+	if valid, validationErr := s.validAccountEmail(ctx, email); validationErr != nil {
+		return nil, nil, s.internal()
+	} else if !valid {
 		return nil, nil, s.failure(400, authAuthenticationBody(5005, "INVALID_EMAIL", nil))
 	}
 	user, userErr := s.repository.UserByEmail(ctx, email)
@@ -220,8 +222,10 @@ func (s *accountAuthenticationService) forgotPassword(ctx context.Context, conte
 	if err != nil {
 		return nil, nil, s.inputFailure(err)
 	}
-	email := authenticationString(input.Fields["email"])
-	if !emailvalidation.ValidDjangoEmail(email) {
+	email := emailvalidation.Normalize(authenticationString(input.Fields["email"]))
+	if valid, validationErr := s.validAccountEmail(ctx, email); validationErr != nil {
+		return nil, nil, s.internal()
+	} else if !valid {
 		return nil, nil, s.failure(400, authAuthenticationBody(5005, "INVALID_EMAIL", nil))
 	}
 	mailHost, err := s.repository.ConfigValue(ctx, "EMAIL_HOST", "")
@@ -267,8 +271,10 @@ func (s *accountAuthenticationService) magicGenerate(ctx context.Context, conten
 	if err != nil {
 		return nil, nil, s.inputFailure(err)
 	}
-	email := emailvalidation.NormalizePythonEmail(authenticationString(input.Fields["email"]))
-	if !emailvalidation.ValidDjangoEmail(email) {
+	email := emailvalidation.Normalize(authenticationString(input.Fields["email"]))
+	if valid, validationErr := s.validAccountEmail(ctx, email); validationErr != nil {
+		return nil, nil, s.internal()
+	} else if !valid {
 		return nil, nil, s.failure(400, authAuthenticationBody(5005, "INVALID_EMAIL", nil))
 	}
 	mailHost, err := s.repository.ConfigValue(ctx, "EMAIL_HOST", "")
@@ -518,3 +524,15 @@ func authenticationString(value any) string {
 	return ""
 }
 func authenticationTruthy(value any) bool { return requestinput.Nonempty(value) }
+
+// Existing identities stay reachable when the registration grammar changes.
+func (s *accountAuthenticationService) validAccountEmail(ctx context.Context, email string) (bool, error) {
+	if emailvalidation.Valid(email) {
+		return true, nil
+	}
+	user, err := s.repository.UserByEmail(ctx, email)
+	if errors.Is(err, store.ErrUserNotFound) {
+		return false, nil
+	}
+	return err == nil && user.ID != "", err
+}

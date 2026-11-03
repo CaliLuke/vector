@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -58,7 +57,7 @@ INSERT INTO labels (id,parent_id,project_id,workspace_id,deleted_at) VALUES
 
 func labelHierarchyFixture(t *testing.T) (context.Context, *pgx.Conn) {
 	t.Helper()
-	return postgresfixture.OpenSQL(t, labelHierarchySchema)
+	return suiteDatabases.OpenSQL(t, labelHierarchySchema)
 }
 
 func TestLockProjectAndValidateParentEnforceScopeAndAncestry(t *testing.T) {

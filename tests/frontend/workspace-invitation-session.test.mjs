@@ -15,7 +15,7 @@ const stubs = {
   "@/components/common/logo-spinner": `const React = globalThis.workspaceInvitationSessionReact; export const LogoSpinner = () => React.createElement("div", null, "Loading");`,
   "@/components/ui/empty-space": `const React = globalThis.workspaceInvitationSessionReact;
     export const EmptySpace = ({children, title}) => React.createElement("section", null, React.createElement("h1", null, title), children);
-    export const EmptySpaceItem = ({title, action}) => React.createElement("button", {type:"button", onClick:action}, title);`,
+    export const EmptySpaceItem = ({title, action, href}) => href ? React.createElement("a", {href}, title) : React.createElement("button", {type:"button", onClick:action}, title);`,
   "@/lib/wrappers/authentication-wrapper": `const React = globalThis.workspaceInvitationSessionReact; export const AuthenticationWrapper = ({children}) => React.createElement(React.Fragment, null, children);`,
 };
 registerHooks({
@@ -229,4 +229,18 @@ await test("accepted membership refreshes its catalogue even after the invitatio
   await act(async () => waitForElementText(environment.container, "#workspace-catalogue", JSON.stringify([workspace])));
   assert.deepEqual(client.getQueryData(catalogue.workspaceKeys.list(user.id)), [workspace]);
   assert.equal(catalogueReads, 2);
+});
+
+await test("signed-out invitees log in before responding and retain the invitation link", async (t) => {
+  const { environment, client, router, render, WorkspaceService, identity } = await createInvitationSession(t);
+  client.setQueryData(identity.identityKeys.currentUser(), null);
+  const join = t.mock.method(WorkspaceService.prototype, "joinWorkspace", async () => {});
+  await render();
+  await act(async () => {});
+  const link = environment.container.querySelector("a");
+  assert.equal(link?.textContent, "Sign in to respond");
+  const destination = new URL(link.getAttribute("href"), "http://localhost");
+  assert.equal(destination.searchParams.get("next_path"), router.state.location.href);
+  assert.equal(environment.container.querySelector("button"), null);
+  assert.equal(join.mock.callCount(), 0);
 });

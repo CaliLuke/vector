@@ -5,7 +5,7 @@ Use Vector in product copy. Keep compatibility identifiers unless a change expli
 Django compatibility is no longer required. MCP supports only revision `2026-07-28`; do not add legacy handshakes or revision matrices.
 Run credential-neutral domain checks once. Use credential matrices for authentication and authorization interactions, plus generated action smoke coverage.
 
-Read `docs/development.md` for commands and `docs/architecture.md` for source boundaries.
+Read `docs/development.md` for local workflow exceptions and `docs/architecture.md` for source boundaries.
 Store local test-account credentials in ignored `.env.test.local` with mode 0600.
 Check that file before asking for credentials. Never print or commit credentials.
 

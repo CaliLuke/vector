@@ -49,7 +49,27 @@ func OpenSQL(t testing.TB, schema string) (context.Context, *pgx.Conn) {
 			t.Errorf("close fixture: %v", closeErr)
 		}
 	})
-	connection, err := pgx.Connect(ctx, pair.SeedURL())
+	return ctx, openSQLConnection(t, ctx, pair.SeedURL())
+}
+
+// OpenSQL gives a test an independent clone, applies its additional schema or
+// seed, and closes the connection before dropping the clone. Close the template
+// in TestMain after all tests have finished.
+func (template *Template) OpenSQL(t testing.TB, schema string) (context.Context, *pgx.Conn) {
+	t.Helper()
+	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
+	t.Cleanup(cancel)
+	address := template.SeedDatabase(t, func(context.Context, string) error { return nil })
+	connection := openSQLConnection(t, ctx, address)
+	if _, err := connection.Exec(ctx, schema); err != nil {
+		t.Fatal(err)
+	}
+	return ctx, connection
+}
+
+func openSQLConnection(t testing.TB, ctx context.Context, address string) *pgx.Conn {
+	t.Helper()
+	connection, err := pgx.Connect(ctx, address)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,5 +78,29 @@ func OpenSQL(t testing.TB, schema string) (context.Context, *pgx.Conn) {
 			t.Errorf("close fixture connection: %v", closeErr)
 		}
 	})
-	return ctx, connection
+	return connection
+}
+
+// SeedDatabase owns an independent clone and runs the caller's seed only in that
+// clone. Register template.Close in TestMain; individual tests own their connections.
+func (template *Template) SeedDatabase(t testing.TB, migrate SeedMigration) string {
+	t.Helper()
+	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
+	defer cancel()
+	database, err := template.CloneDatabase(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		cleanup, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		if closeErr := database.Close(cleanup); closeErr != nil {
+			t.Errorf("close template clone: %v", closeErr)
+		}
+	})
+
+	if err := migrate(ctx, database.URL); err != nil {
+		t.Fatal(err)
+	}
+	return database.URL
 }

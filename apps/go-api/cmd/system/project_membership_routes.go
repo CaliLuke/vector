@@ -77,14 +77,14 @@ func mountProjectMembershipReadsProtocolRoutes(
 			mux,
 			http.MethodHead,
 			route.path,
-			djangoProtocolHeadHandler(projectMembershipReadsCompatibilityMiddleware, route.get),
+			nativeProtocolHeadHandler(projectMembershipReadsCompatibilityMiddleware, route.get),
 		)
 		if route.mountOptions {
 			mountProtocolHandler(
 				mux,
 				http.MethodOptions,
 				route.path,
-				djangoReadOnlyOptionsHandler(
+				nativeReadOnlyOptionsHandler(
 					mux,
 					projectMembershipReadsCompatibilityMiddleware,
 					route.name,
@@ -131,7 +131,7 @@ func (writer *projectMembershipReadsResponseWriter) Write(body []byte) (int, err
 	}
 	if writer.jsonIndent > 0 {
 		var indented bytes.Buffer
-		if err := json.Indent(&indented, djangoJSONColonSpacing(body), "", strings.Repeat(" ", writer.jsonIndent)); err == nil {
+		if err := json.Indent(&indented, nativeJSONColonSpacing(body), "", strings.Repeat(" ", writer.jsonIndent)); err == nil {
 			body = indented.Bytes()
 		}
 	}
@@ -170,12 +170,9 @@ func projectMembershipReadsCompatibilityMiddleware(next http.Handler) http.Handl
 				return
 			}
 		}
-		accept, acceptPresent := djangoRequestAcceptHeader(request)
-		acceptsJSON, jsonIndent, negotiationErr := projectMembershipReadsJSONNegotiation(accept, acceptPresent)
-		if negotiationErr != nil {
-			writeDjangoAPIViewServerError(response, request)
-			return
-		}
+		accept, acceptPresent := nativeRequestAcceptHeader(request)
+		acceptsJSON, jsonIndent := projectMembershipReadsJSONNegotiation(accept, acceptPresent)
+
 		if !acceptsJSON {
 			headers.Set("Content-Type", "application/json")
 			writeProjectMembershipReadsJSON(response, request, http.StatusNotAcceptable, map[string]string{

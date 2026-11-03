@@ -15,7 +15,6 @@ import (
 	"github.com/CaliLuke/go-plane/internal/instancecipher"
 	oauth "github.com/CaliLuke/go-plane/internal/mcpoauth"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	"github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -30,7 +29,7 @@ func linkDatabase(t *testing.T) *pgxpool.Pool {
 	}
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	defer cancel()
-	pair, err := postgres.StartUncloned(ctx, func(seedContext context.Context, connection string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(seedContext context.Context, connection string) error {
 		db, connectErr := pgx.Connect(seedContext, connection)
 		if connectErr != nil {
 			return connectErr
@@ -40,15 +39,8 @@ func linkDatabase(t *testing.T) *pgxpool.Pool {
 INSERT INTO users VALUES ('10000000-0000-4000-8000-000000000001',true,false,'UTC'),('10000000-0000-4000-8000-000000000002',true,false,'UTC');`+string(linkSchema))
 		return seedErr
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if closeErr := pair.Close(); closeErr != nil {
-			t.Error(closeErr)
-		}
-	})
-	connection := pair.SeedURL()
+
+	connection := pairURL
 	config, err := pgxpool.ParseConfig(connection)
 	if err != nil {
 		t.Fatal(err)

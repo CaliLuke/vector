@@ -10,7 +10,6 @@ import (
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/database"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -18,17 +17,9 @@ func TestPostgresMembershipScopeForEveryStickyOperation(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 
-	pair, err := postgresfixture.Start(ctx, createMembershipTestSchema)
-	if err != nil {
-		t.Fatalf("start PostgreSQL fixture: %v", err)
-	}
-	t.Cleanup(func() {
-		if closeErr := pair.Close(); closeErr != nil {
-			t.Errorf("close PostgreSQL fixture: %v", closeErr)
-		}
-	})
+	pairURL := suiteDatabases.SeedDatabase(t, createMembershipTestSchema)
 
-	configuration, err := pgxpool.ParseConfig(pair.SourceURL)
+	configuration, err := pgxpool.ParseConfig(pairURL)
 	if err != nil {
 		t.Fatalf("parse PostgreSQL configuration: %v", err)
 	}

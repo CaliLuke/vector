@@ -7,13 +7,12 @@ import (
 	"testing"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
 func TestGroupedLabelSubgroupUniverseExcludesPrivateProjectLabels(t *testing.T) {
 	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, databaseURL string) error {
 		connection, err := pgx.Connect(ctx, databaseURL)
 		if err != nil {
 			return err
@@ -47,12 +46,8 @@ INSERT INTO issue_labels (issue_id, label_id) VALUES
 `)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { testsupport.Close(t, pair) })
 
-	connection, err := pgx.Connect(ctx, pair.SeedURL())
+	connection, err := pgx.Connect(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

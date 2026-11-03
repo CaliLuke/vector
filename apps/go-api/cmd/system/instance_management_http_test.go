@@ -188,7 +188,7 @@ func TestInstanceManagementAnonymousThrottleRequestSelection(t *testing.T) {
 	}
 }
 
-func TestInstanceManagementPlainRedirectProtocolMatchesDjangoHeaders(t *testing.T) {
+func TestInstanceManagementPlainRedirectProtocolMatchesNativeHeaders(t *testing.T) {
 	handler := readServicesCompatibilityMiddleware(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 		response.WriteHeader(http.StatusFound)
 	}))
@@ -213,7 +213,7 @@ func TestInstanceManagementPlainRedirectProtocolMatchesDjangoHeaders(t *testing.
 	}
 }
 
-func TestInstanceManagementAdminRedirectUsesPlainDjangoGzipContract(t *testing.T) {
+func TestInstanceManagementAdminRedirectUsesPlainNativeGzipContract(t *testing.T) {
 	handler := readServicesGzipMiddleware(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 		testsupport.Write(t, response, []byte(strings.Repeat("x", 300)))
 	}))

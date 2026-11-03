@@ -9,7 +9,7 @@ import (
 )
 
 func standardViewsCompatibilityMiddleware(next http.Handler) http.Handler {
-	return djangoProtocolCompatibilityMiddleware(func(path string) string {
+	return nativeProtocolCompatibilityMiddleware(func(path string) string {
 		if strings.HasSuffix(strings.TrimSuffix(path, "/"), "/views") {
 			return "GET, POST, HEAD, OPTIONS"
 		}
@@ -29,14 +29,14 @@ func mountStandardViewsProtocolRoutes(mux loomhttp.Muxer, server *standardviewss
 		{"/api/workspaces/{slug}/views/{pk}/", "Workspace View Endpoint", server.RetrieveWorkspace},
 	}
 	for _, route := range routes {
-		mountProtocolHandler(mux, http.MethodHead, route.path, djangoProtocolHeadHandler(standardViewsCompatibilityMiddleware, route.get))
-		mountProtocolHandler(mux, http.MethodOptions, route.path, djangoProtocolOptionsHandler(standardViewsCompatibilityMiddleware, route.name, strings.Contains(route.path, "{pk}")))
+		mountProtocolHandler(mux, http.MethodHead, route.path, nativeProtocolHeadHandler(standardViewsCompatibilityMiddleware, route.get))
+		mountProtocolHandler(mux, http.MethodOptions, route.path, nativeProtocolOptionsHandler(standardViewsCompatibilityMiddleware, route.name, strings.Contains(route.path, "{pk}")))
 	}
 }
 
 func mountStandardViewsRoutes(pending pendingReplacementEndpoints, mux loomhttp.Muxer) {
 	if pending.standardViews != nil {
-		server := standardviewssvr.New(pending.standardViews, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
+		server := standardviewssvr.New(pending.standardViews, mux, nativeRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 		server.Use(standardViewsCompatibilityMiddleware)
 		standardviewssvr.Mount(mux, server)
 		mountStandardViewsProtocolRoutes(mux, server)

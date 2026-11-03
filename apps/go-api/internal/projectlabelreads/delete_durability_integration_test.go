@@ -11,8 +11,6 @@ import (
 	"strings"
 	"testing"
 
-	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -21,14 +19,7 @@ const deleteActor = "00000000-0000-4000-8000-000000000003"
 
 func labelDeletionFixture(t *testing.T) *pgx.Conn {
 	t.Helper()
-	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
-		db, err := pgx.Connect(ctx, databaseURL)
-		if err != nil {
-			return err
-		}
-		defer func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) }()
-		_, err = db.Exec(ctx, `
+	_, db := labelDatabases.OpenSQL(t, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL);
 CREATE TABLE projects (id uuid PRIMARY KEY, workspace_id uuid NOT NULL);
 CREATE TABLE project_members (project_id uuid NOT NULL, member_id uuid NOT NULL);
@@ -42,17 +33,6 @@ INSERT INTO project_members VALUES ('11111111-1111-4111-8111-111111111111', '000
 INSERT INTO labels(id,name,color,project_id,workspace_id,sort_order) VALUES
  ('22222222-2222-4222-8222-222222222222', 'Parent', '#ff0000', '11111111-1111-4111-8111-111111111111', '00000000-0000-4000-8000-000000000001', 10);
 `)
-		return err
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { testsupport.Close(t, pair) })
-	db, err := pgx.Connect(ctx, pair.SeedURL())
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) })
 	return db
 }
 

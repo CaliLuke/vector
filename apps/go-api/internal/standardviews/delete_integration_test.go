@@ -10,7 +10,6 @@ import (
 	"uuid"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -100,12 +99,9 @@ func TestDeleteViewCleansScopedReferences(t *testing.T) {
 func deleteViewDatabase(t *testing.T) *pgx.Conn {
 	t.Helper()
 	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, seedMutationValidation)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { testsupport.Close(t, pair) })
-	connection, err := pgx.Connect(ctx, pair.SeedURL())
+	pairURL := suiteDatabases.SeedDatabase(t, seedMutationValidation)
+
+	connection, err := pgx.Connect(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

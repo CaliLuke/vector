@@ -5,12 +5,10 @@ package projectconfiguration
 import (
 	"encoding/json"
 	"testing"
-
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 )
 
 func TestEstimateSystemDeletionPreservesOtherPointerAndCommitsCleanup(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, `
+	ctx, connection := suiteDatabases.OpenSQL(t, `
 CREATE TABLE workspaces(id uuid PRIMARY KEY,slug text);
 CREATE TABLE projects(id uuid PRIMARY KEY,workspace_id uuid,estimate_id uuid,updated_at timestamptz,updated_by_id uuid);
 CREATE TABLE project_members(member_id uuid,project_id uuid,workspace_id uuid,is_active bool,deleted_at timestamptz,role int);

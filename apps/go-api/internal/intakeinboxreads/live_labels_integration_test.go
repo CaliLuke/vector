@@ -8,11 +8,10 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 )
 
 func TestIntakeAndDraftLabelReadsUseNativeOwnerScope(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
+	ctx, connection := suiteDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
 	const removedIssue = "00000000-0000-4000-8000-000000000016"
 	const removedDraft = "00000000-0000-4000-8000-000000000017"
 	if _, err := connection.Exec(ctx, `

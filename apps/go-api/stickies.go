@@ -13,7 +13,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/datetime"
 
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 
 	stickyapi "github.com/CaliLuke/go-plane/gen/stickies"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
@@ -59,7 +59,7 @@ func NewStickies(repository stickyRepository, sessions stickySessionValidator) (
 		return nil, fmt.Errorf("Sticky repository is required")
 	}
 	if sessions == nil {
-		return nil, fmt.Errorf("session validator for Django is required")
+		return nil, fmt.Errorf("session validator is required")
 	}
 	return &stickyService{repository: repository, sessions: sessions}, nil
 }
@@ -349,7 +349,7 @@ func nullableJSONValue(value loom.JSONValue, fallback []byte) ([]byte, error) {
 	if len(value) == 0 {
 		return append([]byte(nil), fallback...), nil
 	}
-	return pythoncompat.NormalizeJSONNumbers(value)
+	return jsonvalue.Validate(value)
 }
 
 func nullableStringValue(value loom.Nullable[string]) *string {
@@ -406,7 +406,7 @@ func stickyResponse(sticky stickystore.Sticky) (*stickyapi.StickyResponse, error
 	return &stickyapi.StickyResponse{
 		ID: uuid.UUID(sticky.ID).String(), Workspace: uuid.UUID(sticky.WorkspaceID).String(), Owner: uuid.UUID(sticky.OwnerID).String(),
 		CreatedBy: createdBy, UpdatedBy: updatedBy, CreatedAt: datetime.Format(sticky.CreatedAt, time.UTC), UpdatedAt: datetime.Format(sticky.UpdatedAt, time.UTC),
-		DeletedAt: formatOptionalDjangoTime(sticky.DeletedAt), Name: name, Color: color, BackgroundColor: background, Description: description,
+		DeletedAt: formatOptionalNativeTime(sticky.DeletedAt), Name: name, Color: color, BackgroundColor: background, Description: description,
 		DescriptionHTML: sticky.DescriptionHTML, DescriptionStripped: stripped, DescriptionBinary: binary,
 		LogoProps: logo, SortOrder: sticky.SortOrder,
 	}, nil
@@ -423,7 +423,7 @@ func decodeJSON(value []byte) (loom.JSONValue, error) {
 	return decoded, nil
 }
 
-func formatOptionalDjangoTime(value *time.Time) *string {
+func formatOptionalNativeTime(value *time.Time) *string {
 	if value == nil {
 		return nil
 	}

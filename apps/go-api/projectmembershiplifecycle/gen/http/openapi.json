@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.1",
   "info": {
-    "title": "Plane Internal Django Migration API",
+    "title": "Vector API",
     "description": "Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.",
     "version": "1.0.0"
   },
@@ -425,7 +425,7 @@
           {
             "name": "per_page",
             "in": "query",
-            "description": "Number of results per page, parsed by the Django-compatible paginator",
+            "description": "Number of results per page, parsed by the shared cursor paginator",
             "schema": {
               "type": "string"
             }
@@ -2208,7 +2208,7 @@
     "securitySchemes": {
       "ApiKeyAuth": {
         "type": "apiKey",
-        "description": "Plane API token authentication.",
+        "description": "Vector API token authentication.",
         "name": "X-Api-Key",
         "in": "header"
       },

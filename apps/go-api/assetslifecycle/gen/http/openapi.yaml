@@ -20,31 +20,31 @@ paths:
                     description: Redirect to the signed asset URL.
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - {}
                 - PlaneSessionCookie: []
@@ -68,31 +68,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -116,31 +116,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -163,31 +163,31 @@ paths:
                     $ref: '#/components/responses/RestFrameworkSerializersFileassetuploadresponseResponseStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -212,31 +212,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -262,31 +262,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -311,31 +311,31 @@ paths:
                     $ref: '#/components/responses/RestFrameworkSerializersFileassetuploadresponseResponseStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -360,31 +360,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -408,31 +408,31 @@ paths:
                     $ref: '#/components/responses/GetAPIAssetsV2WorkspacesBySlugStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -458,31 +458,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -507,31 +507,31 @@ paths:
                     $ref: '#/components/responses/RestFrameworkSerializersFileassetuploadresponseResponseStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -557,31 +557,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -606,31 +606,31 @@ paths:
                     description: Redirect to the signed asset URL.
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -657,31 +657,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -707,31 +707,31 @@ paths:
                     $ref: '#/components/responses/RestFrameworkSerializersFileassetuploadresponseResponseStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -799,31 +799,31 @@ paths:
                                 $ref: '#/components/schemas/RestFrameworkSerializersFileassetexistsresponseResponse'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -849,31 +849,31 @@ paths:
                     description: Redirect to the signed asset URL.
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -915,31 +915,31 @@ paths:
                                 $ref: '#/components/schemas/RestFrameworkSerializersFileassetduplicateresponseResponse'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -965,31 +965,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1014,31 +1014,31 @@ paths:
                     $ref: '#/components/responses/GetAPIAssetsV2WorkspacesBySlugStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1065,31 +1065,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1115,31 +1115,31 @@ paths:
                     $ref: '#/components/responses/RestFrameworkSerializersFileassetuploadresponseResponseStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1180,31 +1180,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1231,31 +1231,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1281,31 +1281,31 @@ paths:
                     description: Redirect to the signed asset URL.
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1333,31 +1333,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1384,31 +1384,31 @@ paths:
                     $ref: '#/components/responses/RestFrameworkSerializersFileassetuploadresponseResponseStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1435,31 +1435,31 @@ paths:
                     description: Redirect to the signed asset URL.
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1488,31 +1488,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1540,31 +1540,31 @@ paths:
                     $ref: '#/components/responses/GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1593,31 +1593,31 @@ paths:
                     $ref: '#/components/responses/RestFrameworkSerializersIssueattachmentuploadresponseResponseStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1647,31 +1647,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1700,31 +1700,31 @@ paths:
                     description: Redirect to the signed asset URL.
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1755,31 +1755,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1805,31 +1805,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1856,31 +1856,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -1906,31 +1906,31 @@ paths:
                     $ref: '#/components/responses/GetAPIAssetsV2WorkspacesBySlugStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - {}
                 - PlaneSessionCookie: []
@@ -1959,31 +1959,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -2010,31 +2010,31 @@ paths:
                     $ref: '#/components/responses/RestFrameworkSerializersFileassetuploadresponseResponseStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -2072,31 +2072,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -2124,31 +2124,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -2175,31 +2175,31 @@ paths:
                     description: Redirect to the signed asset URL.
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - {}
                 - PlaneSessionCookie: []
@@ -2229,31 +2229,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -2281,31 +2281,31 @@ paths:
                     $ref: '#/components/responses/RestFrameworkSerializersFileassetuploadresponseResponseStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -2331,31 +2331,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -2380,31 +2380,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -2433,31 +2433,31 @@ paths:
                                     - $ref: '#/components/schemas/GetAPIUsersFileAssetsResponseError'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -2482,31 +2482,31 @@ paths:
                     $ref: '#/components/responses/PlaneAppSerializersAssetFileassetserializerResponseStatus201Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -2533,31 +2533,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -2588,31 +2588,31 @@ paths:
                                     - $ref: '#/components/schemas/GetAPIUsersFileAssetsByAssetKeyResponseError'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -2639,31 +2639,31 @@ paths:
                     $ref: '#/components/responses/PlaneAppSerializersAssetFileassetserializerResponseStatus201Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -2743,31 +2743,31 @@ paths:
                     description: Presigned URL generated successfully
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             summary: Generate presigned URL for user asset upload
@@ -2797,31 +2797,31 @@ paths:
                     description: Asset deleted successfully
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             summary: Delete user asset
@@ -2854,31 +2854,31 @@ paths:
                     description: Asset updated successfully
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             summary: Mark user asset as uploaded
@@ -2909,31 +2909,31 @@ paths:
                     description: Asset deleted successfully
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             summary: Delete user server asset
@@ -2964,31 +2964,31 @@ paths:
                     description: Asset updated successfully
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             summary: Mark user server asset as uploaded
@@ -3029,31 +3029,31 @@ paths:
                     description: Presigned URL generated successfully
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             summary: Generate presigned URL for user server asset upload
@@ -3136,31 +3136,31 @@ paths:
                     description: Presigned URL generated successfully
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             summary: Generate presigned URL for generic asset upload
@@ -3190,31 +3190,31 @@ paths:
                                 $ref: '#/components/schemas/GetAPIV1WorkspacesBySlugAssetsByAssetIDResponseBody'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             summary: Get presigned URL for asset download
@@ -3266,31 +3266,31 @@ paths:
                     description: Asset updated successfully
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             summary: Update generic asset after upload completion
@@ -3317,31 +3317,31 @@ paths:
                     $ref: '#/components/responses/GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             tags:
@@ -3368,31 +3368,31 @@ paths:
                     $ref: '#/components/responses/RestFrameworkSerializersIssueattachmentuploadresponseResponseStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             tags:
@@ -3420,31 +3420,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             tags:
@@ -3471,31 +3471,31 @@ paths:
                     description: Redirect to the signed asset URL.
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             tags:
@@ -3524,31 +3524,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             tags:
@@ -3574,31 +3574,31 @@ paths:
                     $ref: '#/components/responses/GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             tags:
@@ -3625,31 +3625,31 @@ paths:
                     $ref: '#/components/responses/RestFrameworkSerializersIssueattachmentuploadresponseResponseStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             tags:
@@ -3677,31 +3677,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             tags:
@@ -3728,31 +3728,31 @@ paths:
                     description: Redirect to the signed asset URL.
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             tags:
@@ -3781,31 +3781,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - ApiKeyAuth: []
             tags:
@@ -3832,31 +3832,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -3888,31 +3888,31 @@ paths:
                                     - $ref: '#/components/schemas/GetAPIWorkspacesBySlugFileAssetsResponseError'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -3940,31 +3940,31 @@ paths:
                     $ref: '#/components/responses/PlaneAppSerializersAssetFileassetserializerResponseStatus201Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -3994,31 +3994,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -4046,31 +4046,31 @@ paths:
                     $ref: '#/components/responses/GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus200Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -4110,31 +4110,31 @@ paths:
                                 $ref: '#/components/schemas/PlaneAppSerializersIssueIssueattachmentserializerResponse'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -4164,31 +4164,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -4216,31 +4216,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -4273,31 +4273,31 @@ paths:
                                     - $ref: '#/components/schemas/GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyResponseError'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -4326,31 +4326,31 @@ paths:
                     $ref: '#/components/responses/PlaneAppSerializersAssetFileassetserializerResponseStatus201Response'
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -4379,31 +4379,31 @@ paths:
                     description: No response body
                 "400":
                     $ref: '#/components/responses/BadRequestError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "401":
                     $ref: '#/components/responses/UnauthorizedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "403":
                     $ref: '#/components/responses/ForbiddenError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "404":
                     $ref: '#/components/responses/NotFoundError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "405":
                     $ref: '#/components/responses/MethodNotAllowedError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "409":
                     $ref: '#/components/responses/ConflictError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "413":
                     $ref: '#/components/responses/RequestEntityTooLargeError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "429":
                     $ref: '#/components/responses/TooManyRequestsError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
                 "500":
                     $ref: '#/components/responses/InternalServerErrorError'
-                    description: Source-compatible Django JSON error response.
+                    description: JSON error response.
             security:
                 - PlaneSessionCookie: []
             tags:
@@ -5474,7 +5474,7 @@ components:
     securitySchemes:
         ApiKeyAuth:
             type: apiKey
-            description: Plane API token authentication.
+            description: Vector API token authentication.
             name: X-Api-Key
             in: header
         PlaneSessionCookie:

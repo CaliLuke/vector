@@ -46,8 +46,8 @@ func (s *systemService) APIKeyAuth(ctx context.Context, _ string, _ *security.AP
 	return ctx, nil
 }
 
-// NormalizeCSRFSecret validates and normalizes Django's CSRF cookie value.
-// Invalid and missing cookies receive a new secret, matching CsrfViewMiddleware.
+// NormalizeCSRFSecret preserves valid browser CSRF cookies and replaces
+// missing or malformed cookies with a fresh random secret.
 func NormalizeCSRFSecret(cookieValue string) (string, error) {
 	secret := cookieValue
 	switch {
@@ -64,9 +64,8 @@ func NormalizeCSRFSecret(cookieValue string) (string, error) {
 	return secret, nil
 }
 
-// ValidCSRFToken checks Django's cookie and submitted token representations.
-// Django accepts either the plain secret or a masked token that unmasks to the
-// cookie secret; both values must use its allowed alphabet and length.
+// ValidCSRFToken accepts the cookie secret used by browser clients and masked
+// tokens issued to forms. Both are validated before constant-time comparison.
 func ValidCSRFToken(cookieValue, submitted string) bool {
 	secret := cookieValue
 	switch {
@@ -86,7 +85,7 @@ func ValidCSRFToken(cookieValue, submitted string) bool {
 	return subtle.ConstantTimeCompare([]byte(secret), []byte(submitted)) == 1
 }
 
-// CSRFTokenFormatReason reports Django's format diagnostic using the same
+// CSRFTokenFormatReason reports invalid tokens using the same
 // alphabet and lengths as token verification. An empty reason means valid format.
 func CSRFTokenFormatReason(value string) string {
 	length := utf8.RuneCountInString(value)

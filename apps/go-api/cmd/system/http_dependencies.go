@@ -139,7 +139,7 @@ type pendingReplacementEndpoints struct {
 	csrfToken                               *csrftoken.Endpoints
 	csrfTokenCORS                           []string
 	accountAuthenticationCSRFTrustedOrigins []string
-	csrfTokenCookie                         djangoCSRFCookieConfig
+	csrfTokenCookie                         nativeCSRFCookieConfig
 	csrfTokenThrottle                       publicProjectMetadataThrottle
 	csrfTokenSessionCookie                  browserSessionCookieConfig
 	csrfTokenBodyLimit                      int64

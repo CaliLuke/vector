@@ -83,18 +83,12 @@ func TestLegacyWritableFieldsPreservesEmptyFieldRules(t *testing.T) {
 	}
 }
 
-func TestTaskOriginAndActivityJSONUseConfiguredPythonRepresentation(t *testing.T) {
+func TestTaskOriginUsesConfiguredPublicOrigin(t *testing.T) {
 	service := &Service{appBaseURL: "http://localhost:8000/"}
 	if got := service.taskOrigin(WithRequestOrigin(context.Background(), "http", "go-container:8080")); got != "http://localhost:8000" {
 		t.Fatalf("task origin = %q", got)
 	}
-	encoded, err := json.Marshal(pythonJSONNumbers(map[string]any{"size": float64(0), "fraction": float64(37.5)}))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got, want := string(encoded), `{"fraction":37.5,"size":0.0}`; got != want {
-		t.Fatalf("python activity JSON = %s, want %s", got, want)
-	}
+
 }
 
 func TestLegacyWritableFieldsRejectsNonfiniteSize(t *testing.T) {

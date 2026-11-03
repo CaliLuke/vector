@@ -3,11 +3,8 @@
 package assets
 
 import (
-	"context"
 	"testing"
 
-	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -31,14 +28,7 @@ type imageOwnershipFixture struct {
 
 func newImageOwnershipFixture(t *testing.T) imageOwnershipFixture {
 	t.Helper()
-	ctx := t.Context()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
-		connection, err := pgx.Connect(ctx, databaseURL)
-		if err != nil {
-			return err
-		}
-		defer func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) }()
-		_, err = connection.Exec(ctx, `
+	_, connection := assetDatabases.OpenSQL(t, `
 CREATE TABLE users (id uuid PRIMARY KEY, avatar_asset_id uuid, cover_image_asset_id uuid, avatar text, cover_image text, updated_at timestamptz);
 CREATE TABLE workspaces (id uuid PRIMARY KEY, logo_asset_id uuid, logo text, deleted_at timestamptz, updated_at timestamptz, updated_by_id uuid);
 CREATE TABLE projects (id uuid PRIMARY KEY, workspace_id uuid, guest_view_all_features boolean DEFAULT false, cover_image_asset_id uuid, cover_image text, deleted_at timestamptz, updated_at timestamptz, updated_by_id uuid);
@@ -51,21 +41,6 @@ CREATE TABLE project_members(workspace_id uuid,project_id uuid,member_id uuid,ro
 CREATE TABLE file_assets (id uuid PRIMARY KEY, user_id uuid, workspace_id uuid, project_id uuid, draft_issue_id uuid, issue_id uuid, comment_id uuid, page_id uuid, entity_type text,
   is_uploaded boolean DEFAULT false, is_deleted boolean DEFAULT false, deleted_at timestamptz, updated_at timestamptz, attributes jsonb DEFAULT '{}');
 `)
-		return err
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if closeErr := pair.Close(); closeErr != nil {
-			t.Error(closeErr)
-		}
-	})
-	connection, err := pgx.Connect(ctx, pair.SeedURL())
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.Background()) })
 	repository, err := NewPostgresRepository(connection)
 	if err != nil {
 		t.Fatal(err)

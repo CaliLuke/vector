@@ -176,7 +176,7 @@ func TestPageUpdateClearsParentAndLabelsWithoutChangingDescription(t *testing.T)
 	require.Len(t, fixture.tasks, 2)
 }
 
-func TestPageUpdateNonOwnerAccessCheckUsesRawScalarBeforeValidation(t *testing.T) {
+func TestPageUpdateNonOwnerAccessComparesValidatedValue(t *testing.T) {
 	fixture := newPageCreateFixture(t)
 	page := createUpdateTestPage(t, fixture, map[string]any{"name": "Before"})
 	owner := uuid.New()
@@ -190,16 +190,22 @@ func TestPageUpdateNonOwnerAccessCheckUsesRawScalarBeforeValidation(t *testing.T
 	var rejected *apicontract.HTTPError
 	require.ErrorAs(t, err, &rejected)
 	require.Equal(t, 400, rejected.Status)
-	require.Equal(t, map[string]any{"error": "Access cannot be updated since this page is owned by someone else"}, rejected.Body)
+	require.Equal(t, map[string]any{"description_html": []string{"This field may not be null."}}, rejected.Body)
 	var storedName string
 	require.NoError(t, fixture.pool.QueryRow(t.Context(), `SELECT name FROM pages WHERE id=$1`, page).Scan(&storedName))
 	require.Equal(t, "Before", storedName)
 
-	status, _, err := fixture.repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", requestinput.Input{Fields: map[string]any{"access": json.Number("0"), "name": "After"}})
+	status, _, err := fixture.repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", requestinput.Input{Fields: map[string]any{"access": "0", "name": "After"}})
 
 	require.NoError(t, err)
 	require.Equal(t, 200, status)
 	require.NoError(t, fixture.pool.QueryRow(t.Context(), `SELECT name FROM pages WHERE id=$1`, page).Scan(&storedName))
 	require.Equal(t, "After", storedName)
 	require.Len(t, fixture.tasks, 1)
+	_, _, err = fixture.repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", requestinput.Input{Fields: map[string]any{"access": "1", "name": "Unauthorized"}})
+	require.ErrorAs(t, err, &rejected)
+	require.Equal(t, 400, rejected.Status)
+	require.Equal(t, map[string]any{"error": "Access cannot be updated since this page is owned by someone else"}, rejected.Body)
+	require.NoError(t, fixture.pool.QueryRow(t.Context(), `SELECT name FROM pages WHERE id=$1`, page).Scan(&storedName))
+	require.Equal(t, "After", storedName)
 }

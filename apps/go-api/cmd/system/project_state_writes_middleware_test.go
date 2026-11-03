@@ -210,7 +210,7 @@ func TestProjectStateWritesProductionMiddlewareOrderRequestSizeSessionAPIThrottl
 	}
 }
 
-func TestProjectStateWriteHeadersMatchRetainedDjangoMethods(t *testing.T) {
+func TestProjectStateWriteHeadersMatchRetainedNativeMethods(t *testing.T) {
 	for _, test := range []struct {
 		method, suffix, allow, vary string
 		status                      int

@@ -659,7 +659,7 @@ var ImportedRestFrameworkSerializersPaginatedworkspacememberliteResponse = membe
 var ImportedRoleC37Enum = membertypes.MemberRole
 
 var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
-	Description("Plane API token authentication.")
+	Description("Vector API token authentication.")
 })
 
 var ImportedPlaneSessionCookieSecurity = APIKeySecurity("PlaneSessionCookie", func() {
@@ -789,7 +789,7 @@ func invitationsMembershipAPIKeyHTTPResponses() {
 var invitationEntryRequest = Type("InvitationEntryRequest", func() {
 	Attribute("email", String, func() { Format(FormatEmail) })
 	Attribute("role", Any, func() {
-		Description("Invitation role. Project invitations accept canonical choices 5, 15, or 20; workspace invitations preserve Django integer coercion and the caller role cap.")
+		Description("Invitation role: integer 5, 15, or 20, constrained by the inviter and existing workspace role.")
 	})
 	Required("email")
 })

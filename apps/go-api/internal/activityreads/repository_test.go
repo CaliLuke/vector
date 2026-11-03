@@ -50,7 +50,7 @@ func (database *activityDatabase) QueryRow(_ context.Context, query string, argu
 	}}
 }
 
-func TestAPIActivitiesPreserveDjangoListAndDetailContracts(t *testing.T) {
+func TestAPIActivitiesPreserveNativeListAndDetailContracts(t *testing.T) {
 	projectID := uuid.New()
 	issueID := uuid.New()
 	activityID := uuid.New()

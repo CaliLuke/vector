@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -25,16 +24,9 @@ func notificationTestDB(t *testing.T) pgx.Tx {
 	ctx := t.Context()
 	databaseURL := os.Getenv("NOTIFICATIONS_TEST_DATABASE_URL")
 	if databaseURL == "" {
-		pair, err := postgresfixture.StartUncloned(ctx, func(context.Context, string) error { return nil })
-		if err != nil {
-			t.Fatal(err)
-		}
-		t.Cleanup(func() {
-			if err := pair.Close(); err != nil {
-				t.Error(err)
-			}
-		})
-		databaseURL = pair.SeedURL()
+		pairURL := suiteDatabases.SeedDatabase(t, func(context.Context, string) error { return nil })
+
+		databaseURL = pairURL
 	}
 	conn, err := pgx.Connect(ctx, databaseURL)
 	if err != nil {

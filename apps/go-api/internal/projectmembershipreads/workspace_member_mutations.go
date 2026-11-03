@@ -72,6 +72,11 @@ func (r *InvitationsRepository) mutateWorkspaceMember(ctx context.Context, c Inv
 		}
 		result, err = inviteJSON(ctx, m.tx, `SELECT `+workspaceMemberProjection()+` FROM workspace_members m JOIN users u ON u.id=m.member_id WHERE m.id=$1`, id)
 	} else {
+		for _, table := range []string{"workspace_member_invites", "project_member_invites"} {
+			if _, err = m.tx.Exec(ctx, `UPDATE `+table+` SET deleted_at=clock_timestamp(),updated_at=clock_timestamp() WHERE workspace_id=$1 AND lower(email)=lower((SELECT email FROM users WHERE id=$2)) AND deleted_at IS NULL`, m.workspace, user); err != nil {
+				return nil, err
+			}
+		}
 		if _, err = m.tx.Exec(ctx, `UPDATE project_members SET is_active=false,updated_at=clock_timestamp(),updated_by_id=$3 WHERE workspace_id=$1 AND member_id=$2 AND is_active AND deleted_at IS NULL AND EXISTS(SELECT 1 FROM projects p WHERE p.id=project_members.project_id AND p.workspace_id=$1)`, m.workspace, user, c.UserID); err != nil {
 			return nil, err
 		}

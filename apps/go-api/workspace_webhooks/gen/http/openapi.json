@@ -2637,7 +2637,7 @@
     "securitySchemes": {
       "webhook_session_cookie": {
         "type": "apiKey",
-        "description": "Plane Django session cookie.",
+        "description": "Vector browser session cookie.",
         "name": "session-id",
         "in": "cookie"
       }

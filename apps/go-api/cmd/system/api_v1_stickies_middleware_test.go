@@ -101,7 +101,7 @@ func (apiV1StickyMiddlewareEffects) SoftDelete(context.Context, string, string, 
 func newAPIV1StickyMiddlewareHandler(t *testing.T, service api.Service, dispatch *activityHTTPService, logger *apiV1ActivityLoggerStub, bodyLimit int64) http.Handler {
 	t.Helper()
 	mux := loomhttp.NewMuxer()
-	policy, err := djangoRuntimeCORSPolicy([]string{"https://app.example.com"})
+	policy, err := nativeRuntimeCORSPolicy([]string{"https://app.example.com"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,7 +112,7 @@ func newAPIV1StickyMiddlewareHandler(t *testing.T, service api.Service, dispatch
 	stickiessvr.Mount(mux, server)
 	handler := newActivityReadsProtocolMiddleware(membershipActivityProtocolDispatch{ActivityReadsProtocolAuthorizer: dispatch, stickies: service.(systemapi.APIV1StickyProtocolAuthorizer)}, policy, stack, options, browserSessionCookieConfig{}, bodyLimit, true)(mux)
 	handler = readServicesCompatibilityMiddleware(handler)
-	handler = readServicesDjangoPathConverterMiddleware(policy, &options)(handler)
+	handler = readServicesNativePathConverterMiddleware(policy, &options)(handler)
 	handler = loomhttp.RequestMetadataMiddleware(requestMetadataPolicy)(handler)
 	return handler
 }

@@ -728,7 +728,7 @@ func requesterJSONTimestampSQL(column string) string {
 END`
 }
 
-func djangoJSONTimestampSQL(column string) string {
+func nativeJSONTimestampSQL(column string) string {
 	utc := "(" + column + " AT TIME ZONE 'UTC')"
 	return `CASE WHEN ` + column + ` IS NULL THEN NULL ELSE
   to_char(` + utc + `,'YYYY-MM-DD"T"HH24:MI:SS') ||
@@ -990,8 +990,8 @@ func moduleLinkJSON(alias string) string {
 
 func moduleJSON(alias, projection string) string {
 	archivedField := ""
-	createdAt := djangoJSONTimestampSQL(alias + ".created_at")
-	updatedAt := djangoJSONTimestampSQL(alias + ".updated_at")
+	createdAt := nativeJSONTimestampSQL(alias + ".created_at")
+	updatedAt := nativeJSONTimestampSQL(alias + ".updated_at")
 	logoField := "'logo_props', " + alias + ".logo_props,"
 	estimateFields := `
     'total_estimate_points', COALESCE((SELECT sum(estimate_point.value::double precision)
@@ -1030,7 +1030,7 @@ func moduleJSON(alias, projection string) string {
 	case "archived":
 		createdAt = requesterJSONTimestampSQL(alias + ".created_at")
 		updatedAt = requesterJSONTimestampSQL(alias + ".updated_at")
-		archivedField = "'archived_at', " + djangoJSONTimestampSQL(alias+".archived_at") + ","
+		archivedField = "'archived_at', " + nativeJSONTimestampSQL(alias+".archived_at") + ","
 		logoField = ""
 		estimateFields = ""
 	case "detail":
@@ -1291,7 +1291,7 @@ var issueJSON = `json_build_object(
     'state_id', issue.state_id,
     'state__group', (SELECT state."group" FROM states state WHERE state.id = issue.state_id),
     'sort_order', issue.sort_order,
-    'completed_at', ` + djangoJSONTimestampSQL("issue.completed_at") + `,
+    'completed_at', ` + nativeJSONTimestampSQL("issue.completed_at") + `,
     'estimate_point', issue.estimate_point_id,
     'priority', issue.priority,
     'start_date', issue.start_date,
@@ -1307,15 +1307,15 @@ var issueJSON = `json_build_object(
           SELECT 1 FROM states child_state
           WHERE child_state.id = child.state_id AND child_state."group" <> 'triage'
         ))),
-    'created_at', ` + djangoJSONTimestampSQL("issue.created_at") + `,
-    'updated_at', ` + djangoJSONTimestampSQL("issue.updated_at") + `,
+    'created_at', ` + nativeJSONTimestampSQL("issue.created_at") + `,
+    'updated_at', ` + nativeJSONTimestampSQL("issue.updated_at") + `,
     'created_by', issue.created_by_id,
     'updated_by', issue.updated_by_id,
     'attachment_count', (SELECT count(*) FROM file_assets attachment
       WHERE attachment.issue_id = issue.id AND attachment.deleted_at IS NULL AND attachment.entity_type = 'ISSUE_ATTACHMENT'),
     'link_count', (SELECT count(*) FROM issue_links link WHERE link.issue_id = issue.id AND link.deleted_at IS NULL),
     'is_draft', issue.is_draft,
-    'archived_at', ` + djangoJSONTimestampSQL("issue.archived_at") + `,
+    'archived_at', ` + nativeJSONTimestampSQL("issue.archived_at") + `,
     'assignee_ids', COALESCE((SELECT json_agg(assignee.assignee_id) FROM issue_assignees assignee
       WHERE assignee.issue_id = issue.id AND assignee.deleted_at IS NULL), '[]'::json),
     'label_ids', COALESCE((SELECT json_agg(label.label_id) FROM issue_labels label

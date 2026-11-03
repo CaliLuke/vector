@@ -549,10 +549,6 @@
   },
   "effects": [],
   "result": {
-    "base64_trailing_non_alphabet_junk": {
-      "error": null,
-      "is_valid": true
-    },
     "maximum_ten_mib_decoded_bytes": {
       "error": null,
       "is_valid": true

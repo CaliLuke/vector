@@ -56,7 +56,7 @@ func TestValidateBinarySizeBoundary(t *testing.T) {
 	}
 }
 
-func TestValidateBase64BinaryUsesPythonDecodeSemantics(t *testing.T) {
+func TestValidateBase64BinaryValidatesWireEncodingAndContent(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -66,10 +66,10 @@ func TestValidateBase64BinaryUsesPythonDecodeSemantics(t *testing.T) {
 	}{
 		{name: "empty"},
 		{name: "valid", value: base64.StdEncoding.EncodeToString([]byte("document"))},
-		{name: "whitespace and nonalphabet discarded", value: "Z G9j\n!dW1lbnQ="},
-		{name: "junk decodes empty", value: "!!!!", want: ErrBinaryTooShort},
-		{name: "extra padding accepted", value: "ZG9jdW1lbnQ===", want: nil},
-		{name: "data after complete padding ignored", value: "ZG9jZA==junk", want: nil},
+		{name: "nonalphabet rejected", value: "Z G9j\n!dW1lbnQ=", want: ErrInvalidBase64},
+		{name: "junk rejected", value: "!!!!", want: ErrInvalidBase64},
+		{name: "extra padding rejected", value: "ZG9jdW1lbnQ===", want: ErrInvalidBase64},
+		{name: "trailing data rejected", value: "ZG9jZA==junk", want: ErrInvalidBase64},
 		{name: "incorrect padding", value: "YQ", want: ErrInvalidBase64},
 		{name: "insufficient padding", value: "YQ=", want: ErrInvalidBase64},
 		{name: "non-ASCII", value: "é", want: ErrInvalidBase64},
@@ -104,46 +104,16 @@ func TestDecodeBase64BinaryReturnsValidatedDecodedContent(t *testing.T) {
 	require.Same(t, ErrInvalidBase64, err)
 }
 
-func TestDecodePythonBase64MatchesCPython312Matrix(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		value string
-		want  string
-		err   bool
-	}{
-		{value: "", want: ""},
-		{value: "!!!!", want: ""},
-		{value: "Y W\nJj", want: "abc"},
-		{value: "YQ", err: true},
-		{value: "YQ=", err: true},
-		{value: "YQ===", want: "a"},
-		{value: "YQ==junk", want: "a"},
-		{value: "YWJj=", want: "abc"},
-		{value: "YWJj=junk", want: "abc\x8e\xe9\xe4"},
-		{value: "YWJjZA==junk", want: "abcd"},
-		{value: "=junk", want: "\x8e\xe9\xe4"},
-		{value: "=abc", err: true},
-		{value: "====", want: ""},
-		{value: "AA==xx", want: "\x00"},
-		{value: "AA=x", err: true},
-		{value: "é", err: true},
-	}
-	for _, test := range tests {
-		t.Run(test.value, func(t *testing.T) {
-			t.Parallel()
-			got, err := decodePythonBase64(test.value)
-			if (err != nil) != test.err {
-				t.Fatalf("decodePythonBase64() error = %v, want error %t", err, test.err)
-			}
-			if string(got) != test.want {
-				t.Fatalf("decodePythonBase64() = %x, want %x", got, test.want)
-			}
+func TestDocumentBase64RejectsInvalidAlphabetPaddingAndTrailingData(t *testing.T) {
+	for _, value := range []string{"!!!!", "SGV sbG8=", "SGVsbG8", "SGVsbG8==", "SGVsbG8=junk", "=SGVsbG8=", "SGVsbG9=", "é"} {
+		t.Run(value, func(t *testing.T) {
+			_, err := DecodeBase64Binary(value)
+			require.ErrorIs(t, err, ErrInvalidBase64)
 		})
 	}
 }
 
-func TestValidationMessagesMatchPythonSource(t *testing.T) {
+func TestContentValidationErrorsAreDistinct(t *testing.T) {
 	t.Parallel()
 
 	errorsToCheck := []error{

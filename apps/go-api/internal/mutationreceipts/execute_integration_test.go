@@ -13,7 +13,6 @@ import (
 
 	receipts "github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	"github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -34,7 +33,7 @@ func receiptDatabase(t *testing.T) fixture {
 	require.NoError(t, err)
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	defer cancel()
-	pair, err := postgres.StartUncloned(ctx, func(ctx context.Context, connection string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, connection string) error {
 		db, connectErr := pgx.Connect(ctx, connection)
 		if connectErr != nil {
 			return connectErr
@@ -47,13 +46,12 @@ CREATE TABLE receipt_test_changes (id bigserial PRIMARY KEY, value text NOT NULL
 CREATE TABLE receipt_test_outbox (entity_id bigint NOT NULL, event text NOT NULL);`)
 		return seedErr
 	})
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, pair.Close()) })
-	db, err := pgxpool.New(ctx, pair.SeedURL())
+
+	db, err := pgxpool.New(ctx, pairURL)
 	require.NoError(t, err)
 	t.Cleanup(db.Close)
 	request := uuid.New()
-	return fixture{db: db, url: pair.SeedURL(), command: receipts.Command{
+	return fixture{db: db, url: pairURL, command: receipts.Command{
 		ActorID: uuid.New(), WorkspaceID: uuid.New(), Tool: "project", Action: "create", RequestID: &request,
 		NormalizedInput: json.RawMessage(`{"name":"First","nested":{"b":2,"a":1}}`),
 	}}

@@ -35,7 +35,7 @@ func apiV1StickyProtocolHeadersMiddleware(next http.Handler) http.Handler {
 		if len(segments) == 6 {
 			allow = "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
 		}
-		setDjangoProtocolCompatibilityHeaders(response.Header(), allow)
+		setNativeProtocolCompatibilityHeaders(response.Header(), allow)
 		next.ServeHTTP(response, request)
 	})
 }

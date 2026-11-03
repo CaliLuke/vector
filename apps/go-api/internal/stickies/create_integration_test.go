@@ -10,20 +10,17 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/bootstrap"
 	"github.com/CaliLuke/go-plane/internal/database"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestStickyCreatePersistsOwnedContentAndAllocation(t *testing.T) {
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	defer cancel()
-	pair, err := postgresfixture.StartUncloned(ctx, bootstrap.MigrateSchema)
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, pair.Close()) })
-	seedNativeStickyDatabase(t, ctx, pair.SeedURL())
-	pool := openStickyProofPool(t, ctx, pair.SeedURL())
+	pairURL := migratedDatabases.SeedDatabase(t, func(context.Context, string) error { return nil })
+
+	seedNativeStickyDatabase(t, ctx, pairURL)
+	pool := openStickyProofPool(t, ctx, pairURL)
 	t.Cleanup(pool.Close)
 	repository, err := NewRepository(pool)
 	require.NoError(t, err)

@@ -7,55 +7,50 @@ cd "$ROOT"
 
 mode=--full
 scope=all
+fresh=()
+status=false
 for argument in "$@"; do
   case "$argument" in
     --fast|--full|--fix) mode="$argument" ;;
     --go) scope=go ;;
     --typescript) scope=typescript ;;
     --build) scope=build ;;
-    *) echo "Usage: ./check.sh [--fast|--full|--fix] [--go|--typescript|--build]" >&2; exit 2 ;;
+    --fresh) fresh=(--fresh) ;;
+    --status) status=true ;;
+    *) echo "Usage: ./check.sh [--fast|--full|--fix] [--go|--typescript|--build] [--fresh|--status]" >&2; exit 2 ;;
   esac
 done
 
-failed=()
+if [[ "$status" == true ]]; then
+  exec node scripts/quality/full-check.mjs --status
+fi
+source scripts/dev-env.sh
+if [[ "$mode" == --full && "$scope" != build ]]; then
+  exec node scripts/quality/full-check.mjs "$scope" "${fresh[@]}"
+fi
+if ((${#fresh[@]})); then
+  echo "--fresh applies only to full checks." >&2
+  exit 2
+fi
 
 run_gate() {
   local name="$1"
   shift
+  printf '\n▶ %s\n' "$name"
   if ! "$@"; then
-    failed+=("$name")
+    printf '\nFailed gate: %s; stopping before later stages.\n' "$name" >&2
+    exit 1
   fi
 }
 
-run_frontend_builds() {
+if [[ "$scope" == build ]]; then
   run_gate "Frontend build" pnpm build
   run_gate "Component Storybooks" node scripts/quality/run-bounded.mjs --seconds 1200 --memory-mib 4096 --heap-mib 2048 -- pnpm --workspace-concurrency=1 --filter @plane/ui --filter @plane/propel build-storybook
-}
-
-run_frontend_full_pipeline() {
-  run_frontend_builds
-  run_gate "TypeScript" bash scripts/quality/typescript.sh --full
-}
-
-if [[ "$scope" == all && "$mode" == --full ]]; then
-  exec prek run --all-files --group full --stage manual
-elif [[ "$scope" == typescript && "$mode" == --full ]]; then
-  run_frontend_full_pipeline
-else
-  if [[ "$scope" == build ]]; then
-    run_frontend_builds
-  fi
-  if [[ "$scope" == all || "$scope" == go ]]; then
-    run_gate Go node scripts/quality/run-bounded.mjs --seconds 3600 --memory-mib 6144 --heap-mib 512 -- env GOMEMLIMIT=2GiB GOMAXPROCS=2 bash scripts/quality/go.sh "$mode"
-  fi
-  if [[ "$scope" == all || "$scope" == typescript ]]; then
-    run_gate TypeScript bash scripts/quality/typescript.sh "$mode"
-  fi
 fi
-
-if ((${#failed[@]})); then
-  printf '\nFailed quality gates:\n'
-  printf '  - %s\n' "${failed[@]}"
-  exit 1
+if [[ "$scope" == all || "$scope" == go ]]; then
+  run_gate Go node scripts/quality/run-bounded.mjs --seconds 3600 --memory-mib 6144 --heap-mib 512 -- env GOMEMLIMIT=2GiB GOMAXPROCS=2 bash scripts/quality/go.sh "$mode"
+fi
+if [[ "$scope" == all || "$scope" == typescript ]]; then
+  run_gate TypeScript bash scripts/quality/typescript.sh "$mode"
 fi
 printf '\nAll selected quality gates passed.\n'

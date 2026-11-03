@@ -37,11 +37,11 @@ func mountCoreHTTPRoutes(systemEndpoints *system.Endpoints, pending pendingRepla
 	if csrfTokenEndpoints == nil {
 		csrfTokenEndpoints = csrftoken.NewEndpoints(systemapi.NewCSRFToken())
 	}
-	csrfTokenCORSPolicy, err := djangoCSRFTokenRuntimeCORSPolicy(pending.csrfTokenCORS)
+	csrfTokenCORSPolicy, err := nativeCSRFTokenRuntimeCORSPolicy(pending.csrfTokenCORS)
 	if err != nil {
 		panic(fmt.Errorf("build CSRF token runtime CORS policy: %w", err))
 	}
-	readServicesCORSPolicy, err := djangoRuntimeCORSPolicy(pending.readServicesCORS)
+	readServicesCORSPolicy, err := nativeRuntimeCORSPolicy(pending.readServicesCORS)
 	if err != nil {
 		panic(fmt.Errorf("build read-services runtime CORS policy: %w", err))
 	}
@@ -56,7 +56,7 @@ func mountCoreHTTPRoutes(systemEndpoints *system.Endpoints, pending pendingRepla
 	)
 	csrfTokenHandler := csrfTokenServer.CsrfToken
 	csrfTokenOptions := csrfTokenServer.CsrfTokenOptions
-	csrfTokenHandler = djangoCSRFResponseCookiePolicy(pending.csrfTokenCookie).Handler(csrfTokenHandler)
+	csrfTokenHandler = nativeCSRFResponseCookiePolicy(pending.csrfTokenCookie).Handler(csrfTokenHandler)
 	if pending.csrfTokenThrottle != nil {
 		bodySizeLimit := pending.csrfTokenBodyLimit
 		if !pending.csrfTokenBodySet {
@@ -95,14 +95,14 @@ func mountCoreHTTPRoutes(systemEndpoints *system.Endpoints, pending pendingRepla
 	)
 	timezoneServer.Use(timezoneCompatibilityMiddleware)
 	timezonesvr.MountListHandler(mux, timezoneServer.List, readServicesCORSPolicy)
-	timezoneHEAD := djangoProtocolOptionsJSONNegotiationMiddleware(loomhttp.AsHandlerFunc(timezoneServer.List))
+	timezoneHEAD := nativeProtocolOptionsJSONNegotiationMiddleware(loomhttp.AsHandlerFunc(timezoneServer.List))
 	timezoneHEAD = timezoneProtocolHeadersMiddleware(timezoneHEAD)
 	timezoneHEAD = readServicesCORSPolicy.Handler(timezoneHEAD.ServeHTTP)
 	loomhttp.MountDerivedHead(mux, "/api/timezones/", timezoneHEAD)
-	timezoneOptions := djangoProtocolOptionsWithoutActionsHandler(timezoneProtocolHeadersMiddleware, "Timezone Endpoint")
-	timezoneOptions = djangoProtocolOptionsJSONNegotiationMiddleware(timezoneOptions)
+	timezoneOptions := nativeProtocolOptionsWithoutActionsHandler(timezoneProtocolHeadersMiddleware, "Timezone Endpoint")
+	timezoneOptions = nativeProtocolOptionsJSONNegotiationMiddleware(timezoneOptions)
 	timezoneOptions = timezoneProtocolHeadersMiddleware(timezoneOptions)
-	timezoneOptions = djangoProtocolCORSOptionsHandler(readServicesCORSPolicy, []string{http.MethodGet}, timezoneOptions)
+	timezoneOptions = nativeProtocolCORSOptionsHandler(readServicesCORSPolicy, []string{http.MethodGet}, timezoneOptions)
 	mountProtocolHandler(mux, http.MethodOptions, "/api/timezones/", timezoneOptions)
 	return coreHTTPRoutes{system: systemServer, csrf: csrfTokenServer, timezones: timezoneServer, corsPolicy: readServicesCORSPolicy}
 }

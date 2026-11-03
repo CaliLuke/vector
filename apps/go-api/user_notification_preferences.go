@@ -1,11 +1,14 @@
 package systemapi
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"uuid"
+
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 
 	usernotificationapi "github.com/CaliLuke/go-plane/gen/user_notification_preferences"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
@@ -32,7 +35,7 @@ func NewUserNotificationPreferences(repository userNotificationPreferencesReposi
 		return nil, fmt.Errorf("user notification preferences repository is required")
 	}
 	if sessions == nil {
-		return nil, fmt.Errorf("session validator for Django is required")
+		return nil, fmt.Errorf("session validator is required")
 	}
 	return &userNotificationPreferencesService{repository: repository, sessions: sessions}, nil
 }
@@ -159,7 +162,7 @@ func addNullable[T any](values map[string]any, name string, value loom.Nullable[
 	}
 	if concrete, ok := value.Value(); ok {
 		if booleanName(name) {
-			boolean, valid := normalizeDRFBoolean(concrete)
+			boolean, valid := notificationBoolean(concrete)
 			if !valid {
 				error := &usernotificationapi.UserNotificationPreferenceValidationError{}
 				switch name {
@@ -188,33 +191,16 @@ func booleanName(name string) bool {
 	return name == "property_change" || name == "state_change" || name == "comment" || name == "mention" || name == "issue_completed"
 }
 
-func normalizeDRFBoolean(value any) (bool, bool) {
-	if boolean, ok := value.(bool); ok {
-		return boolean, true
-	}
-	switch value := value.(type) {
-	case loom.JSONValue:
-		var decoded any
-		if err := json.Unmarshal(value, &decoded); err != nil {
+func notificationBoolean(value any) (bool, bool) {
+	if raw, ok := value.(loom.JSONValue); ok {
+		decoder := json.NewDecoder(bytes.NewReader(raw))
+		decoder.UseNumber()
+		if err := decoder.Decode(&value); err != nil {
 			return false, false
 		}
-		return normalizeDRFBoolean(decoded)
-	case float64:
-		if value == 0 {
-			return false, true
-		}
-		if value == 1 {
-			return true, true
-		}
-	case string:
-		switch value {
-		case "t", "T", "true", "True", "TRUE", "y", "Y", "yes", "Yes", "YES", "on", "On", "ON", "1":
-			return true, true
-		case "f", "F", "false", "False", "FALSE", "n", "N", "no", "No", "NO", "off", "Off", "OFF", "0":
-			return false, true
-		}
 	}
-	return false, false
+	result, message := requestinput.BooleanField(value)
+	return result, message == ""
 }
 func (service *userNotificationPreferencesService) get(ctx context.Context) (*usernotificationapi.UserNotificationPreference, error) {
 	userID, ok := ctx.Value(userNotificationPreferencesPrincipalKey{}).(uuid.UUID)

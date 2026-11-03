@@ -12,7 +12,6 @@ import (
 	"time"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -27,7 +26,7 @@ func (modelPublisher) SoftDelete(context.Context, string, string, string) error 
 // Full Django-schema response/side-effect parity is covered by the HTTP replay.
 func TestIssueModelPostgresInvariants(t *testing.T) {
 	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, url string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, url string) error {
 		conn, err := pgx.Connect(ctx, url)
 		if err != nil {
 			return err
@@ -73,11 +72,8 @@ INSERT INTO issue_sequences(id,project_id,sequence,deleted,deleted_at) VALUES
 `)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testsupport.Close(t, pair)
-	pool, err := pgxpool.New(ctx, pair.SeedURL())
+
+	pool, err := pgxpool.New(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

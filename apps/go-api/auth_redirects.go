@@ -96,7 +96,7 @@ func (s *authRedirectsService) execute(ctx context.Context, body io.ReadCloser, 
 	if result.Status != 302 {
 		return nil, nil, authRedirectHTTPError(errors.New("authentication redirect failed"))
 	}
-	return &api.AuthRedirectResponse{Location: result.Location, ContentType: authRedirectContentType}, io.NopCloser(strings.NewReader(djangoRedirectBody(result.Location))), nil
+	return &api.AuthRedirectResponse{Location: result.Location, ContentType: authRedirectContentType}, io.NopCloser(strings.NewReader(nativeRedirectBody(result.Location))), nil
 }
 
 func (s *authRedirectsService) request(ctx context.Context, body io.ReadCloser, space bool) (core.Request, error) {
@@ -198,6 +198,6 @@ func authRedirectHTTPError(err error) error {
 	return &api.AuthRedirectError{Name: "status_500", Body: loom.JSONValue(body)}
 }
 
-func djangoRedirectBody(location string) string {
+func nativeRedirectBody(location string) string {
 	return "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n  <title>Redirecting...</title>\n</head>\n<body>\n  <h1>Redirecting...</h1>\n  <p>You should be redirected automatically to the target URL: <a href=\"" + html.EscapeString(location) + "\">" + html.EscapeString(location) + "</a>.</p>\n</body>\n</html>"
 }

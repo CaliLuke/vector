@@ -180,7 +180,7 @@ func TestPublicIntakeSerializerProjectionsMatchEachOperation(t *testing.T) {
 	}
 }
 
-func TestPublicIntakeBindingErrorMatchesDjangoNotFound(t *testing.T) {
+func TestPublicIntakeBindingErrorMatchesNativeNotFound(t *testing.T) {
 	configured := "configured-intake"
 	err := (&Repository{}).validatePublicIntake(context.Background(), PublicFeedbackScope{IntakeID: &configured}, "other-intake")
 	var response *apicontract.HTTPError
@@ -217,7 +217,7 @@ func TestPublicIssueListUnsupportedGroupingFieldUsesDetailError(t *testing.T) {
 	}
 }
 
-func TestPublicIssueListGroupedLegacyDateFilterReturnsGroupedEmptyEnvelope(t *testing.T) {
+func TestPublicIssueListRejectsInvalidDateBoundsBeforeReading(t *testing.T) {
 	for _, test := range []struct {
 		name      string
 		date      string
@@ -239,20 +239,11 @@ func TestPublicIssueListGroupedLegacyDateFilterReturnsGroupedEmptyEnvelope(t *te
 				params,
 				map[string]bool{"start_date": true, "group_by": true, "sub_group_by": test.subgroup != ""},
 			)
-			if err != nil {
-				t.Fatal(err)
+			var invalid *apicontract.HTTPError
+			if !errors.As(err, &invalid) || invalid.Status != 400 {
+				t.Fatalf("invalid date accepted: %#v %v", result, err)
 			}
-			body, ok := result.Body.(map[string]any)
-			if !ok || result.Status != 200 || body["grouped_by"] != test.wantGroup || body["count"] != 0 || body["total_results"] != 0 {
-				t.Fatalf("result=%#v; want 200 grouped empty envelope", result)
-			}
-			groups, ok := body["results"].(map[string]any)
-			if !ok || len(groups) != 0 {
-				t.Fatalf("grouped results=%#v, want empty mapping", body["results"])
-			}
-			if test.subgroup != "" && body["sub_grouped_by"] != test.subgroup {
-				t.Fatalf("sub_grouped_by=%#v, want %q", body["sub_grouped_by"], test.subgroup)
-			}
+
 		})
 	}
 }
@@ -287,7 +278,7 @@ func TestPublicIssueListEqualGroupingFieldsPrecedePaginationErrors(t *testing.T)
 	}
 }
 
-func TestPublicIssueActivitySnapshotKeepsPythonFloatSpelling(t *testing.T) {
+func TestPublicIssueActivitySnapshotKeepsNativeNumericValues(t *testing.T) {
 	value, err := orderedDump(publicIssueActivitySnapshot(map[string]any{
 		"id":         "issue",
 		"name":       "Issue",
@@ -296,7 +287,7 @@ func TestPublicIssueActivitySnapshotKeepsPythonFloatSpelling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(value, `"sort_order": 65535.0`) {
+	if !strings.Contains(value, `"sort_order": 65535`) {
 		t.Fatalf("activity snapshot=%s, want source float spelling", value)
 	}
 }

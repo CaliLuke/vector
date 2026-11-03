@@ -39,7 +39,7 @@ func userAccountMeSlashlessCompatibilityMiddleware(next http.Handler, debugMode 
 		response.Header().Set("X-Frame-Options", "DENY")
 		if debugMode && (request.Method == http.MethodPost || request.Method == http.MethodPut ||
 			request.Method == http.MethodPatch || request.Method == http.MethodDelete) {
-			body, contentType := djangoDebugAppendSlashResponse(request)
+			body, contentType := nativeDebugAppendSlashResponse(request)
 			response.Header().Set("Content-Type", contentType)
 			response.WriteHeader(http.StatusInternalServerError)
 			_, _ = response.Write(body)
@@ -52,7 +52,7 @@ func userAccountMeSlashlessCompatibilityMiddleware(next http.Handler, debugMode 
 		response.Header().Set("Location", location)
 		response.WriteHeader(http.StatusMovedPermanently)
 	}))
-	preflight := djangoProtocolCORSOptionsHandler(corsPolicy, []string{http.MethodGet}, redirect)
+	preflight := nativeProtocolCORSOptionsHandler(corsPolicy, []string{http.MethodGet}, redirect)
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		if request.URL.Path == "/api/users/me" {
 			preflight.ServeHTTP(response, request)

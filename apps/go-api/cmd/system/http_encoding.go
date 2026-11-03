@@ -12,7 +12,7 @@ import (
 	"unicode/utf8"
 )
 
-func djangoJSONColonSpacing(body []byte) []byte {
+func nativeJSONColonSpacing(body []byte) []byte {
 	spaced := make([]byte, 0, len(body)+bytes.Count(body, []byte(":")))
 	inString := false
 	escaped := false
@@ -61,12 +61,12 @@ func acceptsGzipEncoding(header string) bool {
 		leftWord := false
 		if start > 0 {
 			character, _ := utf8.DecodeLastRuneInString(header[:start])
-			leftWord = djangoRegexWordCharacter(character)
+			leftWord = nativeRegexWordCharacter(character)
 		}
 		rightWord := false
 		if end < len(header) {
 			character, _ := utf8.DecodeRuneInString(header[end:])
-			rightWord = djangoRegexWordCharacter(character)
+			rightWord = nativeRegexWordCharacter(character)
 		}
 		if !leftWord && !rightWord {
 			return true
@@ -76,11 +76,11 @@ func acceptsGzipEncoding(header string) bool {
 	return false
 }
 
-func djangoRegexWordCharacter(character rune) bool {
+func nativeRegexWordCharacter(character rune) bool {
 	return character == '_' || unicode.IsLetter(character) || unicode.IsNumber(character)
 }
 
-func djangoGzip(body []byte, paddingLength func() (int, error)) ([]byte, error) {
+func nativeGzip(body []byte, paddingLength func() (int, error)) ([]byte, error) {
 	var compressed bytes.Buffer
 	compressor := gzip.NewWriter(&compressed)
 	if _, err := compressor.Write(body); err != nil {

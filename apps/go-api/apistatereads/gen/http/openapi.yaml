@@ -622,7 +622,7 @@ components:
     securitySchemes:
         ApiKeyAuth:
             type: apiKey
-            description: Plane API token authentication.
+            description: Vector API token authentication.
             name: X-Api-Key
             in: header
 tags:

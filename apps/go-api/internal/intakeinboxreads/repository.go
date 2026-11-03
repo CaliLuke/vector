@@ -406,7 +406,7 @@ func validateDraftIssueFilters(options ListOptions) error {
 		return ErrBadRequest
 	}
 	for _, name := range []string{"intake_status", "inbox_status"} {
-		if _, applies := djangoIntakeStatusFilter(options.Filters[name]); applies {
+		if _, applies := nativeIntakeStatusFilter(options.Filters[name]); applies {
 			return ErrBadRequest
 		}
 	}
@@ -515,8 +515,8 @@ func addIssueFilters(builder *whereBuilder, alias string, filters map[string]str
 	addRelationUUIDFilter(builder, alias, "cycle_issues", "issue_id", "cycle_id", filters["cycle"], true, present["cycle"], true)
 	addRelationUUIDFilter(builder, alias, "module_issues", "issue_id", "module_id", filters["module"], true, present["module"], true)
 	addRelationUUIDFilter(builder, alias, "issue_subscribers", "issue_id", "subscriber_id", filters["subscriber"], false, present["subscriber"], true)
-	statuses, hasStatusFilter := djangoIntakeStatusFilter(filters["intake_status"])
-	if inboxStatuses, hasInboxStatusFilter := djangoIntakeStatusFilter(filters["inbox_status"]); hasInboxStatusFilter {
+	statuses, hasStatusFilter := nativeIntakeStatusFilter(filters["intake_status"])
+	if inboxStatuses, hasInboxStatusFilter := nativeIntakeStatusFilter(filters["inbox_status"]); hasInboxStatusFilter {
 		statuses, hasStatusFilter = inboxStatuses, true
 	}
 	if hasStatusFilter {
@@ -529,7 +529,7 @@ func addIssueFilters(builder *whereBuilder, alias string, filters map[string]str
 	return nil
 }
 
-func djangoIntakeStatusFilter(value string) ([]string, bool) {
+func nativeIntakeStatusFilter(value string) ([]string, bool) {
 	statuses := make([]string, 0)
 	for _, item := range strings.Split(value, ",") {
 		if item == "null" {

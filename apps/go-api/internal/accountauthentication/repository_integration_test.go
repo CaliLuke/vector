@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func TestRepositoryCreatesDjangoAccountDefaultsAndUpdatesLoginMetadata(t *testing.T) {
+func TestRepositoryCreatesNativeAccountDefaultsAndUpdatesLoginMetadata(t *testing.T) {
 	ctx := context.Background()
 	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
 		connection, err := pgx.Connect(ctx, databaseURL)

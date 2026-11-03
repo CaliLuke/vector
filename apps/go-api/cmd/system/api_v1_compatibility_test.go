@@ -39,7 +39,7 @@ func (logger *apiV1ActivityLoggerStub) Log(_ context.Context, record publicproje
 	return logger.err
 }
 
-func TestAPIV1CompatibilityGeneratedClientDecodesDjangoShapedError(t *testing.T) {
+func TestAPIV1CompatibilityGeneratedClientDecodesNativeShapedError(t *testing.T) {
 	mux := loomhttp.NewMuxer()
 	cors, err := loomhttp.NewRuntimeCORSPolicy(loomhttp.CORSPolicy{Origins: []loomhttp.CORSOrigin{{Pattern: "http://localhost:3000"}}})
 	if err != nil {
@@ -192,7 +192,7 @@ func TestAPIV1CompatibilityAddsRateHeadersAndPublishesRedactedActivity(t *testin
 	}
 }
 
-func TestAPIV1CompatibilityRendersDjangoThrottleResponse(t *testing.T) {
+func TestAPIV1CompatibilityRendersNativeThrottleResponse(t *testing.T) {
 	activity := &apiV1ActivityLoggerStub{}
 	handler := apiV1CompatibilityMiddleware(apiV1CompatibilityOptions{activityLogger: activity, activitySecret: "activity-secret", bodySizeLimit: defaultFileSizeLimit})(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		apikey.EffectsFromContext(request.Context()).Rate = &apikey.Rate{Allowed: false, Wait: 1500 * time.Millisecond}
@@ -279,7 +279,7 @@ func TestAPIV1CompatibilityHandlesUnreadableRequestBody(t *testing.T) {
 	if response.Code != http.StatusInternalServerError {
 		t.Fatalf("status = %d", response.Code)
 	}
-	if response.Header().Get("Content-Type") != "text/html; charset=utf-8" || response.Header().Get("Content-Length") != strconv.Itoa(len(djangoServerErrorBody)) || response.Header().Get("Vary") != "origin" || response.Body.String() != string(djangoServerErrorBody) {
+	if response.Header().Get("Content-Type") != "text/html; charset=utf-8" || response.Header().Get("Content-Length") != strconv.Itoa(len(nativeServerErrorBody)) || response.Header().Get("Vary") != "origin" || response.Body.String() != string(nativeServerErrorBody) {
 		t.Fatalf("response headers/body = %v %q", response.Header(), response.Body.String())
 	}
 	if len(activity.records) != 0 {
@@ -298,43 +298,14 @@ func TestAPIV1CompatibilityRejectsDeclaredOversizedBodyBeforeEndpoint(t *testing
 	request.Header.Set("X-Api-Key", "token")
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
-	if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(djangoRequestTooLargeBody) {
+	if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(nativeRequestTooLargeBody) {
 		t.Fatalf("response = %d %q", response.Code, response.Body.String())
 	}
-	if response.Header().Get("Content-Type") != "application/json" || response.Header().Get("Content-Length") != strconv.Itoa(len(djangoRequestTooLargeBody)) || response.Header().Get("Vary") != "origin" {
+	if response.Header().Get("Content-Type") != "application/json" || response.Header().Get("Content-Length") != strconv.Itoa(len(nativeRequestTooLargeBody)) || response.Header().Get("Vary") != "origin" {
 		t.Fatalf("headers = %v", response.Header())
 	}
 	if len(activity.records) != 0 {
 		t.Fatalf("oversized request activity = %+v", activity.records)
-	}
-}
-
-func TestParseConfigReadsCeleryBrokerURL(t *testing.T) {
-	t.Setenv("AMQP_URL", "amqp://plane:plane@mq:5672/plane")
-	t.Setenv("SECRET_KEY", "secret")
-	cfg, err := parseConfig(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if cfg.amqpURL != "amqp://plane:plane@mq:5672/plane" {
-		t.Fatalf("AMQP URL = %q", cfg.amqpURL)
-	}
-}
-
-func TestParseConfigBuildsDjangoRabbitMQBrokerURL(t *testing.T) {
-	t.Setenv("AMQP_URL", "")
-	t.Setenv("RABBITMQ_USER", "plane-user")
-	t.Setenv("RABBITMQ_PASSWORD", "plane-password")
-	t.Setenv("RABBITMQ_HOST", "plane-mq")
-	t.Setenv("RABBITMQ_PORT", "5673")
-	t.Setenv("RABBITMQ_VHOST", "plane-vhost")
-	t.Setenv("SECRET_KEY", "secret")
-	cfg, err := parseConfig(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if cfg.amqpURL != "amqp://plane-user:plane-password@plane-mq:5673/plane-vhost" {
-		t.Fatalf("AMQP URL = %q", cfg.amqpURL)
 	}
 }
 

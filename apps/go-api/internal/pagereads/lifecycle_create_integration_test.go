@@ -108,7 +108,7 @@ func TestPageCreateStoresRawDescriptionAndPublishesAfterCommit(t *testing.T) {
 		binary []byte
 	}{
 		{name: "defaults", fields: map[string]any{}, html: "<p></p>", json: "{}"},
-		{name: "raw whitespace and bytes", fields: map[string]any{"description_html": "  <p>Body</p>  ", "description_json": map[string]any{"type": "doc"}, "description_binary": []byte{0, 1, 255}}, html: "  <p>Body</p>  ", json: `{"type":"doc"}`, binary: []byte{0, 1, 255}},
+		{name: "raw whitespace and base64 document", fields: map[string]any{"description_html": "  <p>Body</p>  ", "description_json": map[string]any{"type": "doc"}, "description_binary": "AAH/AA=="}, html: "  <p>Body</p>  ", json: `{"type":"doc"}`, binary: []byte{0, 1, 255, 0}},
 		{name: "nullable binary", fields: map[string]any{"description_binary": nil}, html: "<p></p>", json: "{}"},
 	} {
 		t.Run(sample.name, func(t *testing.T) {
@@ -145,10 +145,11 @@ func TestPageCreateRejectsInvalidInputWithoutDurableEffects(t *testing.T) {
 		{"invalid parent precedes fields", map[string]any{"parent": "bad", "access": nil}, 400, map[string]any{"error": "Please provide valid detail"}},
 		{"missing parent precedes fields", map[string]any{"parent": uuid.New().String(), "access": nil}, 404, map[string]any{"error": "The required object does not exist."}},
 		{"serializer errors precede raw description", map[string]any{"access": nil, "description_html": false}, 400, map[string]any{"access": []string{"This field may not be null."}}},
-		{"null HTML cannot be persisted", map[string]any{"description_html": nil}, 400, map[string]any{"error": "The payload is not valid"}},
+		{"null HTML cannot be persisted", map[string]any{"description_html": nil}, 400, map[string]any{"description_html": []string{"Must be a string."}}},
 		{"null JSON cannot be persisted", map[string]any{"description_json": nil}, 400, map[string]any{"error": "The payload is not valid"}},
-		{"nontext raw description", map[string]any{"description_html": false}, 500, map[string]any{"error": "Something went wrong please try again later"}},
-		{"raw binary cannot be a request string", map[string]any{"description_binary": "AAE="}, 500, map[string]any{"error": "Something went wrong please try again later"}},
+		{"nontext raw description", map[string]any{"description_html": false}, 400, map[string]any{"description_html": []string{"Must be a string."}}},
+		{"invalid base64 document", map[string]any{"description_binary": "not-base64!"}, 400, map[string]any{"description_binary": []string{"Invalid base64 encoding"}}},
+		{"nontext document", map[string]any{"description_binary": false}, 400, map[string]any{"description_binary": []string{"Must be a base64 string."}}},
 	} {
 		t.Run(sample.name, func(t *testing.T) {
 			_, _, err := fixture.create(t, sample.fields)

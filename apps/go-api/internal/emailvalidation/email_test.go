@@ -1,32 +1,23 @@
 package emailvalidation
 
-import "testing"
+import (
+	"strings"
+	"testing"
 
-func TestDjangoEmailCompatibility(t *testing.T) {
-	tests := []struct {
-		name  string
-		email string
-		valid bool
-	}{
-		{name: "localhost domain", email: "person@localhost", valid: true},
-		{name: "bracketed IPv6 domain", email: "person@[2001:db8::1]", valid: true},
-		{name: "quoted local part", email: `"quoted"@example.com`, valid: true},
-		{name: "domain without dot", email: "person@example", valid: false},
-		{name: "display name", email: "Person <person@example.com>", valid: false},
+	"github.com/stretchr/testify/require"
+)
+
+func TestBareMailboxContract(t *testing.T) {
+	for _, email := range []string{"person@localhost", "person@LOCALHOST", "person@[2001:db8::1]", `"quoted"@example.com`, "i\u0307@example.com", "person@bücher.de", "person@例子.测试", "person@example.c"} {
+		require.True(t, Valid(email), email)
 	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			if got := ValidDjangoEmail(test.email); got != test.valid {
-				t.Errorf("ValidDjangoEmail(%q)=%t, want %t", test.email, got, test.valid)
-			}
-		})
+	for _, email := range []string{"", "missing-at", "@example.com", `"unclosed@example.com`, "has space@example.com", "comment(test)@example.com", "a@", "a@example.com.", "a@xn--.com", "a@" + strings.Repeat("a", 64) + ".com", string([]byte{0xff}) + "@example.com", "Person <person@example.com>", "a@example.com,b@example.com", "a@example..com", "a@-example.com", "a@example-.com", "a@[fe80::1%zone]", "a\x1c@example.com", "a\n@example.com", "a@example.com\r\nBcc: x@example.com", "a..b@example.com", "a@example", strings.Repeat("a", 244) + "@example.com"} {
+		require.False(t, Valid(email), email)
 	}
 }
-
-func TestNormalizePythonEmailUsesUnicodeStripAndFullLowercase(t *testing.T) {
-	got := NormalizePythonEmail("\u2003İ@LOCALHOST\u001c")
-	want := "i\u0307@localhost"
-	if got != want {
-		t.Fatalf("NormalizePythonEmail()=%q, want %q", got, want)
-	}
+func TestNormalizationPreservesStoredUnicodeIdentity(t *testing.T) {
+	require.Equal(t, "i\u0307@localhost", Normalize("\u2003İ@LOCALHOST\u2003"))
+	require.Equal(t, "a@ος-example.com", Normalize("a@ΟΣ-EXAMPLE.COM"))
+	require.Equal(t, "a@bücher.de", Normalize("A@BÜCHER.DE"))
+	require.False(t, Valid(Normalize("\u001cA@EXAMPLE.COM")))
 }

@@ -44,11 +44,11 @@ func TestCyclePaginationErrorsUseClientHTTPStatus(t *testing.T) {
 				server.Mount(mux, handler)
 				request := httptest.NewRequest(http.MethodGet, "/api/workspaces/demo/projects/00000000-0000-4000-8000-000000000003/cycles/00000000-0000-4000-8000-000000000001/cycle-issues/", nil)
 				request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})
-				request = request.WithContext(WithReadServiceDjangoHTML500(request.Context()))
+				request = request.WithContext(WithReadServiceNativeHTML500(request.Context()))
 				response := httptest.NewRecorder()
 				mux.ServeHTTP(response, request)
 				require.Equal(t, test.status, response.Code, response.Body.String())
-				require.False(t, ReadServiceDjangoHTML500(request.Context()), "validation must not request an HTML 500 rewrite")
+				require.False(t, ReadServiceNativeHTML500(request.Context()), "validation must not request an HTML 500 rewrite")
 				var body map[string]string
 				require.NoError(t, json.Unmarshal(response.Body.Bytes(), &body))
 				require.Equal(t, map[string]string{test.key: test.detail}, body)

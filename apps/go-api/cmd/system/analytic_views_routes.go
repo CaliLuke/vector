@@ -32,7 +32,7 @@ func analyticViewsHeadHandler(next http.Handler) http.Handler {
 
 func mountAnalyticViewsRoutes(analyticViewEndpoints *analyticviews.Endpoints, mux loomhttp.Muxer) {
 	if analyticViewEndpoints != nil {
-		server := analyticviewssvr.New(analyticViewEndpoints, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
+		server := analyticviewssvr.New(analyticViewEndpoints, mux, nativeRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 		server.Use(analyticViewsCompatibilityMiddleware)
 		analyticviewssvr.Mount(mux, server)
 		mountAnalyticViewsProtocolRoutes(mux, server.List, server.Retrieve)

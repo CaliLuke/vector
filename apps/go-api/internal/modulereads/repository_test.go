@@ -354,7 +354,7 @@ func TestModuleIssuesRejectDateOverflowAfterAuthorizationWithoutReadingItems(t *
 	}
 }
 
-func TestIssueFiltersMatchDjangoSanitizingAndDateSemantics(t *testing.T) {
+func TestIssueFiltersMatchNativeSanitizingAndDateSemantics(t *testing.T) {
 	where, args, dateErr := addIssueDateFilters(nil, nil, "2026-08,2_months;after;fromnow", "issue.start_date")
 	require.NoError(t, dateErr)
 	joined := strings.Join(where, " ")
@@ -490,7 +490,7 @@ func TestModuleWriteProjectionUsesMicrosecondRequesterTimestamps(t *testing.T) {
 	}
 }
 
-func TestModuleIssueOrderingMatchesDjangoRanksAndAllowlist(t *testing.T) {
+func TestModuleIssueOrderingMatchesNativeRanksAndAllowlist(t *testing.T) {
 	tests := map[string]string{
 		"":                           "issue.created_at DESC",
 		"unknown":                    "issue.created_at DESC",
@@ -637,7 +637,12 @@ func TestModuleIssueFilterCanonicalizationAndUngroupedM2MSubgroup(t *testing.T) 
 		}
 	}
 }
-func TestComplexIssueFilterDjangoCoercionEdges(t *testing.T) {
+func TestComplexIssueFilterNativeCoercionEdges(t *testing.T) {
+	invalidArgs := []any{}
+	if _, err := buildIssueComplexFilter(`{"is_archived":NaN}`, &invalidArgs); err == nil {
+		t.Fatal("non-JSON number accepted")
+	}
+
 	identifier := uuid.New()
 	args := []any{uuid.New(), "demo", uuid.New(), uuid.New()}
 	predicate, err := buildIssueComplexFilter(
@@ -661,8 +666,7 @@ func TestComplexIssueFilterDjangoCoercionEdges(t *testing.T) {
 		`{"label_id__in":[]}`: "FALSE",
 		`{"label_id":null}`:   "NOT EXISTS",
 		`{"is_draft":"bad"}`:  "issue.is_draft IS NULL",
-		`{"is_archived":NaN}`: "TRUE",
-		`{"is_draft":-0}`:     "issue.is_draft =",
+		`{"is_draft":-0}`:     "issue.is_draft IS NULL",
 	} {
 		filterArgs := []any{uuid.New(), "demo", uuid.New(), uuid.New()}
 		rendered, renderErr := buildIssueComplexFilter(raw, &filterArgs)
@@ -680,7 +684,7 @@ func TestComplexIssueFilterDjangoCoercionEdges(t *testing.T) {
 	}
 }
 
-func TestRelatedOrderingUsesDjangoFilterAliases(t *testing.T) {
+func TestRelatedOrderingUsesNativeFilterAliases(t *testing.T) {
 	identifier := uuid.New().String()
 	for _, test := range []struct {
 		options IssueListOptions
@@ -731,5 +735,14 @@ func TestUngroupedLabelSubgroupUsesCanonicalAxisForPageMetadata(t *testing.T) {
 	}
 	if !strings.Contains(query, "FROM filtered issue\n  CROSS JOIN LATERAL") || !strings.Contains(query, ") page_slice") {
 		t.Fatal("label subgroup query must expand its canonical axis and retain filtered-page metadata")
+	}
+}
+
+func TestModuleCalendarDatesRejectYearZeroBeforePersistence(t *testing.T) {
+	for _, field := range []string{"start_date", "target_date"} {
+		_, failures := validateModuleWriteFields(map[string]any{field: "0000-01-01"}, true)
+		if failures[field] == nil {
+			t.Fatalf("accepted year zero for %s", field)
+		}
 	}
 }

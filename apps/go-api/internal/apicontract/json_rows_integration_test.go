@@ -9,12 +9,11 @@ import (
 	"reflect"
 	"testing"
 
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func TestReadJSONRowsPreservesOrderingEmptyArraysAndConnectionOwnership(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, "SELECT 1")
+	ctx, connection := suiteDatabases.OpenSQL(t, "SELECT 1")
 	rows, err := ReadJSONRows(ctx, connection, `SELECT json_build_object('id',value) FROM (VALUES ('b'),('a')) source(value) ORDER BY value`)
 	if err != nil {
 		t.Fatal(err)

@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -18,7 +17,7 @@ import (
 // The workitemtypes suite also exercises it against the full migrated schema.
 func TestEstimateDeletionRejectsForeignReplacementAndCommitsEffectsWithValues(t *testing.T) {
 	ctx := t.Context()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, url string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, url string) error {
 		conn, err := pgx.Connect(ctx, url)
 		if err != nil {
 			return err
@@ -43,11 +42,8 @@ INSERT INTO issues VALUES('00000000-0000-4000-8000-000000000007','00000000-0000-
 `)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { testsupport.Close(t, pair) })
-	conn, err := pgx.Connect(ctx, pair.SeedURL())
+
+	conn, err := pgx.Connect(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

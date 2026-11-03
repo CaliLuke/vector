@@ -8,9 +8,31 @@ PostgreSQL stores application data and durable work. Redis provides cache servic
 S3-compatible storage holds uploaded files. The Node.js collaboration service supports live editing.
 
 The runtime does not require Django, Celery, or RabbitMQ.
-Startup requires native background tasks. Legacy broker settings remain accepted
-for configuration compatibility, but no AMQP publisher is constructed.
-Static response fixtures remain for contract regression tests. No Python code or interpreter is required.
+Startup requires native background tasks; unused broker flags have been removed.
+No Python code or interpreter is required. API acceptance is defined by Vector's
+consumers, authorization rules, and stored-data contracts. Historical fixture
+provenance does not require framework-specific coercion or formatting.
+
+Account email keys retain their Unicode lowercase normalization so existing
+identities remain reachable. New addresses use the native mailbox validator.
+Invitation acceptance and post-login joins share a membership transaction that
+checks the current account, recipient, tenant and role. Membership removal and
+account deactivation revoke outstanding invitations under the same lock order.
+Workspace-join tracking enters the durable effect outbox with the membership write.
+
+Input uses shared decimal, boolean, calendar-date and datetime validation. JSON
+keeps exact submitted numeric text; response serializers do not round numbers to
+reproduce Python float spelling. Editor binary content uses standard padded base64.
+Previously stored task payloads, receipt identities, and migration history are not
+rewritten. Fresh databases omit unused framework metadata; existing metadata is
+left intact. Compatibility table, task, route and generated type identifiers stay
+stable for their consumers.
+
+Password-reset links use a versioned, purpose-bound HMAC over account identity,
+credentials, login time and issuance time. Older outstanding reset links must be
+requested again after this upgrade. Browser CSRF cookies and masked form tokens
+remain supported because the clients use them; native session security, password
+invalidation, expiry, key rotation and OAuth state have independent tests.
 
 Terminal webhook transport failures disable the webhook and queue its creator's
 deactivation email in the same database transaction. The existing effect worker

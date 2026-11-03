@@ -146,7 +146,7 @@ func TestProjectLifecycleProductionMalformedUUIDPrecedesAuthentication(t *testin
 			if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil || body["error"] != "Page not found." {
 				t.Errorf("API resolver body=%s", response.Body.String())
 			}
-		} else if response.Body.String() != string(djangoNotFoundBody) {
+		} else if response.Body.String() != string(nativeNotFoundBody) {
 			t.Errorf("session resolver body=%s", response.Body.String())
 		}
 	}

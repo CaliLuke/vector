@@ -15,8 +15,8 @@ func BooleanField(value any) (bool, string) {
 	case bool:
 		return value, ""
 	case json.Number:
-		if number, err := value.Float64(); err == nil && (number == 0 || number == 1) {
-			return number == 1, ""
+		if number, err := IntegerField(value); err == nil && number.IsInt64() && (number.Int64() == 0 || number.Int64() == 1) {
+			return number.Int64() == 1, ""
 		}
 	case string:
 		text := strings.ToLower(value)

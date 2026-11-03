@@ -6,14 +6,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/assets_lifecycle"
 	"github.com/CaliLuke/go-plane/internal/apicontract"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 )
@@ -462,7 +460,7 @@ func (service *LifecycleService) confirmIssueAttachmentV1(ctx context.Context, s
 	var activity map[string]any
 	if !asset.IsUploaded {
 		current := decorateIssueAttachmentRows([]map[string]any{row}, slug, true)[0]
-		currentJSON, marshalErr := json.Marshal(pythonJSONNumbers(current))
+		currentJSON, marshalErr := json.Marshal(current)
 		if marshalErr != nil {
 			return marshalErr
 		}
@@ -564,7 +562,7 @@ func (service *LifecycleService) confirmIssueAttachment(ctx context.Context, slu
 	var activity map[string]any
 	if !asset.IsUploaded {
 		row = decorateIssueAttachmentRows([]map[string]any{row}, slug, false)[0]
-		currentInstance, marshalErr := json.Marshal(pythonJSONNumbers(row))
+		currentInstance, marshalErr := json.Marshal(row)
 		if marshalErr != nil {
 			return marshalErr
 		}
@@ -636,11 +634,6 @@ func decorateIssueAttachmentRows(rows []map[string]any, slug string, apiSerializ
 		copy := make(map[string]any, len(row)+1)
 		for key, value := range row {
 			copy[key] = value
-		}
-		if size, ok := row["size"].(json.Number); ok {
-			if parsed, err := strconv.ParseFloat(size.String(), 64); err == nil {
-				copy["size"] = json.Number(pythoncompat.FloatString(parsed))
-			}
 		}
 		if apiSerializer {
 			delete(copy, "asset_url")

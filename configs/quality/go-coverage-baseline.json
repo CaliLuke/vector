@@ -253,6 +253,10 @@
       "statements": 1759,
       "percent": 91.13
     },
+    "github.com/CaliLuke/go-plane/internal/jsonvalue": {
+      "statements": 119,
+      "percent": 94.12
+    },
     "github.com/CaliLuke/go-plane/internal/labelhierarchy": {
       "statements": 34,
       "percent": 88.24
@@ -356,10 +360,6 @@
     "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads": {
       "statements": 261,
       "percent": 93.87
-    },
-    "github.com/CaliLuke/go-plane/internal/pythoncompat": {
-      "statements": 223,
-      "percent": 90.23
     },
     "github.com/CaliLuke/go-plane/internal/ratelimit": {
       "statements": 52,

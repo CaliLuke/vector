@@ -7,11 +7,10 @@ import (
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 )
 
 func TestPublicCurrentIssueLabelsRespectLiveTargetScope(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
+	ctx, connection := suiteDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
 	repository, err := NewRepository(connection)
 	if err != nil {
 		t.Fatal(err)

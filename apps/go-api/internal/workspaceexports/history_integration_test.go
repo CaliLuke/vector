@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -21,7 +20,7 @@ CREATE TABLE issues (id uuid,workspace_id uuid,project_id uuid,created_by_id uui
 
 func TestCustomExportHistoryRequiresOwnerAndCurrentSourceVisibility(t *testing.T) {
 	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, databaseURL string) error {
 		connection, err := pgx.Connect(ctx, databaseURL)
 		if err != nil {
 			return err
@@ -47,15 +46,8 @@ INSERT INTO exporters(id,created_at,updated_at,type,workspace_id,project,provide
 `)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if closeErr := pair.Close(); closeErr != nil {
-			t.Error(closeErr)
-		}
-	})
-	connection, err := pgx.Connect(ctx, pair.SeedURL())
+
+	connection, err := pgx.Connect(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

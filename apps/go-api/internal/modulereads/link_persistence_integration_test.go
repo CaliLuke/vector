@@ -7,8 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
-
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 )
 
 const linkWorkspace = "20000000-0000-4000-8000-000000000001"
@@ -38,7 +36,7 @@ func (effects *linkEffects) SoftDelete(_ context.Context, app, model, id string)
 }
 
 func TestModuleLinkEditsPreserveOmittedMetadataAndAdmitScopedDeletion(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, moduleLinkSchema)
+	ctx, connection := suiteDatabases.OpenSQL(t, moduleLinkSchema)
 	effects := &linkEffects{}
 	repository, err := NewLifecycleRepository(connection, effects)
 	if err != nil {
@@ -85,7 +83,7 @@ func TestModuleLinkEditsPreserveOmittedMetadataAndAdmitScopedDeletion(t *testing
 }
 
 func TestModuleLinkDuplicateURLLeavesOnlyTheOriginalRow(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, moduleLinkSchema)
+	ctx, connection := suiteDatabases.OpenSQL(t, moduleLinkSchema)
 	repository, err := NewLifecycleRepository(connection, &linkEffects{})
 	if err != nil {
 		t.Fatal(err)

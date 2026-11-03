@@ -54,7 +54,7 @@ func normalizeUserProfileFlagsBody(path string, body []byte) ([]byte, int, map[s
 	if !exists {
 		return body, 0, nil
 	}
-	value, status, validation := djangoBooleanValue(raw)
+	value, status, validation := nativeBooleanValue(raw)
 	if validation != nil {
 		return nil, status, validation
 	}

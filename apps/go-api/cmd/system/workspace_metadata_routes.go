@@ -8,11 +8,11 @@ import (
 )
 
 func workspaceMetadataCompatibilityMiddleware(next http.Handler) http.Handler {
-	return djangoProtocolCompatibilityMiddleware(func(string) string { return "GET, HEAD, OPTIONS" })(next)
+	return nativeProtocolCompatibilityMiddleware(func(string) string { return "GET, HEAD, OPTIONS" })(next)
 }
 
 func workspaceMetadataOptionsHandler(name string) http.Handler {
-	return djangoProtocolOptionsHandler(workspaceMetadataCompatibilityMiddleware, name, false)
+	return nativeProtocolOptionsHandler(workspaceMetadataCompatibilityMiddleware, name, false)
 }
 
 func mountWorkspaceMetadataRoutes(pending pendingReplacementEndpoints, mux loomhttp.Muxer) {
@@ -20,8 +20,8 @@ func mountWorkspaceMetadataRoutes(pending pendingReplacementEndpoints, mux loomh
 		server := workspacemetadatasvr.New(pending.workspaceMetadata, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 		server.Use(workspaceMetadataCompatibilityMiddleware)
 		workspacemetadatasvr.Mount(mux, server)
-		mountProtocolHandler(mux, http.MethodHead, "/api/workspaces/{slug}/labels/", djangoProtocolHeadHandler(workspaceMetadataCompatibilityMiddleware, server.Labels))
-		mountProtocolHandler(mux, http.MethodHead, "/api/workspaces/{slug}/states/", djangoProtocolHeadHandler(workspaceMetadataCompatibilityMiddleware, server.States))
+		mountProtocolHandler(mux, http.MethodHead, "/api/workspaces/{slug}/labels/", nativeProtocolHeadHandler(workspaceMetadataCompatibilityMiddleware, server.Labels))
+		mountProtocolHandler(mux, http.MethodHead, "/api/workspaces/{slug}/states/", nativeProtocolHeadHandler(workspaceMetadataCompatibilityMiddleware, server.States))
 		mountProtocolHandler(mux, http.MethodOptions, "/api/workspaces/{slug}/labels/", workspaceMetadataOptionsHandler("Workspace Labels Endpoint"))
 		mountProtocolHandler(mux, http.MethodOptions, "/api/workspaces/{slug}/states/", workspaceMetadataOptionsHandler("Workspace States Endpoint"))
 	}

@@ -278,7 +278,7 @@ func TestModuleIssueListRejectsInvalidGrouping(t *testing.T) {
 	}
 }
 
-func TestModuleIssueGroupingAcceptsAllDjangoFields(t *testing.T) {
+func TestModuleIssueGroupingAcceptsAllNativeFields(t *testing.T) {
 	for _, field := range []string{"cycle_id", "target_date", "start_date"} {
 		if err := validateModuleIssueGrouping(field, ""); err != nil {
 			t.Errorf("grouping %q rejected: %v", field, err)
@@ -286,7 +286,7 @@ func TestModuleIssueGroupingAcceptsAllDjangoFields(t *testing.T) {
 	}
 }
 
-func TestModuleIssueParsingPreservesDjangoErrorBodies(t *testing.T) {
+func TestModuleIssueParsingPreservesNativeErrorBodies(t *testing.T) {
 	if perPage, err := moduleIssuePerPage("0", true); err != nil || perPage != 0 {
 		t.Fatalf("zero per_page=%d error=%v", perPage, err)
 	}
@@ -321,7 +321,7 @@ func TestModuleIssueParsingPreservesDjangoErrorBodies(t *testing.T) {
 		t.Fatalf("filter error=%T %#v", mapped, filterError)
 	}
 }
-func TestModuleIssueExplicitEmptyQueryPresenceMatchesDjango(t *testing.T) {
+func TestModuleIssueExplicitEmptyQueryPresenceMatchesNative(t *testing.T) {
 	repository := &moduleReadsRepositoryStub{}
 	service, ctx := authenticatedModuleReads(t, repository, &moduleRecentVisitsStub{})
 	payload := func() *api.IssuesPayload {

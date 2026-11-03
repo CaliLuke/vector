@@ -29,39 +29,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -96,39 +96,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -163,39 +163,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -229,39 +229,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -300,39 +300,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -372,39 +372,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -443,39 +443,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -514,39 +514,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -585,39 +585,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -657,39 +657,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -728,39 +728,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -808,39 +808,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -882,39 +882,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -981,39 +981,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -1055,39 +1055,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -1129,39 +1129,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -1204,39 +1204,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -1278,39 +1278,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -1355,39 +1355,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -1432,39 +1432,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -1509,39 +1509,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -1586,39 +1586,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -1666,39 +1666,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -1744,39 +1744,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -1825,39 +1825,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -1922,39 +1922,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -1999,39 +1999,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -2074,39 +2074,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -2152,39 +2152,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -2229,39 +2229,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -2303,39 +2303,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -2377,39 +2377,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -2449,39 +2449,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -2524,39 +2524,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -2598,39 +2598,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -2731,39 +2731,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -2802,39 +2802,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -2875,39 +2875,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -2946,39 +2946,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -3020,39 +3020,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -3114,39 +3114,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -3188,39 +3188,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -3260,39 +3260,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -3336,39 +3336,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -3410,39 +3410,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -3476,39 +3476,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -3553,39 +3553,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -3619,39 +3619,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -3690,39 +3690,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -3772,39 +3772,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -3843,39 +3843,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -4007,39 +4007,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -4094,39 +4094,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -4166,39 +4166,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -4239,39 +4239,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -4311,39 +4311,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -4384,39 +4384,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -4536,39 +4536,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -4617,39 +4617,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -4739,39 +4739,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -4816,39 +4816,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -4893,39 +4893,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -4973,39 +4973,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -5051,39 +5051,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -5132,39 +5132,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -5208,39 +5208,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -5285,39 +5285,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -5365,39 +5365,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -5443,39 +5443,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -5524,39 +5524,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -5598,39 +5598,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -5684,39 +5684,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -5759,39 +5759,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -5834,39 +5834,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -5906,39 +5906,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -5989,39 +5989,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -6061,39 +6061,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -6139,39 +6139,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -6216,39 +6216,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -6312,39 +6312,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -6392,39 +6392,39 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequestError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowedError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "409": {
             "$ref": "#/components/responses/ConflictError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "413": {
             "$ref": "#/components/responses/RequestEntityTooLargeError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequestsError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           },
           "500": {
             "$ref": "#/components/responses/InternalServerErrorError",
-            "description": "Source-compatible Django JSON error response."
+            "description": "JSON error response."
           }
         },
         "security": [
@@ -8122,7 +8122,7 @@
     "securitySchemes": {
       "ApiKeyAuth": {
         "type": "apiKey",
-        "description": "Plane API token authentication.",
+        "description": "Vector API token authentication.",
         "name": "X-Api-Key",
         "in": "header"
       },

@@ -16,7 +16,7 @@ import (
 // These names come from Django GET.get/query_params.get consumers, including
 // issue_filters.py, paginator.py, base serializers, and the retired views.
 // Keep this independent of readServiceScalarQueryParameters: that map is tested.
-var djangoSourceScalarQueryNames = strings.Fields(`
+var nativeSourceScalarQueryNames = strings.Fields(`
 assignees completed_at created_at created_by cursor cycle cycle_view entity_name
 estimate_point expand fields filters format group_by grouped inbox_status
 intake_status labels logged_by mentions module name order_by owner parent per_page
@@ -25,7 +25,7 @@ state_group status sub_group_by sub_issue subscriber target_date track_visit typ
 `)
 
 // IssueFilterSet uses scalar widgets, then splits CSV values where applicable.
-var djangoSourceScalarFilterAliases = strings.Fields(`
+var nativeSourceScalarFilterAliases = strings.Fields(`
 assignee_id assignee_id__in created_at__exact created_at__range created_by_id
 created_by_id__in cycle_id__in is_archived is_draft label_id label_id__in mention_id
 mention_id__in module_id module_id__in priority__in project_id__in start_date__exact
@@ -33,7 +33,7 @@ start_date__range state_group__in state_id state_id__in subscriber_id subscriber
  target_date__exact target_date__range updated_at__exact updated_at__range
 `)
 
-type djangoQueryContractFixture struct {
+type nativeQueryContractFixture struct {
 	LimitFieldCount int               `json:"limit_field_count"`
 	RawQuery        string            `json:"raw_query"`
 	Values          url.Values        `json:"values"`
@@ -43,13 +43,13 @@ type djangoQueryContractFixture struct {
 	ValuesCount     int               `json:"values_count"`
 }
 
-func loadDjangoQueryContractFixtures(t *testing.T) []djangoQueryContractFixture {
+func loadNativeQueryContractFixtures(t *testing.T) []nativeQueryContractFixture {
 	t.Helper()
 	data, err := os.ReadFile("testdata/query_compatibility.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	var fixtures []djangoQueryContractFixture
+	var fixtures []nativeQueryContractFixture
 	if err := json.Unmarshal(data, &fixtures); err != nil {
 		t.Fatal(err)
 	}
@@ -59,8 +59,8 @@ func loadDjangoQueryContractFixtures(t *testing.T) []djangoQueryContractFixture 
 	return fixtures
 }
 
-func TestDjangoQueryContractRecordedValues(t *testing.T) {
-	for _, fixture := range loadDjangoQueryContractFixtures(t) {
+func TestNativeQueryContractRecordedValues(t *testing.T) {
+	for _, fixture := range loadNativeQueryContractFixtures(t) {
 		if fixture.FieldCount != 0 || fixture.LimitFieldCount != 0 {
 			continue
 		}
@@ -72,14 +72,14 @@ func TestDjangoQueryContractRecordedValues(t *testing.T) {
 			originalURI := request.RequestURI
 			request = request.WithContext(context.WithValue(request.Context(), readServicesOriginalRawQueryKey{}, fixture.RawQuery))
 
-			decoded := normalizeDjangoTolerantQuery(request)
+			decoded := normalizeNativeTolerantQuery(request)
 			if got := decoded.URL.Query(); !reflect.DeepEqual(got, fixture.Values) {
 				t.Errorf("decoded query = %#v; Django recorded %#v", got, fixture.Values)
 			}
 			expected := make(url.Values, len(fixture.Values))
 			for key, values := range fixture.Values {
 				expected[key] = slices.Clone(values)
-				if slices.Contains(djangoSourceScalarQueryNames, key) || slices.Contains(djangoSourceScalarFilterAliases, key) {
+				if slices.Contains(nativeSourceScalarQueryNames, key) || slices.Contains(nativeSourceScalarFilterAliases, key) {
 					expected[key] = []string{fixture.Scalars[key]}
 				}
 			}
@@ -93,7 +93,7 @@ func TestDjangoQueryContractRecordedValues(t *testing.T) {
 			if normalized.RequestURI != originalURI || readServicesOriginalRawQuery(normalized) != fixture.RawQuery {
 				t.Error("normalization changed original request evidence")
 			}
-			again := normalizeReadServiceScalarQueryValues(normalizeDjangoTolerantQuery(normalized))
+			again := normalizeReadServiceScalarQueryValues(normalizeNativeTolerantQuery(normalized))
 			if *again.URL != *normalized.URL || again.RequestURI != originalURI || readServicesOriginalRawQuery(again) != fixture.RawQuery {
 				t.Error("normalization is not idempotent or changed original request evidence")
 			}
@@ -101,14 +101,14 @@ func TestDjangoQueryContractRecordedValues(t *testing.T) {
 	}
 }
 
-func TestDjangoQueryContractSourceScalarNames(t *testing.T) {
-	names := append(slices.Clone(djangoSourceScalarQueryNames), djangoSourceScalarFilterAliases...)
+func TestNativeQueryContractSourceScalarNames(t *testing.T) {
+	names := append(slices.Clone(nativeSourceScalarQueryNames), nativeSourceScalarFilterAliases...)
 	for _, name := range names {
 		t.Run(name, func(t *testing.T) {
 			for _, last := range []string{"last", "", "%ZZ", "a,b"} {
 				request := httptest.NewRequest("GET", "/api/example/", nil)
 				request.URL.RawQuery = url.QueryEscape(name) + "=first&" + url.QueryEscape(name) + "=" + last + "&unknown=first&unknown=&unknown=last"
-				normalized := normalizeReadServiceScalarQueryValues(normalizeDjangoTolerantQuery(request))
+				normalized := normalizeReadServiceScalarQueryValues(normalizeNativeTolerantQuery(request))
 				expected := url.Values{name: {last}, "unknown": {"first", "", "last"}}
 				if got := normalized.URL.Query(); !reflect.DeepEqual(got, expected) {
 					t.Errorf("last %q: got %#v; want %#v", last, got, expected)
@@ -118,14 +118,14 @@ func TestDjangoQueryContractSourceScalarNames(t *testing.T) {
 	}
 }
 
-func TestDjangoQueryContractRecordedFieldLimit(t *testing.T) {
-	for _, fixture := range loadDjangoQueryContractFixtures(t) {
+func TestNativeQueryContractRecordedFieldLimit(t *testing.T) {
+	for _, fixture := range loadNativeQueryContractFixtures(t) {
 		if fixture.FieldCount == 0 {
 			continue
 		}
 		t.Run(fmt.Sprint(fixture.FieldCount), func(t *testing.T) {
 			raw := strings.TrimSuffix(strings.Repeat("query=value&", fixture.FieldCount), "&")
-			values, err := djangoQueryValues(raw, "query")
+			values, err := nativeQueryValues(raw, "query")
 			if fixture.Accepted {
 				if err != nil {
 					t.Fatal(err)
@@ -140,7 +140,7 @@ func TestDjangoQueryContractRecordedFieldLimit(t *testing.T) {
 	}
 }
 
-func TestDjangoQueryContractOpenAPIScalarCoverage(t *testing.T) {
+func TestNativeQueryContractOpenAPIScalarCoverage(t *testing.T) {
 	names := make(map[string]bool)
 	for _, path := range []string{"../../gen/http/openapi.json", "../../activityreads/gen/http/openapi.json"} {
 		t.Run(path, func(t *testing.T) {
@@ -198,7 +198,7 @@ func TestDjangoQueryContractOpenAPIScalarCoverage(t *testing.T) {
 	}
 	// Require every source-characterized name to remain represented, including
 	// activity's reference-defined expand parameter.
-	for _, name := range djangoSourceScalarQueryNames {
+	for _, name := range nativeSourceScalarQueryNames {
 		if !names[name] {
 			t.Errorf("source-characterized query %q was not found in either OpenAPI document", name)
 		}

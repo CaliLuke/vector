@@ -11,7 +11,7 @@ go -C apps/go-api test ./...
 go -C apps/go-api vet ./...
 ```
 
-Use [the development guide](../../docs/development.md) to run the complete application.
+Use [the root README](../../README.md#run-locally) to run the complete application.
 Use [the deployment guide](../../docs/self-hosting.md) for the source-built production stack.
 
 `cmd/system` runs the API. `cmd/bootstrap` manages database bootstrap and installation.

@@ -75,7 +75,7 @@ var webhookInvalid = Type("WebhookInvalid", func() {
 	Attribute("non_field_errors", ArrayOf(String))
 })
 
-var webhookSessionCookie = APIKeySecurity("webhook_session_cookie", func() { Description("Plane Django session cookie.") })
+var webhookSessionCookie = APIKeySecurity("webhook_session_cookie", func() { Description("Vector browser session cookie.") })
 var _ = API("Plane Workspace Webhooks API", func() {
 	Meta("http:generate", "all")
 	Title("Plane Workspace Webhooks API")

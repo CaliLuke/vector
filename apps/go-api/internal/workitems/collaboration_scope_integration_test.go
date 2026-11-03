@@ -6,13 +6,12 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
 func TestBoundCollaborationReadsRejectScopeEscapes(t *testing.T) {
-	ctx, db := postgresfixture.OpenSQL(t, childVisibilitySchema+`
+	ctx, db := suiteDatabases.OpenSQL(t, childVisibilitySchema+`
  CREATE TABLE users(id uuid PRIMARY KEY,is_active boolean);
  INSERT INTO users VALUES('10000000-0000-4000-8000-000000000001',true);
  INSERT INTO workspaces(id,slug) VALUES('20000000-0000-4000-8000-000000000001','demo');

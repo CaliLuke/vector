@@ -643,7 +643,7 @@ func (repository *PostgresRepository) CreateLegacyIssueAttachment(ctx context.Co
 			return fmt.Errorf("created legacy issue attachment %s missing from activity snapshot", id)
 		}
 		rows[0]["asset_url"] = assetURL
-		currentInstance, err := json.Marshal(pythonJSONNumbers(rows[0]))
+		currentInstance, err := json.Marshal(rows[0])
 		if err != nil {
 			return fmt.Errorf("encode created legacy issue attachment activity: %w", err)
 		}

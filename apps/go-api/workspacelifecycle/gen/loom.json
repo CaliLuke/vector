@@ -1,5 +1,5 @@
 {
-  "loom_version": "v1.10.0-alpha.16",
+  "loom_version": "v1.10.0-alpha.22",
   "design_package": "github.com/CaliLuke/go-plane/workspacelifecycle/design",
-  "design_digest": "333a80b25e014eb6be6512afb5580041326e1360a82b83c6b4250098022f9569"
+  "design_digest": "de1c3900b36020ac94b5ddd7e969cefba67e7fe79b7797cb3b30bae6cb30c2cc"
 }

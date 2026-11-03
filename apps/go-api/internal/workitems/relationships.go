@@ -13,7 +13,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 )
@@ -213,7 +213,7 @@ func (r *Repository) relations(ctx context.Context, q Request, body io.Reader, c
 	if err = tx.Commit(ctx); err != nil {
 		return Result{}, err
 	}
-	requested, err := pythoncompat.Dumps(input.Fields, input.Raw)
+	requested, err := jsonvalue.Ordered(input.Fields, input.Raw)
 	if err != nil {
 		return Result{}, err
 	}
@@ -349,7 +349,7 @@ func (r *Repository) removeRelation(ctx context.Context, q Request, input reques
 	if err = r.softDeleteRow(ctx, "issue_relations", "issuerelation", row["id"].(string), q.ActorID); err != nil {
 		return Result{}, err
 	}
-	requested, err := pythoncompat.Dumps(input.Fields, input.Raw)
+	requested, err := jsonvalue.Ordered(input.Fields, input.Raw)
 	if err != nil {
 		return Result{}, err
 	}
@@ -444,8 +444,8 @@ func (r *Repository) subissuesTransaction(ctx context.Context, q Request, body i
 			id := child["id"].(string)
 			local := q
 			local.IssueID, local.ProjectID = id, child["project_id"].(string)
-			requested, _ := pythoncompat.Dumps(map[string]any{"parent": q.IssueID}, nil)
-			previous, _ := pythoncompat.Dumps(map[string]any{"parent": previousParents[id]}, nil)
+			requested, _ := jsonvalue.Ordered(map[string]any{"parent": q.IssueID}, nil)
+			previous, _ := jsonvalue.Ordered(map[string]any{"parent": previousParents[id]}, nil)
 			if err = r.activity(ctx, local, "issue.activity.updated", requested, previous, false); err != nil {
 				return Result{}, err
 			}

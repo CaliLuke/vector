@@ -179,6 +179,56 @@ Pin the Git revision that you deploy. Build that revision and check its release 
 An existing Plane database requires a separate migration rehearsal with a backup.
 The completed development cutover does not certify every upstream release or custom installation.
 
+### PostgreSQL major-version upgrades
+
+Select a separate physical volume with `POSTGRES_DATA_VOLUME` in the ignored `.env` file.
+Restore the backup into that volume before starting the upgraded service.
+Changing the image tag does not migrate data.
+Changing the volume can silently select an empty database.
+
+### Current-value search migration
+
+Before migration 13, stop older API and worker writers.
+Run the new `bootstrap schema` or `bootstrap install` command to completion before starting the new application.
+Do not perform a rolling upgrade across this boundary: older writers do not maintain the search projection.
+
+If bootstrap reports invalid legacy rich text, repair the identified item and field before retrying.
+Do not log their content.
+
+### Recover a rejected type-level migration
+
+If migration 46 rejects conflicting type levels or a repair that invalidates parent links, stop application writers and migration runners.
+Earlier migrations remain applied, but the journal records version 46 as dirty.
+Inspect the affected values:
+
+```sql
+SELECT t.workspace_id, t.id, t.level::text,
+       array_agg(DISTINCT p.level) FILTER (WHERE p.id IS NOT NULL) AS project_levels
+FROM public.issue_types t
+LEFT JOIN public.project_issue_types p
+  ON p.issue_type_id = t.id AND p.workspace_id = t.workspace_id
+WHERE NOT (t.level BETWEEN 0 AND 20 AND t.level = floor(t.level))
+GROUP BY t.workspace_id, t.id, t.level;
+```
+
+Restore a reviewed level assignment or project copy, for example from a backup.
+Do not remove parent links to make this migration pass.
+After resolving the reported conflict, use this guarded reset for the rejected migration 46 only:
+
+```sql
+UPDATE public.plane_schema_migrations SET version = 45, dirty = false
+WHERE version = 46 AND dirty
+  AND NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'public.issue_types'::regclass
+      AND conname = 'issue_types_level_valid'
+  )
+RETURNING version, dirty;
+```
+
+If the reset returns one row, rerun normal schema bootstrap.
+If it returns no rows, inspect the journal and constraint state before taking another action.
+
 ## Source and privacy
 
 Provide users a link to the source revision that runs your service, including local modifications required by the AGPL.

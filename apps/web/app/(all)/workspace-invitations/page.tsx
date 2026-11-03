@@ -53,7 +53,7 @@ function WorkspaceInvitationPage(): React.JSX.Element | null {
   });
 
   const respondToInvitation = async (accepted: boolean) => {
-    if (!invitationDetail || (!accepted && !token)) return;
+    if (!invitationDetail || !currentUser || !token) return;
     const identityScope = captureIdentityScope(queryClient, currentUser?.id);
     const session = {
       generation: getIdentitySessionGeneration(queryClient),
@@ -103,8 +103,18 @@ function WorkspaceInvitationPage(): React.JSX.Element | null {
               title={`You have been invited to ${invitationDetail.workspace.name}`}
               description="Your workspace is where you'll create projects, collaborate on your work items, and organize different streams of work in your Vector account."
             >
-              <EmptySpaceItem Icon={CheckIcon} title="Accept" action={handleAccept} />
-              <EmptySpaceItem Icon={CloseIcon} title="Ignore" action={handleReject} />
+              {currentUser ? (
+                <>
+                  <EmptySpaceItem Icon={CheckIcon} title="Accept" action={handleAccept} />
+                  <EmptySpaceItem Icon={CloseIcon} title="Ignore" action={handleReject} />
+                </>
+              ) : (
+                <EmptySpaceItem
+                  Icon={User2}
+                  title="Sign in to respond"
+                  href={`/?${new URLSearchParams({ next_path: router.state.location.href }).toString()}`}
+                />
+              )}
             </EmptySpace>
           )
         ) : error || invitationDetail?.responded_at ? (

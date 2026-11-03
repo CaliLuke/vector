@@ -75,7 +75,7 @@ func authRedirectResetPasswordPath(path string) bool {
 // djangoPlainViewCSRFMiddleware reproduces CsrfViewMiddleware's ordering for
 // Django plain Views: it checks every unsafe request before method dispatch,
 // including anonymous requests and methods the view does not implement.
-func djangoPlainViewCSRFMiddleware(trustedOrigins []string, bodyLimit int64) func(http.Handler) http.Handler {
+func nativePlainViewCSRFMiddleware(trustedOrigins []string, bodyLimit int64) func(http.Handler) http.Handler {
 	if bodyLimit <= 0 {
 		bodyLimit = defaultFileSizeLimit
 	}
@@ -133,7 +133,7 @@ func authResponseSessionPath(request *http.Request) bool {
 
 func accountAuthenticationProtocolMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		setDjangoProtocolCompatibilityHeaders(response.Header(), "POST, OPTIONS")
+		setNativeProtocolCompatibilityHeaders(response.Header(), "POST, OPTIONS")
 		next.ServeHTTP(response, request)
 	})
 }
@@ -154,7 +154,7 @@ func accountAuthenticationCSRFMiddleware(trustedOrigins []string) func(http.Hand
 				next.ServeHTTP(response, request)
 				return
 			}
-			setDjangoProtocolCompatibilityHeaders(response.Header(), "POST, OPTIONS")
+			setNativeProtocolCompatibilityHeaders(response.Header(), "POST, OPTIONS")
 			writeReadServiceJSON(response, http.StatusForbidden, map[string]string{"detail": "CSRF Failed: " + reason})
 		})
 	}
@@ -302,8 +302,8 @@ func setAuthRedirectSecurityHeaders(headers http.Header) {
 // the password endpoints call user_login. The session action is the domain
 // signal that a password write completed and replaced the authenticated
 // session; ordinary validation failures leave both cookies untouched.
-func passwordLoginCSRFCookieMiddleware(config djangoCSRFCookieConfig) func(http.Handler) http.Handler {
-	policy := djangoCSRFResponseCookiePolicy(config)
+func passwordLoginCSRFCookieMiddleware(config nativeCSRFCookieConfig) func(http.Handler) http.Handler {
+	policy := nativeCSRFResponseCookiePolicy(config)
 	return func(next http.Handler) http.Handler {
 		return policy.Handler(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 			if request.URL.Path != "/auth/change-password/" && request.URL.Path != "/auth/set-password/" {
@@ -356,7 +356,7 @@ func (sessions authSessionWithoutTimezone) InspectReadServiceSession(ctx context
 }
 
 // Plain Django auth Views resolve sessions without DRF's timezone validation.
-func djangoAuthSessionMiddleware(sessions authSessionLifecycle, cookie browserSessionCookieConfig, matches func(*http.Request) bool) func(http.Handler) http.Handler {
+func nativeAuthSessionMiddleware(sessions authSessionLifecycle, cookie browserSessionCookieConfig, matches func(*http.Request) bool) func(http.Handler) http.Handler {
 	if sessions == nil {
 		return browserSessionLifecycleMiddleware(nil, cookie, matches)
 	}

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/stretchr/testify/require"
 )
 
@@ -34,7 +33,7 @@ INSERT INTO milestone_issues(issue_id,milestone_id,project_id,workspace_id,delet
 
 func newPQLMilestoneFixture(t *testing.T) pqlIdentityFixture {
 	t.Helper()
-	ctx, db := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed+pqlReadSeed+pqlMilestoneSeed)
+	ctx, db := suiteDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed+pqlReadSeed+pqlMilestoneSeed)
 	repo, err := NewRepository(db, modelPublisher{}, "https://example.test")
 	require.NoError(t, err)
 	q := Request{API: true, Method: "GET", Operation: "get_api_v1_workspaces_by_slug_projects_by_project_id_issues", ActorID: testsupport.LabelActor, Slug: "demo", ProjectID: testsupport.LabelProject, Timezone: "UTC"}

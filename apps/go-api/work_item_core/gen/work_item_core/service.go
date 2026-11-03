@@ -614,8 +614,8 @@ type DeleteAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDIssuesByIssueI
 // payload type of the WorkItemCore service
 // GetAPIV1WorkspacesBySlugIssuesProjectIdentifierIssueIdentifier method.
 type GetAPIV1WorkspacesBySlugIssuesProjectIdentifierIssueIdentifierPayload struct {
-	// Project identifier and issue sequence in one segment; Django lookup
-	// preserves the complete spelling.
+	// Project identifier and issue sequence in one segment; Lookup preserves the
+	// complete identifier spelling.
 	Identifier string `json:"identifier"`
 	// Workspace slug
 	Slug                 string  `json:"slug"`
@@ -792,8 +792,8 @@ type GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsPayload struct {
 // the payload type of the WorkItemCore service
 // GetAPIV1WorkspacesBySlugWorkItemsProjectIdentifierIssueIdentifier method.
 type GetAPIV1WorkspacesBySlugWorkItemsProjectIdentifierIssueIdentifierPayload struct {
-	// Project identifier and issue sequence in one segment; Django lookup
-	// preserves the complete spelling.
+	// Project identifier and issue sequence in one segment; Lookup preserves the
+	// complete identifier spelling.
 	Identifier string `json:"identifier"`
 	// Workspace slug
 	Slug                 string  `json:"slug"`
@@ -937,8 +937,8 @@ type GetAPIWorkspacesBySlugUserIssuesByUserIDPayload struct {
 // the payload type of the WorkItemCore service
 // GetAPIWorkspacesBySlugWorkItemsProjectIdentifierIssueIdentifier method.
 type GetAPIWorkspacesBySlugWorkItemsProjectIdentifierIssueIdentifierPayload struct {
-	// Project identifier and issue sequence in one segment; Django lookup
-	// preserves the complete spelling.
+	// Project identifier and issue sequence in one segment; Lookup preserves the
+	// complete identifier spelling.
 	Identifier string `json:"identifier"`
 	Slug       string `json:"slug"`
 }

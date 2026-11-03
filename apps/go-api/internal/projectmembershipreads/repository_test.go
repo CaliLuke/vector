@@ -174,7 +174,7 @@ func TestWorkspaceMembersScopesAuthorizationSearchAndSerializerRole(t *testing.T
 	}
 }
 
-func TestMemberDirectoryRequesterRolesMatchDjangoPermissions(t *testing.T) {
+func TestMemberDirectoryRequesterRolesMatchNativePermissions(t *testing.T) {
 	database := &databaseStub{row: rowFunc(func(destinations ...any) error {
 		*destinations[0].(*[]byte) = []byte(`{}`)
 		return nil
@@ -377,7 +377,7 @@ func TestWorkspaceMemberSearchTreatsLikeMetacharactersLiterally(t *testing.T) {
 	}
 }
 
-func TestWorkspaceMemberSearchUsesDjangoUnicodeCaseFolding(t *testing.T) {
+func TestWorkspaceMemberSearchUsesNativeUnicodeCaseFolding(t *testing.T) {
 	database := &databaseStub{row: rowFunc(func(destinations ...any) error {
 		*destinations[0].(*[]byte) = []byte(`null`)
 		return nil

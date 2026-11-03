@@ -50,12 +50,12 @@ func checkPageErrorResponse(t *testing.T, detail bool, failure error, status int
 	}
 	request := httptest.NewRequest(http.MethodGet, path+"?order_by=invalid", nil)
 	request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})
-	request = request.WithContext(WithReadServiceDjangoHTML500(request.Context()))
+	request = request.WithContext(WithReadServiceNativeHTML500(request.Context()))
 	response := httptest.NewRecorder()
 	mux.ServeHTTP(response, request)
 	require.Equal(t, status, response.Code, response.Body.String())
 	require.Contains(t, response.Header().Get("Content-Type"), "application/json")
-	require.False(t, ReadServiceDjangoHTML500(request.Context()))
+	require.False(t, ReadServiceNativeHTML500(request.Context()))
 	var body map[string]string
 	require.NoError(t, json.Unmarshal(response.Body.Bytes(), &body))
 	require.Equal(t, map[string]string{"error": message}, body)

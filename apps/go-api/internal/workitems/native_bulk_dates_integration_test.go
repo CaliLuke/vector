@@ -11,12 +11,11 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/stretchr/testify/require"
 )
 
 func TestBulkDatesValidateWholeBatchBeforeEffectsOrWrites(t *testing.T) {
-	ctx, db := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed+`
+	ctx, db := suiteDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed+`
 CREATE TABLE work_item_effects(id uuid PRIMARY KEY,kind text,payload jsonb);
 UPDATE issues SET start_date='2026-01-01',target_date='2026-01-10';
 `)

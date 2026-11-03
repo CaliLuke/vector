@@ -56,21 +56,21 @@ func apiV1CompatibilityMiddleware(options apiV1CompatibilityOptions) func(http.H
 			if tooLarge {
 				headers := response.Header()
 				headers.Set("Content-Type", "application/json")
-				headers.Set("Content-Length", strconv.Itoa(len(djangoRequestTooLargeBody)))
+				headers.Set("Content-Length", strconv.Itoa(len(nativeRequestTooLargeBody)))
 				response.WriteHeader(http.StatusRequestEntityTooLarge)
-				_, _ = response.Write(djangoRequestTooLargeBody)
+				_, _ = response.Write(nativeRequestTooLargeBody)
 				return
 			}
 			if err != nil {
 				response.Header().Set("Content-Type", "text/html; charset=utf-8")
-				response.Header().Set("Content-Length", strconv.Itoa(len(djangoServerErrorBody)))
+				response.Header().Set("Content-Length", strconv.Itoa(len(nativeServerErrorBody)))
 				response.WriteHeader(http.StatusInternalServerError)
 				if request.Method != http.MethodHead {
-					_, _ = response.Write(djangoServerErrorBody)
+					_, _ = response.Write(nativeServerErrorBody)
 				}
 				return
 			}
-			if apiKey := djangoJoinedHeader(request, "X-Api-Key"); apiKey != "" {
+			if apiKey := nativeJoinedHeader(request, "X-Api-Key"); apiKey != "" {
 				request.Header.Set("X-Api-Key", apiKey)
 			}
 			effects := &apikey.Effects{}

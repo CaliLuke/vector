@@ -20,7 +20,6 @@ func TestParseCursorMatchesGlobalPaginatorInputs(t *testing.T) {
 		{name: "default", limit: 1000, page: 0},
 		{name: "explicit", raw: stringPointer("25:2:1"), limit: 25, page: 2},
 		{name: "clamps limit", raw: stringPointer("1200:1:0"), limit: 1000, page: 1},
-		{name: "python decimal digits", raw: stringPointer("٢٥:١:0"), limit: 25, page: 1},
 		{name: "negative page uses first page", raw: stringPointer("10:-1:0"), limit: 10, page: -1},
 	}
 	for _, test := range tests {
@@ -37,7 +36,7 @@ func TestParseCursorMatchesGlobalPaginatorInputs(t *testing.T) {
 }
 
 func TestParseCursorRejectsInvalidPagination(t *testing.T) {
-	for _, raw := range []string{"", "1:2", "1:2:3:4", "x:0:0", "1.0:0:0", "0:0:0", "-1:0:0", "1:999999999999999999999999999:0"} {
+	for _, raw := range []string{"", "1:2", "1:2:3:4", "x:0:0", "1.0:0:0", "١:0:0", "1_0:0:0", "0:0:0", "-1:0:0", "1:999999999999999999999999999:0"} {
 		t.Run(raw, func(t *testing.T) {
 			_, err := parseCursor(&raw)
 			var httpError *apicontract.HTTPError

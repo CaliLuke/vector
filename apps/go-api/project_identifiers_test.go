@@ -64,7 +64,7 @@ func TestProjectIdentifiersGetDecodesRepositoryResult(t *testing.T) {
 	}
 }
 
-func TestProjectIdentifiersMapsDjangoValidationAndConflictErrors(t *testing.T) {
+func TestProjectIdentifiersMapsNativeValidationAndConflictErrors(t *testing.T) {
 	service, ctx := projectIdentifierAdapterContext(t, &projectIdentifierAdapterRepositoryStub{authorized: true, err: store.ErrNameRequired})
 	if _, err := service.Get(ctx, &api.GetPayload{Slug: "demo"}); err == nil {
 		t.Fatal("Get() returned nil error for empty name")

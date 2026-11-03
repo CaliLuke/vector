@@ -102,7 +102,7 @@ func assetLifecycleAPIV1Middleware(apiV1 func(http.Handler) http.Handler) func(h
 
 func mountAssetsLifecycleRoutes(ctx context.Context, pending pendingReplacementEndpoints, mux loomhttp.Muxer, assetsMountedMethods map[assetsLifecycleMountedRoute]struct{}, activityOptions *apiV1CompatibilityOptions) {
 	if pending.assetsLifecycle != nil {
-		server := assetslifecyclesvr.New(pending.assetsLifecycle, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
+		server := assetslifecyclesvr.New(pending.assetsLifecycle, mux, nativeRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 		server.Use(assetLifecycleProtocolHeaders)
 		server.Use(assetRequestMetadataMiddleware)
 		if activityOptions != nil {

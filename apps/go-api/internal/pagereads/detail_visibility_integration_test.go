@@ -4,6 +4,7 @@ package pagereads_test
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 	"uuid"
 
@@ -23,7 +24,7 @@ func TestPageDetailVisibilityDoesNotDependOnHiddenName(t *testing.T) {
 	fixture := newPageCreateFixture(t)
 	root := createUpdateTestPage(t, fixture, map[string]any{"name": "Secret title"})
 	child := createUpdateTestPage(t, fixture, map[string]any{"name": "Secret child", "parent": root.String()})
-	private := createUpdateTestPage(t, fixture, map[string]any{"name": "Secret private", "access": 1})
+	private := createUpdateTestPage(t, fixture, map[string]any{"name": "Secret private", "access": json.Number("1")})
 	accounts, err := accountauthentication.NewRepository(fixture.pool, nil, false)
 	require.NoError(t, err)
 	owner, err := accounts.CreateUser(t.Context(), "page-owner@example.test", "page-owner", "!", true, true)

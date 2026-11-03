@@ -148,7 +148,7 @@ func TestWorkspaceProjectReadsAuthenticationAndMetadata(t *testing.T) {
 	}
 }
 
-func TestWorkspaceProjectOptionsRequireAuthenticationAndReturnDjangoMetadata(t *testing.T) {
+func TestWorkspaceProjectOptionsRequireAuthenticationAndReturnNativeMetadata(t *testing.T) {
 	service := &workspaceProjectReadsService{repository: &workspaceProjectRepositoryStub{}, sessions: workspaceProjectSessionsStub{}, recentVisits: &workspaceProjectRecentVisitsStub{}}
 	ctx := authenticatedWorkspaceProjectContext()
 	tests := []struct {
@@ -261,7 +261,7 @@ func TestWorkspaceExplicitEmptyOwnerIsAnUnfilteredResponse(t *testing.T) {
 	}
 }
 
-func TestWorkspaceDetailMapsTenantMissToDjango404(t *testing.T) {
+func TestWorkspaceDetailMapsTenantMissToNative404(t *testing.T) {
 	service := &workspaceProjectReadsService{repository: &workspaceProjectRepositoryStub{err: store.ErrNotFound}, sessions: workspaceProjectSessionsStub{}, recentVisits: &workspaceProjectRecentVisitsStub{}}
 	_, _, err := service.Workspace(authenticatedWorkspaceProjectContext(), &api.WorkspacePayload{Slug: "foreign"})
 	var notFound *api.WorkspaceProjectDetailNotFound

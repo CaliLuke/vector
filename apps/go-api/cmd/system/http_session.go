@@ -27,11 +27,11 @@ func browserSessionLifecycleMiddleware(
 				next.ServeHTTP(response, request)
 				return
 			}
-			request = normalizeDjangoCookie(request, sessionCookieName(sessionCookie))
+			request = normalizeNativeCookie(request, sessionCookieName(sessionCookie))
 			expireSession, refreshSession, prepared, principal, err := sessions.InspectReadServiceSession(request.Context(), request)
 			if expireSession {
-				if expireDjangoErr := expireBrowserSessionCookie(response.Header(), sessionCookie); expireDjangoErr != nil {
-					logPublicProjectMetadataCompatibilityError(request.Context(), expireDjangoErr)
+				if expireNativeErr := expireBrowserSessionCookie(response.Header(), sessionCookie); expireNativeErr != nil {
+					logPublicProjectMetadataCompatibilityError(request.Context(), expireNativeErr)
 					writeReadServicesSessionError(response, request)
 					return
 				}
@@ -111,7 +111,7 @@ type browserSessionCookieConfig struct {
 
 const defaultCSRFCookieName = "csrftoken"
 
-func normalizeDjangoCookie(request *http.Request, name string) *http.Request {
+func normalizeNativeCookie(request *http.Request, name string) *http.Request {
 	cookies := request.CookiesNamed(name)
 	if len(cookies) < 2 {
 		return request
@@ -143,7 +143,7 @@ func requestSessionCookie(request *http.Request, name string) *http.Cookie {
 	return browsersession.CookieFromHeaderValues(request.Header.Values("Cookie"), name)
 }
 
-func djangoLatin1String(value []byte) string {
+func nativeLatin1String(value []byte) string {
 	characters := make([]rune, len(value))
 	for index, octet := range value {
 		characters[index] = rune(octet)

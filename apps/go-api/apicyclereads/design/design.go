@@ -508,11 +508,11 @@ var ImportedTimezoneEnum = Type("TimezoneEnum", String, func() {
 })
 
 var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
-	Description("Plane API token authentication.")
+	Description("Vector API token authentication.")
 })
 
 var _ = API("API Cycle Reads", func() {
-	Title("Plane Internal Django Migration API")
+	Title("Vector API")
 	Description("Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.")
 	Version("1.0.0")
 	Meta("openapi:example", "false")

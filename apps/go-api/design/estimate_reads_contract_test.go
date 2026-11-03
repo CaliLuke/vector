@@ -89,7 +89,7 @@ func TestGeneratedEstimateSchemasIncludeRequiredOrderedPointsAndNullability(t *t
 	}
 }
 
-func TestEstimateDetailNotFoundContractUsesExactDjangoBody(t *testing.T) {
+func TestEstimateDetailNotFoundContractUsesExactNativeBody(t *testing.T) {
 	document := readOpenAPI(t)
 	notFound, exists := document.Components.Schemas["EstimateReadsNotFound"]
 	if !exists {

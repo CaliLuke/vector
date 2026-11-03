@@ -488,7 +488,7 @@ func set(values ...string) map[string]struct{} {
 	return result
 }
 
-func djangoDateTimeSQL(column, timezoneParam string) string {
+func nativeDateTimeSQL(column, timezoneParam string) string {
 	localTimestamp := "(" + column + " AT TIME ZONE " + timezoneParam + ")"
 	offsetSeconds := "(EXTRACT(EPOCH FROM (" + localTimestamp + " - (" + column + " AT TIME ZONE 'UTC')))::bigint)"
 	return "CASE WHEN " + column + " IS NULL THEN NULL ELSE " +
@@ -702,8 +702,8 @@ SELECT COALESCE(json_agg(json_build_object(
   'is_locked', is_locked,
   'archived_at', archived_at,
   'workspace', workspace_id,
-  'created_at', ` + djangoDateTimeSQL("created_at", "$5") + `,
-  'updated_at', ` + djangoDateTimeSQL("updated_at", "$5") + `,
+  'created_at', ` + nativeDateTimeSQL("created_at", "$5") + `,
+  'updated_at', ` + nativeDateTimeSQL("updated_at", "$5") + `,
   'created_by', created_by_id,
   'updated_by', updated_by_id,
   'view_props', view_props,
@@ -735,8 +735,8 @@ SELECT json_build_object(
   'is_locked', page.is_locked,
   'archived_at', page.archived_at,
   'workspace', page.workspace_id,
-  'created_at', ` + djangoDateTimeSQL("page.created_at", "$6") + `,
-  'updated_at', ` + djangoDateTimeSQL("page.updated_at", "$6") + `,
+  'created_at', ` + nativeDateTimeSQL("page.created_at", "$6") + `,
+  'updated_at', ` + nativeDateTimeSQL("page.updated_at", "$6") + `,
   'created_by', page.created_by_id,
   'updated_by', page.updated_by_id,
   'view_props', page.view_props,
@@ -840,10 +840,10 @@ SELECT COALESCE(json_agg(json_build_object(
   'id', version.id,
   'workspace', version.workspace_id,
   'page', version.page_id,
-  'last_saved_at', ` + djangoDateTimeSQL("version.last_saved_at", "$5") + `,
+  'last_saved_at', ` + nativeDateTimeSQL("version.last_saved_at", "$5") + `,
   'owned_by', version.owned_by_id,
-  'created_at', ` + djangoDateTimeSQL("version.created_at", "$5") + `,
-  'updated_at', ` + djangoDateTimeSQL("version.updated_at", "$5") + `,
+  'created_at', ` + nativeDateTimeSQL("version.created_at", "$5") + `,
+  'updated_at', ` + nativeDateTimeSQL("version.updated_at", "$5") + `,
   'created_by', version.created_by_id,
   'updated_by', version.updated_by_id
 ) ORDER BY version.created_at DESC), '[]'::json)
@@ -878,7 +878,7 @@ SELECT json_build_object(
   'id', version.id,
   'workspace', version.workspace_id,
   'page', version.page_id,
-  'last_saved_at', ` + djangoDateTimeSQL("version.last_saved_at", "$6") + `,
+  'last_saved_at', ` + nativeDateTimeSQL("version.last_saved_at", "$6") + `,
   'description_binary', CASE
     WHEN version.description_binary IS NULL THEN NULL
     ELSE replace(encode(version.description_binary, 'base64'), E'\n', '')
@@ -886,8 +886,8 @@ SELECT json_build_object(
   'description_html', version.description_html,
   'description_json', version.description_json,
   'owned_by', version.owned_by_id,
-  'created_at', ` + djangoDateTimeSQL("version.created_at", "$6") + `,
-  'updated_at', ` + djangoDateTimeSQL("version.updated_at", "$6") + `,
+  'created_at', ` + nativeDateTimeSQL("version.created_at", "$6") + `,
+  'updated_at', ` + nativeDateTimeSQL("version.updated_at", "$6") + `,
   'created_by', version.created_by_id,
   'updated_by', version.updated_by_id
 )

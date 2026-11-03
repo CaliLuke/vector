@@ -11,7 +11,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -138,8 +138,8 @@ func (r *Repository) prepareIssueEdit(ctx context.Context, q Request, body io.Re
 	if err != nil {
 		return issueEdit{}, err
 	}
-	if !q.API && q.Method == "PATCH" && (input.Form || input.Kind != "") {
-		return issueEdit{}, errors.New("Django PATCH requires mutable request.data")
+	if input.Kind != "" {
+		return issueEdit{}, failure(400, "error", "Expected an object payload")
 	}
 	skip := input.Fields["skip_activity"]
 	if !q.API && q.Method == "PATCH" {
@@ -502,7 +502,7 @@ func dumpRequest(input requestinput.Input) (string, error) {
 	if input.Form {
 		return orderedDump(input.Fields, input.FormKeys)
 	}
-	return pythoncompat.Dumps(input.Fields, input.Raw)
+	return jsonvalue.Ordered(input.Fields, input.Raw)
 }
 
 func (r *Repository) issueWriteFollowups(ctx context.Context, q Request, input requestinput.Input, previous any, requested string, create bool) error {
@@ -551,7 +551,7 @@ func (r *Repository) destroyIssue(ctx context.Context, q Request) (Result, error
 			return Result{}, err
 		}
 	}
-	requested, _ := pythoncompat.Dumps(map[string]any{"issue_id": q.IssueID}, nil)
+	requested, _ := jsonvalue.Ordered(map[string]any{"issue_id": q.IssueID}, nil)
 	kwargs := map[string]any{"type": "issue.activity.deleted", "requested_data": requested, "actor_id": q.ActorID, "issue_id": q.IssueID, "project_id": q.ProjectID, "current_instance": previous, "epoch": r.now().Unix()}
 	if !q.API {
 		kwargs["notification"], kwargs["origin"], kwargs["subscriber"] = true, r.origin, false

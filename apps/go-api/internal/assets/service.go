@@ -687,7 +687,7 @@ func (service *LifecycleService) confirmLegacyWorkspaceAssetUpload(ctx context.C
 			return parseErr
 		}
 		if value, exists := input.Fields["is_uploaded"]; exists {
-			parsed, ok := djangoBool(value)
+			parsed, ok := nativeBool(value)
 			if !ok {
 				return &apicontract.HTTPError{Status: 400, Body: map[string]any{"is_uploaded": []string{"Must be a valid boolean."}}}
 			}
@@ -700,7 +700,7 @@ func (service *LifecycleService) confirmLegacyWorkspaceAssetUpload(ctx context.C
 	return service.assets.repository.UpdateWorkspaceAssetUploaded(ctx, userID, workspaceID, assetID, uploaded, uploaded && len(asset.StorageMetadata) == 0)
 }
 
-func djangoBool(value any) (bool, bool) {
+func nativeBool(value any) (bool, bool) {
 	switch value := value.(type) {
 	case bool:
 		return value, true

@@ -6,11 +6,10 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 )
 
 func TestModuleEstimatesExcludeDeletedAndForeignCatalogueRows(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, testsupport.EstimateReadSchema)
+	ctx, connection := suiteDatabases.OpenSQL(t, testsupport.EstimateReadSchema)
 	from := " FROM modules module WHERE $1::uuid IS NOT NULL"
 	reads := []testsupport.EstimateReadCase{
 		{Name: "started total", SQL: "SELECT " + estimateCount("module", "started") + from, Want: [3]float64{11, 3, 0}},

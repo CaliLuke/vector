@@ -69,7 +69,7 @@ func TestNotificationMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizati
 			if err != nil {
 				t.Fatal(err)
 			}
-			policy, err := djangoRuntimeCORSPolicy(nil)
+			policy, err := nativeRuntimeCORSPolicy(nil)
 			if err != nil {
 				t.Fatal(err)
 			}

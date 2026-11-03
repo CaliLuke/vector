@@ -25,7 +25,7 @@ func sessionProtocolTestHandler(t *testing.T, authenticated bool) http.Handler {
 }
 func sessionProtocolTestHandlerWithOptions(t *testing.T, authenticated bool, options apiV1CompatibilityOptions) http.Handler {
 	t.Helper()
-	policy, err := djangoRuntimeCORSPolicy([]string{"https://app.example.test"})
+	policy, err := nativeRuntimeCORSPolicy([]string{"https://app.example.test"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func TestSessionServiceProtocolAuthenticatesMetadataAndUnsupportedMethods(t *tes
 }
 
 func TestAccountAuthenticationSlashlessRedirectMatchesCommonMiddlewareOrdering(t *testing.T) {
-	policy, err := djangoRuntimeCORSPolicy([]string{"https://app.example.test"})
+	policy, err := nativeRuntimeCORSPolicy([]string{"https://app.example.test"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,12 +152,12 @@ func TestSessionServiceProtocolFinalizesSessionsAfterEarlyResponses(t *testing.T
 		t.Run(test.name, func(t *testing.T) {
 			sessions := &publicProjectMetadataThrottleStub{earlyRefresh: &browsersession.SessionRefresh{SessionKey: "refreshed", BrowserClose: true}}
 			cookie := browserSessionCookieConfig{Name: "session-id", Configured: true}
-			policy, err := djangoRuntimeCORSPolicy(nil)
+			policy, err := nativeRuntimeCORSPolicy(nil)
 			if err != nil {
 				t.Fatal(err)
 			}
 			options := apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit}
-			handler := readServicesDjangoPathConverterMiddleware(policy, &options)(sessionProtocolTestHandler(t, true))
+			handler := readServicesNativePathConverterMiddleware(policy, &options)(sessionProtocolTestHandler(t, true))
 			handler = activityReadsSessionFinalizationMiddleware(sessions, cookie)(handler)
 			request := httptest.NewRequest(test.method, test.path, nil)
 			request.Header.Set("Accept", test.accept)
@@ -201,7 +201,7 @@ func TestSessionServiceProtocolSlashlessSizeLimitPrecedesRedirect(t *testing.T) 
 			request := httptest.NewRequest(method, "/api/workspaces/demo/users/notifications", strings.NewReader("oversized"))
 			response := httptest.NewRecorder()
 			handler.ServeHTTP(response, request)
-			if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(djangoRequestTooLargeBody) || response.Header().Get("Location") != "" {
+			if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(nativeRequestTooLargeBody) || response.Header().Get("Location") != "" {
 				t.Fatalf("status=%d headers=%v body=%s", response.Code, response.Header(), response.Body.String())
 			}
 		})
@@ -228,7 +228,7 @@ func TestSessionServiceProtocolSlashlessAuditRecordsInnerNotFound(t *testing.T) 
 				t.Fatalf("audit records=%v", logger.records)
 			}
 			record := logger.records[0]
-			if record.Path != path || record.TokenIdentifier == "" || record.ResponseCode != http.StatusNotFound || record.ResponseBody != string(djangoNotFoundBody) {
+			if record.Path != path || record.TokenIdentifier == "" || record.ResponseCode != http.StatusNotFound || record.ResponseBody != string(nativeNotFoundBody) {
 				t.Fatalf("slashless audit=%#v", record)
 			}
 		})

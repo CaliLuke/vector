@@ -20,7 +20,7 @@ func TestSessionServiceRendererFailurePreservesHTMLAndAudit(t *testing.T) {
 			endpoint := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Allow", "GET, POST, HEAD, OPTIONS")
 				if marked {
-					systemapi.MarkReadServiceDjangoHTML500(r.Context())
+					systemapi.MarkReadServiceNativeHTML500(r.Context())
 				}
 				writeReadServiceJSON(w, 500, map[string]string{"error": "application failure"})
 			})
@@ -36,10 +36,10 @@ func TestSessionServiceRendererFailurePreservesHTMLAndAudit(t *testing.T) {
 				t.Fatalf("audit body=%v response=%s", logger.records[0].ResponseBody, response.Body)
 			}
 			if marked {
-				if response.Header().Get("Content-Length") != strconv.Itoa(len(djangoServerErrorBody)) {
+				if response.Header().Get("Content-Length") != strconv.Itoa(len(nativeServerErrorBody)) {
 					t.Fatalf("Content-Length=%q", response.Header().Get("Content-Length"))
 				}
-				if response.Body.String() != string(djangoServerErrorBody) || response.Header().Get("Content-Type") != "text/html; charset=utf-8" || response.Header().Get("Allow") != "" {
+				if response.Body.String() != string(nativeServerErrorBody) || response.Header().Get("Content-Type") != "text/html; charset=utf-8" || response.Header().Get("Allow") != "" {
 					t.Fatalf("renderer response=%s headers=%v", response.Body, response.Header())
 				}
 			} else if response.Body.String() != `{"error":"application failure"}` || response.Header().Get("Content-Type") != "application/json" || response.Header().Get("Allow") != "GET, POST, HEAD, OPTIONS" {
@@ -71,7 +71,7 @@ func TestSessionServiceAuthoredOptionsAndResourceAuthorization(t *testing.T) {
 	protocol.authoredOptions = true
 	readServiceProtocols = append(append([]readServiceProtocol(nil), original...), protocol)
 	t.Cleanup(func() { readServiceProtocols = original })
-	policy, err := djangoRuntimeCORSPolicy([]string{"https://app.example.test"})
+	policy, err := nativeRuntimeCORSPolicy([]string{"https://app.example.test"})
 	if err != nil {
 		t.Fatal(err)
 	}

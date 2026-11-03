@@ -31,8 +31,8 @@ var suspiciousBinaryPatterns = [...]string{
 	"<iframe",
 }
 
-// ValidateBinary applies Plane's validation to decoded binary data. Empty data
-// is valid because the Django validator treats an empty value as absent.
+// ValidateBinary checks document size and rejects embedded executable content.
+// Empty data represents an absent document.
 func ValidateBinary(data []byte) error {
 	if len(data) == 0 {
 		return nil
@@ -54,20 +54,19 @@ func ValidateBinary(data []byte) error {
 	return nil
 }
 
-// ValidateBase64Binary decodes a string with Python base64.b64decode semantics,
-// then applies ValidateBinary.
+// ValidateBase64Binary validates standard padded base64 document content.
 func ValidateBase64Binary(value string) error {
 	_, err := DecodeBase64Binary(value)
 	return err
 }
 
-// DecodeBase64Binary decodes source-compatible base64 content and applies the
+// DecodeBase64Binary decodes standard padded base64 content and applies the
 // same document validation used by ValidateBase64Binary.
 func DecodeBase64Binary(value string) ([]byte, error) {
 	if value == "" {
 		return nil, nil
 	}
-	decoded, err := decodePythonBase64(value)
+	decoded, err := base64.StdEncoding.Strict().DecodeString(value)
 	if err != nil {
 		return nil, ErrInvalidBase64
 	}
@@ -78,67 +77,6 @@ func DecodeBase64Binary(value string) ([]byte, error) {
 		return nil, err
 	}
 	return decoded, nil
-}
-
-func decodePythonBase64(value string) ([]byte, error) {
-	decoded := make([]byte, 0, base64.StdEncoding.DecodedLen(len(value)))
-	quad := make([]byte, 0, 4)
-	padding := false
-	for i := 0; i < len(value); i++ {
-		b := value[i]
-		if b >= utf8.RuneSelf {
-			return nil, ErrInvalidBase64
-		}
-		if b == '=' {
-			switch len(quad) {
-			case 2:
-				if padding {
-					return decodePaddedQuad(decoded, quad, "==")
-				}
-				padding = true
-			case 3:
-				return decodePaddedQuad(decoded, quad, "=")
-			}
-			continue
-		}
-		if !isBase64DataByte(b) {
-			continue
-		}
-		if padding {
-			return nil, ErrInvalidBase64
-		}
-		quad = append(quad, b)
-		if len(quad) == 4 {
-			var block [3]byte
-			n, err := base64.StdEncoding.Decode(block[:], quad)
-			if err != nil {
-				return nil, err
-			}
-			decoded = append(decoded, block[:n]...)
-			quad = quad[:0]
-		}
-	}
-	if len(quad) != 0 || padding {
-		return nil, ErrInvalidBase64
-	}
-	return decoded, nil
-}
-
-func decodePaddedQuad(prefix, data []byte, padding string) ([]byte, error) {
-	quad := append(append(make([]byte, 0, 4), data...), padding...)
-	var block [3]byte
-	n, err := base64.StdEncoding.Decode(block[:], quad)
-	if err != nil {
-		return nil, err
-	}
-	return append(prefix, block[:n]...), nil
-}
-
-func isBase64DataByte(b byte) bool {
-	return b >= 'A' && b <= 'Z' ||
-		b >= 'a' && b <= 'z' ||
-		b >= '0' && b <= '9' ||
-		b == '+' || b == '/'
 }
 
 func firstDecodedRunes(data []byte, limit int) string {

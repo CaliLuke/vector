@@ -13,7 +13,6 @@ import (
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	store "github.com/CaliLuke/go-plane/internal/workspacesearch"
 	api "github.com/CaliLuke/go-plane/workspacesearch/gen/workspace_search"
@@ -135,7 +134,7 @@ func (s *workspaceSearchService) EntitySearch(ctx context.Context, p *api.Entity
 	}
 	count := 5
 	if p.Count != nil {
-		parsed, parseErr := pythoncompat.DecimalInteger(*p.Count)
+		parsed, parseErr := requestinput.IntegerField(*p.Count)
 		if parseErr != nil || !parsed.IsInt64() || parsed.Sign() < 0 {
 			return nil, nil, s.error(400, map[string]any{"count": []string{"A valid non-negative integer is required."}})
 		}

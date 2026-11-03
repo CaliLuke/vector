@@ -43,7 +43,7 @@ type commandLine struct {
 		} `cmd:"" help:"Perform semantic search across issue names, sequence IDs, and project identifiers." name:"get-apiv1-workspaces-by-slug-issues-search"`
 		GetApiv1WorkspacesBySlugIssuesProjectIdentifierIssueIdentifier struct {
 			Slug                 string `help:"Workspace slug" name:"slug" required:""`
-			Identifier           string `help:"Project identifier and issue sequence in one segment; Django lookup preserves the complete spelling." name:"identifier" required:""`
+			Identifier           string `help:"Project identifier and issue sequence in one segment; Lookup preserves the complete identifier spelling." name:"identifier" required:""`
 			APIKeyAuthCredential string `help:"" name:"api-key-auth-credential"`
 		} `cmd:"" help:"Retrieve a specific work item using workspace slug, project identifier, and issue identifier." name:"get-apiv1-workspaces-by-slug-issues-project-identifier-issue-identifier"`
 		PostApiv1WorkspacesBySlugProjectsByProjectIDCyclesByCycleIDCycleIssues struct {
@@ -227,7 +227,7 @@ type commandLine struct {
 		} `cmd:"" help:"Perform semantic search across issue names, sequence IDs, and project identifiers." name:"get-apiv1-workspaces-by-slug-work-items-search"`
 		GetApiv1WorkspacesBySlugWorkItemsProjectIdentifierIssueIdentifier struct {
 			Slug                 string `help:"Workspace slug" name:"slug" required:""`
-			Identifier           string `help:"Project identifier and issue sequence in one segment; Django lookup preserves the complete spelling." name:"identifier" required:""`
+			Identifier           string `help:"Project identifier and issue sequence in one segment; Lookup preserves the complete identifier spelling." name:"identifier" required:""`
 			APIKeyAuthCredential string `help:"" name:"api-key-auth-credential"`
 		} `cmd:"" help:"Retrieve a specific work item using workspace slug, project identifier, and issue identifier." name:"get-apiv1-workspaces-by-slug-work-items-project-identifier-issue-identifier"`
 		PostAPIWorkspacesBySlugDraftIssues struct {
@@ -474,7 +474,7 @@ type commandLine struct {
 		} `cmd:"" help:"This enables timezone conversion according\nto the user set timezone" name:"get-api-workspaces-by-slug-user-issues-by-user-id"`
 		GetAPIWorkspacesBySlugWorkItemsProjectIdentifierIssueIdentifier struct {
 			Slug       string `help:"" name:"slug" required:""`
-			Identifier string `help:"Project identifier and issue sequence in one segment; Django lookup preserves the complete spelling." name:"identifier" required:""`
+			Identifier string `help:"Project identifier and issue sequence in one segment; Lookup preserves the complete identifier spelling." name:"identifier" required:""`
 		} `cmd:"" help:"This enables timezone conversion according\nto the user set timezone" name:"get-api-workspaces-by-slug-work-items-project-identifier-issue-identifier"`
 	} `cmd:"" help:"Service is the WorkItemCore service interface." name:"work-item-core"`
 }
@@ -1778,7 +1778,7 @@ func workItemCoreGetAPIV1WorkspacesBySlugIssuesProjectIdentifierIssueIdentifierU
 
 	// Flags list
 	fmt.Fprintln(os.Stderr, "    -slug STRING: Workspace slug")
-	fmt.Fprintln(os.Stderr, "    -identifier STRING: Project identifier and issue sequence in one segment; Django lookup preserves the complete spelling.")
+	fmt.Fprintln(os.Stderr, "    -identifier STRING: Project identifier and issue sequence in one segment; Lookup preserves the complete identifier spelling.")
 	fmt.Fprintln(os.Stderr, "    -api-key-auth-credential STRING: ")
 
 	fmt.Fprintln(os.Stderr)
@@ -2410,7 +2410,7 @@ func workItemCoreGetAPIV1WorkspacesBySlugWorkItemsProjectIdentifierIssueIdentifi
 
 	// Flags list
 	fmt.Fprintln(os.Stderr, "    -slug STRING: Workspace slug")
-	fmt.Fprintln(os.Stderr, "    -identifier STRING: Project identifier and issue sequence in one segment; Django lookup preserves the complete spelling.")
+	fmt.Fprintln(os.Stderr, "    -identifier STRING: Project identifier and issue sequence in one segment; Lookup preserves the complete identifier spelling.")
 	fmt.Fprintln(os.Stderr, "    -api-key-auth-credential STRING: ")
 
 	fmt.Fprintln(os.Stderr)
@@ -3409,7 +3409,7 @@ func workItemCoreGetAPIWorkspacesBySlugWorkItemsProjectIdentifierIssueIdentifier
 
 	// Flags list
 	fmt.Fprintln(os.Stderr, "    -slug STRING: ")
-	fmt.Fprintln(os.Stderr, "    -identifier STRING: Project identifier and issue sequence in one segment; Django lookup preserves the complete spelling.")
+	fmt.Fprintln(os.Stderr, "    -identifier STRING: Project identifier and issue sequence in one segment; Lookup preserves the complete identifier spelling.")
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")

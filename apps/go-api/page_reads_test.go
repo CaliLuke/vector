@@ -283,7 +283,7 @@ func TestPageReadsMapsNullSearchValidationToBadRequest(t *testing.T) {
 	}
 }
 
-func TestPageReadsOptionsUseProjectPagePermissionAndDjangoMetadata(t *testing.T) {
+func TestPageReadsOptionsUseProjectPagePermissionAndNativeMetadata(t *testing.T) {
 	repository := &pageReadsRepositoryStub{}
 	service, ctx := authenticatedPageReadsService(t, repository, &pageRecentVisitsStub{})
 

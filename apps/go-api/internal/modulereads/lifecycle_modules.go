@@ -9,9 +9,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -256,7 +258,7 @@ func (repository *LifecycleRepository) UpdateModuleV1(ctx context.Context, actor
 	if err != nil {
 		return nil, err
 	}
-	currentValue, err := pythoncompat.DecodeObject(currentRaw)
+	currentValue, err := jsonvalue.DecodeObject(currentRaw)
 	if err != nil {
 		return nil, err
 	}
@@ -265,7 +267,7 @@ func (repository *LifecycleRepository) UpdateModuleV1(ctx context.Context, actor
 	if moduleActivityErr := moduleActivityFloatFields(currentValue, "sort_order"); moduleActivityErr != nil {
 		return nil, moduleActivityErr
 	}
-	currentJSONText, err := pythoncompat.Dumps(currentValue, currentRaw)
+	currentJSONText, err := jsonvalue.Ordered(currentValue, currentRaw)
 	if err != nil {
 		return nil, err
 	}
@@ -480,7 +482,7 @@ func (repository *LifecycleRepository) UpdateModule(ctx context.Context, actor, 
 	}
 	currentInstance := ""
 	if !replace {
-		currentValue, err := pythoncompat.DecodeObject(currentProjection)
+		currentValue, err := jsonvalue.DecodeObject(currentProjection)
 		if err != nil {
 			return nil, err
 		}
@@ -639,12 +641,12 @@ func (repository *LifecycleRepository) DeleteModule(ctx context.Context, actor, 
 		return fmt.Errorf("decode module issue IDs: %w", unmarshalErr)
 	}
 	now := repository.now()
-	current, err := pythoncompat.Dumps(map[string]any{"module_name": name}, nil)
+	current, err := jsonvalue.Ordered(map[string]any{"module_name": name}, nil)
 	if err != nil {
 		return err
 	}
 	if api {
-		requested, dumpsErr := pythoncompat.Dumps(map[string]any{"module_id": moduleID, "module_name": name, "issues": issueIDs}, nil)
+		requested, dumpsErr := jsonvalue.Ordered(map[string]any{"module_id": moduleID, "module_name": name, "issues": issueIDs}, nil)
 		if dumpsErr != nil {
 			return dumpsErr
 		}
@@ -655,7 +657,7 @@ func (repository *LifecycleRepository) DeleteModule(ctx context.Context, actor, 
 			return taskErr
 		}
 	} else {
-		requested, dumpsErr := pythoncompat.Dumps(map[string]any{"module_id": moduleID}, nil)
+		requested, dumpsErr := jsonvalue.Ordered(map[string]any{"module_id": moduleID}, nil)
 		if dumpsErr != nil {
 			return dumpsErr
 		}
@@ -749,7 +751,7 @@ func validateModuleWriteFields(fields map[string]any, partial bool) (map[string]
 			failures[key] = []string{"Date has wrong format. Use one of these formats instead: YYYY-MM-DD."}
 			continue
 		}
-		if _, err := time.Parse("2006-01-02", textValue); err != nil {
+		if _, err := datetime.Date(textValue); err != nil {
 			failures[key] = []string{"Date has wrong format. Use one of these formats instead: YYYY-MM-DD."}
 			continue
 		}
@@ -1115,14 +1117,14 @@ func (repository *LifecycleRepository) moduleWriteProjection(ctx context.Context
 	if err != nil {
 		return nil, err
 	}
-	values, err := pythoncompat.DecodeObject(raw)
+	values, err := jsonvalue.DecodeObject(raw)
 	if err != nil {
 		return nil, err
 	}
 	if moduleActivityErr := moduleActivityFloatFields(values, "sort_order"); moduleActivityErr != nil {
 		return nil, moduleActivityErr
 	}
-	serialized, err := pythoncompat.Dumps(values, raw)
+	serialized, err := jsonvalue.Ordered(values, raw)
 	if err != nil {
 		return nil, err
 	}
@@ -1153,11 +1155,10 @@ func moduleActivityFloatFields(values map[string]any, fields ...string) error {
 		}
 		switch number := raw.(type) {
 		case json.Number:
-			value, err := number.Float64()
+			_, err := number.Float64()
 			if err != nil {
 				return fmt.Errorf("decode module activity number %s: %w", field, err)
 			}
-			values[field] = value
 		case float64:
 		default:
 			return fmt.Errorf("module activity field %s has non-numeric type %T", field, raw)
@@ -1208,7 +1209,7 @@ func moduleActivitySnapshotJSON(values map[string]any, original []byte) (string,
 		ordered.Write(raw)
 	}
 	ordered.WriteByte('}')
-	serialized, err := pythoncompat.Dumps(values, []byte(ordered.String()))
+	serialized, err := jsonvalue.Ordered(values, []byte(ordered.String()))
 	if err != nil {
 		return "", fmt.Errorf("serialize module activity snapshot: %w", err)
 	}

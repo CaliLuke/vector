@@ -33,7 +33,7 @@ func TestAuthSessionMiddlewareUsesExplicitCookieWithoutSavingOldSession(t *testi
 			if tc.incoming {
 				sessions.rotated = &browsersession.SessionRefresh{SessionKey: "old-session"}
 			}
-			handler := djangoAuthSessionMiddleware(sessions, browserSessionCookieConfig{Name: "admin-session-id", Configured: true}, func(*http.Request) bool { return true })(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handler := nativeAuthSessionMiddleware(sessions, browserSessionCookieConfig{Name: "admin-session-id", Configured: true}, func(*http.Request) bool { return true })(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				current, found := browsersession.CurrentSessionFromContext(r.Context())
 				if found != tc.incoming || found && current.SessionKey != "old-session" {
 					t.Fatalf("wrong current session: %v %v", current, found)
@@ -79,7 +79,7 @@ func TestAuthSessionIsAvailableWithoutAutomaticSaving(t *testing.T) {
 	for _, expire := range []bool{false, true} {
 		t.Run(fmt.Sprintf("expire=%v", expire), func(t *testing.T) {
 			sessions := &publicProjectMetadataThrottleStub{userID: "user-id", sessionKey: "authenticated-session"}
-			handler := djangoAuthSessionMiddleware(sessions, browserSessionCookieConfig{Name: "session-id", Configured: true}, authRedirectSessionPath)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handler := nativeAuthSessionMiddleware(sessions, browserSessionCookieConfig{Name: "session-id", Configured: true}, authRedirectSessionPath)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				current, found := browsersession.CurrentSessionFromContext(r.Context())
 				if !found || current.SessionKey != sessions.sessionKey {
 					t.Fatal("authenticated session is unavailable to the sign-out handler")
@@ -106,14 +106,14 @@ func TestAuthSessionIsAvailableWithoutAutomaticSaving(t *testing.T) {
 	}
 }
 
-func TestPasswordLoginRotatesDjangoCSRFCookie(t *testing.T) {
+func TestPasswordLoginRotatesNativeCSRFCookie(t *testing.T) {
 	request := httptest.NewRequest(http.MethodPost, "/auth/set-password/", nil)
 	ctx, _ := browsersession.WithResponseSessionAction(request.Context())
 	if !browsersession.SetResponseSession(ctx, browsersession.SessionRefresh{SessionKey: "session-key"}) {
 		t.Fatal("missing session response action")
 	}
 	request = request.WithContext(ctx)
-	policy := djangoCSRFCookieConfig{Domain: ".example.test", Secure: true}
+	policy := nativeCSRFCookieConfig{Domain: ".example.test", Secure: true}
 	handler := passwordLoginCSRFCookieMiddleware(policy)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
@@ -133,7 +133,7 @@ func TestPasswordLoginDoesNotRotateCSRFCookieAfterFailedResponse(t *testing.T) {
 	request := httptest.NewRequest(http.MethodPost, "/auth/change-password/", nil)
 	ctx, _ := browsersession.WithResponseSessionAction(request.Context())
 	request = request.WithContext(ctx)
-	handler := passwordLoginCSRFCookieMiddleware(djangoCSRFCookieConfig{})(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	handler := passwordLoginCSRFCookieMiddleware(nativeCSRFCookieConfig{})(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}))
 	response := httptest.NewRecorder()
@@ -143,7 +143,7 @@ func TestPasswordLoginDoesNotRotateCSRFCookieAfterFailedResponse(t *testing.T) {
 	}
 }
 
-func TestAuthRedirectSecurityMiddlewareSetsDjangoHeadersWithoutChangingAllow(t *testing.T) {
+func TestAuthRedirectSecurityMiddlewareSetsNativeHeadersWithoutChangingAllow(t *testing.T) {
 	handler := authRedirectSecurityMiddleware(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("Location", "https://app.example.test/")
@@ -191,7 +191,7 @@ func TestReadServicesGzipMiddlewareSkipsPlainAuthenticationViews(t *testing.T) {
 	}
 }
 
-func TestAccountAuthenticationGzipUsesDjangoResponseSizeThreshold(t *testing.T) {
+func TestAccountAuthenticationGzipUsesNativeResponseSizeThreshold(t *testing.T) {
 	for _, test := range []struct {
 		name string
 		size int

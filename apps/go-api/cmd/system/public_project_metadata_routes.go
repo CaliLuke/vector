@@ -122,16 +122,16 @@ func publicProjectMetadataNotFoundHandler(
 			}
 			mergeVary(headers, "origin")
 			headers.Set("Content-Type", "text/html; charset=utf-8")
-			headers.Set("Content-Length", strconv.Itoa(len(djangoServerErrorBody)))
+			headers.Set("Content-Length", strconv.Itoa(len(nativeServerErrorBody)))
 			response.WriteHeader(http.StatusInternalServerError)
-			_, _ = response.Write(djangoServerErrorBody)
+			_, _ = response.Write(nativeServerErrorBody)
 			return
 		}
 		mergeVary(headers, "Cookie", "origin")
 		requestLogStarted := time.Now()
 		writer := &publicProjectMetadataReadsResponseWriter{
 			ResponseWriter: response,
-			acceptsGzip:    acceptsGzipEncoding(djangoJoinedHeader(request, "Accept-Encoding")),
+			acceptsGzip:    acceptsGzipEncoding(nativeJoinedHeader(request, "Accept-Encoding")),
 		}
 		expireSession, refreshSession, rotatedSession, userID, err := throttle.InspectSession(request.Context(), request)
 		var sessionCookieErr error
@@ -140,10 +140,10 @@ func publicProjectMetadataNotFoundHandler(
 		}
 		if err != nil {
 			logPublicProjectMetadataCompatibilityError(request.Context(), err)
-			replacePublicProjectMetadataResponse(writer, http.StatusInternalServerError, "text/html; charset=utf-8", djangoServerErrorBody)
+			replacePublicProjectMetadataResponse(writer, http.StatusInternalServerError, "text/html; charset=utf-8", nativeServerErrorBody)
 			writeAPIActivityLog(
 				request.Context(), activityLogger, activitySecret, request, requestBody,
-				http.StatusInternalServerError, djangoServerErrorBody,
+				http.StatusInternalServerError, nativeServerErrorBody,
 			)
 			writer.finish()
 			return
@@ -151,7 +151,7 @@ func publicProjectMetadataNotFoundHandler(
 		logPublicProjectMetadataInnerResponse(request, http.StatusNotFound, requestLogStarted, userID)
 		writeAPIActivityLog(
 			request.Context(), activityLogger, activitySecret, request, requestBody,
-			http.StatusNotFound, djangoNotFoundBody,
+			http.StatusNotFound, nativeNotFoundBody,
 		)
 		if sessionCookieErr != nil {
 			logPublicProjectMetadataCompatibilityError(request.Context(), sessionCookieErr)
@@ -161,7 +161,7 @@ func publicProjectMetadataNotFoundHandler(
 		}
 		if appendSlash && debugMode && (request.Method == http.MethodPost || request.Method == http.MethodPut ||
 			request.Method == http.MethodPatch || request.Method == http.MethodDelete) {
-			debugBody, debugContentType := djangoDebugAppendSlashResponse(request)
+			debugBody, debugContentType := nativeDebugAppendSlashResponse(request)
 			// CommonMiddleware raises after the inner GZip and XFrame middleware
 			// have returned, so neither one processes Django's technical 500.
 			headers.Del("X-Frame-Options")
@@ -199,11 +199,11 @@ func publicProjectMetadataNotFoundHandler(
 		if !appendSlash {
 			headers.Set("Content-Type", "text/html; charset=utf-8")
 			writer.WriteHeader(http.StatusNotFound)
-			_, _ = writer.Write(djangoNotFoundBody)
+			_, _ = writer.Write(nativeNotFoundBody)
 			writer.finish()
 			return
 		}
-		location := djangoFullPath(request, true)
+		location := nativeFullPath(request, true)
 		headers.Set("Content-Type", "text/html; charset=utf-8")
 		headers.Set("Location", location)
 		headers.Del("X-Frame-Options")
@@ -240,13 +240,13 @@ func logPublicProjectMetadataInnerResponse(request *http.Request, status int, st
 	originalRequest.URL.RawQuery = readServicesOriginalRawQuery(request)
 	log.Print(
 		request.Context(),
-		log.KV{K: "msg", V: fmt.Sprintf("%s %s %d", request.Method, djangoFullPath(originalRequest, false), status)},
+		log.KV{K: "msg", V: fmt.Sprintf("%s %s %d", request.Method, nativeFullPath(originalRequest, false), status)},
 		log.KV{K: "path", V: request.URL.Path},
 		log.KV{K: "method", V: request.Method},
 		log.KV{K: "status_code", V: status},
 		log.KV{K: "duration_ms", V: time.Since(started).Milliseconds()},
 		log.KV{K: "remote_addr", V: apiActivityIPAddress(request)},
-		log.KV{K: "user_agent", V: djangoJoinedHeader(request, "User-Agent")},
+		log.KV{K: "user_agent", V: nativeJoinedHeader(request, "User-Agent")},
 		log.KV{K: "user_id", V: nullableString(userID)},
 	)
 }
@@ -298,7 +298,7 @@ func (writer *publicProjectMetadataReadsResponseWriter) renderedBody() []byte {
 		writer.status = http.StatusInternalServerError
 		writer.Header().Del("Allow")
 		writer.Header().Set("Content-Type", "text/html; charset=utf-8")
-		return djangoServerErrorBody
+		return nativeServerErrorBody
 	}
 	body := writer.body.Bytes()
 	if writer.status == http.StatusOK && writer.rawResponse != nil && len(writer.rawResponse.Data) > 0 {
@@ -335,7 +335,7 @@ func (writer *publicProjectMetadataReadsResponseWriter) finish() {
 			prependAcceptEncodingVary(writer.Header())
 		}
 		if writer.acceptsGzip && writer.Header().Get("Content-Encoding") == "" {
-			compressed, err := djangoGzip(body, writer.gzipPadding)
+			compressed, err := nativeGzip(body, writer.gzipPadding)
 			if err == nil && len(compressed) < len(body) {
 				body = compressed
 				writer.Header().Set("Content-Encoding", "gzip")
@@ -434,9 +434,9 @@ func publicProjectMetadataReadsCompatibilityMiddleware(
 				}
 				mergeVary(headers, "origin")
 				headers.Set("Content-Type", "text/html; charset=utf-8")
-				headers.Set("Content-Length", strconv.Itoa(len(djangoServerErrorBody)))
+				headers.Set("Content-Length", strconv.Itoa(len(nativeServerErrorBody)))
 				response.WriteHeader(http.StatusInternalServerError)
-				_, _ = response.Write(djangoServerErrorBody)
+				_, _ = response.Write(nativeServerErrorBody)
 				return
 			}
 			mergeVary(headers, "Cookie", "origin")
@@ -454,7 +454,7 @@ func publicProjectMetadataReadsCompatibilityMiddleware(
 			writer := &publicProjectMetadataReadsResponseWriter{
 				ResponseWriter: response,
 				rawResponse:    rawResponse,
-				acceptsGzip:    acceptsGzipEncoding(djangoJoinedHeader(request, "Accept-Encoding")),
+				acceptsGzip:    acceptsGzipEncoding(nativeJoinedHeader(request, "Accept-Encoding")),
 			}
 			var effects publicMetadataSessionEffects
 			inspectSessionAfterResponse := false
@@ -482,7 +482,7 @@ func publicProjectMetadataReadsCompatibilityMiddleware(
 				)
 				effects.finish(writer, request, throttle, sessionCookie)
 			}()
-			formats, queryErr := djangoQueryValues(readServicesOriginalRawQuery(request), "format")
+			formats, queryErr := nativeQueryValues(readServicesOriginalRawQuery(request), "format")
 			if queryErr != nil {
 				logPublicProjectMetadataCompatibilityError(request.Context(), queryErr)
 				inspectSessionAfterResponse = true
@@ -500,16 +500,9 @@ func publicProjectMetadataReadsCompatibilityMiddleware(
 					return
 				}
 			}
-			accept, acceptPresent := djangoRequestAcceptHeader(request)
-			acceptsJSON, jsonIndent, negotiationErr := projectMembershipReadsJSONNegotiation(accept, acceptPresent)
-			if negotiationErr != nil {
-				logPublicProjectMetadataCompatibilityError(request.Context(), negotiationErr)
-				inspectSessionAfterResponse = true
-				writeStickyJSON(writer, http.StatusInternalServerError, map[string]string{
-					"error": "Something went wrong please try again later",
-				})
-				return
-			}
+			accept, acceptPresent := nativeRequestAcceptHeader(request)
+			acceptsJSON, jsonIndent := projectMembershipReadsJSONNegotiation(accept, acceptPresent)
+
 			if !acceptsJSON {
 				inspectSessionAfterResponse = true
 				headers.Set("Content-Type", "application/json")
@@ -581,7 +574,7 @@ type publicProjectMetadataRoutePolicy struct {
 
 func writePublicProjectMetadataInternalError(writer *publicProjectMetadataReadsResponseWriter, err error, viewHandled bool, allowMethods ...string) {
 	if !viewHandled || publicProjectMetadataLazyAuthenticationError(err) {
-		replacePublicProjectMetadataResponse(writer, http.StatusInternalServerError, "text/html; charset=utf-8", djangoServerErrorBody)
+		replacePublicProjectMetadataResponse(writer, http.StatusInternalServerError, "text/html; charset=utf-8", nativeServerErrorBody)
 		return
 	}
 	if errors.Is(err, browsersession.ErrTimezoneNotFound) {
@@ -618,10 +611,10 @@ func replacePublicProjectMetadataResponse(writer *publicProjectMetadataReadsResp
 
 func replacePublicProjectMetadataSessionError(writer *publicProjectMetadataReadsResponseWriter, err error) {
 	status := http.StatusInternalServerError
-	body := djangoServerErrorBody
+	body := nativeServerErrorBody
 	if errors.Is(err, browsersession.ErrSessionNotFound) || errors.Is(err, browsersession.ErrSessionUpdate) {
 		status = http.StatusBadRequest
-		body = djangoBadRequestBody
+		body = nativeBadRequestBody
 	}
 	replacePublicProjectMetadataResponse(writer, status, "text/html; charset=utf-8", body)
 	// SessionMiddleware raises outside CommonMiddleware, XFrameOptionsMiddleware,
@@ -675,9 +668,9 @@ func writePublicProjectMetadataRequestTooLarge(
 	}
 	mergeVary(headers, "origin")
 	headers.Set("Content-Type", "application/json")
-	headers.Set("Content-Length", strconv.Itoa(len(djangoRequestTooLargeBody)))
+	headers.Set("Content-Length", strconv.Itoa(len(nativeRequestTooLargeBody)))
 	response.WriteHeader(http.StatusRequestEntityTooLarge)
-	_, _ = response.Write(djangoRequestTooLargeBody)
+	_, _ = response.Write(nativeRequestTooLargeBody)
 }
 
 func mountPublicProjectMetadataReadsRoutes(dbg bool, pending pendingReplacementEndpoints, mux loomhttp.Muxer) func(http.Handler) http.Handler {
@@ -703,22 +696,22 @@ func mountPublicProjectMetadataReadsRoutes(dbg bool, pending pendingReplacementE
 		server := publicprojectmetadatareadssvr.New(pending.publicProjectMetadataReads, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 		server.Use(compatibilityMiddleware)
 		publicprojectmetadatareadssvr.Mount(mux, server)
-		mountProtocolHandler(mux, http.MethodHead, "/api/public/anchor/{anchor}/cycles/", djangoBufferedProtocolHeadHandler(server.Cycles))
-		mountProtocolHandler(mux, http.MethodHead, "/api/public/anchor/{anchor}/labels/", djangoBufferedProtocolHeadHandler(server.Labels))
-		mountProtocolHandler(mux, http.MethodHead, "/api/public/anchor/{anchor}/members/", djangoBufferedProtocolHeadHandler(server.Members))
-		mountProtocolHandler(mux, http.MethodHead, "/api/public/anchor/{anchor}/meta/", djangoBufferedProtocolHeadHandler(server.Meta))
-		mountProtocolHandler(mux, http.MethodHead, "/api/public/anchor/{anchor}/modules/", djangoBufferedProtocolHeadHandler(server.Modules))
-		mountProtocolHandler(mux, http.MethodHead, "/api/public/anchor/{anchor}/settings/", djangoBufferedProtocolHeadHandler(server.Settings))
-		mountProtocolHandler(mux, http.MethodHead, "/api/public/anchor/{anchor}/states/", djangoBufferedProtocolHeadHandler(server.States))
-		mountProtocolHandler(mux, http.MethodHead, "/api/public/workspaces/{slug}/projects/{project_id}/anchor/", djangoBufferedProtocolHeadHandler(server.ProjectAnchor))
-		mountProtocolHandler(mux, http.MethodOptions, "/api/public/anchor/{anchor}/cycles/", djangoProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Project Cycles Endpoint"))
-		mountProtocolHandler(mux, http.MethodOptions, "/api/public/anchor/{anchor}/labels/", djangoProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Project Labels Endpoint"))
-		mountProtocolHandler(mux, http.MethodOptions, "/api/public/anchor/{anchor}/members/", djangoProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Project Members Endpoint"))
-		mountProtocolHandler(mux, http.MethodOptions, "/api/public/anchor/{anchor}/meta/", djangoProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Project Meta Data Endpoint"))
-		mountProtocolHandler(mux, http.MethodOptions, "/api/public/anchor/{anchor}/modules/", djangoProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Project Modules Endpoint"))
-		mountProtocolHandler(mux, http.MethodOptions, "/api/public/anchor/{anchor}/settings/", djangoProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Project Deploy Board Public Settings Endpoint"))
-		mountProtocolHandler(mux, http.MethodOptions, "/api/public/anchor/{anchor}/states/", djangoProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Project States Endpoint"))
-		mountProtocolHandler(mux, http.MethodOptions, "/api/public/workspaces/{slug}/projects/{project_id}/anchor/", djangoProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Workspace Project Anchor Endpoint"))
+		mountProtocolHandler(mux, http.MethodHead, "/api/public/anchor/{anchor}/cycles/", nativeBufferedProtocolHeadHandler(server.Cycles))
+		mountProtocolHandler(mux, http.MethodHead, "/api/public/anchor/{anchor}/labels/", nativeBufferedProtocolHeadHandler(server.Labels))
+		mountProtocolHandler(mux, http.MethodHead, "/api/public/anchor/{anchor}/members/", nativeBufferedProtocolHeadHandler(server.Members))
+		mountProtocolHandler(mux, http.MethodHead, "/api/public/anchor/{anchor}/meta/", nativeBufferedProtocolHeadHandler(server.Meta))
+		mountProtocolHandler(mux, http.MethodHead, "/api/public/anchor/{anchor}/modules/", nativeBufferedProtocolHeadHandler(server.Modules))
+		mountProtocolHandler(mux, http.MethodHead, "/api/public/anchor/{anchor}/settings/", nativeBufferedProtocolHeadHandler(server.Settings))
+		mountProtocolHandler(mux, http.MethodHead, "/api/public/anchor/{anchor}/states/", nativeBufferedProtocolHeadHandler(server.States))
+		mountProtocolHandler(mux, http.MethodHead, "/api/public/workspaces/{slug}/projects/{project_id}/anchor/", nativeBufferedProtocolHeadHandler(server.ProjectAnchor))
+		mountProtocolHandler(mux, http.MethodOptions, "/api/public/anchor/{anchor}/cycles/", nativeProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Project Cycles Endpoint"))
+		mountProtocolHandler(mux, http.MethodOptions, "/api/public/anchor/{anchor}/labels/", nativeProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Project Labels Endpoint"))
+		mountProtocolHandler(mux, http.MethodOptions, "/api/public/anchor/{anchor}/members/", nativeProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Project Members Endpoint"))
+		mountProtocolHandler(mux, http.MethodOptions, "/api/public/anchor/{anchor}/meta/", nativeProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Project Meta Data Endpoint"))
+		mountProtocolHandler(mux, http.MethodOptions, "/api/public/anchor/{anchor}/modules/", nativeProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Project Modules Endpoint"))
+		mountProtocolHandler(mux, http.MethodOptions, "/api/public/anchor/{anchor}/settings/", nativeProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Project Deploy Board Public Settings Endpoint"))
+		mountProtocolHandler(mux, http.MethodOptions, "/api/public/anchor/{anchor}/states/", nativeProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Project States Endpoint"))
+		mountProtocolHandler(mux, http.MethodOptions, "/api/public/workspaces/{slug}/projects/{project_id}/anchor/", nativeProtocolOptionsWithoutActionsHandler(compatibilityMiddleware, "Workspace Project Anchor Endpoint"))
 		publicProjectMetadataRouteCompatibility = publicProjectMetadataRouteCompatibilityMiddleware(
 			compatibilityMiddleware,
 			pending.publicProjectMetadataThrottle,

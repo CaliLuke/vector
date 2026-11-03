@@ -7,8 +7,6 @@ import (
 	"encoding/json"
 	"testing"
 
-	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -18,7 +16,7 @@ const writeTestUserID = "00000000-0000-4000-8000-000000000003"
 
 func TestWriteAPIV1PreservesEmptyAndNullExternalFields(t *testing.T) {
 	ctx := context.Background()
-	connection := projectStateWriteDatabase(t, ctx)
+	connection := projectStateWriteDatabase(t)
 	repository, err := NewWriteRepository(connection)
 	if err != nil {
 		t.Fatal(err)
@@ -59,7 +57,7 @@ func TestWriteAPIV1PreservesEmptyAndNullExternalFields(t *testing.T) {
 
 func TestMarkDefaultAllowsOrdinaryGroupStateWithTriageFlag(t *testing.T) {
 	ctx := context.Background()
-	connection := projectStateWriteDatabase(t, ctx)
+	connection := projectStateWriteDatabase(t)
 	_, err := connection.Exec(ctx, `INSERT INTO states
  (id,project_id,workspace_id,name,color,slug,"group","default",description,sequence,is_triage,created_at,updated_at)
  VALUES
@@ -101,15 +99,9 @@ func TestMarkDefaultAllowsOrdinaryGroupStateWithTriageFlag(t *testing.T) {
 	}
 }
 
-func projectStateWriteDatabase(t *testing.T, ctx context.Context) *pgx.Conn {
+func projectStateWriteDatabase(t *testing.T) *pgx.Conn {
 	t.Helper()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
-		connection, err := pgx.Connect(ctx, databaseURL)
-		if err != nil {
-			return err
-		}
-		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
-		_, err = connection.Exec(ctx, `
+	_, connection := stateDatabases.OpenSQL(t, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL UNIQUE);
 CREATE TABLE projects (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, archived_at timestamptz, default_state_id uuid);
 CREATE TABLE states (
@@ -123,17 +115,6 @@ CREATE TABLE states (
 INSERT INTO workspaces (id,slug) VALUES ('`+writeTestWorkspaceID+`','demo');
 INSERT INTO projects (id,workspace_id) VALUES ('`+writeTestProjectID+`','`+writeTestWorkspaceID+`');
 `)
-		return err
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { testsupport.Close(t, pair) })
-	connection, err := pgx.Connect(ctx, pair.SeedURL())
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) })
 	return connection
 }
 

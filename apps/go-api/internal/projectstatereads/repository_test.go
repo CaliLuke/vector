@@ -160,7 +160,7 @@ func TestAPIV1ListKeepsSerializerFieldsPaginationAndProjectScope(t *testing.T) {
 	}
 	page := result.(map[string]any)
 	row := page["results"].([]any)[0].(map[string]any)
-	if row["color"] != "#fff" || row["name"] != nil || row["description"] != "plain text" || row["sequence"] != json.Number("10.0") || page["total_count"] != 1 {
+	if row["color"] != "#fff" || row["name"] != nil || row["description"] != "plain text" || row["sequence"] != json.Number("10") || page["total_count"] != 1 {
 		t.Fatalf("result=%#v", result)
 	}
 	query := database.queries[0]

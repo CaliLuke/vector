@@ -11,24 +11,24 @@ import (
 
 type readServiceSessionPrincipalKey struct{}
 type readServiceQueryPresenceKey struct{}
-type readServiceDjangoHTML500MarkerKey struct{}
+type readServiceNativeHTML500MarkerKey struct{}
 
-type readServiceDjangoHTML500Marker struct {
+type readServiceNativeHTML500Marker struct {
 	failed bool
 }
 
-func WithReadServiceDjangoHTML500(ctx context.Context) context.Context {
-	return context.WithValue(ctx, readServiceDjangoHTML500MarkerKey{}, &readServiceDjangoHTML500Marker{})
+func WithReadServiceNativeHTML500(ctx context.Context) context.Context {
+	return context.WithValue(ctx, readServiceNativeHTML500MarkerKey{}, &readServiceNativeHTML500Marker{})
 }
 
-func MarkReadServiceDjangoHTML500(ctx context.Context) {
-	if marker, ok := ctx.Value(readServiceDjangoHTML500MarkerKey{}).(*readServiceDjangoHTML500Marker); ok {
+func MarkReadServiceNativeHTML500(ctx context.Context) {
+	if marker, ok := ctx.Value(readServiceNativeHTML500MarkerKey{}).(*readServiceNativeHTML500Marker); ok {
 		marker.failed = true
 	}
 }
 
-func ReadServiceDjangoHTML500(ctx context.Context) bool {
-	marker, ok := ctx.Value(readServiceDjangoHTML500MarkerKey{}).(*readServiceDjangoHTML500Marker)
+func ReadServiceNativeHTML500(ctx context.Context) bool {
+	marker, ok := ctx.Value(readServiceNativeHTML500MarkerKey{}).(*readServiceNativeHTML500Marker)
 	return ok && marker.failed
 }
 

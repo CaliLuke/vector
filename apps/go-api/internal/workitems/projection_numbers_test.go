@@ -23,11 +23,12 @@ func TestIssueProjectionsRejectInvalidSortOrderWithoutInventingZero(t *testing.T
 	}
 }
 
-func TestIssueProjectionsKeepPythonFloatSpelling(t *testing.T) {
+func TestIssueProjectionsKeepNativeNumericValues(t *testing.T) {
 	for _, sample := range []struct{ token, want string }{
-		{"1", "1.0"},
-		{"-0", "-0.0"},
-		{"1e-5", "1e-05"},
+		{"1", "1"},
+		{"-0", "-0"},
+		{"1e-5", "1e-5"},
+		{"9007199254740993.0", "9007199254740993.0"},
 		{"0.0001", "0.0001"},
 	} {
 		t.Run(sample.token, func(t *testing.T) {

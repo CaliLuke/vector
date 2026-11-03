@@ -275,7 +275,7 @@ func TestCycleCurrentInstanceKeepsUTCDatesWhileAppResponseUsesProjectTimezone(t 
 	if !strings.Contains(utcTimestampSQL("c.start_date"), "'Z'") {
 		t.Fatal("current-instance serializer no longer emits UTC Z timestamps")
 	}
-	encoded, err := pythonCycleCurrentInstance(map[string]any{
+	encoded, err := nativeCycleCurrentInstance(map[string]any{
 		"id": "cycle", "workspace_id": "workspace", "project_id": "project", "name": "Cycle",
 		"start_date": "2099-03-08T08:00:01Z", "end_date": "2099-03-22T07:59:00Z",
 		"owned_by_id": "owner", "view_props": map[string]any{}, "sort_order": float64(1),
@@ -408,5 +408,14 @@ func TestCycleStatusDistinguishesDraftUpcomingCurrentAndCompleted(t *testing.T) 
 				t.Fatalf("cycleStatus() = %q, want %q", got, test.want)
 			}
 		})
+	}
+}
+
+func TestCycleDateRejectsYearZero(t *testing.T) {
+	value := "0000-01-01"
+	for _, start := range []bool{false, true} {
+		if _, err := parseCycleDate(&value, "UTC", start); err == nil {
+			t.Fatal("accepted year zero cycle boundary")
+		}
 	}
 }

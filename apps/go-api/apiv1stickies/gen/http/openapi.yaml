@@ -1169,9 +1169,9 @@ components:
     securitySchemes:
         ApiKeyAuth:
             type: apiKey
-            description: Plane API token authentication.
+            description: Vector API token authentication.
             name: X-Api-Key
             in: header
 tags:
     - name: api_v1_stickies
-      description: Serves the Django API v1 Sticky contract.
+      description: Serves the Vector API v1 Sticky contract.

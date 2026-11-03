@@ -597,12 +597,12 @@ components:
     securitySchemes:
         ApiKeyAuth:
             type: apiKey
-            description: Plane API token authentication.
+            description: Vector API token authentication.
             name: X-Api-Key
             in: header
         PlaneSessionCookie:
             type: apiKey
-            description: Plane session cookie authentication.
+            description: Vector browser session cookie authentication.
             name: session-id
             in: cookie
 tags:

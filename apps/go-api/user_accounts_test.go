@@ -101,8 +101,8 @@ func TestUserAccountsErrors(t *testing.T) {
 	}
 }
 
-func TestUserAccountEmailUsesDjangoNormalizationAndValidation(t *testing.T) {
-	if got, want := normalizeUserAccountEmail("\u2003İ@LOCALHOST\u001c"), "i\u0307@localhost"; got != want {
+func TestUserAccountEmailUsesSharedAddressContract(t *testing.T) {
+	if got, want := normalizeUserAccountEmail("\u2003İ@LOCALHOST\u2003"), "i\u0307@localhost"; got != want {
 		t.Fatalf("normalized email=%q, want %q", got, want)
 	}
 	for email, want := range map[string]bool{

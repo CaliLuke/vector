@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -62,8 +61,8 @@ func legacyWritableFields(raw map[string]string) (map[string]any, error) {
 			if value == "" {
 				continue
 			}
-			parsed, err := parseDRFBool(value)
-			if err != nil {
+			parsed, message := requestinput.BooleanField(value)
+			if message != "" {
 				errorsByField[name] = []string{"Must be a valid boolean."}
 				continue
 			}
@@ -81,10 +80,7 @@ func legacyWritableFields(raw map[string]string) (map[string]any, error) {
 				fields[name] = nil
 				continue
 			}
-			parsed, err := time.Parse("2006-01-02", trimmed)
-			if err != nil {
-				parsed, err = datetime.Parse(trimmed, time.UTC)
-			}
+			parsed, err := datetime.Parse(trimmed, time.UTC)
 			if err != nil {
 				errorsByField[name] = []string{"Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."}
 				continue
@@ -102,17 +98,6 @@ func legacyWritableFields(raw map[string]string) (map[string]any, error) {
 
 func legacyRelationError(name, value string) error {
 	return &apicontract.HTTPError{Status: 400, Body: map[string]any{name: []string{fmt.Sprintf("Invalid pk \"%s\" - object does not exist.", value)}}}
-}
-
-func parseDRFBool(value string) (bool, error) {
-	switch strings.ToLower(strings.TrimSpace(value)) {
-	case "true", "t", "yes", "y", "on", "1":
-		return true, nil
-	case "false", "f", "no", "n", "off", "0":
-		return false, nil
-	default:
-		return false, strconv.ErrSyntax
-	}
 }
 
 func legacyJSONField(fields map[string]any, name string) []byte {

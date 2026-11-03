@@ -47,7 +47,7 @@ func newSessionServiceProtocol(pattern, allow, name string, head bool) readServi
 // keep their string-valued queries intact for service-level parsing.
 func sessionServiceMiddlewareStack(options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie browserSessionCookieConfig) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-		next = djangoRendererFailureMiddleware(next)
+		next = nativeRendererFailureMiddleware(next)
 		next = readServicesQueryPresenceMiddleware(next)
 		next = activityReadsCompatibilityMiddleware(options)(next)
 		next = activityReadsSessionMiddleware(sessionServicePrincipalLifecycle(sessions), cookie)(next)
@@ -61,10 +61,10 @@ func sessionServiceMiddlewareStack(options apiV1CompatibilityOptions, sessions r
 // Django renderer failures occur outside DRF's JSON exception handling. Reuse
 // the common HTML response boundary only when the endpoint marks that failure;
 // ordinary application failures retain their designed JSON response.
-func djangoRendererFailureMiddleware(next http.Handler) http.Handler {
+func nativeRendererFailureMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		request = request.WithContext(systemapi.WithReadServiceDjangoHTML500(request.Context()))
-		next.ServeHTTP(&djangoReadServiceHTML500ResponseWriter{
+		request = request.WithContext(systemapi.WithReadServiceNativeHTML500(request.Context()))
+		next.ServeHTTP(&nativeReadServiceHTML500ResponseWriter{
 			ResponseWriter: response, request: request, omitAllow: true,
 		}, request)
 	})
@@ -106,7 +106,7 @@ func newSessionServiceProtocolMiddleware(metadata func(readServiceProtocol) (int
 		if status == 0 {
 			if protocol.csrfForAuthenticatedSession && accountAuthenticationUnsafeMethod(request.Method) && accountAuthenticationHasSessionPrincipal(request) {
 				if reason := accountAuthenticationCSRFReason(request, trustedOrigins); reason != "" {
-					setDjangoProtocolCompatibilityHeaders(response.Header(), protocol.allow)
+					setNativeProtocolCompatibilityHeaders(response.Header(), protocol.allow)
 					writeReadServiceJSON(response, http.StatusForbidden, map[string]string{"detail": "CSRF Failed: " + reason})
 					return
 				}
@@ -162,7 +162,7 @@ func newSessionServiceProtocolMiddleware(metadata func(readServiceProtocol) (int
 			}
 			if request.Method == http.MethodOptions && len(request.Header.Values("Access-Control-Request-Method")) > 0 {
 				methods := strings.Split(strings.ReplaceAll(protocol.allow, " ", ""), ",")
-				djangoProtocolCORSOptionsHandler(policy, methods, ordinary).ServeHTTP(response, request)
+				nativeProtocolCORSOptionsHandler(policy, methods, ordinary).ServeHTTP(response, request)
 				return
 			}
 			if slashless {
@@ -179,7 +179,7 @@ func newSessionServiceProtocolMiddleware(metadata func(readServiceProtocol) (int
 						response.Header().Set("X-Frame-Options", "DENY")
 					}
 					if debugMode && (request.Method == "POST" || request.Method == "PUT" || request.Method == "PATCH" || request.Method == "DELETE") {
-						body, kind := djangoDebugAppendSlashResponse(request)
+						body, kind := nativeDebugAppendSlashResponse(request)
 						response.Header().Set("Content-Type", kind)
 						response.WriteHeader(500)
 						_, _ = response.Write(body)

@@ -184,7 +184,7 @@ type GetAPIV1WorkspacesBySlugProjectsByProjectIDProjectMembersByPkPayload struct
 type GetAPIV1WorkspacesBySlugProjectsByProjectIDProjectMembersLitePayload struct {
 	// Pagination cursor for getting next set of results
 	Cursor *string `json:"cursor,omitzero"`
-	// Number of results per page, parsed by the Django-compatible paginator
+	// Number of results per page, parsed by the shared cursor paginator
 	PerPage *string `json:"perPage,omitzero"`
 	// Project ID
 	ProjectID string `json:"project_id"`

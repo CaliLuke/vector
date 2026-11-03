@@ -225,7 +225,7 @@ func TestListSearchesNamesButAlwaysOrdersFavoritesBeforeCreation(t *testing.T) {
 	}
 }
 
-func TestListRejectsInvalidAndExplicitlyEmptyDjangoOrderFieldBeforeReadingPages(t *testing.T) {
+func TestListRejectsInvalidAndExplicitlyEmptyNativeOrderFieldBeforeReadingPages(t *testing.T) {
 	for _, orderBy := range []string{"not_a_page_field", ""} {
 		database := &databaseStub{rows: []pgx.Row{boolRow(true)}}
 		repository, constructorErr := NewRepository(database)
@@ -240,7 +240,7 @@ func TestListRejectsInvalidAndExplicitlyEmptyDjangoOrderFieldBeforeReadingPages(
 	}
 }
 
-func TestDetailRejectsInvalidAndExplicitlyEmptyDjangoOrderFieldBeforeReadingPage(t *testing.T) {
+func TestDetailRejectsInvalidAndExplicitlyEmptyNativeOrderFieldBeforeReadingPage(t *testing.T) {
 	for _, orderBy := range []string{"not_a_page_field", ""} {
 		database := &databaseStub{rows: []pgx.Row{stringRow("allowed")}}
 		repository, constructorErr := NewRepository(database)
@@ -278,7 +278,7 @@ func TestListAndDetailRejectNullSearchAsDRFValidationError(t *testing.T) {
 		t.Fatalf("detail err=%v queries=%d", err, len(database.queries))
 	}
 }
-func TestPageOrderValidationMatchesDjangoLazyFirstSegmentResolution(t *testing.T) {
+func TestPageOrderValidationMatchesNativeLazyFirstSegmentResolution(t *testing.T) {
 	valid := map[string]pageOrder{
 		"pk":                           {field: "id"},
 		"-pk":                          {field: "id", descending: true},
@@ -317,7 +317,7 @@ func TestPageOrderValidationMatchesDjangoLazyFirstSegmentResolution(t *testing.T
 	}
 }
 
-func TestListEscapesDjangoLikeWildcards(t *testing.T) {
+func TestListEscapesNativeLikeWildcards(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true), bytesRow([]byte(`[]`))}}
 	repository, constructorErr := NewRepository(database)
 	require.NoError(t, constructorErr)

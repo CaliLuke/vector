@@ -1,114 +1,48 @@
-# Develop Vector
+# Development exceptions
 
-## Requirements
+Use [AGENTS.md](../AGENTS.md) for working agreements and the [README](../README.md#run-locally) for startup.
+Keep this guide limited to non-obvious instructions that are absent from code, configuration, and those documents.
 
-- Go 1.27.3, as pinned in `apps/go-api/go.mod`.
-- Node.js 26.12.1 and Corepack 0.36.0 (`npm install --global corepack@0.36.0`). `package.json` pins pnpm 12.15.0 with its registry integrity hash.
-- Docker with Compose and Buildx. On macOS, the helper supports the default Colima profile.
+## Cancel checks
 
-Workspace typechecks use the native TypeScript 7 compiler (`tsc`, currently 7.0.2).
-The `@typescript/native` catalog alias installs that compiler. The separate
-`typescript` alias provides Microsoft's TypeScript 6 compatibility API for tools
-and test loaders that import it. It does not supply the `tsc` command. This follows
-[Microsoft's side-by-side installation guidance](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-60).
-Check command resolution with `pnpm exec tsc --version` and
-`pnpm -r exec tsc --version`.
+Cancel through the launching terminal with Ctrl+C, or signal the invocation's process group.
+Signaling only Prek does not reach detached workers.
 
-Dependency updates are recorded in the workspace catalog and lockfile. The Tiptap
-HTML server currently has a scoped Happy DOM 21.0.4 override to include the fix for
-[GHSA-834v-8h66-3h79](https://github.com/advisories/GHSA-834v-8h66-3h79).
-[Tiptap issue #8540](https://github.com/ueberdosis/tiptap/issues/8540) tracks its
-outdated peer range. Remove the override when Tiptap accepts the fixed release.
-The editor serialization regression covers the consumer integration.
+## Full-check progress and reuse
 
-Compose uses PostgreSQL 18.6 and keeps the existing `/var/lib/postgresql/data`
-mount and explicit `PGDATA` for compatibility with the current physical volume.
-The default named volume remains `<Compose project>_pgdata`.
-For a major-version restore, set `POSTGRES_DATA_VOLUME` in the ignored `.env` file to select a separate physical volume. A new image tag does not migrate
-the database. Before switching an existing installation, make and check a
-backup, restore it into the selected volume, then start the upgraded service.
-This prevents a new empty volume from silently replacing the database selected
-by the default project-scoped name.
+`./check.sh --full` and the full Prek group run affected tests before expensive
+checks and stop at the first failure. Go runs affected packages and their reverse
+production/test imports first, then every remaining package exactly once in the
+same integration coverage run. Shared fixtures or an unmappable deleted package
+use the complete package order. There is no separate Go preflight that repeats
+those tests. Frontend source changes run the existing behavior suite before builds.
+Set `VECTOR_CHECK_BASE` to a Git revision when checking committed changes rather
+than the working tree against `HEAD`.
 
-## Start
+Successful stages can be reused within the current Codex chat for eight hours.
+Reuse requires matching source, configuration, dependency manifests, environment
+and tool versions, plus intact output artifacts. A Go-only fix does not rerun
+unchanged frontend builds or coverage. CI and `./check.sh --full --fresh` always
+execute every required stage. Outside Codex, reuse is off unless the shell sets
+`VECTOR_CHECK_SESSION` to an identifier for the current task.
 
-Run from the repository root:
+Use `./check.sh --status` for the current stage, elapsed time, results and log path.
+Logs and success records live under ignored `.quality/reports/stages/`.
+A full result still requires every configured stage; focused tests alone do not
+satisfy integration or coverage gates. Changing inputs during a run invalidates
+its result.
 
-```sh
-./setup.sh
-pnpm dev
-```
+## Colima test VM
 
-Setup copies `.env.example` files, creates a signing secret, and installs frontend dependencies.
-Keep local environment files private. The example database and storage credentials are for local development only.
+Use a dedicated test VM with SSH forwarding.
+Colima's direct VM address can lose TCP connection attempts under churn
+([Colima #1664](https://github.com/abiosoft/colima/issues/1664)).
+A transient native port collision can also leave an SSH-forwarded port unreachable
+([Colima #1660](https://github.com/abiosoft/colima/issues/1660)).
 
-Open `http://localhost:8000/`. Instance administration uses `/god-mode/`, and public projects use `/spaces/`.
-
-The [remote MCP transport](mcp.md) is disabled by default. Its 30 tools expose
-208 actions through personal tokens or generic external-issuer OAuth. OAuth
-requires the [issuer profile and account linking](mcp-oauth.md). Generated-server
-workflow tests cover all actions under both authentication modes on protocol
-revision `2026-07-28`. The [parity tracker](mcp-parity.md) records the remaining acceptance
-checks. Mutations support optional [receipt and revision extensions](mcp-writes.md).
-Teamspaces are deferred until native support exists.
-The proxy serves all browser entry points. Frontend ports 3000–3100 are internal development upstreams.
-
-`PLANE_WEB_PORT`, `PLANE_ADMIN_PORT`, and `PLANE_SPACE_PORT` can override the web,
-admin, and Sites upstream ports. Choose distinct free ports. The servers fail if
-a selected port is occupied. The proxy uses the same selected ports, and the
-browser origin remains `http://localhost:8000/`. These compatibility names remain
-supported in Vector.
-
-The frontend launcher has a 6 GiB sampled process-tree RSS ceiling and a 1 GiB
-heap limit per Node process. It stops all frontend workers if the ceiling is
-exceeded or after 24 hours. Shared-package startup builds run serially under a
-4 GiB ceiling. Turbo then watches the app dependency graph with five task slots:
-four persistent app servers and one slot for shared-package rebuilds. Development
-rebuilds preserve existing package output. Docker containers are outside these
-host-process limits.
-
-Stop frontend watchers with Ctrl-C. Stop containers without deleting data:
-
-```sh
-pnpm dev:stop
-```
-
-## Tests
-
-```sh
-pnpm test:frontend
-pnpm check:lint
-pnpm --filter web check:types
-```
-
-While the development stack runs, use package typecheck commands directly.
-A Turbo typecheck can rebuild shared packages and interrupt browser requests.
-
-Prepare the Docker environment before Go or container tests:
-
-```sh
-source scripts/dev-env.sh
-go -C apps/go-api test ./...
-go -C apps/go-api vet ./...
-```
-
-Testcontainers core and its PostgreSQL module are pinned to
-`v0.44.1-0.20261029064637-ff84c26717f1`. This upstream commit includes the
-[HostPort timeout fix](https://github.com/testcontainers/testcontainers-go/pull/4055)
-for [issue #4054](https://github.com/testcontainers/testcontainers-go/issues/4054).
-The proxy fixtures use Testcontainers' SSH host-port forwarding on all platforms.
-The Colima gateway workaround is removed. The proxy integration suite passes
-with the pinned version and the existing readiness deadlines. Replace both pins
-with a tagged release that contains this commit when one is available.
-
-Colima's reachable VM address can intermittently lose TCP connection attempts
-under connection churn ([Colima #1664](https://github.com/abiosoft/colima/issues/1664)).
-Use a dedicated test VM with SSH forwarding. A transient native port collision
-can also leave an SSH-forwarded port unreachable
-([Colima #1660](https://github.com/abiosoft/colima/issues/1660)). Reserve a guest
-publish range outside macOS's ephemeral client-port range to avoid those
-collisions. The range below assumes the macOS range starts at 49152; check it with
-`sysctl net.inet.ip.portrange.first net.inet.ip.portrange.last`.
+Reserve a guest publish range outside macOS's ephemeral client-port range.
+Check the macOS range with `sysctl net.inet.ip.portrange.first net.inet.ip.portrange.last`.
+The configuration below assumes that range starts at 49152.
 
 For one-time setup, create and stop the dedicated profile:
 
@@ -117,8 +51,8 @@ colima start vector-mcp-tests --cpu 2 --memory 3 --disk 15 --port-forwarder ssh 
 colima stop --profile vector-mcp-tests
 ```
 
-Merge this provision into `~/.colima/vector-mcp-tests/colima.yaml`. Keep any other
-provisions. It sets the guest range before Docker starts:
+Merge this provision into `~/.colima/vector-mcp-tests/colima.yaml`. Keep any other provisions.
+The provision sets the guest range before Docker starts:
 
 ```yaml
 provision:
@@ -126,7 +60,7 @@ provision:
     script: sudo sysctl -w 'net.ipv4.ip_local_port_range=20000 29999'
 ```
 
-Start the configured VM and run checks. Use this block for subsequent runs too:
+For subsequent runs, start the configured VM and run checks:
 
 ```sh
 colima start --profile vector-mcp-tests --activate=false
@@ -137,411 +71,17 @@ source scripts/dev-env.sh
 ./check.sh --go --full
 ```
 
-Use those exports in the shell that runs Git hooks too. Keep native services out
-of ports 20000–29999 while this VM runs. The default VM and Docker context stay
-unchanged. Unset all three variables before returning to the application's
-default stack. Stop the test VM with `colima stop --profile vector-mcp-tests` when
-it is no longer needed. Revisit this route when the direct-address reproduction
-passes after an upstream fix. Remove the range constraint when upstream
-forwarding also recovers from transient port collisions. Preserve fixture
-readiness deadlines and resource-reaper cleanup.
+Use those exports in the shell that runs Git hooks too.
+Keep native services out of ports 20000–29999 while this VM runs.
+Leave the default VM and Docker context unchanged.
+Before returning to the application's default stack, unset all three variables.
+After testing, stop the VM with `colima stop --profile vector-mcp-tests`.
 
-Ryuk remains enabled. `scripts/dev-env.sh` defaults its reconnection grace to
-30 minutes to cover idle gaps between package test binaries while
-[Testcontainers #3867](https://github.com/testcontainers/testcontainers-go/issues/3867)
-remains open. A stopped reaper can otherwise be selected for reuse, and its missing
-logs consume the startup timeout. Normal fixtures explicitly remove their containers.
-The grace controls fallback cleanup after the last client disconnects. Fixture
-readiness and test deadlines are unchanged. Remove this default when the pinned
-version includes the [reaper reuse fix](https://github.com/testcontainers/testcontainers-go/pull/3868).
+After an upstream fix, recheck the direct-address reproduction before removing this test-VM requirement.
+Remove the range constraint only after forwarding recovers from transient port collisions.
 
-Development orchestration and login/log checks use `cmd/devtools`, written in Go.
-Go unit tests and focused database tests run without Python or historical Git objects.
-
-## Quality gates
-
-Install Prek 0.5.7 and the pinned Go analysis tools once per machine or checkout:
-
-```sh
-brew install prek
-bash scripts/quality/go-tools.sh --install
-```
-
-Use the shared entry point locally and in CI:
-
-```sh
-prek run --all-files --group full
-./check.sh --fast
-./check.sh --fix
-```
-
-The full gate includes frontend production builds. Before the full gate, stop frontend watchers.
-After the gate, restart `pnpm dev` for browser checks. To work while watchers run,
-use the package typecheck scripts directly. Do not clean shared package output.
-
-Husky remains the Git hook manager. Its pre-commit hook invokes the non-mutating
-Prek `fast` group. Pre-push invokes `full`. `pnpm install` installs Husky's hooks.
-Do not run `prek install` over the same hooks.
-
-CI selects the same full hooks with `--group ci`, using `--require-group go` or
-`--require-group typescript` to split the jobs. The Go tools are pinned in
-`scripts/quality/go-tools.sh`. Frontend tools are pinned in the pnpm lockfile.
-
-Go checks cover build, vet, formatting/imports, module-tidy drift, lint, dead code,
-duplication, enforced function complexity, and integration-tagged tests with coverage. Docker is required for
-disposable service fixtures. Integration tests run one Go package at a time, with
-up to two parallel tests within a package. This keeps database-backed packages
-from competing for the test VM.
-The test-result guard rejects failures, incomplete reports, and unreviewed skips.
-`.quality/go-test-skips.json` is empty. Tests own their disposable fixtures.
-Never point these tests at a database with valuable data.
-
-### Baselines and review
-
-The [technical debt catalog](tech-debt-catalog.md) consolidates the remaining
-work, source inventories, priorities, completion evidence, and accepted deferrals.
-
-Current Go allowances and coverage floors live in `configs/quality/`.
-Current frontend allowances, coverage floors, and unmeasured scopes live in `.quality/`.
-The gate reports current findings against these files. Historical cleanup counts remain in Git history.
-
-Review each baseline change against its source finding. When evidence supports the change, remove resolved entries and raise floors.
-Do not increase an allowance, relax a threshold, or exclude owned source to accept a failure.
-TypeScript compiler errors cannot have baseline allowances.
-
-Configured lint does not cover every discarded Go error. The stricter `errcheck` audit with `check-blank: true` found additional debt.
-Those findings remain outstanding until a fresh audit proves their removal.
-Zero coverage floors and unmeasured frontend workspaces also remain outstanding work.
-A passing gate does not prove that all technical debt or MCP acceptance work is complete.
-
-Both fast and full Go gates enforce a maintainability index floor of 20 for new
-functions. Higher scores are better. `configs/quality/go-maintainability-baseline.json`
-records numeric floors for existing functions. Any score decline fails even if
-that function was already flagged. Identity uses file, package and receiver/function
-name, not the source line. The pinned `maintidx` analyzer runs under the same
-integration tags and generated-source exclusions as lint. The existing AST-based
-function inventory resolves receiver identity. Its complexity values are not gates.
-Missing tools, analyzer failures, malformed reports and unknown functions fail.
-
-A zero maintainability score cannot decline further. Changes to files with zero-score allowances therefore require explicit source-fingerprint review.
-This file-level check requires review. It does not mean that every edit worsens the implementation.
-
-Refactoring acceptance requires coherent responsibilities, narrow interfaces,
-visible effect ordering, and less work to understand or change the behavior.
-A passing size or complexity metric alone is insufficient.
-
-Inline or regroup helpers that only redistribute branches or add forwarding layers.
-
-Run `bash scripts/quality/go.sh --maintainability` for the focused gate. An explicit
-`--write-maintainability-baseline` regenerates allowances for review. Normal checks
-never change the baseline. Improvements are reported so their floors can be
-raised. Do not refresh the baseline to accept a newly failing implementation.
-
-Automated structural analysis remains blocked by
-[Lagotto’s Go 1.27 loader incompatibility](https://github.com/CaliLuke/lagotto/issues/58).
-Function scores do not replace a review of responsibilities, interfaces, and effect ordering.
-
-### Coverage and fixtures
-
-Coverage instruments the same owned Go packages that the ratchet measures, so
-integration tests also count calls into other packages. Repeated coverage blocks
-from separate test binaries are merged by source location. A hit in either binary
-covers the block once. Generated-source exclusions and package floors still apply.
-The parser streams large profiles instead of loading their complete text into memory.
-Optional file floors protect established contracts independently of the package average.
-The baseline refresh command preserves those file floors.
-
-Frontend coverage checks each measured file and requires 80% coverage for new files in measured suites.
-`.quality/coverage-scope.json` records the source boundaries and test command for each measured workspace.
-The Node behavior suite enforces file floors across web, admin, space, and the shared packages.
-The shared UI icon registry has a 100% floor for lines, statements, functions, and branches.
-
-Live's Redis integration fixture binds its disposable container to `127.0.0.1` by default.
-For a Docker VM reached over its private network address, set `LIVE_TEST_REDIS_BIND_HOST`
-to that address alongside `DOCKER_HOST`. The fixture uses the published address for
-readiness checks and connections, and removes the container after the suite.
-
-The work-item type tests, full-schema MCP workflows, and MCP identity tests migrate
-disposable templates per package. Each test gets a separate cloned database.
-Full-schema MCP templates also prepare their common seed rows once.
-Template owners reuse admin connections for clone creation.
-Tests close their application connections before synchronous database cleanup.
-Each clone has separate test data and application connections.
-Migration-specific tests still exercise fresh database installation directly.
-MCP supports only protocol revision `2026-07-28`. Shared transport tests verify
-discovery, required metadata, and rejection of older revisions and handshakes.
-Credential revocation, scope or membership changes, and replay remain separate
-behavior cases. Use matrices when these cases interact with the operation.
-Credential-neutral shape, validation, timestamp, storage and worker checks run
-once through `runCatalogue`; credential interactions use `runCatalogueCredentials`.
-PostgreSQL fixtures check a SQL query through the published port before running
-seed migrations. Only readiness is retried. A failed migration is returned once
-and its container is reclaimed.
-The macOS environment keeps Testcontainers' resource reaper enabled so containers
-are reclaimed when a test process exits before its normal cleanup. Explicitly
-disabling it requires an external runner that owns cleanup. See the
-[Testcontainers cleanup guidance](https://golang.testcontainers.org/features/garbage_collector/).
-
-See [the test-suite review](test-suite-review.md) for legacy failure expectations
-and test-quality gaps that require separate behavior changes.
-
-### Gate execution and resource limits
-
-The frontend pipeline completes before the full Go gate starts. Distinct Prek
-priorities keep frontend builds from competing with Docker-backed tests for host
-resources. Within the frontend pipeline,
-production builds run first, followed by TypeScript checks. Builds and checks remain
-sequential so generated package output is ready before typechecking. Frontend tests run in three sequential batches with two isolated workers each.
-The runner snapshots the file list and balances batches by test-source size.
-Each Node process has a 384 MiB heap limit. Each batch has a 1 GiB sampled process-tree RSS ceiling and a five-minute deadline. All batches share a ten-minute execution budget. Every frontend file runs once. Any batch failure fails the gate.
-Individual tests retain their 15-second timeout. Each TypeScript gate
-has a ten-minute deadline and 3 GiB RSS ceiling.
-The full typed-lint gate runs `apps/web` and then the remaining tree sequentially
-under that single deadline and memory guard. Both passes retain type checking and
-all configured rules. Their file counts and diagnostics are combined before the
-baseline is checked; a failed or incomplete pass rejects the gate and cannot write
-a baseline. This bounds parser and type-checker memory without omitting source.
-Production builds use one Turbo task at a time with a 4 GiB RSS ceiling. The Go
-gate has a 6 GiB RSS ceiling and two Go runtime threads. These are process-group
-watchdogs sampled every 100 ms, not OS-enforced total-memory reservations. They
-send `SIGKILL` to an inspector at its two-second sampling deadline and retry one
-timed-out process sample. Consecutive sample timeouts or other
-monitoring errors fail the gate. The external command deadline remains active.
-They track descendant processes and their groups, including Turbo task groups, but
-do not measure Docker containers. A process that fully daemonizes between
-samples can escape ancestry tracking. These guards are for build/test workers,
-not an isolation boundary for untrusted programs.
-The supervisor terminates the process group on failure or deadline and kills
-leftover workers when their parent exits. See `scripts/quality/run-bounded.mjs`
-for running focused commands under the same protection.
-Cancel checks through the launching terminal (Ctrl+C), or signal a separately
-owned invocation process group so the supervisor receives the cancellation and
-stops its workers. Sending a signal only to Prek does not reach detached workers.
-
-Frontend checks cover Oxlint, type diagnostics, Oxfmt, Knip, duplication, and the
-Node frontend, Live, codemod, editor, and UI suites. Full builds also compile both
-component Storybooks. Coverage reports must be freshly generated
-before their ratchets run. Existing debt is recorded as explicit baselines rather
-than hidden by excluding application source. Review and tighten those baselines
-as findings are fixed. Do not regenerate them simply to accept a failing change.
-
-Knip has no accepted findings. Version 6.44.0 includes the
-[package-extension peer fix](https://github.com/webpro-nl/knip/pull/2246), so the
-editor’s declared `@tiptap/pm` peer no longer needs a root-workspace allowance.
-
-The frontend behavior suite uses Node's compilation cache and a shared TypeScript transform cache.
-Transform keys include source content, compiler version and every transform option.
-Workers publish cache entries atomically under ignored `node_modules/.cache` directories.
-These caches preserve worker isolation and do not cache test results.
-Node's compilation cache is scoped to behavior tests, because it can reduce V8 coverage precision.
-Coverage suites use separate commands without that cache setting.
-`pnpm test:frontend:coverage` runs the same three behavior batches with exact transform
-capture and build source maps. Source payloads are shared by content hash; each
-worker records references to its exact executed variants. It merges worker coverage by executed code, maps
-statements and branches back to source, and includes unloaded source files at zero.
-It rejects missing captures and stale build maps. Rebuild shared packages before
-running it after a source change. Generated reports live in `coverage/frontend/`.
-
-Node's native source-mapped test coverage can mark an unexecuted return as covered
-([nodejs/node#67099](https://github.com/nodejs/node/issues/67099)). The frontend
-coverage command uses AST-based attribution instead. Remove this adapter only when
-native coverage passes the source-attribution fixtures, including skipped returns,
-type-only declarations, unloaded files, and merged worker/build output.
-
-### Dependency limitations
-
-PostgreSQL 18.6 can hold `DROP DATABASE` behind a client paused during
-SCRAM authentication, even when that client targets another database. The pending
-backend releases the barrier when its connection closes or authentication times
-out. The [upstream barrier-wait report](https://www.postgresql.org/message-id/179223137070.3783589.15732839710523354747%40gmail.com)
-also records the authentication wait. A startup packet that reaches the SASL
-challenge without answering it reproduces the blocked drop. This explains a
-cleanup delay after a failed connection; it does not establish that connection's
-transport failure. Keep fixture deadlines and failure reporting intact. Recheck
-this limitation when an upstream release processes barriers during that wait.
-
-`@headlessui/react@2.2.10` drops React 19 callback-ref cleanup functions when
-forwarding `Combobox.Button` refs. `CustomSelect` uses Floating UI's `useMergeRefs`
-to run those cleanups when Headless UI clears the ref. A standalone reproduction
-is recorded in [Headless UI #3911](https://github.com/tailwindlabs/headlessui/issues/3911).
-Remove this compatibility requirement when an upstream release forwards cleanup
-functions and the callback-ref unmount regression passes without the adapter;
-the component still needs to merge its own trigger ref with the caller's ref.
-
-Router CLI 1.167.46 loads the CommonJS build of `@tanstack/router-core@1.171.39`,
-which emits a circular-access warning for `replaceRouteChunk`. Route generation
-succeeds, but a standalone package import leaves the CommonJS class method
-undefined while the ESM import exposes a function. The reproduction and affected
-versions are recorded in
-[TanStack/router#8585](https://github.com/TanStack/router/issues/8585#issuecomment-6540692152).
-The dependency remains unpatched and the warning is not suppressed. Recheck both
-entry points and CLI route generation when adopting a release that fixes the
-CommonJS initialization order.
-
-`next-themes@0.4.6` emits a React development warning about its inline script on
-client rendering with React 19.3.1. A standalone reproduction is recorded in
-[upstream issue #385](https://github.com/pacocoursey/next-themes/issues/385#issuecomment-6378110860).
-The dependency remains unpatched and the warning is not suppressed. Recheck it
-when adopting an upstream release that fixes client-rendered providers.
-
-Multipart readers keep the `NextPart` error separate from body-read errors because
-[errorlint issue #49](https://codeberg.org/polyfloyd/go-errorlint/issues/49) describes
-incorrect EOF warnings when an error variable is reassigned. This separation can
-be simplified when the analyzer tracks assignments at each comparison. Preserve
-direct `io.EOF` comparisons: wrapped EOF errors must still report parse failures.
-
-Do not combine source overlays with `-coverpkg` for coverage checks until
-[golang/go#73802](https://github.com/golang/go/issues/73802) is fixed in the pinned
-toolchain and its reproduction passes. The issue can ignore overlaid code and
-produce a false passing test. A standalone Go 1.27.3 reproduction was
-[added upstream](https://github.com/golang/go/issues/73802#issuecomment-6480328772).
-Use the applied source and a fresh build for coverage checks. The gates retain no compiler flag or dependency patch for this limitation.
-
-HTTP response bodies retain explicit checked closes where the current bodyclose
-analyzer cannot follow a cross-package cleanup helper. This limitation is tracked
-in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with a
-[current standalone reproduction](https://github.com/timakin/bodyclose/issues/60#issuecomment-6480673025).
-Those call sites can use the shared helper when the pinned analyzer accepts that
-reproduction. No linter suppression or dependency patch was added.
-
-The analyzer also reports decoder-factory calls before a response exists; a
-[standalone factory reproduction](https://github.com/timakin/bodyclose/issues/71#issuecomment-6496543573)
-is already reported upstream. Direct decoder tests can drop their retained lint
-allowances when the pinned analyzer accepts that reproduction. The page validation
-tests exercise the generated client through HTTP, including request encoding and
-error decoding, without adding an allowance for the factory call.
-
-Three nilerr allowances preserve conversion of parsing or authentication failures
-into explicit validation or denial results. Returning an operational error would
-change those API contracts. [nilerr issue #12](https://github.com/gostaticanalysis/nilerr/issues/12#issuecomment-6543387375)
-contains a standalone reproduction with nilerr 0.1.2 and the pinned Go/linter
-versions. Retire these allowances when the analyzer accepts the intentional
-result conversions. No source suppression or dependency patch is used.
-
-The legacy tooltip uses Floating UI's controlled element API with callback-ref
-state. Oxlint currently mistakes a callback property passed to JSX `ref` for a
-render-time ref read. [oxc#23753](https://github.com/oxc-project/oxc/issues/23753#issuecomment-6510863595)
-contains a standalone reproduction on the pinned versions. The tooltip can use
-Floating UI's returned ref setters directly when the pinned analyzer accepts
-that callback-member form. No rule is suppressed.
-
-The collaborative editor resolves `@tiptap/y-tiptap` to release 3.0.9.
-Version 3.0.10 drops the first text inserted into an empty block if a block-ID plugin appends a transaction. The reproduction and release comparison are recorded in
-[upstream issue #8584](https://github.com/ueberdosis/tiptap/issues/8584#issuecomment-6413802381).
-No dependency source is patched. Remove the override when an upstream release
-passes `packages/editor/src/core/extensions/unique-id/collaboration.test.ts` and
-the page typing/reload integration check.
-
-Form-core 1.33.5 resolves `@tanstack/devtools-event-client` to its released 0.5.0
-version. Version 0.4.4 keeps a Node process alive for about five seconds after a
-form is unmounted while it retries a devtools connection. The narrow override
-uses the upstream release's environment-aware entry point. No dependency source
-or test runtime is patched. Remove it after a Form release incorporates
-[the upstream dependency update](https://github.com/TanStack/form/pull/2410).
-The process-lifetime reproduction is recorded on
-[the existing upstream issue](https://github.com/TanStack/form/issues/2132).
+For a Docker VM reached through its private address, set `LIVE_TEST_REDIS_BIND_HOST` to that address alongside `DOCKER_HOST`.
 
 ## Recover a rejected type-level migration
 
-Migration 46 enforces integer work-item type levels from 0 through 20, matching
-hierarchy input validation. It repairs invalid levels from consistent project
-copies, or uses the unassigned level of zero when no project copy exists. It
-checks the complete affected hierarchy, including private drafts, before commit.
-It preserves parent links and increments native and MCP revisions.
-
-Conflicting or out-of-range project copies, or a repair that would invalidate
-parent links, stop migration 46. Its transaction rolls back the level and revision
-changes. Earlier migrations remain applied, and the migration journal records
-version 46 as dirty. With application writers and migration runners stopped,
-inspect the affected values:
-
-```sql
-SELECT t.workspace_id, t.id, t.level::text,
-       array_agg(DISTINCT p.level) FILTER (WHERE p.id IS NOT NULL) AS project_levels
-FROM public.issue_types t
-LEFT JOIN public.project_issue_types p
-  ON p.issue_type_id = t.id AND p.workspace_id = t.workspace_id
-WHERE NOT (t.level BETWEEN 0 AND 20 AND t.level = floor(t.level))
-GROUP BY t.workspace_id, t.id, t.level;
-```
-
-Restore a reviewed level assignment or project copy, for example from a backup.
-Do not remove parent links to make this migration pass. After resolving the
-reported conflict, use this guarded reset for the rejected migration 46 only:
-
-```sql
-UPDATE public.plane_schema_migrations SET version = 45, dirty = false
-WHERE version = 46 AND dirty
-  AND NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conrelid = 'public.issue_types'::regclass
-      AND conname = 'issue_types_level_valid'
-  )
-RETURNING version, dirty;
-```
-
-Expect one returned row, then rerun normal schema bootstrap. If no row is returned,
-inspect the journal and constraint state before taking another action. The reset
-cannot rewind a completed migration. Integration tests exercise the failed
-upgrade, unchanged data and revisions, reviewed correction, reset, and retry.
-
-## Logs
-
-```sh
-pnpm dev:check-logs
-pnpm dev:errors
-pnpm dev:logs
-pnpm dev:traces
-```
-
-The local collector stores logs inside its Docker volume. Use these commands instead of opening its SQLite database from the host.
-Redact cookies, tokens, credentials, and personal data before sharing logs.
-
-The Go API exports structured logs and traces directly to the configured OTLP
-endpoint, including request trace and span IDs. This continues while frontend
-watchers are stopped for checks. The development runner forwards frontend,
-migrator, and proxy output. It does not forward the API's stdout a second time.
-`dev:check-logs` exercises a read-only HTTP 500 and requires both its error log
-and matching server span, in addition to checking proxy ingestion.
-
-## Test account
-
-Store machine-specific test credentials in `.env.test.local`. This file is ignored by Git.
-Use the keys `PLANE_TEST_EMAIL` and `PLANE_TEST_PASSWORD`. Restrict access with `chmod 600 .env.test.local`.
-
-```sh
-set -a
-source .env.test.local
-set +a
-pnpm dev:check-login
-```
-
-Do not copy another operator's credentials into this file or into test evidence.
-
-## Current-value search migration
-
-Schema migration 13 adds a separate rich-text search projection. Before upgrading,
-stop older API and worker writers, then run the new `bootstrap schema` or
-`bootstrap install` command to completion before starting the new application.
-Do not perform a rolling upgrade across this boundary: older writers do not
-maintain the projection. Frontend watchers can remain running during this schema step.
-API requests will be unavailable while the backend is stopped.
-
-Bootstrap sanitizes existing saved values without editing items, timestamps,
-history, or activity. It processes bounded batches within each workspace transaction
-and records that workspace's completion atomically. Failure or interruption rolls
-back that workspace. A retry skips completed workspaces. Invalid legacy rich text
-reports item and field IDs without logging their content. Repair the identified
-value before retrying. `BOOTSTRAP_TIMEOUT` accepts a positive Go duration (default
-`1h`). Use a longer duration, for example `4h`, for large installations.
-
-## Runtime and API contracts
-
-Redis cache clients use standard TLS certificate checks for `rediss` URLs.
-For private deployments, install the CA in the host or container trust store.
-Use a certificate that matches the Redis hostname. Untrusted certificates fail the connection.
-
-[Architecture](architecture.md) describes source ownership and runtime boundaries.
-[MCP parity](mcp-parity.md) records acceptance work that remains after action wiring.
-The [relation actions](mcp-work-item-relations.md) use native relation operations, permissions, and durable effects.
-The [property API](mcp-work-item-properties.md) documents catalogue actions, revision triggers, and preservation checks.
+For migration 46 failures, use the [journal recovery procedure](self-hosting.md#recover-a-rejected-type-level-migration).

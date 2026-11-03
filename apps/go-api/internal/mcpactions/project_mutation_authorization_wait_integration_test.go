@@ -34,17 +34,26 @@ type mutationWaitScenario struct {
 	prepare      func(*testing.T, milestoneFixture, catalogueCall) map[string]any
 }
 
+// Every action retains both credential bindings and OAuth write-scope enforcement,
+// for new writes and replay. Callers use the full matrix at each distinct domain
+// authorization boundary; repeating membership revocation for actions that share
+// that boundary adds no separate permission rule.
+func mutationCredentialChanges() []mutationWaitChange {
+	return []mutationWaitChange{
+		{"personal token revoked", "personal token", "token", "unauthorized", nil},
+		{"OAuth token revoked", "OAuth", "token", "unauthorized", nil},
+		{"OAuth write scope removed", "OAuth", "scope", "forbidden", nil},
+	}
+}
+
 func runMutationAuthorizationWait(t *testing.T, scenario mutationWaitScenario) {
 	t.Helper()
 	changes := scenario.changes
 	if changes == nil {
-		changes = []mutationWaitChange{
-			{"personal token revoked", "personal token", "token", "unauthorized", nil},
-			{"OAuth token revoked", "OAuth", "token", "unauthorized", nil},
-			{"OAuth write scope removed", "OAuth", "scope", "forbidden", nil},
-			{"personal token membership revoked", "personal token", "membership", "forbidden", nil},
-			{"OAuth membership revoked", "OAuth", "membership", "forbidden", nil},
-		}
+		changes = append(mutationCredentialChanges(),
+			mutationWaitChange{"personal token membership revoked", "personal token", "membership", "forbidden", nil},
+			mutationWaitChange{"OAuth membership revoked", "OAuth", "membership", "forbidden", nil},
+		)
 	}
 	for _, change := range changes {
 		for _, replay := range []bool{false, true} {

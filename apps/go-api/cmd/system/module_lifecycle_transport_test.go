@@ -216,7 +216,7 @@ func TestModuleLifecycleGeneratedMountsMatchAllWriteRoutes(t *testing.T) {
 		"PUT /api/workspaces/{slug}/projects/{project_id}/modules/{pk}/":                             {},
 	}
 	mux := loomhttp.NewMuxer()
-	server := modulelifecyclesvr.New(&moduleapi.Endpoints{}, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
+	server := modulelifecyclesvr.New(&moduleapi.Endpoints{}, mux, nativeRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 	server.Mount(mux)
 	if len(server.Mounts) != len(want) {
 		t.Fatalf("generated write mounts=%d, want %d", len(server.Mounts), len(want))
@@ -461,7 +461,7 @@ func TestModuleLifecycleArchivedItemAliasesUseSourceActionsAndPK(t *testing.T) {
 	}
 }
 
-func TestModuleLifecycleCompressionMiddlewareAddsVaryAtDjangoThreshold(t *testing.T) {
+func TestModuleLifecycleCompressionMiddlewareAddsVaryAtNativeThreshold(t *testing.T) {
 	for _, test := range []struct {
 		name         string
 		body         string
@@ -488,7 +488,7 @@ func TestModuleLifecycleCompressionMiddlewareAddsVaryAtDjangoThreshold(t *testin
 	}
 }
 
-func TestModuleLifecycleAPIAliasErrorsRetainDjangoProtocolHeaders(t *testing.T) {
+func TestModuleLifecycleAPIAliasErrorsRetainNativeProtocolHeaders(t *testing.T) {
 	handler := moduleLifecycleTransportHandler(t, &moduleLifecycleTransportRepository{}, nil)
 	path := "/api/v1/workspaces/acme/projects/" + moduleLifecycleTransportProject + "/modules/" + moduleLifecycleTransportModule + "/archive/"
 	request := httptest.NewRequest(http.MethodPost, path, nil)

@@ -8,8 +8,6 @@ import (
 	"testing"
 	"time"
 
-	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -20,7 +18,7 @@ func (timestampTestCipher) Decrypt(value string) (string, error) { return value,
 
 func TestConfigurationBulkWritesPreserveUpdatedAt(t *testing.T) {
 	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, databaseURL string) error {
 		pool, err := pgxpool.New(ctx, databaseURL)
 		if err != nil {
 			return err
@@ -49,12 +47,8 @@ INSERT INTO instance_configurations (id,key,value,category,is_encrypted,created_
 `)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testsupport.Close(t, pair)
 
-	pool, err := pgxpool.New(ctx, pair.SeedURL())
+	pool, err := pgxpool.New(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

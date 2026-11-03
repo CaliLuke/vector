@@ -48,7 +48,7 @@ func (r *InvitationsRepository) invitationCreate(ctx context.Context, c Invitati
 			return nil, err
 		}
 	}
-	for index, raw := range emails {
+	for _, raw := range emails {
 		item, ok := raw.(map[string]any)
 		if !ok {
 			return nil, inviteFailure(400, "Invalid invitation")
@@ -73,16 +73,8 @@ func (r *InvitationsRepository) invitationCreate(ctx context.Context, c Invitati
 			}
 		}
 		normalized := normalizeInvitationEmail(email)
-		checked := email
-		if project {
-			checked = normalized
-		}
-		if !validInvitationEmail(checked) {
-			label := invitationPythonEntry(item, invitationRawEntry(c.rawBody, index))
-			if project {
-				label = email
-			}
-			return nil, inviteFailure(400, "Invalid email - "+label+" provided a valid email address is required to send the invite")
+		if !validInvitationEmail(normalized) {
+			return nil, inviteFailure(400, "Invalid email address")
 		}
 		entries = append(entries, entry{normalized, role, invitationToken(r.secretKey, item), value})
 	}

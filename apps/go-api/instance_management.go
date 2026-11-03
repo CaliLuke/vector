@@ -93,7 +93,7 @@ func NewInstanceManagement(repository instanceManagementRepository, sessions ins
 		return nil, fmt.Errorf("instance management repository is required")
 	}
 	if sessions == nil {
-		return nil, fmt.Errorf("Django admin session validator is required")
+		return nil, fmt.Errorf("admin session validator is required")
 	}
 	if cipher == nil {
 		return nil, fmt.Errorf("instance configuration cipher is required")
@@ -144,7 +144,7 @@ func (service *instanceManagementService) adminRedirect(ctx context.Context, bod
 	if result.Status != http.StatusFound {
 		return nil, nil, instanceManagementInternal()
 	}
-	return &api.InstanceAdminRedirectResponse{Location: result.Location, ContentType: "text/html; charset=utf-8"}, io.NopCloser(strings.NewReader(djangoRedirectBody(result.Location))), nil
+	return &api.InstanceAdminRedirectResponse{Location: result.Location, ContentType: "text/html; charset=utf-8"}, io.NopCloser(strings.NewReader(nativeRedirectBody(result.Location))), nil
 }
 
 func (service *instanceManagementService) adminRedirectRequest(ctx context.Context, body io.ReadCloser) (authredirects.Request, error) {

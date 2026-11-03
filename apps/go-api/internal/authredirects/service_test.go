@@ -271,3 +271,19 @@ func TestSignupUnexpectedLookupErrorDoesNotTreatUserAsMissing(t *testing.T) {
 		}
 	}
 }
+
+func TestStoredAccountRemainsReachableOutsideNewEmailGrammar(t *testing.T) {
+	accounts := &accountStub{configured: true, user: accountauthentication.User{
+		ID: "00000000-0000-4000-8000-000000000099", Email: "existing@local", Password: "encoded", Active: true,
+	}}
+	service := newTestService(t, accounts, 3)
+	result := service.EmailSignIn(context.Background(), Request{BaseURL: "https://app.example.test", Email: " Existing@Local ", Password: "secret"}, true)
+	if result.Status != http.StatusFound || result.Session == nil || strings.Contains(result.Location, "error_code") {
+		t.Fatalf("stored identity could not log in: %#v", result)
+	}
+	accounts.userErr = accountauthentication.ErrUserNotFound
+	result = service.EmailSignIn(context.Background(), Request{BaseURL: "https://app.example.test", Email: "new@local", Password: "secret"}, true)
+	if !strings.Contains(result.Location, "INVALID_EMAIL_SIGN_IN") {
+		t.Fatalf("new malformed identity accepted: %#v", result)
+	}
+}

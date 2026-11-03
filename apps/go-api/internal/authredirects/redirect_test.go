@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestValidateNextPathMatchesDjangoPathRules(t *testing.T) {
+func TestValidateNextPathMatchesNativePathRules(t *testing.T) {
 	tests := []struct {
 		name  string
 		input string

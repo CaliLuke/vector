@@ -23,9 +23,9 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// Expectations were characterized with Python 3.12 / DRF 3.17.1 JSONParser.
+// JSON fields retain exact submitted numbers across service adapters.
 const upgradeNumberInput = `{"integer":9007199254740993,"decimal":9007199254740993.0,"tiny":1e-999,"nested":[-1e-999,0.100000000000000005],"zero":-0}`
-const upgradeNumberExpected = `{"integer":9007199254740993,"decimal":9007199254740992.0,"tiny":0.0,"nested":[-0.0,0.1],"zero":0}`
+const upgradeNumberExpected = upgradeNumberInput
 const upgradeProjectID = "00000000-0000-4000-8000-000000000002"
 
 func assertUpgradeJSON(t *testing.T, got []byte, want string) {
@@ -157,11 +157,11 @@ func TestJSONNumberUpgradeUserPropertiesNormalizeEveryScope(t *testing.T) {
 				t.Fatalf("writes=%d", repo.writes)
 			}
 			assertUpgradeJSON(t, repo.patched["filters"], upgradeNumberExpected)
-			assertUpgradeJSON(t, repo.patched["display_filters"], `{"display":0.0}`)
-			assertUpgradeJSON(t, repo.patched["display_properties"], `{"precision":9007199254740992.0}`)
-			assertUpgradeJSON(t, repo.patched["rich_filters"], `[-0.0]`)
+			assertUpgradeJSON(t, repo.patched["display_filters"], `{"display":1e-999}`)
+			assertUpgradeJSON(t, repo.patched["display_properties"], `{"precision":9007199254740993.0}`)
+			assertUpgradeJSON(t, repo.patched["rich_filters"], `[-1e-999]`)
 			if scope.name == "project" {
-				assertUpgradeJSON(t, repo.patched["preferences"], `{"ratio":0.1}`)
+				assertUpgradeJSON(t, repo.patched["preferences"], `{"ratio":0.100000000000000005}`)
 			}
 		})
 	}
@@ -307,11 +307,11 @@ func TestJSONNumberUpgradeProfileNormalizesAllJSONProperties(t *testing.T) {
 		t.Fatalf("writes=%d, fields=%s", database.writes, database.patch)
 	}
 	assertUpgradeJSON(t, fields["theme"], upgradeNumberExpected)
-	assertUpgradeJSON(t, fields["onboarding_step"], `{"step":0.0}`)
-	assertUpgradeJSON(t, fields["billing_address"], `{"precision":9007199254740992.0}`)
-	assertUpgradeJSON(t, fields["mobile_onboarding_step"], `[-0.0]`)
+	assertUpgradeJSON(t, fields["onboarding_step"], `{"step":1e-999}`)
+	assertUpgradeJSON(t, fields["billing_address"], `{"precision":9007199254740993.0}`)
+	assertUpgradeJSON(t, fields["mobile_onboarding_step"], `[-1e-999]`)
 	assertUpgradeJSON(t, fields["goals"], `{"id":9007199254740993}`)
-	assertUpgradeJSON(t, fields["product_tour"], `{"ratio":0.1}`)
+	assertUpgradeJSON(t, fields["product_tour"], `{"ratio":0.100000000000000005}`)
 }
 func TestJSONNumberUpgradeProfileRetainsNullEmptyAndAbsent(t *testing.T) {
 	database := &upgradeIdentityDatabase{}
@@ -348,8 +348,8 @@ func TestJSONNumberUpgradeAnalyticStoredAndDerivedValuesAgree(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertUpgradeJSON(t, repo.queryDict, `{"state":[9007199254740993,9007199254740992.0],"labels":0.0,"assignees":-0.0}`)
-	assertUpgradeJSON(t, repo.query, `{"state__in":[9007199254740993,9007199254740992.0],"label_issue__deleted_at__isnull":true,"issue_assignee__deleted_at__isnull":true}`)
+	assertUpgradeJSON(t, repo.queryDict, `{"state":[9007199254740993,9007199254740993.0],"labels":1e-999,"assignees":-1e-999}`)
+	assertUpgradeJSON(t, repo.query, `{"state__in":[9007199254740993,9007199254740993.0],"labels__in":1e-999,"assignees__in":-1e-999,"label_issue__deleted_at__isnull":true,"issue_assignee__deleted_at__isnull":true}`)
 }
 func TestJSONNumberUpgradeAnalyticRejectsOverflowButIgnoresPatchQueryData(t *testing.T) {
 	repo := &analyticRepoTest{authorized: true, raw: analyticRaw("Numbers")}
@@ -450,10 +450,10 @@ func TestJSONNumberUpgradeStandardViewNormalizesAllJSONFields(t *testing.T) {
 		t.Fatal(err)
 	}
 	assertUpgradeJSON(t, repo.input.Filters, upgradeNumberExpected)
-	assertUpgradeJSON(t, repo.input.DisplayFilters, `{"display":0.0}`)
-	assertUpgradeJSON(t, repo.input.DisplayProperties, `{"precision":9007199254740992.0}`)
-	assertUpgradeJSON(t, repo.input.RichFilters, `[-0.0]`)
-	assertUpgradeJSON(t, repo.input.LogoProps, `{"ratio":0.1}`)
+	assertUpgradeJSON(t, repo.input.DisplayFilters, `{"display":1e-999}`)
+	assertUpgradeJSON(t, repo.input.DisplayProperties, `{"precision":9007199254740993.0}`)
+	assertUpgradeJSON(t, repo.input.RichFilters, `[-1e-999]`)
+	assertUpgradeJSON(t, repo.input.LogoProps, `{"ratio":0.100000000000000005}`)
 }
 
 func TestJSONNumberUpgradeStandardViewPreservesOmittedFields(t *testing.T) {

@@ -57,7 +57,7 @@ func TestUUIDArrayValuesRequireTextIdentities(t *testing.T) {
 		{name: "malformed UUID rejected", value: "not-a-uuid", wantErr: true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			got, err := djangoUUIDArrayValue(test.value)
+			got, err := nativeUUIDArrayValue(test.value)
 			if (err != nil) != test.wantErr {
 				t.Fatalf("error = %v, wantErr=%v", err, test.wantErr)
 			}

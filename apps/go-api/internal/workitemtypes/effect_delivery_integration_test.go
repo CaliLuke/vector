@@ -64,7 +64,7 @@ func effectStoreForTest(t *testing.T, f typeFixture, recorder *effectAdmissionRe
 		t.Fatal(err)
 	}
 	t.Cleanup(pool.Close)
-	store, err := backgroundtasks.NewPostgresWorkItemEffectStore(pool, recorder, recorder, recorder, recorder, fileAssetDeleteAdmissionRecorder{recorder}, fileAssetMetadataAdmissionRecorder{recorder}, recorder, recorder, recorder)
+	store, err := backgroundtasks.NewPostgresWorkItemEffectStore(pool, recorder, recorder, recorder, recorder, fileAssetDeleteAdmissionRecorder{recorder}, fileAssetMetadataAdmissionRecorder{recorder}, recorder, recorder, recorder, recorder)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -122,4 +122,32 @@ func (r *effectAdmissionRecorder) AdmitWithID(_ context.Context, id string, _ ba
 
 func (r *effectAdmissionRecorder) CompleteAttachmentUpload(_ context.Context, id string) error {
 	return r.record(id)
+}
+
+func (r *effectAdmissionRecorder) AdmitEventTracking(_ context.Context, id string, _ backgroundtasks.EventTrackingInput) error {
+	return r.record(id)
+}
+
+func TestMembershipTrackingEffectRetriesWithCommittedIdentity(t *testing.T) {
+	f := newTypeFixture(t)
+	id := uuid.New().String()
+	f.exec(`INSERT INTO work_item_effects(id,kind,payload) VALUES($1,'event_tracking','{"user_id":"00000000-0000-4000-8000-000000000001","event_name":"user_joined_workspace","slug":"workspace","event_properties":{"role":15}}')`, id)
+	recorder := &effectAdmissionRecorder{calls: map[string]int{}, failNext: true}
+	store := effectStoreForTest(t, f, recorder)
+	count, err := store.Drain(f.ctx)
+	if err != nil || count != 1 || recorder.calls[id] != 1 {
+		t.Fatalf("initial admission: %d %v %v", count, err, recorder.calls)
+	}
+	var pending bool
+	if err = f.db.QueryRow(f.ctx, `SELECT admitted_at IS NULL AND payload->>'event_name'='user_joined_workspace' AND attempts=1 FROM work_item_effects WHERE id=$1`, id).Scan(&pending); err != nil || !pending {
+		t.Fatalf("failed event was lost: %v %v", pending, err)
+	}
+	f.exec(`UPDATE work_item_effects SET next_attempt_at=now() WHERE id=$1`, id)
+	count, err = effectStoreForTest(t, f, recorder).Drain(f.ctx)
+	if err != nil || count != 1 || recorder.calls[id] != 2 {
+		t.Fatalf("retry admission: %d %v %v", count, err, recorder.calls)
+	}
+	if err = f.db.QueryRow(f.ctx, `SELECT admitted_at IS NULL FROM work_item_effects WHERE id=$1`, id).Scan(&pending); err != nil || pending {
+		t.Fatalf("successful event was not acknowledged: %v %v", pending, err)
+	}
 }

@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"mime/multipart"
 	"net"
 	"net/http"
@@ -1302,7 +1301,7 @@ func TestInstanceWorkspaceSlugCheckHTTPHeadAndOptions(t *testing.T) {
 	}
 }
 
-func TestInstanceReadFailuresUseDjangoResponse(t *testing.T) {
+func TestInstanceReadFailuresUseNativeResponse(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	for _, test := range []struct {
 		name, path string
@@ -1892,7 +1891,7 @@ func TestWorkspaceMemberMeAndAnalyticViewsHTTPMounts(t *testing.T) {
 	}
 }
 
-func TestProjectMembershipReadsHTTPMountsAndDjangoProtocol(t *testing.T) {
+func TestProjectMembershipReadsHTTPMountsAndNativeProtocol(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	systemEndpoints := system.NewEndpoints(systemapi.NewSystem())
 	build := func(stub projectMembershipReadsHTTPStub) http.Handler {
@@ -2214,7 +2213,7 @@ func TestProjectMembershipReadsHTTPMountsAndDjangoProtocol(t *testing.T) {
 	}
 }
 
-func TestUserMeReadHTTPMountAndDjangoProtocol(t *testing.T) {
+func TestUserMeReadHTTPMountAndNativeProtocol(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	handler := newHTTPHandlerWithPendingReplacements(
 		ctx,
@@ -2262,7 +2261,7 @@ func TestUserMeReadHTTPMountAndDjangoProtocol(t *testing.T) {
 	}
 }
 
-func TestUserSessionUnknownTimezoneMatchesDjangoBadRequest(t *testing.T) {
+func TestUserSessionUnknownTimezoneMatchesNativeBadRequest(t *testing.T) {
 	handler := newHTTPHandlerWithPendingReplacements(
 		newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false,
 		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
@@ -2280,7 +2279,7 @@ func TestUserSessionUnknownTimezoneMatchesDjangoBadRequest(t *testing.T) {
 	}
 }
 
-func TestUserSessionInvalidTimezoneMatchesDjangoInternalError(t *testing.T) {
+func TestUserSessionInvalidTimezoneMatchesNativeInternalError(t *testing.T) {
 	handler := newHTTPHandlerWithPendingReplacements(
 		newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false,
 		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
@@ -2298,7 +2297,7 @@ func TestUserSessionInvalidTimezoneMatchesDjangoInternalError(t *testing.T) {
 	}
 }
 
-func TestUserMeReadMatchesDjangoNegotiationCORSAndGZip(t *testing.T) {
+func TestUserMeReadMatchesNativeNegotiationCORSAndGZip(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	handler := newHTTPHandlerWithPendingReplacements(
 		ctx,
@@ -2403,9 +2402,9 @@ func TestUserMeReadRejectsOversizedBodyBeforeSessionOrDispatch(t *testing.T) {
 	request.AddCookie(&http.Cookie{Name: "session-id", Value: "short"})
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
-	if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(djangoRequestTooLargeBody) ||
+	if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(nativeRequestTooLargeBody) ||
 		response.Header().Get("Content-Type") != "application/json" ||
-		response.Header().Get("Content-Length") != strconv.Itoa(len(djangoRequestTooLargeBody)) ||
+		response.Header().Get("Content-Length") != strconv.Itoa(len(nativeRequestTooLargeBody)) ||
 		response.Header().Get("Allow") != "" || response.Header().Get("Cache-Control") != "" ||
 		response.Header().Get("Vary") != "origin, Cookie" || response.Header().Get("X-Frame-Options") != "DENY" ||
 		!strings.HasPrefix(response.Header().Get("Set-Cookie"), `session-id="";`) {
@@ -2479,7 +2478,7 @@ func TestUserMeReadNegotiationRunsRequestLoggerSessionInspection(t *testing.T) {
 			name:       "lazy authentication failure replaces negotiation response",
 			throttle:   &publicProjectMetadataThrottleStub{err: fmt.Errorf("session store unavailable: %w", browsersession.ErrSessionStore)},
 			wantStatus: http.StatusInternalServerError,
-			wantBody:   string(djangoServerErrorBody),
+			wantBody:   string(nativeServerErrorBody),
 		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -2600,7 +2599,7 @@ func TestUserMeReadAppliesBrowserSessionLifecycle(t *testing.T) {
 	throttle.err = fmt.Errorf("fallback rotation unavailable: %w", browsersession.ErrStore)
 	rotationErrorResponse := httptest.NewRecorder()
 	handler.ServeHTTP(rotationErrorResponse, request)
-	if rotationErrorResponse.Code != http.StatusInternalServerError || rotationErrorResponse.Body.String() != string(djangoServerErrorBody) ||
+	if rotationErrorResponse.Code != http.StatusInternalServerError || rotationErrorResponse.Body.String() != string(nativeServerErrorBody) ||
 		rotationErrorResponse.Header().Get("Allow") != "" || rotationErrorResponse.Header().Get("X-Frame-Options") != "DENY" {
 		t.Fatalf("rotation error=%d %q headers=%v", rotationErrorResponse.Code, rotationErrorResponse.Body.String(), rotationErrorResponse.Header())
 	}
@@ -2681,7 +2680,7 @@ func TestProjectMembershipReadsOptionsDoesNotInvokeReadEndpoints(t *testing.T) {
 	}
 }
 
-func TestProjectStateReadsHTTPMountsAndDjangoProtocol(t *testing.T) {
+func TestProjectStateReadsHTTPMountsAndNativeProtocol(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	metadataCalls := 0
 	stub := projectStateReadsHTTPStub{metadataCalls: &metadataCalls}
@@ -2766,7 +2765,7 @@ func TestProjectStateReadsHTTPMountsAndDjangoProtocol(t *testing.T) {
 	}
 }
 
-func TestGeneratedProjectStateListClientDecodesDjangoWireShapes(t *testing.T) {
+func TestGeneratedProjectStateListClientDecodesNativeWireShapes(t *testing.T) {
 	decode := projectstatereadsclient.DecodeListResponse(loomhttp.ResponseDecoder, false)
 	for _, testCase := range []struct {
 		name string
@@ -2802,7 +2801,7 @@ func TestGeneratedProjectStateListClientDecodesDjangoWireShapes(t *testing.T) {
 	}
 }
 
-func TestProjectLabelReadsHTTPMountsAndDjangoProtocol(t *testing.T) {
+func TestProjectLabelReadsHTTPMountsAndNativeProtocol(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	stub := projectLabelReadsHTTPStub{}
 	handler := newHTTPHandlerWithPendingReplacements(
@@ -2891,7 +2890,7 @@ func TestProjectLabelReadsResponseWriterUsesCapturedRepositoryJSON(t *testing.T)
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPMountsAndDjangoProtocol(t *testing.T) {
+func TestPublicProjectMetadataReadsHTTPMountsAndNativeProtocol(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	stub := publicProjectMetadataReadsHTTPStub{}
 	throttle := &publicProjectMetadataThrottleStub{allowed: true}
@@ -3020,7 +3019,7 @@ func TestPublicProjectSettingsHTTPPropagatesAuthenticatedUserForTimezoneRenderin
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPMatchesDjangoThrottleResponse(t *testing.T) {
+func TestPublicProjectMetadataReadsHTTPMatchesNativeThrottleResponse(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	throttle := &publicProjectMetadataThrottleStub{wait: 17 * time.Second}
 	handler := newHTTPHandlerWithPendingReplacements(
@@ -3043,7 +3042,7 @@ func TestPublicProjectMetadataReadsHTTPMatchesDjangoThrottleResponse(t *testing.
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPMatchesDjangoAcceptParsing(t *testing.T) {
+func TestPublicProjectMetadataReadsHTTPUsesNativeMediaParameters(t *testing.T) {
 	var logs bytes.Buffer
 	ctx := newLogContext(context.Background(), &logs, false)
 	throttle := &publicProjectMetadataThrottleStub{allowed: true}
@@ -3061,7 +3060,7 @@ func TestPublicProjectMetadataReadsHTTPMatchesDjangoAcceptParsing(t *testing.T) 
 	malformedRequest.Header.Set("Accept", "application/json; indent")
 	malformedResponse := httptest.NewRecorder()
 	handler.ServeHTTP(malformedResponse, malformedRequest)
-	if malformedResponse.Code != http.StatusOK || !strings.Contains(malformedResponse.Body.String(), `"name":"Bug"`) {
+	if malformedResponse.Code != http.StatusNotAcceptable {
 		t.Fatalf("malformed parameter response=%d %q", malformedResponse.Code, malformedResponse.Body.String())
 	}
 
@@ -3085,15 +3084,10 @@ func TestPublicProjectMetadataReadsHTTPMatchesDjangoAcceptParsing(t *testing.T) 
 	invalidEncodingRequest.Header.Set("Accept", "application/json; indent*=bogus''%34")
 	invalidEncodingResponse := httptest.NewRecorder()
 	handler.ServeHTTP(invalidEncodingResponse, invalidEncodingRequest)
-	if invalidEncodingResponse.Code != http.StatusInternalServerError ||
-		invalidEncodingResponse.Body.String() != `{"error":"Something went wrong please try again later"}` ||
-		invalidEncodingResponse.Header().Get("Content-Type") != "application/json" ||
-		invalidEncodingResponse.Header().Get("Allow") != "GET, HEAD, OPTIONS" {
-		t.Fatalf("invalid encoding response=%d %q headers=%v", invalidEncodingResponse.Code, invalidEncodingResponse.Body.String(), invalidEncodingResponse.Header())
+	if invalidEncodingResponse.Code != http.StatusOK || !strings.Contains(invalidEncodingResponse.Body.String(), `"name":"Bug"`) {
+		t.Fatalf("unsupported optional charset should be ignored: %d %q", invalidEncodingResponse.Code, invalidEncodingResponse.Body.String())
 	}
-	if !strings.Contains(logs.String(), "public project metadata compatibility failure") {
-		t.Fatalf("invalid encoding omitted exception log: %s", logs.String())
-	}
+
 	if throttle.calls != 4 {
 		t.Fatalf("session/throttle calls=%d want=4", throttle.calls)
 	}
@@ -3317,7 +3311,7 @@ func TestPublicProjectMetadataReadsHTTPSessionRefreshFailureReplacesBufferedResp
 	request.AddCookie(&http.Cookie{Name: browsersession.DefaultCookieName, Value: "valid-session-key"})
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
-	want := string(djangoServerErrorBody)
+	want := string(nativeServerErrorBody)
 	if response.Code != http.StatusInternalServerError || response.Body.String() != want || response.Header().Get("Set-Cookie") != "" ||
 		response.Header().Get("X-Frame-Options") != "" || response.Header().Get("Content-Length") != "" ||
 		response.Header().Get("Content-Encoding") != "" || response.Header().Get("Vary") != "origin" {
@@ -3325,7 +3319,7 @@ func TestPublicProjectMetadataReadsHTTPSessionRefreshFailureReplacesBufferedResp
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPRenderQueryFailureUsesDjangoHTML500(t *testing.T) {
+func TestPublicProjectMetadataReadsHTTPRenderQueryFailureUsesNativeHTML500(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	service, err := systemapi.NewPublicProjectMetadataReads(publicProjectMetadataReadsRenderErrorRepositoryStub{})
 	if err != nil {
@@ -3341,13 +3335,13 @@ func TestPublicProjectMetadataReadsHTTPRenderQueryFailureUsesDjangoHTML500(t *te
 	)
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/api/public/anchor/example/labels/", nil))
-	if response.Code != http.StatusInternalServerError || response.Body.String() != string(djangoServerErrorBody) ||
+	if response.Code != http.StatusInternalServerError || response.Body.String() != string(nativeServerErrorBody) ||
 		response.Header().Get("Content-Type") != "text/html; charset=utf-8" || response.Header().Get("Allow") != "" {
 		t.Fatalf("response=%d %q headers=%v", response.Code, response.Body.String(), response.Header())
 	}
 }
 
-func TestPublicProjectAnchorDuplicateQueryUsesDjangoJSON500(t *testing.T) {
+func TestPublicProjectAnchorDuplicateQueryUsesNativeJSON500(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	service, err := systemapi.NewPublicProjectMetadataReads(publicProjectMetadataReadsQueryErrorRepositoryStub{})
 	if err != nil {
@@ -3369,7 +3363,7 @@ func TestPublicProjectAnchorDuplicateQueryUsesDjangoJSON500(t *testing.T) {
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPConcurrentSessionDeletionReturnsDjangoBadRequest(t *testing.T) {
+func TestPublicProjectMetadataReadsHTTPConcurrentSessionDeletionReturnsNativeBadRequest(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	for _, refreshErr := range []error{browsersession.ErrSessionNotFound, browsersession.ErrSessionUpdate} {
 		throttle := &publicProjectMetadataThrottleStub{allowed: true, refresh: true, refreshErr: refreshErr}
@@ -3385,7 +3379,7 @@ func TestPublicProjectMetadataReadsHTTPConcurrentSessionDeletionReturnsDjangoBad
 		request.AddCookie(&http.Cookie{Name: browsersession.DefaultCookieName, Value: "deleted-session-key"})
 		response := httptest.NewRecorder()
 		handler.ServeHTTP(response, request)
-		if response.Code != http.StatusBadRequest || response.Body.String() != string(djangoBadRequestBody) ||
+		if response.Code != http.StatusBadRequest || response.Body.String() != string(nativeBadRequestBody) ||
 			response.Header().Get("Content-Type") != "text/html; charset=utf-8" ||
 			response.Header().Get("X-Frame-Options") != "" || response.Header().Get("Content-Length") != "" ||
 			strings.Contains(response.Header().Get("Vary"), "Cookie") {
@@ -3447,7 +3441,7 @@ func TestSessionCookiesUseHTTPHeaderParsing(t *testing.T) {
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPMatchesDjangoCORS(t *testing.T) {
+func TestPublicProjectMetadataReadsHTTPMatchesNativeCORS(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	throttle := &publicProjectMetadataThrottleStub{allowed: true}
 	handler := newHTTPHandlerWithPendingReplacements(
@@ -3578,7 +3572,7 @@ func TestPublicProjectMetadataReadsHTTPCORSRejectsMalformedOrigins(t *testing.T)
 		"null", "://", "https://example.com/%", "https://[v1.foo]",
 		"https://foo[::1]", "https://[::1]foo", "https://[::1][::2]", "http://[fe80::1%25eth0]",
 	} {
-		if !djangoCORSOriginValid(origin) {
+		if !nativeCORSOriginValid(origin) {
 			t.Errorf("urlsplit-compatible origin %q rejected", origin)
 		}
 	}
@@ -3605,7 +3599,7 @@ func TestPublicProjectMetadataReadsHTTPCORSDecodesOriginAsASGILatin1(t *testing.
 	request.Header.Set("Origin", origin)
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
-	want := djangoLatin1String([]byte(origin))
+	want := nativeLatin1String([]byte(origin))
 	if response.Code != http.StatusOK || response.Header().Get("Access-Control-Allow-Origin") != want {
 		t.Fatalf("response=%d headers=%v want origin=%q", response.Code, response.Header(), want)
 	}
@@ -3642,9 +3636,9 @@ func TestPublicProjectMetadataReadsHTTPRejectsOversizedBodiesBeforeAuditOrDispat
 			request.AddCookie(&http.Cookie{Name: browsersession.DefaultCookieName, Value: "short"})
 			response := httptest.NewRecorder()
 			handler.ServeHTTP(response, request)
-			if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(djangoRequestTooLargeBody) ||
+			if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(nativeRequestTooLargeBody) ||
 				response.Header().Get("Content-Type") != "application/json" ||
-				response.Header().Get("Content-Length") != strconv.Itoa(len(djangoRequestTooLargeBody)) ||
+				response.Header().Get("Content-Length") != strconv.Itoa(len(nativeRequestTooLargeBody)) ||
 				response.Header().Get("Allow") != "" || response.Header().Get("X-Frame-Options") != "DENY" ||
 				response.Header().Get("Set-Cookie") == "" {
 				t.Fatalf("response=%d %q headers=%v", response.Code, response.Body.String(), response.Header())
@@ -3707,7 +3701,7 @@ func TestPublicProjectMetadataReadsHTTPHonorsNonPositiveBodyLimits(t *testing.T)
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPAllowsUnknownLengthBodyLikeDjango(t *testing.T) {
+func TestPublicProjectMetadataReadsHTTPAllowsUnknownLengthBodyLikeNative(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	throttle := &publicProjectMetadataThrottleStub{allowed: true}
 	activity := &publicProjectMetadataActivityStub{records: make(chan publicprojectmetadatareadsstore.APIActivityLog, 1)}
@@ -3851,10 +3845,10 @@ func TestPublicProjectMetadataReadsHTTPReplaces413OnUnaccessedSessionFailure(t *
 		refresh      *browsersession.SessionRefresh
 		cookieConfig browserSessionCookieConfig
 	}{
-		{name: "session store", err: fmt.Errorf("database unavailable: %w", browsersession.ErrSessionStore), status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
-		{name: "signed non-object session", err: browsersession.ErrInvalidSessionShape, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
-		{name: "cookie expiry", expire: true, cookieConfig: browserSessionCookieConfig{Configured: true}, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
-		{name: "cookie refresh", refresh: &browsersession.SessionRefresh{SessionKey: "refreshed"}, cookieConfig: browserSessionCookieConfig{Configured: true}, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
+		{name: "session store", err: fmt.Errorf("database unavailable: %w", browsersession.ErrSessionStore), status: http.StatusInternalServerError, body: string(nativeServerErrorBody)},
+		{name: "signed non-object session", err: browsersession.ErrInvalidSessionShape, status: http.StatusInternalServerError, body: string(nativeServerErrorBody)},
+		{name: "cookie expiry", expire: true, cookieConfig: browserSessionCookieConfig{Configured: true}, status: http.StatusInternalServerError, body: string(nativeServerErrorBody)},
+		{name: "cookie refresh", refresh: &browsersession.SessionRefresh{SessionKey: "refreshed"}, cookieConfig: browserSessionCookieConfig{Configured: true}, status: http.StatusInternalServerError, body: string(nativeServerErrorBody)},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			var logs bytes.Buffer
@@ -3915,7 +3909,7 @@ func TestPublicProjectMetadataReadsHTTPBodyReadFailureRetainsValidUnaccessedSess
 			request.Header.Set("Cookie", testCase.cookie)
 			response := httptest.NewRecorder()
 			handler.ServeHTTP(response, request)
-			if response.Code != http.StatusInternalServerError || response.Body.String() != string(djangoServerErrorBody) ||
+			if response.Code != http.StatusInternalServerError || response.Body.String() != string(nativeServerErrorBody) ||
 				response.Header().Get("Set-Cookie") != "" || response.Header().Get("X-Frame-Options") != testCase.wantFrame ||
 				response.Header().Get("Vary") != "origin" || throttle.calls != 0 ||
 				!strings.Contains(logs.String(), testCase.wantLog) {
@@ -3990,7 +3984,7 @@ func TestPublicProjectMetadataReadsHTTPSlashlessUnsafeMethodFailsWhenDebugEnable
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, httptest.NewRequest(http.MethodPost, "/api/public/anchor/example/labels?q=é", nil))
 	if response.Code != http.StatusInternalServerError || !strings.Contains(response.Body.String(), "RuntimeError at /api/public/anchor/example/labels") ||
-		!strings.Contains(response.Body.String(), "Django can&#39;t redirect") ||
+		!strings.Contains(response.Body.String(), "requires a trailing slash") ||
 		!strings.Contains(response.Body.String(), "/api/public/anchor/example/labels/?q=%C3%A9") ||
 		response.Header().Get("Location") != "" || response.Header().Get("Vary") != "Cookie, origin" ||
 		response.Header().Get("X-Frame-Options") != "" || response.Header().Get("Content-Length") != "" || throttle.calls != 1 {
@@ -4015,13 +4009,13 @@ func TestPublicProjectMetadataReadsHTTPCatchesCaddyCleanedMalformedPaths(t *test
 	request.Header.Set("X-Api-Key", "token")
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
-	if response.Code != http.StatusNotFound || response.Body.String() != string(djangoNotFoundBody) ||
+	if response.Code != http.StatusNotFound || response.Body.String() != string(nativeNotFoundBody) ||
 		response.Header().Get("X-Frame-Options") != "DENY" || response.Header().Get("Location") != "" || throttle.calls != 1 {
 		t.Fatalf("response=%d %q headers=%v throttle=%d", response.Code, response.Body.String(), response.Header(), throttle.calls)
 	}
 	select {
 	case record := <-activity.records:
-		if record.Path != "/api/public/anchor/x//labels/" || record.ResponseCode != http.StatusNotFound || record.ResponseBody != string(djangoNotFoundBody) {
+		if record.Path != "/api/public/anchor/x//labels/" || record.ResponseCode != http.StatusNotFound || record.ResponseBody != string(nativeNotFoundBody) {
 			t.Fatalf("activity record=%#v", record)
 		}
 	default:
@@ -4054,7 +4048,7 @@ func TestPublicProjectMetadataReadsHTTPSlashlessDebugErrorBypassesInnerResponseM
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPRequestLogUsesInnerDjangoResponse(t *testing.T) {
+func TestPublicProjectMetadataReadsHTTPRequestLogUsesInnerNativeResponse(t *testing.T) {
 	var logs bytes.Buffer
 	ctx := newLogContext(context.Background(), &logs, false)
 	handler := newHTTPHandlerWithPendingReplacements(
@@ -4094,7 +4088,7 @@ func TestPublicProjectMetadataReadsHTTPRequestLogUsesInnerDjangoResponse(t *test
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPMalformedPathUsesOnlyDjangoRequestLog(t *testing.T) {
+func TestPublicProjectMetadataReadsHTTPMalformedPathUsesOnlyNativeRequestLog(t *testing.T) {
 	var logs bytes.Buffer
 	handler := newHTTPHandlerWithPendingReplacements(
 		newLogContext(context.Background(), &logs, false), system.NewEndpoints(systemapi.NewSystem()), false,
@@ -4134,7 +4128,7 @@ func TestPublicProjectMetadataReadsHTTPMalformedPathUsesOnlyDjangoRequestLog(t *
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPRequestLogCanonicalizesDjangoFullPath(t *testing.T) {
+func TestPublicProjectMetadataReadsHTTPRequestLogCanonicalizesNativeFullPath(t *testing.T) {
 	var logs bytes.Buffer
 	handler := newHTTPHandlerWithPendingReplacements(
 		newLogContext(context.Background(), &logs, false), system.NewEndpoints(systemapi.NewSystem()), false,
@@ -4339,7 +4333,7 @@ func TestPublicProjectMetadataReadsHTTPDecodesAuditHeadersAsASGILatin1(t *testin
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPAuditMatchesDjangoMiddlewarePosition(t *testing.T) {
+func TestPublicProjectMetadataReadsHTTPAuditMatchesNativeMiddlewarePosition(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	for _, testCase := range []struct {
 		name             string
@@ -4411,12 +4405,12 @@ func TestPublicProjectMetadataReadsHTTPSlashlessSessionFailureAuditsHTML500(t *t
 	request.Header.Set("X-Api-Key", "sensitive-token")
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
-	if response.Code != http.StatusInternalServerError || response.Body.String() != string(djangoServerErrorBody) {
+	if response.Code != http.StatusInternalServerError || response.Body.String() != string(nativeServerErrorBody) {
 		t.Fatalf("client response=%d %q", response.Code, response.Body.String())
 	}
 	select {
 	case record := <-activity.records:
-		if record.ResponseCode != http.StatusInternalServerError || record.ResponseBody != string(djangoServerErrorBody) {
+		if record.ResponseCode != http.StatusInternalServerError || record.ResponseBody != string(nativeServerErrorBody) {
 			t.Fatalf("audit record=%#v", record)
 		}
 	default:
@@ -4450,7 +4444,7 @@ func TestPublicProjectMetadataReadsHTTPNegotiationSessionFailureAuditsHTML500(t 
 			request.Header.Set("X-Api-Key", "sensitive-token")
 			response := httptest.NewRecorder()
 			handler.ServeHTTP(response, request)
-			want := string(djangoServerErrorBody)
+			want := string(nativeServerErrorBody)
 			if response.Code != http.StatusInternalServerError || response.Body.String() != want {
 				t.Fatalf("client response=%d %q", response.Code, response.Body.String())
 			}
@@ -4481,19 +4475,19 @@ func TestPublicProjectMetadataReadsHTTPDistinguishesSessionAndThrottleFailures(t
 	}{
 		{
 			name: "session store", err: fmt.Errorf("database unavailable: %w", browsersession.ErrSessionStore),
-			contentType: "text/html; charset=utf-8", body: string(djangoServerErrorBody),
+			contentType: "text/html; charset=utf-8", body: string(nativeServerErrorBody),
 		},
 		{
 			name: "user store", err: fmt.Errorf("database unavailable: %w", browsersession.ErrUserStore),
-			contentType: "text/html; charset=utf-8", body: string(djangoServerErrorBody),
+			contentType: "text/html; charset=utf-8", body: string(nativeServerErrorBody),
 		},
 		{
 			name: "malformed user identifier", err: browsersession.ErrInvalidUserID,
-			contentType: "text/html; charset=utf-8", body: string(djangoServerErrorBody),
+			contentType: "text/html; charset=utf-8", body: string(nativeServerErrorBody),
 		},
 		{
 			name: "signed non-object session", err: browsersession.ErrInvalidSessionShape,
-			contentType: "text/html; charset=utf-8", body: string(djangoServerErrorBody),
+			contentType: "text/html; charset=utf-8", body: string(nativeServerErrorBody),
 		},
 		{
 			name: "missing user timezone", err: browsersession.ErrTimezoneNotFound, status: http.StatusBadRequest,
@@ -4555,7 +4549,7 @@ func TestPublicProjectMetadataReadsHTTPTimezoneFailurePrecedesEndpointMethods(t 
 	}
 }
 
-func TestSafeDecodeAPIActivityBodyMatchesDjango(t *testing.T) {
+func TestSafeDecodeAPIActivityBodyMatchesNative(t *testing.T) {
 	for _, testCase := range []struct {
 		name string
 		body []byte
@@ -4576,20 +4570,20 @@ func TestSafeDecodeAPIActivityBodyMatchesDjango(t *testing.T) {
 	}
 }
 
-func TestDjangoRequestHeadersRestoresNetHTTPTransportFields(t *testing.T) {
+func TestNativeRequestHeadersRestoresNetHTTPTransportFields(t *testing.T) {
 	request := httptest.NewRequest(http.MethodPost, "/api/public/anchor/example/labels/", strings.NewReader("payload"))
 	request.TransferEncoding = []string{"chunked"}
 	request.Close = true
 	request.Header["X-Quote"] = []string{"a'b"}
 	request.Header["X-Control"] = []string{"\x00"}
-	headers := djangoRequestHeaders(request)
+	headers := nativeRequestHeaders(request)
 	for _, want := range []string{
-		"'Host': 'example.com'",
-		"'Content-Length': '7'",
-		"'Transfer-Encoding': 'chunked'",
-		"'Connection': 'close'",
-		`'X-Quote': "a'b"`,
-		`'X-Control': '\x00'`,
+		`"Host":"example.com"`,
+		`"Content-Length":"7"`,
+		`"Transfer-Encoding":"chunked"`,
+		`"Connection":"close"`,
+		`"X-Quote":"a'b"`,
+		`"X-Control":"\u0000"`,
 	} {
 		if !strings.Contains(headers, want) {
 			t.Fatalf("headers=%q missing %q", headers, want)
@@ -4613,7 +4607,7 @@ func TestPublicProjectMetadataReadsResponseWriterUsesCapturedRepositoryJSON(t *t
 	}
 }
 
-func TestBufferedResponseWriterPreservesDjangoJSONEscaping(t *testing.T) {
+func TestBufferedResponseWriterPreservesNativeJSONEscaping(t *testing.T) {
 	raw := json.RawMessage("{\"display_name\":\"R&D <ops>\",\"separator\":\"\u2028\"}")
 	response := httptest.NewRecorder()
 	writer := &publicProjectMetadataReadsResponseWriter{
@@ -4630,7 +4624,7 @@ func TestBufferedResponseWriterPreservesDjangoJSONEscaping(t *testing.T) {
 	}
 }
 
-func TestPublicProjectMetadataReadsResponseWriterMatchesDjangoGZipThreshold(t *testing.T) {
+func TestPublicProjectMetadataReadsResponseWriterMatchesNativeGZipThreshold(t *testing.T) {
 	for _, testCase := range []struct {
 		name string
 		raw  json.RawMessage
@@ -4668,7 +4662,7 @@ func TestPublicProjectMetadataReadsResponseWriterMatchesDjangoGZipThreshold(t *t
 	}
 }
 
-func TestPublicProjectMetadataReadsResponseWriterGzipsLikeDjango(t *testing.T) {
+func TestPublicProjectMetadataReadsResponseWriterGzipsLikeNative(t *testing.T) {
 	raw := json.RawMessage(`{"value":"` + strings.Repeat("compressible", 40) + `"}`)
 	response := httptest.NewRecorder()
 	writer := &publicProjectMetadataReadsResponseWriter{
@@ -4721,7 +4715,7 @@ func TestPublicProjectMetadataReadsResponseWriterGzipsLikeDjango(t *testing.T) {
 	}
 }
 
-func TestPublicProjectMetadataReadsResponseWriterCompactsDjangoJSON(t *testing.T) {
+func TestPublicProjectMetadataReadsResponseWriterCompactsNativeJSON(t *testing.T) {
 	response := httptest.NewRecorder()
 	raw := json.RawMessage("[{\"name\" : \"<&>\u2028\u2029\", \"sequence\" : 100.0}]\n")
 	writer := &publicProjectMetadataReadsResponseWriter{
@@ -4738,7 +4732,7 @@ func TestPublicProjectMetadataReadsResponseWriterCompactsDjangoJSON(t *testing.T
 	}
 }
 
-func TestPublicProjectMetadataReadsResponseWriterMatchesDjangoIndentSeparators(t *testing.T) {
+func TestPublicProjectMetadataReadsResponseWriterMatchesNativeIndentSeparators(t *testing.T) {
 	response := httptest.NewRecorder()
 	raw := json.RawMessage(`{"name":"a:b","sequence":100.0}`)
 	writer := &publicProjectMetadataReadsResponseWriter{
@@ -4756,7 +4750,7 @@ func TestPublicProjectMetadataReadsResponseWriterMatchesDjangoIndentSeparators(t
 	}
 }
 
-func TestAcceptsGzipEncodingMatchesDjangoPattern(t *testing.T) {
+func TestAcceptsGzipEncodingMatchesNativePattern(t *testing.T) {
 	for _, testCase := range []struct {
 		header string
 		want   bool
@@ -4766,7 +4760,7 @@ func TestAcceptsGzipEncodingMatchesDjangoPattern(t *testing.T) {
 		{header: "x-gzip", want: true},
 		{header: "GZIP", want: false},
 		{header: "xgzip", want: false},
-		{header: djangoLatin1String([]byte{'\xe9', 'g', 'z', 'i', 'p', '\xe9'}), want: false},
+		{header: nativeLatin1String([]byte{'\xe9', 'g', 'z', 'i', 'p', '\xe9'}), want: false},
 		{header: "©gzip©", want: true},
 	} {
 		if got := acceptsGzipEncoding(testCase.header); got != testCase.want {
@@ -4775,7 +4769,7 @@ func TestAcceptsGzipEncodingMatchesDjangoPattern(t *testing.T) {
 	}
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	request.Header["Accept-Encoding"] = []string{"br", "gzip"}
-	if joined := djangoJoinedHeader(request, "Accept-Encoding"); joined != "br,gzip" || !acceptsGzipEncoding(joined) {
+	if joined := nativeJoinedHeader(request, "Accept-Encoding"); joined != "br,gzip" || !acceptsGzipEncoding(joined) {
 		t.Fatalf("repeated Accept-Encoding joined=%q", joined)
 	}
 }
@@ -4839,17 +4833,10 @@ func TestProjectMembershipReadsJSONNegotiation(t *testing.T) {
 		{name: "whitespace indent", accept: `application/json; indent=" 4 "`, present: true, accepted: true, wantIndent: 4},
 		{name: "quoted parameter with escaped quote and semicolon", accept: `application/json; profile="quoted\";value"; indent=4`, present: true, accepted: true, wantIndent: 4},
 		{name: "arbitrary precision indent", accept: "application/json; indent=999999999999999999999999999999", present: true, accepted: true, wantIndent: 8},
-		{name: "underscored indent", accept: "application/json; indent=1_0", present: true, accepted: true, wantIndent: 8},
-		{name: "malformed parameter", accept: "application/json; indent", present: true, accepted: true},
+		{name: "underscored indent ignored", accept: "application/json; indent=1_0", present: true, accepted: true},
+		{name: "malformed parameter", accept: "application/json; indent", present: true},
 		{name: "extended parameter", accept: "application/json; indent*=UTF-8''4", present: true, accepted: true, wantIndent: 4},
-		{name: "Python charset alias", accept: "application/json; indent*=cp1252''%34", present: true, accepted: true, wantIndent: 4},
-		{name: "Python UTF-8 code page alias", accept: "application/json; indent*=cp65001''%34", present: true, accepted: true, wantIndent: 4},
-		{name: "Python short UTF-8 alias and Unicode digit", accept: "application/json; indent*=u8''%D9%A4", present: true, accepted: true, wantIndent: 4},
-		{name: "Python UTF-8 signature codec", accept: "application/json; indent*=utf-8-sig''%EF%BB%BF%34", present: true, accepted: true, wantIndent: 4},
-		{name: "Python unicode escape codec", accept: "application/json; indent*=unicode_escape''%5Cu0034", present: true, accepted: true, wantIndent: 4},
-		{name: "Python raw unicode escape codec", accept: "application/json; indent*=raw_unicode_escape''%5CU00000034", present: true, accepted: true, wantIndent: 4},
-		{name: "post-Python-3.12 Unicode digit", accept: "application/json; indent=𑛑", present: true, accepted: true},
-		{name: "unknown extended encoding", accept: "application/json; indent*=bogus''%34", present: true, wantError: true},
+		{name: "unknown extended encoding ignored", accept: "application/json; indent*=bogus''%34", present: true, accepted: true},
 		{name: "large indent", accept: "application/json; indent=20", present: true, accepted: true, wantIndent: 8},
 		{name: "negative indent", accept: "application/json; indent=-1", present: true, accepted: true},
 		{name: "invalid indent", accept: "application/json; indent=invalid", present: true, accepted: true},
@@ -4858,15 +4845,15 @@ func TestProjectMembershipReadsJSONNegotiation(t *testing.T) {
 		{name: "unsupported", accept: "application/xml", present: true},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
-			accepted, indent, err := projectMembershipReadsJSONNegotiation(testCase.accept, testCase.present)
-			if (err != nil) != testCase.wantError || accepted != testCase.accepted || indent != testCase.wantIndent {
-				t.Errorf("Accept %q present=%v = (%v, %d, %v), want (%v, %d, error=%v)", testCase.accept, testCase.present, accepted, indent, err, testCase.accepted, testCase.wantIndent, testCase.wantError)
+			accepted, indent := projectMembershipReadsJSONNegotiation(testCase.accept, testCase.present)
+			if accepted != testCase.accepted || indent != testCase.wantIndent {
+				t.Errorf("Accept %q present=%v = (%v, %d), want (%v, %d)", testCase.accept, testCase.present, accepted, indent, testCase.accepted, testCase.wantIndent)
 			}
 		})
 	}
 }
 
-func TestWorkspaceFavoritesHTTPMountsAndDjangoProtocol(t *testing.T) {
+func TestWorkspaceFavoritesHTTPMountsAndNativeProtocol(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	systemEndpoints := system.NewEndpoints(systemapi.NewSystem())
 	handler := buildHTTPHandlerWithReplacementServices(
@@ -4922,7 +4909,7 @@ func TestWorkspaceFavoritesHTTPMountsAndDjangoProtocol(t *testing.T) {
 	}
 }
 
-func TestLastVisitedWorkspaceHTTPMountsAndDjangoProtocol(t *testing.T) {
+func TestLastVisitedWorkspaceHTTPMountsAndNativeProtocol(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	systemEndpoints := system.NewEndpoints(systemapi.NewSystem())
 	build := func(stub lastVisitedWorkspaceHTTPStub) http.Handler {
@@ -5244,8 +5231,8 @@ func TestCSRFTokenHTTPProtocolMethods(t *testing.T) {
 	}
 }
 
-func TestDjangoCSRFCookieConfiguration(t *testing.T) {
-	config := djangoCSRFCookieConfig{Domain: ".example.test", Secure: true}
+func TestNativeCSRFCookieConfiguration(t *testing.T) {
+	config := nativeCSRFCookieConfig{Domain: ".example.test", Secure: true}
 	cookie := &http.Cookie{
 		Name:     defaultCSRFCookieName,
 		Value:    strings.Repeat("a", 32),
@@ -5255,7 +5242,7 @@ func TestDjangoCSRFCookieConfiguration(t *testing.T) {
 		SameSite: http.SameSiteLaxMode,
 	}
 	before := time.Now().Add(time.Minute)
-	if err := djangoCSRFResponseCookiePolicy(config)(context.Background(), cookie); err != nil {
+	if err := nativeCSRFResponseCookiePolicy(config)(context.Background(), cookie); err != nil {
 		t.Fatalf("Django CSRF response-cookie policy error = %v", err)
 	}
 	if cookie.Domain != config.Domain || !cookie.Secure || cookie.Expires.Before(before) || cookie.Expires.After(time.Now().Add(time.Minute+time.Second)) {
@@ -5266,12 +5253,12 @@ func TestDjangoCSRFCookieConfiguration(t *testing.T) {
 	}
 }
 
-func TestDjangoRuntimeCORSPolicyCompatibility(t *testing.T) {
-	policy, err := djangoRuntimeCORSPolicy([]string{"HTTPS://app.example.test/config-path"})
+func TestNativeRuntimeCORSPolicyCompatibility(t *testing.T) {
+	policy, err := nativeRuntimeCORSPolicy([]string{"HTTPS://app.example.test/config-path"})
 	if err != nil {
 		t.Fatalf("runtime CORS policy: %v", err)
 	}
-	handler := djangoCORSRequestCompatibilityMiddleware(policy.Handler(func(response http.ResponseWriter, _ *http.Request) {
+	handler := nativeCORSRequestCompatibilityMiddleware(policy.Handler(func(response http.ResponseWriter, _ *http.Request) {
 		response.WriteHeader(http.StatusNoContent)
 	}))
 	response := httptest.NewRecorder()
@@ -5292,11 +5279,11 @@ func TestDjangoRuntimeCORSPolicyCompatibility(t *testing.T) {
 		t.Fatalf("repeated Origin CORS headers=%v", repeatedResponse.Header())
 	}
 
-	allowAll, err := djangoRuntimeCORSPolicy(nil)
+	allowAll, err := nativeRuntimeCORSPolicy(nil)
 	if err != nil {
 		t.Fatalf("allow-all runtime CORS policy: %v", err)
 	}
-	allowAllHandler := djangoCORSRequestCompatibilityMiddleware(allowAll.Handler(func(response http.ResponseWriter, _ *http.Request) {
+	allowAllHandler := nativeCORSRequestCompatibilityMiddleware(allowAll.Handler(func(response http.ResponseWriter, _ *http.Request) {
 		response.WriteHeader(http.StatusNoContent)
 	}))
 	malformedOrigin := httptest.NewRequest(http.MethodGet, "/api/timezones/", nil)
@@ -5307,7 +5294,7 @@ func TestDjangoRuntimeCORSPolicyCompatibility(t *testing.T) {
 		t.Fatalf("malformed Origin CORS headers=%v", malformedResponse.Header())
 	}
 
-	if _, err := djangoRuntimeCORSPolicy([]string{""}); err == nil {
+	if _, err := nativeRuntimeCORSPolicy([]string{""}); err == nil {
 		t.Fatal("empty configured CORS origin was accepted")
 	}
 }
@@ -5326,14 +5313,14 @@ func TestCSRFTokenCORSPreflightCompatibility(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			policy, err := djangoCSRFTokenRuntimeCORSPolicy(testCase.allowedOrigins)
+			policy, err := nativeCSRFTokenRuntimeCORSPolicy(testCase.allowedOrigins)
 			if err != nil {
 				t.Fatalf("runtime CORS policy: %v", err)
 			}
 			generatedOptions := policy.OptionsHandler(func(http.ResponseWriter, *http.Request) {
 				t.Fatal("preflight reached the ordinary OPTIONS handler")
 			}, []string{http.MethodGet, http.MethodOptions})
-			handler := djangoCORSRequestCompatibilityMiddleware(csrfTokenCORSPreflightMiddleware(generatedOptions))
+			handler := nativeCORSRequestCompatibilityMiddleware(csrfTokenCORSPreflightMiddleware(generatedOptions))
 			request := httptest.NewRequest(http.MethodOptions, "/auth/get-csrf-token/", nil)
 			if testCase.origin != "" {
 				request.Header.Set("Origin", testCase.origin)
@@ -5373,7 +5360,7 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 	newRoute := func(method string, throttle publicProjectMetadataThrottle) http.Handler {
 		endpoints := csrftoken.NewEndpoints(systemapi.NewCSRFToken())
 		mux := loomhttp.NewMuxer()
-		corsPolicy, err := djangoCSRFTokenRuntimeCORSPolicy(nil)
+		corsPolicy, err := nativeCSRFTokenRuntimeCORSPolicy(nil)
 		if err != nil {
 			t.Fatalf("runtime CORS policy: %v", err)
 		}
@@ -5386,7 +5373,7 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 			route = server.CsrfTokenOptions
 		}
 		if method == http.MethodGet || method == http.MethodHead {
-			route = djangoCSRFResponseCookiePolicy(djangoCSRFCookieConfig{}).Handler(route)
+			route = nativeCSRFResponseCookiePolicy(nativeCSRFCookieConfig{}).Handler(route)
 		}
 		route = publicProjectMetadataReadsCompatibilityMiddleware(
 			throttle, nil, sessionConfig, nil, "", defaultFileSizeLimit, false,
@@ -5399,7 +5386,7 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 			route = corsPolicy.Handler(loomhttp.AsHandlerFunc(route))
 		}
 		route = csrfTokenCORSPreflightMiddleware(route)
-		route = djangoCORSRequestCompatibilityMiddleware(route)
+		route = nativeCORSRequestCompatibilityMiddleware(route)
 		return route
 	}
 
@@ -5535,7 +5522,7 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 	oversizedRequest.ContentLength = defaultFileSizeLimit + 1
 	oversizedResponse := httptest.NewRecorder()
 	newRoute(http.MethodGet, &publicProjectMetadataThrottleStub{allowed: true}).ServeHTTP(oversizedResponse, oversizedRequest)
-	if oversizedResponse.Code != http.StatusRequestEntityTooLarge || oversizedResponse.Body.String() != string(djangoRequestTooLargeBody) {
+	if oversizedResponse.Code != http.StatusRequestEntityTooLarge || oversizedResponse.Body.String() != string(nativeRequestTooLargeBody) {
 		t.Fatalf("oversized GET status=%d body=%q headers=%v", oversizedResponse.Code, oversizedResponse.Body.String(), oversizedResponse.Header())
 	}
 	assertNoCSRFCookie(t, oversizedResponse)
@@ -5569,7 +5556,7 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 				rotated:    &browsersession.SessionRefresh{SessionKey: "existing-session"},
 				refreshErr: refreshErr,
 			}).ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/auth/get-csrf-token/", nil))
-			if response.Code != http.StatusBadRequest || response.Body.String() != string(djangoBadRequestBody) ||
+			if response.Code != http.StatusBadRequest || response.Body.String() != string(nativeBadRequestBody) ||
 				response.Header().Get("Content-Length") != "" || response.Header().Get("Allow") != "" || response.Header().Get("X-Frame-Options") != "" {
 				t.Fatalf("session interruption status=%d body=%q headers=%v", response.Code, response.Body.String(), response.Header())
 			}
@@ -5582,7 +5569,7 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 		allowed: true,
 		err:     fmt.Errorf("inspect: %w", browsersession.ErrStore),
 	}).ServeHTTP(storeErrorResponse, httptest.NewRequest(http.MethodGet, "/auth/get-csrf-token/", nil))
-	if storeErrorResponse.Code != http.StatusInternalServerError || storeErrorResponse.Body.String() != string(djangoServerErrorBody) ||
+	if storeErrorResponse.Code != http.StatusInternalServerError || storeErrorResponse.Body.String() != string(nativeServerErrorBody) ||
 		storeErrorResponse.Header().Get("Cross-Origin-Opener-Policy") != "same-origin" {
 		t.Fatalf("session store error status=%d body=%q headers=%v", storeErrorResponse.Code, storeErrorResponse.Body.String(), storeErrorResponse.Header())
 	}
@@ -6010,7 +5997,7 @@ func TestStickyHeadPaginationRequiresWorkspaceMembership(t *testing.T) {
 	handler := stickyHeadPaginationAuthorizationMiddleware(mux, stub.APIKeyAuth, authorizer, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		t.Fatal("workspace-denied HEAD reached list handler")
 	}))
-	handler = djangoProtocolOptionsJSONNegotiationMiddleware(handler)
+	handler = nativeProtocolOptionsJSONNegotiationMiddleware(handler)
 	handler = stickyProtocolHeadersMiddleware(handler)
 	loomhttp.MountDerivedHead(mux, "/api/workspaces/{slug}/stickies/", handler)
 
@@ -6376,7 +6363,7 @@ func TestParseConfigRequiresBackgroundTasksForNoWorkersMode(t *testing.T) {
 	}
 }
 
-func TestParseConfigUsesDjangoReadReplicaSettings(t *testing.T) {
+func TestParseConfigUsesNativeReadReplicaSettings(t *testing.T) {
 	t.Run("URL", func(t *testing.T) {
 		t.Setenv("SECRET_KEY", "test-secret")
 		t.Setenv("ENABLE_READ_REPLICA", "1")
@@ -6446,7 +6433,7 @@ func TestRunRequiresDatabaseURL(t *testing.T) {
 	}
 }
 
-func TestParseConfigRequiresDjangoSecretKey(t *testing.T) {
+func TestParseConfigRequiresNativeSecretKey(t *testing.T) {
 	t.Setenv("SECRET_KEY", "")
 	if _, err := parseConfig(nil); err == nil || err.Error() != "secret-key is required" {
 		t.Fatalf("parseConfig() error = %v", err)
@@ -6490,7 +6477,7 @@ func TestParseConfigUsesBrowserSessionCookieName(t *testing.T) {
 	}
 }
 
-func TestParseConfigUsesDjangoCORSAllowedOrigins(t *testing.T) {
+func TestParseConfigUsesNativeCORSAllowedOrigins(t *testing.T) {
 	t.Setenv("SECRET_KEY", "test-secret")
 	previousCSRFOrigins, hadCSRFOrigins := os.LookupEnv("CSRF_TRUSTED_ORIGINS")
 	if err := os.Unsetenv("CSRF_TRUSTED_ORIGINS"); err != nil {
@@ -6556,7 +6543,7 @@ func TestParseConfigUsesDjangoCORSAllowedOrigins(t *testing.T) {
 	}
 }
 
-func TestParseConfigUsesDjangoDebugEnvironment(t *testing.T) {
+func TestParseConfigUsesBooleanDebugEnvironment(t *testing.T) {
 	t.Setenv("SECRET_KEY", "test-secret")
 	for _, testCase := range []struct {
 		value string
@@ -6565,11 +6552,9 @@ func TestParseConfigUsesDjangoDebugEnvironment(t *testing.T) {
 		{value: "0"},
 		{value: "1", want: true},
 		{value: " 1 ", want: true},
-		{value: "١", want: true},
-		{value: "2"},
-		{value: "-1"},
-		{value: "1_0"},
-		{value: "999999999999999999999999999999999999999999"},
+
+		{value: "true", want: true},
+		{value: "false"},
 	} {
 		t.Run(testCase.value, func(t *testing.T) {
 			t.Setenv("DEBUG", testCase.value)
@@ -6579,7 +6564,7 @@ func TestParseConfigUsesDjangoDebugEnvironment(t *testing.T) {
 			}
 		})
 	}
-	for _, value := range []string{"", "not-an-integer", "1__0", "𑛑"} {
+	for _, value := range []string{"", "2", "-1", "999999999999999999999999999999", "not-a-boolean", "1__0", "𑛑", "١", "1_0"} {
 		t.Setenv("DEBUG", value)
 		if _, err := parseConfig(nil); err == nil {
 			t.Fatalf("DEBUG=%q was accepted", value)
@@ -6587,13 +6572,13 @@ func TestParseConfigUsesDjangoDebugEnvironment(t *testing.T) {
 	}
 }
 
-func TestParseConfigEnforcesPythonDecimalIntegerLimit(t *testing.T) {
+func TestParseConfigBoundsIntegerLength(t *testing.T) {
 	for _, name := range []string{"DEBUG", "FILE_SIZE_LIMIT", "SESSION_COOKIE_AGE", "ADMIN_SESSION_COOKIE_AGE"} {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv("SECRET_KEY", "test-secret")
-			t.Setenv(name, strings.Repeat("9", 4301))
+			t.Setenv(name, strings.Repeat("9", 1001))
 			if _, err := parseConfig(nil); err == nil {
-				t.Fatalf("%s accepted a 4301-digit Python integer", name)
+				t.Fatalf("%s accepted a 1001-digit integer", name)
 			}
 		})
 	}
@@ -6601,17 +6586,17 @@ func TestParseConfigEnforcesPythonDecimalIntegerLimit(t *testing.T) {
 
 func TestParseConfigParsesBrowserSessionCookieAge(t *testing.T) {
 	t.Setenv("SECRET_KEY", "test-secret")
-	t.Setenv("SESSION_COOKIE_AGE", " 3_600 ")
+	t.Setenv("SESSION_COOKIE_AGE", " 3600 ")
 	if cfg, err := parseConfig(nil); err != nil || cfg.sessionCookieAge != 3600 {
-		t.Fatalf("Python-compatible SESSION_COOKIE_AGE=%v err=%v", cfg.sessionCookieAge, err)
+		t.Fatalf("SESSION_COOKIE_AGE=%v err=%v", cfg.sessionCookieAge, err)
 	}
-	t.Setenv("SESSION_COOKIE_AGE", "10_000_000_000")
+	t.Setenv("SESSION_COOKIE_AGE", "10000000000")
 	if cfg, err := parseConfig(nil); err != nil || cfg.sessionCookieAge != 10_000_000_000 {
 		t.Fatalf("large SESSION_COOKIE_AGE=%v err=%v", cfg.sessionCookieAge, err)
 	}
 	t.Setenv("SESSION_COOKIE_AGE", "999999999999999999999999999999")
-	if cfg, err := parseConfig(nil); err != nil || cfg.sessionCookieAge != math.MaxInt64 {
-		t.Fatalf("arbitrary-sized SESSION_COOKIE_AGE=%v err=%v", cfg.sessionCookieAge, err)
+	if _, err := parseConfig(nil); err == nil {
+		t.Fatal("out-of-range SESSION_COOKIE_AGE was accepted")
 	}
 	for _, testCase := range []struct {
 		age  string
@@ -6656,9 +6641,9 @@ func TestParseConfigParsesBrowserSessionCookieAge(t *testing.T) {
 	}
 }
 
-func TestParseConfigUsesDjangoFileSizeLimit(t *testing.T) {
+func TestParseConfigUsesDecimalFileSizeLimit(t *testing.T) {
 	t.Setenv("SECRET_KEY", "test-secret")
-	t.Setenv("FILE_SIZE_LIMIT", " ١٢_٣٤٥ ")
+	t.Setenv("FILE_SIZE_LIMIT", " 12345 ")
 	cfg, err := parseConfig(nil)
 	if err != nil {
 		t.Fatal(err)

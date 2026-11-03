@@ -16,7 +16,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/workitems"
 )
 
-func TestPublicFeedbackMissingBoardMapsToDjango404(t *testing.T) {
+func TestPublicFeedbackMissingBoardMapsToNative404(t *testing.T) {
 	err := publicFeedbackError(metadata.ErrProjectNotPublished)
 	require.IsType(t, (*publicfeedback.PublicFeedbackError)(nil), err)
 	var failure *publicfeedback.PublicFeedbackError

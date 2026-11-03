@@ -405,8 +405,8 @@ func TestProjectDetailsRejectMalformedPagination(t *testing.T) {
 	}
 }
 
-func TestDjangoTimestampUsesUserOffsetAndCanonicalUTC(t *testing.T) {
-	expression := djangoTimestamp("project.created_at")
+func TestNativeTimestampUsesUserOffsetAndCanonicalUTC(t *testing.T) {
+	expression := nativeTimestamp("project.created_at")
 	for _, want := range []string{"to_char(project.created_at", "'US'", "= '000000' THEN ''", "'TZH:TZM'", "= '+00:00' THEN 'Z'"} {
 		if !strings.Contains(expression, want) {
 			t.Errorf("timestamp expression missing %q", want)

@@ -72,8 +72,14 @@ CREATE CONSTRAINT TRIGGER reject_customer_commit AFTER INSERT OR UPDATE OR DELET
 func TestMCPCustomerIdentityWritesReauthorizeAfterWaiting(t *testing.T) {
 	for _, scenario := range customerMutationScenarios {
 		t.Run(scenario.tool+"/"+scenario.action, func(t *testing.T) {
+			// Customer scope is shared; association and value-reference admission remain distinct.
+			changes := mutationCredentialChanges()
+			if scenario.action == "create" || scenario.action == "manage_workitems" || scenario.action == "set_values" {
+				changes = nil
+			}
 			runMutationAuthorizationWait(t, mutationWaitScenario{
-				tool: scenario.tool, schemaLock: true, fixture: customerIdentityFixture, snapshot: customerStorageSnapshot,
+				changes: changes,
+				tool:    scenario.tool, schemaLock: true, fixture: customerIdentityFixture, snapshot: customerStorageSnapshot,
 				prepare: func(t *testing.T, f milestoneFixture, call catalogueCall) map[string]any {
 					return customerMutationWriteInput(t, f, call, scenario)
 				},

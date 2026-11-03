@@ -118,10 +118,6 @@
       "count": 2
     },
     {
-      "fingerprint": ["staticcheck", "instance_management.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "staticcheck",
         "internal/assets/bindingsgen/main.go",
@@ -177,14 +173,6 @@
       "fingerprint": [
         "staticcheck",
         "internal/workitems/filters.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/workitems/issue_writes.go",
         "ST1005: error strings should not be capitalized"
       ],
       "count": 1

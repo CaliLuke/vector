@@ -12,7 +12,7 @@ import (
 
 func instanceManagementPlainRedirectOptionsHandler() http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
-		setDjangoProtocolCompatibilityHeaders(response.Header(), "POST, OPTIONS")
+		setNativeProtocolCompatibilityHeaders(response.Header(), "POST, OPTIONS")
 		response.WriteHeader(http.StatusOK)
 	})
 }

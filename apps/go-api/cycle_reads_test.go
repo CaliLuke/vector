@@ -369,7 +369,7 @@ func TestWorkspaceListUsesDRFPermissionBody(t *testing.T) {
 	}
 }
 
-func TestCycleOptionsPreserveDjangoMetadataAndPermissions(t *testing.T) {
+func TestCycleOptionsPreserveNativeMetadataAndPermissions(t *testing.T) {
 	repository := &cycleReadsRepositoryStub{}
 	service := &cycleReadsService{repository: repository}
 	ctx := context.WithValue(context.Background(), cycleReadsPrincipal{}, uuid.New())
@@ -428,7 +428,7 @@ func TestCycleIssuePaginationRejectionsUseTypedClientErrors(t *testing.T) {
 		repository := &cycleReadsRepositoryStub{err: repositoryError}
 		service := &cycleReadsService{repository: repository}
 		ctx := context.WithValue(context.Background(), cycleReadsPrincipal{}, uuid.New())
-		ctx = WithReadServiceDjangoHTML500(ctx)
+		ctx = WithReadServiceNativeHTML500(ctx)
 		_, _, err := service.Issues(ctx, &api.IssuesPayload{
 			Slug: "alpha", ProjectID: uuid.New().String(), CycleID: uuid.New().String(),
 		})
@@ -436,7 +436,7 @@ func TestCycleIssuePaginationRejectionsUseTypedClientErrors(t *testing.T) {
 		if !errors.As(err, &invalid) {
 			t.Fatalf("%v: err=%T %v", repositoryError, err, err)
 		}
-		if ReadServiceDjangoHTML500(ctx) {
+		if ReadServiceNativeHTML500(ctx) {
 			t.Fatalf("%v requested an HTML 500 response for invalid pagination", repositoryError)
 		}
 	}
@@ -532,7 +532,7 @@ func TestCycleIssueOptionsPreserveLegacyAndComplexFilters(t *testing.T) {
 	}
 }
 
-func TestCycleIssueOptionsReturnsExactDjangoPerPageErrors(t *testing.T) {
+func TestCycleIssueOptionsReturnsExactNativePerPageErrors(t *testing.T) {
 	for _, test := range []struct {
 		perPage string
 		detail  string
@@ -612,7 +612,7 @@ func TestCycleIssueOptionsPreserveExplicitEmptyAndZeroQueryValues(t *testing.T) 
 		t.Fatalf("negative per_page options=%+v", options)
 	}
 
-	spaced := "\u00a02_٥\u00a0"
+	spaced := " 25 "
 	spacedPerPage := struct {
 		PerPage *string `form:"per_page"`
 	}{&spaced}

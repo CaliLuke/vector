@@ -9,11 +9,10 @@ import (
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 )
 
 func TestDraftListAppliesNativeRelationFilters(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
+	ctx, connection := suiteDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
 	if _, err := connection.Exec(ctx, `
 INSERT INTO cycles(id,workspace_id,project_id,name) VALUES('00000000-0000-4000-8000-000000000090','00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000002','Cycle');
 INSERT INTO modules(id,workspace_id,project_id,name) VALUES('00000000-0000-4000-8000-000000000091','00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000002','Module');
@@ -84,7 +83,7 @@ INSERT INTO draft_issue_modules(draft_issue_id,module_id) SELECT id,'00000000-00
 }
 
 func TestIntakePaginationSupportsOffsetsBeyondInt32(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
+	ctx, connection := suiteDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
 	repository, err := NewRepository(connection)
 	if err != nil {
 		t.Fatal(err)

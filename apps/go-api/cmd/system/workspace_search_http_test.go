@@ -34,8 +34,8 @@ func (r *searchMountRepository) Entity(_ context.Context, _ uuid.UUID, _, _, _, 
 	return json.RawMessage(`{"user_mention":[]}`), nil
 }
 
-func TestWorkspaceSearchCountUsesPythonIntegerGrammar(t *testing.T) {
-	for _, count := range []string{"  +12 ", "١٢", "1_2"} {
+func TestWorkspaceSearchCountUsesDecimalIntegers(t *testing.T) {
+	for _, count := range []string{"  +12 ", "12", "012"} {
 		t.Run(count, func(t *testing.T) {
 			repository := &searchMountRepository{}
 			sessions := searchMountSessions{&cycleMiddlewareSessions{recorder: &cycleMiddlewareRecorder{}, userTimezone: "UTC"}}

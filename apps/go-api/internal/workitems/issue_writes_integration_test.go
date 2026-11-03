@@ -7,13 +7,12 @@ import (
 	"testing"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
-func TestAPICreateDefaultIssueTypeMatchesDjangoFirstPrimaryKey(t *testing.T) {
+func TestAPICreateDefaultIssueTypeMatchesNativeFirstPrimaryKey(t *testing.T) {
 	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, url string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, url string) error {
 		conn, err := pgx.Connect(ctx, url)
 		if err != nil {
 			return err
@@ -32,12 +31,8 @@ INSERT INTO project_issue_types(project_id,issue_type_id) VALUES
 `)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testsupport.Close(t, pair)
 
-	conn, err := pgx.Connect(ctx, pair.SeedURL())
+	conn, err := pgx.Connect(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

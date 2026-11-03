@@ -14,34 +14,34 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-type djangoCSRFCookieConfig struct {
+type nativeCSRFCookieConfig struct {
 	Domain string
 	Secure bool
 }
 
-type djangoCORSOriginalOriginContextKey struct{}
+type nativeCORSOriginalOriginContextKey struct{}
 
-type djangoCORSOriginResponseWriter struct {
+type nativeCORSOriginResponseWriter struct {
 	http.ResponseWriter
 	originalOrigin string
 }
 
-func (writer *djangoCORSOriginResponseWriter) Unwrap() http.ResponseWriter {
+func (writer *nativeCORSOriginResponseWriter) Unwrap() http.ResponseWriter {
 	return writer.ResponseWriter
 }
 
-func (writer *djangoCORSOriginResponseWriter) restoreOrigin() {
+func (writer *nativeCORSOriginResponseWriter) restoreOrigin() {
 	if writer.originalOrigin != "" && writer.Header().Get("Access-Control-Allow-Origin") != "" {
 		writer.Header().Set("Access-Control-Allow-Origin", writer.originalOrigin)
 	}
 }
 
-func (writer *djangoCORSOriginResponseWriter) WriteHeader(status int) {
+func (writer *nativeCORSOriginResponseWriter) WriteHeader(status int) {
 	writer.restoreOrigin()
 	writer.ResponseWriter.WriteHeader(status)
 }
 
-func (writer *djangoCORSOriginResponseWriter) Write(body []byte) (int, error) {
+func (writer *nativeCORSOriginResponseWriter) Write(body []byte) (int, error) {
 	writer.restoreOrigin()
 	return writer.ResponseWriter.Write(body)
 }
@@ -60,36 +60,36 @@ func (writer *csrfTokenCORSHeaderWriter) Write(body []byte) (int, error) {
 
 func (writer *csrfTokenCORSHeaderWriter) WriteHeader(int) {}
 
-func djangoCORSRequestCompatibilityMiddleware(next http.Handler) http.Handler {
+func nativeCORSRequestCompatibilityMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		normalized := normalizeDjangoCORSOrigin(request)
+		normalized := normalizeNativeCORSOrigin(request)
 		if normalized == request {
 			next.ServeHTTP(response, request)
 			return
 		}
-		writer := &djangoCORSOriginResponseWriter{
+		writer := &nativeCORSOriginResponseWriter{
 			ResponseWriter: response,
-			originalOrigin: djangoCORSOriginalOrigin(normalized),
+			originalOrigin: nativeCORSOriginalOrigin(normalized),
 		}
 		next.ServeHTTP(writer, normalized)
 	})
 }
 
-func normalizeDjangoCORSOrigin(request *http.Request) *http.Request {
-	if _, normalized := request.Context().Value(djangoCORSOriginalOriginContextKey{}).(string); normalized {
+func normalizeNativeCORSOrigin(request *http.Request) *http.Request {
+	if _, normalized := request.Context().Value(nativeCORSOriginalOriginContextKey{}).(string); normalized {
 		return request
 	}
 	if len(request.Header.Values("Origin")) == 0 {
 		return request
 	}
-	original := djangoJoinedHeader(request, "Origin")
-	clone := request.Clone(context.WithValue(request.Context(), djangoCORSOriginalOriginContextKey{}, original))
+	original := nativeJoinedHeader(request, "Origin")
+	clone := request.Clone(context.WithValue(request.Context(), nativeCORSOriginalOriginContextKey{}, original))
 	clone.Header = request.Header.Clone()
 	clone.Header.Del("Origin")
 	if len(request.Header.Values("Origin")) > 1 {
 		return clone
 	}
-	parsed, valid := djangoURLSplit(original)
+	parsed, valid := nativeURLSplit(original)
 	if original == "" || !valid {
 		return clone
 	}
@@ -101,11 +101,11 @@ func normalizeDjangoCORSOrigin(request *http.Request) *http.Request {
 	return clone
 }
 
-func djangoCORSOriginalOrigin(request *http.Request) string {
-	if original, ok := request.Context().Value(djangoCORSOriginalOriginContextKey{}).(string); ok {
+func nativeCORSOriginalOrigin(request *http.Request) string {
+	if original, ok := request.Context().Value(nativeCORSOriginalOriginContextKey{}).(string); ok {
 		return original
 	}
-	return djangoJoinedHeader(request, "Origin")
+	return nativeJoinedHeader(request, "Origin")
 }
 
 func csrfTokenHeadersCompatibilityMiddleware(corsPolicy loomhttp.RuntimeCORSPolicy) func(http.Handler) http.Handler {
@@ -132,8 +132,8 @@ func csrfTokenCORSPreflightMiddleware(next http.Handler) http.Handler {
 			policyRequest.Header.Set("Access-Control-Request-Method", http.MethodGet)
 			next.ServeHTTP(writer, policyRequest)
 			mergeVary(writer.Header(), "Origin")
-			origin := djangoCORSOriginalOrigin(request)
-			if origin == "" || !djangoCORSOriginValid(origin) {
+			origin := nativeCORSOriginalOrigin(request)
+			if origin == "" || !nativeCORSOriginValid(origin) {
 				removeCORSAllowHeaders(writer.Header())
 			} else if writer.Header().Get("Access-Control-Allow-Origin") != "" {
 				writer.Header().Set("Access-Control-Allow-Origin", origin)
@@ -169,7 +169,7 @@ func csrfTokenResponseCompatibilityMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		if request.Method == http.MethodGet || request.Method == http.MethodHead {
-			request = normalizeDjangoCSRFCookie(request)
+			request = normalizeNativeCSRFCookie(request)
 		}
 		writer := &csrfTokenResponseWriter{ResponseWriter: response}
 		next.ServeHTTP(writer, request)
@@ -188,7 +188,7 @@ func csrfTokenResponseCompatibilityMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func djangoCSRFResponseCookiePolicy(config djangoCSRFCookieConfig) loomhttp.ResponseCookiePolicy {
+func nativeCSRFResponseCookiePolicy(config nativeCSRFCookieConfig) loomhttp.ResponseCookiePolicy {
 	return func(_ context.Context, cookie *http.Cookie) error {
 		if cookie.Name != defaultCSRFCookieName {
 			return nil
@@ -203,11 +203,11 @@ func djangoCSRFResponseCookiePolicy(config djangoCSRFCookieConfig) loomhttp.Resp
 	}
 }
 
-func djangoCSRFTokenRuntimeCORSPolicy(allowedOrigins []string) (loomhttp.RuntimeCORSPolicy, error) {
-	return djangoRuntimeCORSPolicy(allowedOrigins)
+func nativeCSRFTokenRuntimeCORSPolicy(allowedOrigins []string) (loomhttp.RuntimeCORSPolicy, error) {
+	return nativeRuntimeCORSPolicy(allowedOrigins)
 }
 
-func djangoRuntimeCORSPolicy(allowedOrigins []string) (loomhttp.RuntimeCORSPolicy, error) {
+func nativeRuntimeCORSPolicy(allowedOrigins []string) (loomhttp.RuntimeCORSPolicy, error) {
 	originPolicy := loomhttp.CORSOrigin{
 		Methods:     []string{"DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"},
 		Headers:     []string{"accept", "authorization", "content-type", "user-agent", "x-csrftoken", "x-requested-with", "X-API-Key"},
@@ -225,7 +225,7 @@ func djangoRuntimeCORSPolicy(allowedOrigins []string) (loomhttp.RuntimeCORSPolic
 		for _, configured := range allowedOrigins {
 			pattern := configured
 			if configured != "null" {
-				if parsed, valid := djangoURLSplit(configured); valid && parsed.scheme != "" && parsed.netloc != "" {
+				if parsed, valid := nativeURLSplit(configured); valid && parsed.scheme != "" && parsed.netloc != "" {
 					pattern = parsed.scheme + "://" + parsed.netloc
 				}
 			}
@@ -247,8 +247,8 @@ func djangoRuntimeCORSPolicy(allowedOrigins []string) (loomhttp.RuntimeCORSPolic
 // Go's request-cookie helper returns the first duplicate, while Django's cookie
 // parser keeps the last. Prepending Django's effective value gives Loom's
 // generated decoder the same input without replacing the generated decoder.
-func normalizeDjangoCSRFCookie(request *http.Request) *http.Request {
-	return normalizeDjangoCookie(request, defaultCSRFCookieName)
+func normalizeNativeCSRFCookie(request *http.Request) *http.Request {
+	return normalizeNativeCookie(request, defaultCSRFCookieName)
 }
 
 type csrfTokenResponseWriter struct {
@@ -296,7 +296,7 @@ func setCSRFTokenCompatibilityHeaders(headers http.Header, request *http.Request
 	headers.Set("Referrer-Policy", "same-origin")
 	removeVary(headers, "Origin")
 	mergeVary(headers, "Cookie", "origin")
-	origin := djangoCORSOriginalOrigin(request)
+	origin := nativeCORSOriginalOrigin(request)
 	if headers.Get("Access-Control-Allow-Origin") != "" {
 		headers.Set("Access-Control-Allow-Origin", origin)
 		if request.Method == http.MethodOptions && len(request.Header.Values("Access-Control-Request-Method")) == 0 {
@@ -336,14 +336,14 @@ func publicProjectMetadataReadsCORSPreflight(headers http.Header, request *http.
 }
 
 func publicProjectMetadataReadsCORSHeaders(headers http.Header, request *http.Request, allowedOrigins []string) bool {
-	origin := djangoJoinedHeader(request, "Origin")
-	originURL, valid := djangoURLSplit(origin)
+	origin := nativeJoinedHeader(request, "Origin")
+	originURL, valid := nativeURLSplit(origin)
 	if origin == "" || !valid {
 		return false
 	}
 	allowed := len(allowedOrigins) == 0
 	for _, candidate := range allowedOrigins {
-		candidateURL, candidateValid := djangoURLSplit(candidate)
+		candidateURL, candidateValid := nativeURLSplit(candidate)
 		if (origin == "null" && candidate == "null") ||
 			(candidateValid && originURL.scheme == candidateURL.scheme && originURL.netloc == candidateURL.netloc) {
 			allowed = true
@@ -358,27 +358,27 @@ func publicProjectMetadataReadsCORSHeaders(headers http.Header, request *http.Re
 	return true
 }
 
-func djangoCORSOriginValid(origin string) bool {
-	_, valid := djangoURLSplit(origin)
+func nativeCORSOriginValid(origin string) bool {
+	_, valid := nativeURLSplit(origin)
 	return valid
 }
 
-type djangoURLSplitResult struct {
+type nativeURLSplitResult struct {
 	scheme string
 	netloc string
 }
 
-func djangoURLSplit(origin string) (djangoURLSplitResult, bool) {
+func nativeURLSplit(origin string) (nativeURLSplitResult, bool) {
 	// Python 3.12's urlsplit() strips these characters before examining the
 	// authority and rejects malformed bracketed hosts and NFKC delimiters.
 	origin = strings.TrimLeftFunc(strings.NewReplacer("\r", "", "\n", "", "\t", "").Replace(origin), func(value rune) bool {
 		return value <= ' '
 	})
-	result := djangoURLSplitResult{}
+	result := nativeURLSplitResult{}
 	rest := origin
 	if separator := strings.IndexByte(rest, ':'); separator > 0 {
 		firstDelimiter := strings.IndexAny(rest, "/?#")
-		if (firstDelimiter < 0 || separator < firstDelimiter) && djangoURLSchemeValid(rest[:separator]) {
+		if (firstDelimiter < 0 || separator < firstDelimiter) && nativeURLSchemeValid(rest[:separator]) {
 			result.scheme = strings.ToLower(rest[:separator])
 			rest = rest[separator+1:]
 		}
@@ -392,7 +392,7 @@ func djangoURLSplit(origin string) (djangoURLSplitResult, bool) {
 	}
 	result.netloc = authority
 	if strings.Contains(authority, "[") != strings.Contains(authority, "]") {
-		return djangoURLSplitResult{}, false
+		return nativeURLSplitResult{}, false
 	}
 	if strings.Contains(authority, "[") {
 		// Python 3.12 validates only the contents between the first '[' and
@@ -404,30 +404,30 @@ func djangoURLSplit(origin string) (djangoURLSplitResult, bool) {
 			if !found || version == "" || suffix == "" || strings.IndexFunc(version, func(value rune) bool {
 				return (value < '0' || value > '9') && (value < 'a' || value > 'f') && (value < 'A' || value > 'F')
 			}) >= 0 {
-				return djangoURLSplitResult{}, false
+				return nativeURLSplitResult{}, false
 			}
 		} else {
 			address := host
 			if base, zone, found := strings.Cut(host, "%"); found {
 				if zone == "" || strings.Contains(zone, "%") {
-					return djangoURLSplitResult{}, false
+					return nativeURLSplitResult{}, false
 				}
 				address = base
 			}
 			if net.ParseIP(address) == nil || !strings.Contains(address, ":") {
-				return djangoURLSplitResult{}, false
+				return nativeURLSplitResult{}, false
 			}
 		}
 	}
 	check := strings.NewReplacer("@", "", ":", "", "#", "", "?", "").Replace(authority)
 	normalized := norm.NFKC.String(check)
 	if check != normalized && strings.ContainsAny(normalized, "/?#@:") {
-		return djangoURLSplitResult{}, false
+		return nativeURLSplitResult{}, false
 	}
 	return result, true
 }
 
-func djangoURLSchemeValid(value string) bool {
+func nativeURLSchemeValid(value string) bool {
 	for index, character := range value {
 		if index == 0 && ((character < 'a' || character > 'z') && (character < 'A' || character > 'Z')) {
 			return false

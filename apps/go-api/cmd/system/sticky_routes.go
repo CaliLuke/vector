@@ -372,16 +372,16 @@ func writeStickyJSON(response http.ResponseWriter, status int, value any) {
 
 func mountStickyRoutes(ctx context.Context, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, pending pendingReplacementEndpoints, mux loomhttp.Muxer, readServicesCORSPolicy loomhttp.RuntimeCORSPolicy) {
 	if stickyEndpoints != nil {
-		stickyServer := stickysvr.New(stickyEndpoints, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil, readServicesCORSPolicy)
+		stickyServer := stickysvr.New(stickyEndpoints, mux, nativeRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil, readServicesCORSPolicy)
 		stickyServer.Use(stickyCompatibilityMiddleware)
 		if authenticate != nil {
 			stickyServer.Use(stickyAuthenticationMiddleware(authenticate))
 		}
 		stickyListHEAD := stickyHeadPaginationAuthorizationMiddleware(mux, authenticate, pending.stickyWorkspaceAuthorizer, loomhttp.AsHandlerFunc(stickyServer.List))
-		stickyListHEAD = djangoProtocolOptionsJSONNegotiationMiddleware(stickyListHEAD)
+		stickyListHEAD = nativeProtocolOptionsJSONNegotiationMiddleware(stickyListHEAD)
 		stickyListHEAD = stickyProtocolHeadersMiddleware(stickyListHEAD)
 		stickyListHEAD = readServicesCORSPolicy.Handler(stickyListHEAD.ServeHTTP)
-		stickyRetrieveHEAD := djangoProtocolOptionsJSONNegotiationMiddleware(loomhttp.AsHandlerFunc(stickyServer.Retrieve))
+		stickyRetrieveHEAD := nativeProtocolOptionsJSONNegotiationMiddleware(loomhttp.AsHandlerFunc(stickyServer.Retrieve))
 		stickyRetrieveHEAD = stickyProtocolHeadersMiddleware(stickyRetrieveHEAD)
 		stickyRetrieveHEAD = readServicesCORSPolicy.Handler(stickyRetrieveHEAD.ServeHTTP)
 		stickysvr.MountListHandler(mux, stickyServer.List, readServicesCORSPolicy)
@@ -392,7 +392,7 @@ func mountStickyRoutes(ctx context.Context, stickyEndpoints *sticky.Endpoints, a
 		loomhttp.MountDerivedHead(mux, "/api/workspaces/{slug}/stickies/", stickyListHEAD)
 		loomhttp.MountDerivedHead(mux, "/api/workspaces/{slug}/stickies/{pk}/", stickyRetrieveHEAD)
 		listOptions := stickyListOptionsHandler(stickyCompatibilityMiddleware)
-		detailOptions := djangoProtocolOptionsWithoutActionsHandler(stickyCompatibilityMiddleware, "Sticky Instance")
+		detailOptions := nativeProtocolOptionsWithoutActionsHandler(stickyCompatibilityMiddleware, "Sticky Instance")
 		if pending.stickyWorkspaceAuthorizer != nil {
 			listOptions = stickyWorkspaceAuthorizationMiddleware(mux, pending.stickyWorkspaceAuthorizer, listOptions)
 			detailOptions = stickyWorkspaceAuthorizationMiddleware(mux, pending.stickyWorkspaceAuthorizer, detailOptions)
@@ -401,13 +401,13 @@ func mountStickyRoutes(ctx context.Context, stickyEndpoints *sticky.Endpoints, a
 			listOptions = stickyAuthenticationMiddleware(authenticate)(listOptions)
 			detailOptions = stickyAuthenticationMiddleware(authenticate)(detailOptions)
 		}
-		listOptions = djangoProtocolOptionsJSONNegotiationMiddleware(listOptions)
-		detailOptions = djangoProtocolOptionsJSONNegotiationMiddleware(detailOptions)
+		listOptions = nativeProtocolOptionsJSONNegotiationMiddleware(listOptions)
+		detailOptions = nativeProtocolOptionsJSONNegotiationMiddleware(detailOptions)
 		detailOptions = stickyDetailUUIDMiddleware(mux, detailOptions)
 		listOptions = stickyProtocolHeadersMiddleware(listOptions)
 		detailOptions = stickyProtocolHeadersMiddleware(detailOptions)
-		listOptions = djangoProtocolCORSOptionsHandler(readServicesCORSPolicy, []string{http.MethodGet, http.MethodPost}, listOptions)
-		detailOptions = djangoProtocolCORSOptionsHandler(readServicesCORSPolicy, []string{http.MethodGet, http.MethodPatch, http.MethodDelete}, detailOptions)
+		listOptions = nativeProtocolCORSOptionsHandler(readServicesCORSPolicy, []string{http.MethodGet, http.MethodPost}, listOptions)
+		detailOptions = nativeProtocolCORSOptionsHandler(readServicesCORSPolicy, []string{http.MethodGet, http.MethodPatch, http.MethodDelete}, detailOptions)
 		mountProtocolHandler(mux, http.MethodOptions, "/api/workspaces/{slug}/stickies/", listOptions)
 		mountProtocolHandler(mux, http.MethodOptions, "/api/workspaces/{slug}/stickies/{pk}/", detailOptions)
 		for _, mount := range stickyServer.Mounts {

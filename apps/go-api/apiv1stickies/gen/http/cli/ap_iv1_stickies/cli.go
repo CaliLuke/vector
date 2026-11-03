@@ -76,7 +76,7 @@ type commandLine struct {
 			APIKeyAuthCredential string `help:"" name:"api-key-auth-credential"`
 			Stream               string `help:"path to file containing the streamed request body" name:"stream" required:""`
 		} `cmd:"" help:"Update implements update." name:"update"`
-	} `cmd:"" help:"Serves the Django API v1 Sticky contract." name:"api-v1-stickies"`
+	} `cmd:"" help:"Serves the Vector API v1 Sticky contract." name:"api-v1-stickies"`
 }
 
 // ParseEndpoint returns the endpoint and payload as specified on the command
@@ -234,7 +234,7 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 // apiV1StickiesUsage displays the usage of the api-v1-stickies command and its
 // subcommands.
 func apiV1StickiesUsage() {
-	fmt.Fprintln(os.Stderr, "Serves the Django API v1 Sticky contract.")
+	fmt.Fprintln(os.Stderr, "Serves the Vector API v1 Sticky contract.")
 	fmt.Fprintf(os.Stderr, "Usage:\n    %s [globalflags] api-v1-stickies COMMAND [flags]\n\n", os.Args[0])
 	fmt.Fprintln(os.Stderr, "COMMAND:")
 	fmt.Fprintln(os.Stderr, "    list: List implements list.")

@@ -85,7 +85,7 @@ func TestPageLifecycleLabelListKeepsIndexedValidationErrors(t *testing.T) {
 	})
 }
 
-func TestPageLifecycleRawAccessOwnershipCheckPrecedesChoiceCoercion(t *testing.T) {
+func TestPageLifecycleOwnershipChecksNormalizedAccess(t *testing.T) {
 	owner := uuid.New()
 	member := uuid.New()
 	state := pageLifecycleState{ownerID: owner, access: 0}
@@ -96,10 +96,10 @@ func TestPageLifecycleRawAccessOwnershipCheckPrecedesChoiceCoercion(t *testing.T
 		want bool
 	}{
 		{name: "same numeric scalar", user: member, raw: json.Number("0"), want: false},
-		{name: "same numeric string differs before choice coercion", user: member, raw: "0", want: true},
-		{name: "same numeric float compares equal before choice coercion", user: member, raw: json.Number("0.0"), want: false},
+		{name: "same numeric form value", user: member, raw: "0", want: false},
+		{name: "same integral JSON number", user: member, raw: json.Number("0.0"), want: false},
 		{name: "invalid choice is an ownership change first", user: member, raw: "9", want: true},
-		{name: "owner bypasses raw ownership check", user: owner, raw: "9", want: false},
+		{name: "owner may submit access changes", user: owner, raw: "9", want: false},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			if got := lifecycleRawAccessChanged(test.raw, state, test.user); got != test.want {
@@ -122,5 +122,12 @@ func TestPageLifecycleParentLookupAndSerializerRejectBooleanIdentity(t *testing.
 	}
 	if !requestinput.Nonempty(true) || !requestinput.Nonempty(json.Number("1")) {
 		t.Fatal("truthy parent inputs would incorrectly skip the raw view lookup")
+	}
+}
+
+func TestPageArchiveDateRejectsYearZeroBeforePersistence(t *testing.T) {
+	_, failures, _ := validatePageLifecycleFields(requestinput.Input{Fields: map[string]any{"archived_at": "0000-01-01"}})
+	if failures["archived_at"] == nil {
+		t.Fatal("accepted year zero archive date")
 	}
 }

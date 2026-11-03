@@ -46,7 +46,7 @@ func TestRepositoryRequiresDatabase(t *testing.T) {
 	}
 }
 
-func TestRepositoryListsWorkspaceLabelsWithProjectVisibilityAndDjangoOrdering(t *testing.T) {
+func TestRepositoryListsWorkspaceLabelsWithProjectVisibilityAndNativeOrdering(t *testing.T) {
 	db := &metadataDB{rows: []pgx.Row{metadataBool(true), metadataJSON(`[{"name":"Newer"}]`)}}
 	r, err := NewRepository(db)
 	if err != nil {

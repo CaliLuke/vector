@@ -10,7 +10,7 @@ import (
 var ImportedPlaneAPISerializersUserUserliteserializerResponse = types.UserLite
 
 var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
-	Description("Plane API token authentication.")
+	Description("Vector API token authentication.")
 })
 
 var apiUserIdentityRawJSONResponseMetadata = Type("APIUserIdentityRawJSONResponseMetadata", func() {

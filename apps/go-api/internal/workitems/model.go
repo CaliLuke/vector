@@ -15,8 +15,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// projectLockKey must agree with Django's convert_uuid_to_integer. Both
-// runtimes can create work items against the same sequence ledger during rollout.
+// projectLockKey serializes sequence allocation across all native writers.
+// Keep this mapping stable while rolling between server versions.
 func projectLockKey(project string) int64 {
 	hash := sha256.Sum256([]byte(project))
 	return int64(binary.BigEndian.Uint64(hash[:8]))

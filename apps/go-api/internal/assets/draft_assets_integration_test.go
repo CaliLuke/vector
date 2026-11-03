@@ -6,8 +6,6 @@ import (
 	"context"
 	"testing"
 
-	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -22,14 +20,7 @@ type draftAssetFixture struct {
 
 func newDraftAssetFixture(t *testing.T) draftAssetFixture {
 	t.Helper()
-	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, url string) error {
-		db, err := pgx.Connect(ctx, url)
-		if err != nil {
-			return err
-		}
-		defer func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) }()
-		_, err = db.Exec(ctx, `
+	ctx, db := assetDatabases.OpenSQL(t, `
 CREATE TABLE workspaces(id uuid PRIMARY KEY, slug text DEFAULT 'drafts', deleted_at timestamptz);
 CREATE TABLE workspace_members(workspace_id uuid,member_id uuid,role integer,is_active boolean,deleted_at timestamptz);
 CREATE TABLE project_members(workspace_id uuid,project_id uuid,member_id uuid,role integer,is_active boolean,deleted_at timestamptz);
@@ -48,21 +39,6 @@ CREATE TABLE file_assets(
  is_archived boolean DEFAULT false,storage_metadata jsonb DEFAULT '{}',deleted_at timestamptz,external_id text,external_source text
 );
 CREATE TABLE work_item_effects(id uuid PRIMARY KEY,kind text NOT NULL,payload jsonb NOT NULL);`)
-		return err
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if closeErr := pair.Close(); closeErr != nil {
-			t.Error(closeErr)
-		}
-	})
-	db, err := pgx.Connect(ctx, pair.SeedURL())
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { testsupport.CloseContext(t, db, ctx) })
 	repository, err := NewPostgresRepository(db)
 	if err != nil {
 		t.Fatal(err)

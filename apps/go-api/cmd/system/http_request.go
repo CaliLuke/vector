@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html"
 	"math"
+	"mime"
 	"net/http"
 	"net/netip"
 	"net/url"
@@ -29,9 +30,9 @@ var requestMetadataPolicy = func() loomhttp.RequestMetadataPolicy {
 	return policy
 }()
 
-func djangoQueryValues(rawQuery string, name string) ([]string, error) {
+func nativeQueryValues(rawQuery string, name string) ([]string, error) {
 	if strings.Count(rawQuery, "&") >= 1000 {
-		return nil, fmt.Errorf("query exceeds Django's 1000-field limit")
+		return nil, fmt.Errorf("query exceeds the 1000-field limit")
 	}
 	values := make([]string, 0, 1)
 	for _, field := range strings.Split(rawQuery, "&") {
@@ -39,14 +40,14 @@ func djangoQueryValues(rawQuery string, name string) ([]string, error) {
 		if !found {
 			value = ""
 		}
-		if djangoQueryUnescape(key) == name {
-			values = append(values, djangoQueryUnescape(value))
+		if nativeQueryUnescape(key) == name {
+			values = append(values, nativeQueryUnescape(value))
 		}
 	}
 	return values, nil
 }
 
-func normalizeDjangoTolerantQuery(request *http.Request) *http.Request {
+func normalizeNativeTolerantQuery(request *http.Request) *http.Request {
 	if request.URL.RawQuery == "" {
 		return request
 	}
@@ -59,8 +60,8 @@ func normalizeDjangoTolerantQuery(request *http.Request) *http.Request {
 		if !found {
 			value = ""
 		}
-		key = djangoQueryUnescape(key)
-		values[key] = append(values[key], djangoQueryUnescape(value))
+		key = nativeQueryUnescape(key)
+		values[key] = append(values[key], nativeQueryUnescape(value))
 	}
 	clone := request.Clone(request.Context())
 	clonedURL := *request.URL
@@ -69,7 +70,7 @@ func normalizeDjangoTolerantQuery(request *http.Request) *http.Request {
 	return clone
 }
 
-func djangoQueryUnescape(value string) string {
+func nativeQueryUnescape(value string) string {
 	decoded := make([]byte, 0, len(value))
 	for index := 0; index < len(value); index++ {
 		switch {
@@ -88,8 +89,7 @@ func djangoQueryUnescape(value string) string {
 			decoded = append(decoded, value[index])
 		}
 	}
-	// The UTF-8 decoder replaces maximal invalid subparts, as Python does.
-	// ToValidUTF8 coalesces adjacent errors and loses that source behavior.
+	// Decode invalid UTF-8 with replacement characters for display-safe queries.
 	text, _ := encodingunicode.UTF8.NewDecoder().String(string(decoded))
 	return text
 }
@@ -107,21 +107,21 @@ func queryHexDigit(value byte) (byte, bool) {
 	}
 }
 
-var djangoBadRequestBody = []byte("\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Bad Request (400)</title>\n</head>\n<body>\n  <h1>Bad Request (400)</h1><p></p>\n</body>\n</html>\n")
+var nativeBadRequestBody = []byte("\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Bad Request (400)</title>\n</head>\n<body>\n  <h1>Bad Request (400)</h1><p></p>\n</body>\n</html>\n")
 
-var djangoNotFoundBody = []byte("\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n")
+var nativeNotFoundBody = []byte("\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n")
 
-var djangoServerErrorBody = []byte("\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n")
+var nativeServerErrorBody = []byte("\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n")
 
-var djangoRequestTooLargeBody = []byte(`{"error": "REQUEST_BODY_TOO_LARGE", "detail": "The size of the request body exceeds the maximum allowed size."}`)
+var nativeRequestTooLargeBody = []byte(`{"error": "REQUEST_BODY_TOO_LARGE", "detail": "The size of the request body exceeds the maximum allowed size."}`)
 
-func djangoDebugAppendSlashResponse(request *http.Request) ([]byte, string) {
-	pathWithSlash := djangoFullPath(request, true)
+func nativeDebugAppendSlashResponse(request *http.Request) ([]byte, string) {
+	pathWithSlash := nativeFullPath(request, true)
 	message := fmt.Sprintf(
-		"You called this URL via %s, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining %s data. Change your form to point to %s%s (note the trailing slash), or set APPEND_SLASH=False in your Django settings.",
-		request.Method, request.Method, request.Host, pathWithSlash,
+		"The %s request requires a trailing slash. Submit the request to %s%s.",
+		request.Method, request.Host, pathWithSlash,
 	)
-	if !djangoRequestAcceptsHTML(request) {
+	if !nativeRequestAcceptsHTML(request) {
 		return []byte(fmt.Sprintf("RuntimeError at %s\n\n%s\n", request.URL.Path, message)), "text/plain; charset=utf-8"
 	}
 	return []byte(fmt.Sprintf(`<!DOCTYPE html>
@@ -131,18 +131,18 @@ func djangoDebugAppendSlashResponse(request *http.Request) ([]byte, string) {
 </html>`, html.EscapeString(request.URL.Path), html.EscapeString(request.URL.Path), html.EscapeString(message))), "text/html; charset=utf-8"
 }
 
-func djangoDebugAppendSlashBody(request *http.Request) []byte {
-	body, _ := djangoDebugAppendSlashResponse(request)
+func nativeDebugAppendSlashBody(request *http.Request) []byte {
+	body, _ := nativeDebugAppendSlashResponse(request)
 	return body
 }
 
-func djangoRequestAcceptsHTML(request *http.Request) bool {
-	accept, present := djangoRequestAcceptHeader(request)
+func nativeRequestAcceptsHTML(request *http.Request) bool {
+	accept, present := nativeRequestAcceptHeader(request)
 	if !present {
 		return true
 	}
 	for _, value := range strings.Split(accept, ",") {
-		mediaType, parameters, err := djangoParseHeaderParameters(strings.TrimSpace(value))
+		mediaType, parameters, err := mime.ParseMediaType(strings.TrimSpace(value))
 		if err != nil {
 			continue
 		}
@@ -169,23 +169,23 @@ func djangoRequestAcceptsHTML(request *http.Request) bool {
 	return false
 }
 
-func djangoEscapeURIPath(path string) string {
-	return djangoPercentEncode(path, "/:@&+$,-.!~*'()")
+func nativeEscapeURIPath(path string) string {
+	return nativePercentEncode(path, "/:@&+$,-.!~*'()")
 }
 
-func djangoFullPath(request *http.Request, appendSlash bool) string {
+func nativeFullPath(request *http.Request, appendSlash bool) string {
 	path := request.URL.Path
 	if appendSlash {
 		path += "/"
 	}
-	fullPath := djangoEscapeURIPath(path)
+	fullPath := nativeEscapeURIPath(path)
 	if request.URL.RawQuery != "" {
-		fullPath += "?" + djangoPercentEncode(request.URL.RawQuery, "/#%[]=:;$&()+,!?*@'~")
+		fullPath += "?" + nativePercentEncode(request.URL.RawQuery, "/#%[]=:;$&()+,!?*@'~")
 	}
 	return fullPath
 }
 
-func djangoPercentEncode(value string, safe string) string {
+func nativePercentEncode(value string, safe string) string {
 	const hexadecimal = "0123456789ABCDEF"
 	var escaped strings.Builder
 	escaped.Grow(len(value))

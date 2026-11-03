@@ -6,7 +6,7 @@ package design
 import . "github.com/CaliLuke/loom/dsl"
 
 var sessionCookie = APIKeySecurity("PlaneSessionCookie", func() {
-	Description("Plane Django session cookie authentication.")
+	Description("Vector browser session cookie authentication.")
 })
 
 var rawResponse = Type("WorkspaceLifecycleRawJSON", func() {

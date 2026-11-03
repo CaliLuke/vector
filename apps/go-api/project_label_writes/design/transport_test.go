@@ -265,7 +265,7 @@ func TestGeneratedLabelWritesOptionsDispatchAndCORS(t *testing.T) {
 
 type cookieDoer struct{ client *http.Client }
 
-func TestGeneratedLabelWritesClientAcceptsDjangoUUIDParent(t *testing.T) {
+func TestGeneratedLabelWritesClientAcceptsNativeUUIDParent(t *testing.T) {
 	handler, service := labelTransport(t)
 	parent := labelID
 	service.parent = &parent

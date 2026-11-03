@@ -288,7 +288,7 @@ func (s *ticketCollaborationService) execute(ctx context.Context, operation stri
 	}
 	data, err := json.Marshal(activityTimestamps(result.Body, p.timezone))
 	if err != nil {
-		MarkReadServiceDjangoHTML500(ctx)
+		MarkReadServiceNativeHTML500(ctx)
 		return nil, nil, collaborationError(err)
 	}
 	return &api.CollaborationResponse{}, io.NopCloser(bytes.NewReader(data)), nil

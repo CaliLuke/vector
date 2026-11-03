@@ -60,8 +60,8 @@ func TestPublicMetadataRepositoryFailuresKeepHTTPPhaseAndSanitization(t *testing
 			contentType string
 			queries     int
 		}{
-			{"render database error", false, &pgconn.PgError{Code: "08006", Message: "private database diagnostic"}, 500, string(djangoServerErrorBody), "text/html; charset=utf-8", 2},
-			{"render wrapped lookup marker", false, fmt.Errorf("private diagnostic: %w", store.ErrInvalidAnchor), 500, string(djangoServerErrorBody), "text/html; charset=utf-8", 2},
+			{"render database error", false, &pgconn.PgError{Code: "08006", Message: "private database diagnostic"}, 500, string(nativeServerErrorBody), "text/html; charset=utf-8", 2},
+			{"render wrapped lookup marker", false, fmt.Errorf("private diagnostic: %w", store.ErrInvalidAnchor), 500, string(nativeServerErrorBody), "text/html; charset=utf-8", 2},
 			{"anchor not found", true, pgx.ErrNoRows, 404, `{"error":"Invalid anchor"}`, "application/json", 1},
 			{"anchor database error", true, &pgconn.PgError{Code: "08006", Message: "private anchor diagnostic"}, 500, `{"error":"Something went wrong please try again later"}`, "application/json", 1},
 		} {

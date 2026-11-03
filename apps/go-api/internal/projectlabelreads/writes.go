@@ -127,7 +127,7 @@ func (r *WriteRepository) Write(ctx context.Context, user, slug, project, id, me
 			return nil, Failure(500, "error", "Something went wrong please try again later")
 		}
 		if value, present := input.fields["name"]; present && value != nil {
-			duplicate, lookupErr := r.duplicate(ctx, &project, pythonScalarString(value), id, false)
+			duplicate, lookupErr := r.duplicate(ctx, &project, nativeScalarString(value), id, false)
 			if lookupErr != nil {
 				return nil, lookupErr
 			}

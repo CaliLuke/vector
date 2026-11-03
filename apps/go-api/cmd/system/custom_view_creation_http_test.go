@@ -72,7 +72,7 @@ func TestCustomViewCreationProductionMounts(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			policy, err := djangoRuntimeCORSPolicy([]string{"https://app.example.com"})
+			policy, err := nativeRuntimeCORSPolicy([]string{"https://app.example.com"})
 			if err != nil {
 				t.Fatal(err)
 			}

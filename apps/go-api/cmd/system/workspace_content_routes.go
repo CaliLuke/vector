@@ -93,7 +93,7 @@ func workspaceContentOptionsHandler(resource, name string, collection bool) http
 
 func mountWorkspaceQuickLinksRoutes(ctx context.Context, quickLinkEndpoints *workspacequicklinks.Endpoints, mux loomhttp.Muxer) {
 	if quickLinkEndpoints != nil {
-		server := workspacequicklinkssvr.New(quickLinkEndpoints, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
+		server := workspacequicklinkssvr.New(quickLinkEndpoints, mux, nativeRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 		server.Use(workspaceContentCompatibilityMiddleware("quick-links"))
 		workspacequicklinkssvr.Mount(mux, server)
 		mountWorkspaceContentProtocolRoutes(mux, "quick-links", "Workspace Quick Link", server.List, server.Retrieve)
@@ -105,7 +105,7 @@ func mountWorkspaceQuickLinksRoutes(ctx context.Context, quickLinkEndpoints *wor
 
 func mountWorkspaceThemesRoutes(ctx context.Context, themeEndpoints *workspacethemes.Endpoints, mux loomhttp.Muxer) {
 	if themeEndpoints != nil {
-		server := workspacethemesvr.New(themeEndpoints, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
+		server := workspacethemesvr.New(themeEndpoints, mux, nativeRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 		server.Use(workspaceContentCompatibilityMiddleware("workspace-themes"))
 		workspacethemesvr.Mount(mux, server)
 		mountWorkspaceContentProtocolRoutes(mux, "workspace-themes", "Workspace Theme", server.List, server.Retrieve)

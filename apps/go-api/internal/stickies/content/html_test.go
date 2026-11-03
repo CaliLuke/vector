@@ -8,7 +8,7 @@ import (
 	html "github.com/CaliLuke/go-plane/internal/htmlcompat"
 )
 
-func TestValidateHTMLMatchesDjangoCharacterization(t *testing.T) {
+func TestValidateHTMLMatchesNativeCharacterization(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

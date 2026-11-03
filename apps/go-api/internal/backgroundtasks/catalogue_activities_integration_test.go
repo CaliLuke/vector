@@ -8,9 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/bootstrap"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
-
 	"github.com/CaliLuke/selvedge"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -65,15 +62,10 @@ func openCatalogueActivityDatabase(t *testing.T) (string, *pgxpool.Pool) {
 	startMilestoneActivityRedis(t)
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	defer cancel()
-	pair, err := postgresfixture.StartUncloned(ctx, bootstrap.MigrateSchema)
+	databaseURL, pool := openBackgroundTaskClone(t, ctx)
+	_, err := pool.Exec(ctx, `CREATE SCHEMA plane_execution`)
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, pair.Close()) })
-	pool, err := pgxpool.New(ctx, pair.SeedURL())
-	require.NoError(t, err)
-	t.Cleanup(pool.Close)
-	_, err = pool.Exec(ctx, `CREATE SCHEMA plane_execution`)
-	require.NoError(t, err)
-	executionURL, err := withExecutionSearchPath(pair.SeedURL())
+	executionURL, err := withExecutionSearchPath(databaseURL)
 	require.NoError(t, err)
 	return executionURL, pool
 }

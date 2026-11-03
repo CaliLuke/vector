@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -392,7 +392,7 @@ func (r *Repository) collaborationDump(ctx context.Context, q Request, row map[s
 	} else if !q.API && kind == "issueReaction" {
 		children["actor_detail"] = orderedJSON(projected["actor_detail"], strings.Fields("id first_name last_name avatar avatar_url is_bot display_name"))
 	}
-	return pythoncompat.Dumps(projected, jsonOrder(keys, children))
+	return jsonvalue.Ordered(projected, jsonOrder(keys, children))
 }
 
 func orderedJSON(value any, keys []string) []byte {

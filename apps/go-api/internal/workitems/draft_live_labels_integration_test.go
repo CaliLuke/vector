@@ -7,11 +7,10 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 )
 
 func TestDraftProjectionUsesNativeDraftLabelOwnership(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
+	ctx, connection := suiteDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
 	repository := &draftOperation{db: connection}
 	cases := []struct {
 		id     string

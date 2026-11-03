@@ -278,7 +278,7 @@ func workItemProtocolMiddleware(
 		}
 		decision, err := authorizer.AuthorizeWorkItemProtocol(request.Context(), systemapi.WorkItemProtocolResource{
 			Method: request.Method, Pattern: protocol.pattern, Params: params,
-			APIKey: djangoJoinedHeader(request, "X-Api-Key"), SessionID: sessionID,
+			APIKey: nativeJoinedHeader(request, "X-Api-Key"), SessionID: sessionID,
 		})
 		if err != nil {
 			writeWorkItemProtocolError(response, request, err)
@@ -328,7 +328,7 @@ func workItemIdentifierResolver404Middleware(next http.Handler, activityOptions 
 	}
 	// CORS runs before Django's API-key audit middleware on both app and API
 	// paths. In particular, a preflight returns before any audit or auth work.
-	corsResolver404 := djangoProtocolCORSOptionsHandler(corsPolicy, []string{http.MethodGet}, corsPolicy.Handler(loomhttp.AsHandlerFunc(auditedResolver404)))
+	corsResolver404 := nativeProtocolCORSOptionsHandler(corsPolicy, []string{http.MethodGet}, corsPolicy.Handler(loomhttp.AsHandlerFunc(auditedResolver404)))
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		if workItemIdentifierHasEncodedSlash(request.URL) {
 			// Django resolves the decoded path before it invokes the identifier

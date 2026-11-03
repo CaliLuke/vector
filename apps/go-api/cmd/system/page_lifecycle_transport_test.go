@@ -49,7 +49,7 @@ func TestPageLifecycleGeneratedTransportsPreserveAuthenticationError(t *testing.
 
 func TestPageLifecycleProtocolKeepsWriteAllowsAndAuthenticatesOrdinaryOptions(t *testing.T) {
 	mux := loomhttp.NewMuxer()
-	cors, err := djangoRuntimeCORSPolicy([]string{"https://app.example.test"})
+	cors, err := nativeRuntimeCORSPolicy([]string{"https://app.example.test"})
 	if err != nil {
 		t.Fatal(err)
 	}

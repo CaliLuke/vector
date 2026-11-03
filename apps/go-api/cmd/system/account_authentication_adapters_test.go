@@ -21,34 +21,19 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func TestDjangoPasswordResetTokenIssuerMatchesDjangoTokenFormat(t *testing.T) {
-	// Django PasswordResetTokenGenerator in the pinned API image produced this
-	// token for SECRET_KEY=django-secret, _now=2026-10-21 12:34:56, and the user
-	// fields below. Its UID helper produced YWJj for the same primary key.
-	issuer, err := newDjangoPasswordResetTokenIssuer("django-secret")
-	if err != nil {
-		t.Fatal(err)
+func TestPasswordResetTokenUsesVersionedAccountBinding(t *testing.T) {
+	issuer, user, uid, token, _ := resetTokenFixture(t)
+	if !strings.HasPrefix(token, "v1.") {
+		t.Fatalf("missing native version: %s", token)
 	}
-	issuer.now = func() time.Time { return time.Date(2026, 10, 21, 12, 34, 56, 0, time.UTC) }
-	lastLogin := time.Date(2025, 1, 2, 3, 4, 5, 999_000_000, time.FixedZone("offset", 2*60*60))
-	user := store.User{ID: "abc", Email: "a@example.com", Password: "pbkdf2_sha256$1$salt$hash", LastLogin: &lastLogin}
-	uid, token, err := issuer.Issue(context.Background(), user)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if uid != "YWJj" {
-		t.Fatalf("uidb64 = %q, want YWJj", uid)
-	}
-	if token != "dgstm8-ae1467e6cad5dcde3f56602290912746" {
-		t.Fatalf("token = %q, want Django-compatible fixture", token)
-	}
-	valid, err := issuer.Verify(context.Background(), user, uid, token)
+	valid, err := issuer.Verify(t.Context(), user, uid, token)
 	if err != nil || !valid {
-		t.Fatalf("Django reset token did not verify: valid=%t err=%v", valid, err)
+		t.Fatalf("issued token failed: %v", err)
 	}
-	valid, err = issuer.Verify(context.Background(), user, uid, token+"0")
+	issuer.secret = "rotated-secret"
+	valid, err = issuer.Verify(t.Context(), user, uid, token)
 	if err != nil || valid {
-		t.Fatalf("tampered reset token verified: valid=%t err=%v", valid, err)
+		t.Fatalf("old signing key remained valid: %v", err)
 	}
 }
 

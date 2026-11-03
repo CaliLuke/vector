@@ -12,7 +12,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/google/uuid"
@@ -217,7 +217,7 @@ func (r *Repository) createIntake(ctx context.Context, q Request, body io.Reader
 	if err != nil {
 		return Result{}, err
 	}
-	requested, err := pythoncompat.Dumps(input.Fields, input.Raw)
+	requested, err := jsonvalue.Ordered(input.Fields, input.Raw)
 	if err != nil {
 		return Result{}, err
 	}
@@ -576,7 +576,7 @@ func (r *Repository) prepareIntakeIssueEdit(ctx context.Context, q Request, proj
 		}
 		var rawFields map[string]json.RawMessage
 		_ = json.Unmarshal(input.Raw, &rawFields)
-		requested, err = pythoncompat.Dumps(data, rawFields["issue"])
+		requested, err = jsonvalue.Ordered(data, rawFields["issue"])
 		if role != nil && *role <= 5 {
 			requested, err = orderedDump(data, []string{"name", "description_html", "description_json"})
 		}
@@ -662,7 +662,7 @@ func dumpIntakeSnapshot(value map[string]any, api bool) (string, error) {
 	}
 	stateOrder := jsonOrder([]string{"id", "name", "color", "group"}, nil)
 	childOrder := jsonOrder(issueOrder, map[string][]byte{"state": stateOrder})
-	return pythoncompat.Dumps(value, jsonOrder(order, map[string][]byte{nested: childOrder}))
+	return jsonvalue.Ordered(value, jsonOrder(order, map[string][]byte{nested: childOrder}))
 }
 
 func (r *Repository) validateIntake(ctx context.Context, q Request, row map[string]any, input requestinput.Input) (map[string]any, error) {

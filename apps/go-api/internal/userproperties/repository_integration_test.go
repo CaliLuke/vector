@@ -14,7 +14,6 @@ import (
 	"uuid"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -29,7 +28,7 @@ const (
 	otherUserID    = "00000000-0000-4000-8000-000000000107"
 )
 
-func TestRepositoryFirstAccessAndRepeatUseDjangoDefaultsForEveryKind(t *testing.T) {
+func TestRepositoryFirstAccessAndRepeatUseNativeDefaultsForEveryKind(t *testing.T) {
 	ctx := context.Background()
 	pool := propertyTestDB(t, ctx)
 	repository, err := NewRepository(pool)
@@ -265,7 +264,7 @@ func propertyFields(t *testing.T, body json.RawMessage) map[string]any {
 
 func propertyTestDB(t *testing.T, ctx context.Context) *pgxpool.Pool {
 	t.Helper()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, databaseURL string) error {
 		connection, err := pgx.Connect(ctx, databaseURL)
 		if err != nil {
 			return err
@@ -310,15 +309,8 @@ CREATE TABLE module_user_properties (
 CREATE UNIQUE INDEX module_user_properties_active_unique ON module_user_properties(module_id,user_id) WHERE deleted_at IS NULL;`)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if closeErr := pair.Close(); closeErr != nil {
-			t.Errorf("close postgres test container: %v", closeErr)
-		}
-	})
-	pool, err := pgxpool.New(ctx, pair.SeedURL())
+
+	pool, err := pgxpool.New(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

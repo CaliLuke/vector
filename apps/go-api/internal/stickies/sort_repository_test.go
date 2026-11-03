@@ -16,7 +16,7 @@ func (function transactionStarterFunc) Begin(ctx context.Context) (pgx.Tx, error
 	return function(ctx)
 }
 
-func TestNextSortOrderMatchesDjangoSequence(t *testing.T) {
+func TestNextSortOrderMatchesNativeSequence(t *testing.T) {
 	tests := []struct {
 		name    string
 		largest pgtype.Float8

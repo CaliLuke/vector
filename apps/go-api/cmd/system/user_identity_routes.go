@@ -17,7 +17,7 @@ import (
 )
 
 func userIdentityCompatibilityMiddleware(next http.Handler) http.Handler {
-	return djangoProtocolCompatibilityMiddleware(func(path string) string {
+	return nativeProtocolCompatibilityMiddleware(func(path string) string {
 		if path == "/api/users/me/" {
 			return "GET, PATCH, DELETE, HEAD, OPTIONS"
 		}
@@ -74,9 +74,9 @@ func userMeReadCompatibilityMiddleware(
 					writePublicProjectMetadataRequestTooLarge(response, request, sessionCookie, sessions)
 				} else {
 					headers.Set("Content-Type", "application/json")
-					headers.Set("Content-Length", strconv.Itoa(len(djangoRequestTooLargeBody)))
+					headers.Set("Content-Length", strconv.Itoa(len(nativeRequestTooLargeBody)))
 					response.WriteHeader(http.StatusRequestEntityTooLarge)
-					_, _ = response.Write(djangoRequestTooLargeBody)
+					_, _ = response.Write(nativeRequestTooLargeBody)
 				}
 				return
 			}
@@ -92,15 +92,15 @@ func userMeReadCompatibilityMiddleware(
 					}
 				}
 				headers.Set("Content-Type", "text/html; charset=utf-8")
-				headers.Set("Content-Length", strconv.Itoa(len(djangoServerErrorBody)))
+				headers.Set("Content-Length", strconv.Itoa(len(nativeServerErrorBody)))
 				response.WriteHeader(http.StatusInternalServerError)
-				_, _ = response.Write(djangoServerErrorBody)
+				_, _ = response.Write(nativeServerErrorBody)
 				return
 			}
 
 			writer := &publicProjectMetadataReadsResponseWriter{
 				ResponseWriter: response,
-				acceptsGzip:    acceptsGzipEncoding(djangoJoinedHeader(request, "Accept-Encoding")),
+				acceptsGzip:    acceptsGzipEncoding(nativeJoinedHeader(request, "Accept-Encoding")),
 				appendGzipVary: true,
 				skipCookieVary: true,
 			}
@@ -162,7 +162,7 @@ func userMeReadCompatibilityMiddleware(
 				writer.finish()
 			}()
 
-			formats, queryErr := djangoQueryValues(readServicesOriginalRawQuery(request), "format")
+			formats, queryErr := nativeQueryValues(readServicesOriginalRawQuery(request), "format")
 			if queryErr != nil {
 				inspectSessionAfterResponse = true
 				writeStickyJSON(writer, http.StatusInternalServerError, map[string]string{
@@ -178,15 +178,9 @@ func userMeReadCompatibilityMiddleware(
 					return
 				}
 			}
-			accept, acceptPresent := djangoRequestAcceptHeader(request)
-			acceptsJSON, jsonIndent, negotiationErr := projectMembershipReadsJSONNegotiation(accept, acceptPresent)
-			if negotiationErr != nil {
-				inspectSessionAfterResponse = true
-				writeStickyJSON(writer, http.StatusInternalServerError, map[string]string{
-					"error": "Something went wrong please try again later",
-				})
-				return
-			}
+			accept, acceptPresent := nativeRequestAcceptHeader(request)
+			acceptsJSON, jsonIndent := projectMembershipReadsJSONNegotiation(accept, acceptPresent)
+
 			if !acceptsJSON {
 				inspectSessionAfterResponse = true
 				writeStickyJSON(writer, http.StatusNotAcceptable, map[string]string{
@@ -225,15 +219,15 @@ func userMeReadCompatibilityMiddleware(
 }
 
 func userIdentityOptionsHandler(name string, patch bool) http.Handler {
-	return djangoProtocolOptionsHandler(userIdentityCompatibilityMiddleware, name, patch)
+	return nativeProtocolOptionsHandler(userIdentityCompatibilityMiddleware, name, patch)
 }
 
 func mountUserInstanceAdminRoutes(ctx context.Context, userInstanceAdminEndpoints *userinstanceadmin.Endpoints, mux loomhttp.Muxer) {
 	if userInstanceAdminEndpoints != nil {
 		userInstanceAdminServer := userinstanceadminsvr.New(userInstanceAdminEndpoints, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
-		userInstanceAdminServer.Use(djangoJSONCompatibilityMiddleware)
+		userInstanceAdminServer.Use(nativeJSONCompatibilityMiddleware)
 		userinstanceadminsvr.Mount(mux, userInstanceAdminServer)
-		mountProtocolHandler(mux, "HEAD", "/api/users/me/instance-admin/", djangoJSONHeadHandler(userInstanceAdminServer.Retrieve))
+		mountProtocolHandler(mux, "HEAD", "/api/users/me/instance-admin/", nativeJSONHeadHandler(userInstanceAdminServer.Retrieve))
 		mountProtocolHandler(mux, "OPTIONS", "/api/users/me/instance-admin/", http.HandlerFunc(workspaceSlugOptionsHandler))
 		for _, mount := range userInstanceAdminServer.Mounts {
 			logHTTPRouteMount(ctx, "user_instance_admin", mount.Method, mount.Verb, mount.Pattern)
@@ -247,7 +241,7 @@ func mountUserIdentityRoutes(pending pendingReplacementEndpoints, mux loomhttp.M
 		if !pending.userIdentityBodySet {
 			bodySizeLimit = defaultFileSizeLimit
 		}
-		server := useridentitysvr.New(pending.userIdentity, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
+		server := useridentitysvr.New(pending.userIdentity, mux, nativeRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 		server.Use(userIdentityCompatibilityMiddleware)
 		server.Me = userMeCacheControlMiddleware(server.Me)
 		server.Me = userMeReadCompatibilityMiddleware(
@@ -259,13 +253,13 @@ func mountUserIdentityRoutes(pending pendingReplacementEndpoints, mux loomhttp.M
 			pending.userIdentitySecret,
 		)(server.Me)
 		useridentitysvr.Mount(mux, server)
-		mountProtocolHandler(mux, http.MethodHead, "/api/users/session/", djangoProtocolHeadHandler(userIdentityCompatibilityMiddleware, server.Session))
+		mountProtocolHandler(mux, http.MethodHead, "/api/users/session/", nativeProtocolHeadHandler(userIdentityCompatibilityMiddleware, server.Session))
 		loomhttp.MountDerivedHead(mux, "/api/users/me/", userIdentityCompatibilityMiddleware(loomhttp.AsHandlerFunc(server.Me)))
-		mountProtocolHandler(mux, http.MethodHead, "/api/users/me/profile/", djangoProtocolHeadHandler(userIdentityCompatibilityMiddleware, server.Profile))
+		mountProtocolHandler(mux, http.MethodHead, "/api/users/me/profile/", nativeProtocolHeadHandler(userIdentityCompatibilityMiddleware, server.Profile))
 		mountProtocolHandler(mux, http.MethodOptions, "/api/users/session/", userIdentityOptionsHandler("User Session Endpoint", false))
 		if pending.userAccountWrites == nil {
 			//loom:vet ignore route-outside-design -- Django OPTIONS metadata stays on the identity service only when the account-write service is absent.
-			loomhttp.MountHandler(mux, http.MethodOptions, "/api/users/me/", djangoProtocolOptionsWithoutActionsHandler(userIdentityCompatibilityMiddleware, "User Endpoint"))
+			loomhttp.MountHandler(mux, http.MethodOptions, "/api/users/me/", nativeProtocolOptionsWithoutActionsHandler(userIdentityCompatibilityMiddleware, "User Endpoint"))
 		}
 		mountProtocolHandler(mux, http.MethodOptions, "/api/users/me/profile/", userIdentityOptionsHandler("Profile Endpoint", true))
 	}

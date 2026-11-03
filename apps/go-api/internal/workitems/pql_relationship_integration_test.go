@@ -10,12 +10,11 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/stretchr/testify/require"
 )
 
 func TestAPIPQLRelationshipsUseOwnedLiveTargetsBeforeCounting(t *testing.T) {
-	ctx, db := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed+pqlReadSeed+pqlRelationshipSeed)
+	ctx, db := suiteDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed+pqlReadSeed+pqlRelationshipSeed)
 	repo, err := NewRepository(db, modelPublisher{}, "https://example.test")
 	require.NoError(t, err)
 	repo.now = func() time.Time { return time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC) }

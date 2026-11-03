@@ -26,7 +26,7 @@ func workspaceSlugCompatibilityMiddleware(next http.Handler) http.Handler {
 			query.Set("slug", values[len(values)-1])
 			request.URL.RawQuery = query.Encode()
 		}
-		djangoJSONCompatibilityMiddleware(next).ServeHTTP(response, request)
+		nativeJSONCompatibilityMiddleware(next).ServeHTTP(response, request)
 	})
 }
 

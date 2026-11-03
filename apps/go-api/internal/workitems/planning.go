@@ -9,7 +9,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 )
@@ -160,7 +160,7 @@ func (r *Repository) publishPlanningCreation(ctx context.Context, q Request, kin
 	var err error
 	raw := input.Fields["issues"]
 	if !q.API && kind == "module" {
-		requested, _ := pythoncompat.Dumps(map[string]any{"module_id": q.Params["module_id"]}, nil)
+		requested, _ := jsonvalue.Ordered(map[string]any{"module_id": q.Params["module_id"]}, nil)
 		for _, id := range selected {
 			local := q
 			local.IssueID = id
@@ -179,7 +179,7 @@ func (r *Repository) publishPlanningCreation(ctx context.Context, q Request, kin
 		}
 		var requested string
 		if kind == "cycle" {
-			requested, err = pythoncompat.Dumps(map[string]any{"cycles_list": raw}, input.Raw)
+			requested, err = jsonvalue.Ordered(map[string]any{"cycles_list": raw}, input.Raw)
 		} else {
 			names := []string{}
 			for i, id := range selected {
@@ -189,7 +189,7 @@ func (r *Repository) publishPlanningCreation(ctx context.Context, q Request, kin
 				}
 				names = append(names, "UUID('"+id+"')")
 			}
-			requested, err = pythoncompat.Dumps(map[string]any{"modules_list": "<SoftDeletionQuerySet [" + strings.Join(names, ", ") + "]>"}, nil)
+			requested, err = jsonvalue.Ordered(map[string]any{"modules_list": "<SoftDeletionQuerySet [" + strings.Join(names, ", ") + "]>"}, nil)
 		}
 		if err != nil {
 			return err
@@ -272,8 +272,8 @@ func serializePlanningRecords(kind string, rows []map[string]any) (string, error
 		if err != nil {
 			return "", err
 		}
-		model, _ := pythoncompat.Dumps("db."+kind+"issue", nil)
-		id, _ := pythoncompat.Dumps(row["id"], nil)
+		model, _ := jsonvalue.Ordered("db."+kind+"issue", nil)
+		id, _ := jsonvalue.Ordered(row["id"], nil)
 		results = append(results, `{"model": `+model+`, "pk": `+id+`, "fields": `+data+`}`)
 	}
 	return "[" + strings.Join(results, ", ") + "]", nil
@@ -287,7 +287,7 @@ func planningCurrent(kind string, updated []any, created any) (string, error) {
 		}
 		serialized = append(serialized, data)
 	}
-	data, err := pythoncompat.Dumps(created, nil)
+	data, err := jsonvalue.Ordered(created, nil)
 	if err != nil {
 		return "", err
 	}
@@ -323,7 +323,7 @@ func (r *Repository) removePlanning(ctx context.Context, q Request, kind string,
 		if len(rows) > 0 {
 			name = rows[0]["container_name"]
 		}
-		previous, _ = pythoncompat.Dumps(map[string]any{"module_name": name}, nil)
+		previous, _ = jsonvalue.Ordered(map[string]any{"module_name": name}, nil)
 	}
 	data, _ := orderedDump(requested, keys)
 	if err = r.activity(ctx, q, kind+".activity.deleted", data, previous, q.API); err != nil {
@@ -395,7 +395,7 @@ func (r *Repository) issueModules(ctx context.Context, q Request, input requesti
 		return Result{}, err
 	}
 	for _, id := range modules {
-		requested, _ := pythoncompat.Dumps(map[string]any{"module_id": id}, nil)
+		requested, _ := jsonvalue.Ordered(map[string]any{"module_id": id}, nil)
 		if err = r.activity(ctx, q, "module.activity.created", requested, nil, false); err != nil {
 			return Result{}, err
 		}

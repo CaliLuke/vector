@@ -897,11 +897,7 @@ var ImportedRestFrameworkSerializersPaginatedissuelinkresponseResponse = Type("R
 })
 
 var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
-	Description("Plane API token authentication.")
-})
-
-var ImportedPlaneAdminSessionCookieSecurity = APIKeySecurity("PlaneAdminSessionCookie", func() {
-	Description("Plane instance-administration session authentication without CSRF enforcement.")
+	Description("Vector API token authentication.")
 })
 
 var ImportedPlaneSessionCookieSecurity = APIKeySecurity("PlaneSessionCookie", func() {
@@ -3444,7 +3440,7 @@ var _ = Service("TicketCollaboration", func() {
 })
 
 // The source payloads accept JSON, form and multipart bodies. Their imported
-// raw request streams preserve parser precedence and Django field coercions.
+// raw request streams preserve parser precedence and shared native input validation.
 var PlaneSession = SessionAuth("PlaneSession", func() {
 	CookieTransport(ImportedPlaneSessionCookieSecurity, "", func() { CookieName("session-id") })
 })

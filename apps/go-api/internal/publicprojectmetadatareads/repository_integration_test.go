@@ -14,13 +14,12 @@ import (
 	"uuid"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
 func TestRepositoryMatchesPublicProjectMetadataQueries(t *testing.T) {
 	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, databaseURL string) error {
 		connection, err := pgx.Connect(ctx, databaseURL)
 		if err != nil {
 			return err
@@ -131,11 +130,8 @@ INSERT INTO sessions VALUES ('invalid-auth-hash-session');
 `)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testsupport.Close(t, pair)
-	connection, err := pgx.Connect(ctx, pair.SeedURL())
+
+	connection, err := pgx.Connect(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -270,20 +266,15 @@ INSERT INTO deploy_boards VALUES (
 	if unmarshalErr := json.Unmarshal(statesData, &states); unmarshalErr != nil || len(states) != 6 || states[0].Name != "Signed Zero" || states[5].Name != "Far Future" {
 		t.Fatalf("states=%s err=%v", statesData, unmarshalErr)
 	}
-	if !bytes.Contains(statesData, []byte(`"sequence":-0.0`)) {
-		t.Fatalf("states do not preserve Django signed-zero JSON: %s", statesData)
+	var stateValues []struct {
+		Sequence float64 `json:"sequence"`
 	}
-	if !bytes.Contains(statesData, []byte(`"sequence":100.0`)) {
-		t.Fatalf("states do not preserve Django whole-float JSON: %s", statesData)
-	}
-	if !bytes.Contains(statesData, []byte(`"sequence":1000000000000000.0`)) ||
-		!bytes.Contains(statesData, []byte(`"sequence":1234000000000000.0`)) {
-		t.Fatalf("states do not preserve Django fixed-float boundary JSON: %s", statesData)
-	}
-	if !bytes.Contains(statesData, []byte(`"sequence":1e+16`)) ||
-		!bytes.Contains(statesData, []byte(`"sequence":1e+20`)) {
-		t.Fatalf("states do not preserve Django exponent-float JSON: %s", statesData)
-	}
+	require.NoError(t, json.Unmarshal(statesData, &stateValues))
+	require.Equal(t, []float64{0, 100, 1e15, 1.234e15, 1e16, 1e20}, []float64{
+		stateValues[0].Sequence, stateValues[1].Sequence, stateValues[2].Sequence,
+		stateValues[3].Sequence, stateValues[4].Sequence, stateValues[5].Sequence,
+	})
+
 	workspaceLabelsData, err := repository.Labels(ctx, "workspace-anchor")
 	if err != nil {
 		t.Fatal(err)

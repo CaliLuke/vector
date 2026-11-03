@@ -2,7 +2,7 @@ package content
 
 import "testing"
 
-func TestStripTagsMatchesDjangoCharacterization(t *testing.T) {
+func TestStripTagsMatchesNativeCharacterization(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

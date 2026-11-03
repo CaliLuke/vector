@@ -6,14 +6,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -32,7 +30,7 @@ const (
 func startWorkspaceUserInsightsDB(t *testing.T) (*pgx.Conn, context.Context) {
 	t.Helper()
 	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, databaseURL string) error {
 		connection, err := pgx.Connect(ctx, databaseURL)
 		if err != nil {
 			return err
@@ -105,15 +103,8 @@ INSERT INTO issue_activities(id,created_at,updated_at,workspace_id,project_id,is
 `)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if closeErr := pair.Close(); closeErr != nil {
-			t.Errorf("close PostgreSQL testcontainer: %v", closeErr)
-		}
-	})
-	connection, err := pgx.Connect(ctx, pair.SeedURL())
+
+	connection, err := pgx.Connect(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -169,9 +160,8 @@ func TestWorkspaceAuthorizationAndActivityQueryUseSourceScopeAndCTEAliases(t *te
 			t.Errorf("activity exposed database column field %q instead of Django relation field: %s", field, body)
 		}
 	}
-	if !strings.Contains(string(body), `"sort_order" : 2.0`) {
-		t.Errorf("activity issue sort_order should preserve the serializer's floating numeric representation: %s", body)
-	}
+	issueDetail := response.Results[0]["issue_detail"].(map[string]any)
+	require.Equal(t, float64(2), issueDetail["sort_order"])
 
 	profile, err := repository.Profile(ctx, insightsRequesterID, "demo", insightsTargetID)
 	if err != nil {
@@ -194,4 +184,18 @@ func TestWorkspaceAuthorizationAndActivityQueryUseSourceScopeAndCTEAliases(t *te
 	if !errors.As(err, &httpError) || httpError.Status != 400 {
 		t.Fatalf("per_page=0 error = %#v, want source-approved HTTP 400", err)
 	}
+}
+
+func TestRevokedWorkspaceMembershipCannotReadUserInsights(t *testing.T) {
+	db, ctx := startWorkspaceUserInsightsDB(t)
+	repo, err := NewRepository(db)
+	require.NoError(t, err)
+	_, err = db.Exec(ctx, `UPDATE workspace_members SET is_active=false WHERE member_id=$1`, insightsRequesterID)
+	require.NoError(t, err)
+	profile, err := repo.Profile(ctx, insightsRequesterID, "demo", insightsTargetID)
+	require.ErrorIs(t, err, ErrNotFound)
+	require.Empty(t, profile)
+	activity, err := repo.Activity(ctx, insightsRequesterID, "demo", insightsTargetID, nil, activityPageQuery())
+	require.ErrorIs(t, err, ErrForbidden)
+	require.Empty(t, activity)
 }

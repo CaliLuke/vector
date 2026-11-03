@@ -2662,7 +2662,7 @@
     "securitySchemes": {
       "PlaneSessionCookie": {
         "type": "apiKey",
-        "description": "Plane session cookie authentication.",
+        "description": "Vector browser session cookie authentication.",
         "name": "session-id",
         "in": "cookie"
       }

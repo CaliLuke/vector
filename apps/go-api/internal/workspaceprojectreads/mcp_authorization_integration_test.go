@@ -9,7 +9,6 @@ import (
 	"testing"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
@@ -80,7 +79,7 @@ func TestProjectReadsRecheckAuthorizationInDataSnapshot(t *testing.T) {
 				{"account inactive", `UPDATE users SET is_active=false`},
 			} {
 				t.Run(scenario.name, func(t *testing.T) {
-					ctx, db := postgres.OpenSQL(t, projectReadSchema)
+					ctx, db := projectDatabases.OpenSQL(t, projectReadSchema)
 					reader, err := workspaceprojectreads.NewRepository(db)
 					require.NoError(t, err)
 					before, err := read(ctx, reader)
@@ -103,7 +102,7 @@ func TestProjectReadsRecheckAuthorizationInDataSnapshot(t *testing.T) {
 func TestProjectReadsKeepPrivateProjectMembershipCurrent(t *testing.T) {
 	for name, read := range projectReadOperations() {
 		t.Run(name, func(t *testing.T) {
-			ctx, db := postgres.OpenSQL(t, projectReadSchema+`
+			ctx, db := projectDatabases.OpenSQL(t, projectReadSchema+`
 UPDATE projects SET network=0;
 INSERT INTO project_members(project_id,workspace_id,member_id,is_active,role,created_at) VALUES('30000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001',true,15,now());`)
 			reader, err := workspaceprojectreads.NewRepository(db)
@@ -151,7 +150,7 @@ func TestProjectReadsRejectReassignedWorkspaceSlug(t *testing.T) {
 	}
 	for name, read := range reads {
 		t.Run(name, func(t *testing.T) {
-			ctx, db := postgres.OpenSQL(t, projectReadSchema+`
+			ctx, db := projectDatabases.OpenSQL(t, projectReadSchema+`
 INSERT INTO workspaces VALUES('20000000-0000-4000-8000-000000000002','other',NULL);
 INSERT INTO workspace_members VALUES('20000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000001',15,true,NULL,now());
 INSERT INTO projects(id,workspace_id,name,identifier,created_at,network) VALUES('30000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000002','Different workspace project','OTHER',now(),2);`)
@@ -168,7 +167,7 @@ INSERT INTO projects(id,workspace_id,name,identifier,created_at,network) VALUES(
 func TestProjectCollectionsOrderBySupportedNetworkField(t *testing.T) {
 	for _, lite := range []bool{false, true} {
 		t.Run(fmt.Sprint(lite), func(t *testing.T) {
-			ctx, db := postgres.OpenSQL(t, projectReadSchema+`
+			ctx, db := projectDatabases.OpenSQL(t, projectReadSchema+`
 INSERT INTO projects(id,workspace_id,name,identifier,network,created_at) VALUES('30000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000001','Private project','PRIVATE',0,now());
 INSERT INTO project_members(project_id,workspace_id,member_id,is_active,role,created_at) VALUES('30000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001',true,15,now());`)
 			reader, err := workspaceprojectreads.NewRepository(db)

@@ -55,7 +55,7 @@ func TestGetBuildsActiveMemberShapeAndDraftCount(t *testing.T) {
 	}
 }
 
-func TestGetReturnsDjangoNullInstanceShapeWhenWorkspaceIsMissing(t *testing.T) {
+func TestGetReturnsNativeNullInstanceShapeWhenWorkspaceIsMissing(t *testing.T) {
 	database := &memberMeDB{row: memberMeRow(func(...any) error { return pgx.ErrNoRows })}
 	repository, constructorErr := NewRepository(database)
 	require.NoError(t, constructorErr)

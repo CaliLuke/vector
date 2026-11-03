@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 
 	"uuid"
 
@@ -95,7 +95,7 @@ func (s *workspaceQuickLinksService) Create(ctx context.Context, payload *api.Cr
 		return nil, &api.WorkspaceQuickLinkValidation{Metadata: []string{"This field may not be null."}}
 	}
 	if len(payload.Metadata) > 0 {
-		metadata, err = pythoncompat.NormalizeJSONNumbers(payload.Metadata)
+		metadata, err = jsonvalue.Validate(payload.Metadata)
 		if err != nil {
 			return nil, &api.WorkspaceQuickLinkValidation{Metadata: []string{"Value must be valid JSON."}}
 		}
@@ -152,7 +152,7 @@ func (s *workspaceQuickLinksService) Patch(ctx context.Context, payload *api.Pat
 		return nil, &api.WorkspaceQuickLinkValidation{Metadata: []string{"This field may not be null."}}
 	}
 	if len(payload.Metadata) > 0 {
-		metadata, err = pythoncompat.NormalizeJSONNumbers(payload.Metadata)
+		metadata, err = jsonvalue.Validate(payload.Metadata)
 		if err != nil {
 			if _, lookupErr := s.repository.Get(ctx, userID, payload.Slug, linkID); lookupErr != nil {
 				if errors.Is(lookupErr, store.ErrNotFound) {

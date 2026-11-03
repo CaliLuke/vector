@@ -9,7 +9,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_themes"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	store "github.com/CaliLuke/go-plane/internal/workspacethemes"
 	"github.com/CaliLuke/loom/security"
 )
@@ -85,7 +85,7 @@ func (s *workspaceThemesService) Create(ctx context.Context, p *api.CreatePayloa
 		return nil, &api.WorkspaceThemeInvalid{Colors: []string{"This field may not be null."}}
 	}
 	if len(p.Colors) > 0 {
-		colors, e = pythoncompat.NormalizeJSONNumbers(p.Colors)
+		colors, e = jsonvalue.Validate(p.Colors)
 		if e != nil {
 			return nil, &api.WorkspaceThemeInvalid{Colors: []string{"Value must be valid JSON."}}
 		}
@@ -141,7 +141,7 @@ func (s *workspaceThemesService) Patch(ctx context.Context, p *api.PatchPayload)
 	}
 	var colorsJSON json.RawMessage
 	if colorsOK {
-		colorsJSON, err = pythoncompat.NormalizeJSONNumbers(colors)
+		colorsJSON, err = jsonvalue.Validate(colors)
 		if err != nil {
 			if _, lookupErr := s.repo.Get(ctx, id, p.Slug, themeID); lookupErr != nil {
 				if errors.Is(lookupErr, store.ErrNotFound) {

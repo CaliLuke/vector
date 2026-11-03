@@ -240,9 +240,8 @@ func TestBinaryFixturesContractCases(t *testing.T) {
 		fixture := readContentFixture(t, "binary-valid-boundaries.json")
 		result := nestedMap(t, fixture, "result")
 		inputs := map[string]string{
-			"minimum_four_decoded_bytes":        base64.StdEncoding.EncodeToString([]byte("ABCD")),
-			"maximum_ten_mib_decoded_bytes":     base64.StdEncoding.EncodeToString(make([]byte, MaxContentBytes)),
-			"base64_trailing_non_alphabet_junk": base64.StdEncoding.EncodeToString([]byte("ABCD")) + " !!!",
+			"minimum_four_decoded_bytes":    base64.StdEncoding.EncodeToString([]byte("ABCD")),
+			"maximum_ten_mib_decoded_bytes": base64.StdEncoding.EncodeToString(make([]byte, MaxContentBytes)),
 		}
 		for name, input := range inputs {
 			if _, ok := result[name]; !ok {

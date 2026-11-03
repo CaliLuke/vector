@@ -303,7 +303,7 @@ components:
     securitySchemes:
         PlaneSessionCookie:
             type: apiKey
-            description: Plane application session cookie authentication.
+            description: Vector browser session cookie authentication.
             name: session-id
             in: cookie
 tags:

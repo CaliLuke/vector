@@ -177,7 +177,7 @@ func newProjectLabelWriteTestMux(t *testing.T, repository *labelWriteHTTPReposit
 	if err != nil {
 		t.Fatal(err)
 	}
-	policy, err := djangoRuntimeCORSPolicy(nil)
+	policy, err := nativeRuntimeCORSPolicy(nil)
 	if err != nil {
 		t.Fatal(err)
 	}

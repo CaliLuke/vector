@@ -15,7 +15,7 @@ import (
 	"github.com/CaliLuke/loom/security"
 )
 
-// Serves the Django API v1 Sticky contract.
+// Serves the Vector API v1 Sticky contract.
 type Service interface {
 	// List implements list.
 	// If body implements [io.WriterTo], that implementation will be used instead.

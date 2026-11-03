@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func resetTokenFixture(t *testing.T) (*djangoPasswordResetTokenIssuer, store.User, string, string, time.Time) {
+func resetTokenFixture(t *testing.T) (*passwordResetTokenIssuer, store.User, string, string, time.Time) {
 	t.Helper()
 	issuedAt := time.Date(2026, 10, 21, 12, 34, 56, 0, time.UTC)
-	issuer, err := newDjangoPasswordResetTokenIssuer("token-validation-test-secret")
+	issuer, err := newPasswordResetTokenIssuer("token-validation-test-secret")
 	require.NoError(t, err)
 	issuer.now = func() time.Time { return issuedAt }
 	lastLogin := issuedAt.Add(-time.Hour)
@@ -24,18 +24,18 @@ func resetTokenFixture(t *testing.T) (*djangoPasswordResetTokenIssuer, store.Use
 
 func TestPasswordResetRejectsMalformedTokensWithoutOperationalFailure(t *testing.T) {
 	issuer, user, uid, token, _ := resetTokenFixture(t)
-	timestamp, signature, ok := strings.Cut(token, "-")
+	timestamp, signature, ok := strings.Cut(strings.TrimPrefix(token, "v1."), ".")
 	require.True(t, ok)
 	for _, scenario := range []struct{ name, uid, token string }{
 		{"malformed user encoding", "%%%", token},
 		{"different user", "ZGlmZmVyZW50", token},
 		{"missing signature", uid, timestamp},
-		{"invalid timestamp", uid, "!" + "-" + signature},
-		{"overflowing timestamp", uid, strings.Repeat("z", 30) + "-" + signature},
-		{"negative timestamp", uid, "-1-" + signature},
-		{"short signature", uid, timestamp + "-" + signature[:31]},
-		{"modified signature", uid, timestamp + "-" + strings.Repeat("!", 32)},
-		{"extra segment", uid, token + "-extra"},
+		{"invalid timestamp", uid, "v1.!." + signature},
+		{"overflowing timestamp", uid, "v1." + strings.Repeat("9", 30) + "." + signature},
+		{"negative timestamp", uid, "v1.-1." + signature},
+		{"short signature", uid, "v1." + timestamp + "." + signature[:31]},
+		{"modified signature", uid, "v1." + timestamp + "." + strings.Repeat("!", 32)},
+		{"extra segment", uid, token + ".extra"},
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
 			valid, err := issuer.Verify(t.Context(), user, scenario.uid, scenario.token)

@@ -21,7 +21,7 @@ type httpRouteMiddleware struct {
 func buildHTTPMiddleware(ctx context.Context, dbg, stickyEnabled bool, pending pendingReplacementEndpoints, mux loomhttp.Muxer, readServicesCORSPolicy loomhttp.RuntimeCORSPolicy, routes httpRouteMiddleware) http.Handler {
 	var handler http.Handler = http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		request = captureReadServicesOriginalRawQuery(request)
-		request = normalizeReadServiceScalarQueryValues(normalizeDjangoTolerantQuery(request))
+		request = normalizeReadServiceScalarQueryValues(normalizeNativeTolerantQuery(request))
 		mux.ServeHTTP(response, request)
 	})
 	if routes.activity != nil {
@@ -45,7 +45,7 @@ func buildHTTPMiddleware(ctx context.Context, dbg, stickyEnabled bool, pending p
 	}
 	handler = readServicesCompatibilityMiddleware(handler)
 	if pending.hasReadServices() {
-		handler = readServicesDjangoPathConverterMiddleware(readServicesCORSPolicy, routes.activityOptions)(handler)
+		handler = readServicesNativePathConverterMiddleware(readServicesCORSPolicy, routes.activityOptions)(handler)
 	}
 	if routes.activityOptions != nil || pending.notifications != nil || pending.notificationActions != nil || pending.projectLabelWrites != nil || pending.userAccountWrites != nil || pending.workspaceLifecycle != nil || pending.workspaceExports != nil || pending.personalDashboard != nil || pending.workItemHistory != nil || pending.workspaceAnalytics != nil || pending.workspaceSearch != nil || pending.externalIntegrations != nil || pending.projectMemberPreferences != nil || pending.projectIntakeWrites != nil || pending.projectConfiguration != nil || pending.customViewCreation != nil || pending.workspaceWebhooks != nil || pending.instanceManagement != nil {
 		ordinary := activityReadsSessionFinalizationMiddleware(pending.readServicesSession, pending.readServicesCookie)(handler)
@@ -65,7 +65,7 @@ func buildHTTPMiddleware(ctx context.Context, dbg, stickyEnabled bool, pending p
 		handler = workItemIdentifierResolver404Middleware(handler, routes.activityOptions, readServicesCORSPolicy)
 	}
 	handler = csrfTokenCORSPreflightMiddleware(handler)
-	handler = djangoCORSRequestCompatibilityMiddleware(handler)
+	handler = nativeCORSRequestCompatibilityMiddleware(handler)
 	if stickyEnabled {
 		handler = stickyFrontendTrailingSlashMiddleware(handler)
 	}
@@ -77,7 +77,7 @@ func buildHTTPMiddleware(ctx context.Context, dbg, stickyEnabled bool, pending p
 		ctx, log.WithDisableRequestID(), log.WithPathFilter(publicMetadataCompatibilityPathPattern),
 	)(handler)
 	if pending.authRedirects != nil || pending.oauthRedirects != nil || pending.instanceManagement != nil {
-		handler = djangoPlainViewCSRFMiddleware(pending.accountAuthenticationCSRFTrustedOrigins, pending.activityReadsBodyLimit)(handler)
+		handler = nativePlainViewCSRFMiddleware(pending.accountAuthenticationCSRFTrustedOrigins, pending.activityReadsBodyLimit)(handler)
 	}
 	if routes.publicMetadata != nil {
 		// Keep compatibility responses outside the ordinary request logger. Exact

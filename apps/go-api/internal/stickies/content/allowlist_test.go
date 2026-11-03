@@ -67,7 +67,7 @@ func TestHTMLPolicyMatchesPinnedPythonSource(t *testing.T) {
 	}
 }
 
-func TestHTMLPolicyMatchesDjangoFixture(t *testing.T) {
+func TestHTMLPolicyMatchesNativeFixture(t *testing.T) {
 	t.Parallel()
 
 	fixture := readContentFixture(t, "html-allowlists.json")

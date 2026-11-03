@@ -21,6 +21,9 @@ func (e Effects) Email(ctx context.Context, name string, args []any) error {
 }
 
 func (e Effects) Task(ctx context.Context, name string, args []any, kwargs map[string]any) error {
+	if name == "plane.bgtasks.event_tracking_task.track_event" {
+		return e.insert(ctx, "event_tracking", kwargs)
+	}
 	if name == "plane.bgtasks.page_transaction_task.page_transaction" {
 		return e.insert(ctx, "page_transaction", kwargs)
 	}

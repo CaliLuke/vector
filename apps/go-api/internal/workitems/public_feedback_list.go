@@ -43,17 +43,6 @@ func (repository *Repository) PublicIssueList(ctx context.Context, scope PublicF
 			return Result{}, failure(400, "detail", validateGroupingErr.Error())
 		}
 	}
-	// Django's legacy date filter builder treats malformed/non-ASCII and
-	// week-only date values as an empty queryset. Preserve that public behavior
-	// before the stricter shared SQL date helper validates its input.
-	for _, value := range []string{options.CreatedAt, options.UpdatedAt, options.StartDate, options.TargetDate, options.CompletedAt} {
-		if !issuequery.ValidLegacyDateBounds(value) {
-			if options.GroupBy != "" {
-				return repository.groupedPageWithVisibleRowCounts(ctx, q, []any{}, []map[string]any{}, limit, page, true)
-			}
-			return Result{Status: 200, Body: apicontract.Envelope([]any{}, 0, limit, page)}, nil
-		}
-	}
 	actorArg := any(nil)
 	if actorID != "" {
 		actorArg = actorID

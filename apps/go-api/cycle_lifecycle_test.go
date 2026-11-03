@@ -77,7 +77,7 @@ func TestCycleLifecycleAuthUsesSchemeSpecificCredentialValidator(t *testing.T) {
 	}
 }
 
-func TestCycleLifecycleAuthPreservesDjangoAPIKeyFailures(t *testing.T) {
+func TestCycleLifecycleAuthPreservesNativeAPIKeyFailures(t *testing.T) {
 	service := &cycleLifecycleService{
 		sessions: &cycleLifecycleSessionValidatorStub{},
 		keys:     &cycleLifecycleAPIKeyValidatorStub{err: apikey.ErrInvalid},

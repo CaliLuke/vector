@@ -9,7 +9,7 @@ import (
 	. "github.com/CaliLuke/loom/dsl"
 )
 
-var sessionCookie = APIKeySecurity("PlaneSessionCookie", func() { Description("Plane session cookie authentication.") })
+var sessionCookie = APIKeySecurity("PlaneSessionCookie", func() { Description("Vector browser session cookie authentication.") })
 var rawMetadata = Type("WorkspaceSearchRawJSON", func() { Attribute("content_type", String); Required("content_type") })
 var errorResponse = Type("WorkspaceSearchErrorResponse", func() {
 	ErrorName("name", String, func() { Meta("struct:tag:json", "-") })

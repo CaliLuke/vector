@@ -116,8 +116,6 @@ func TestPersonalDashboardNormalizesSourceIntegerMonths(t *testing.T) {
 			normalized string
 			include    bool
 		}{
-			{input: "２", normalized: "2", include: true},
-			{input: "0_2", normalized: "2", include: true},
 			{input: "2147483648", normalized: "2147483648", include: true},
 			{input: " +02 ", normalized: "2", include: true},
 			{normalized: "1"},

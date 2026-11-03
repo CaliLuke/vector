@@ -47,7 +47,7 @@ func TestWorkspacePageWindowUsesNativeCursorProjection(t *testing.T) {
 	}
 }
 
-func TestWorkspaceBackgroundColorMatchesDjangoDefaultFormat(t *testing.T) {
+func TestWorkspaceBackgroundColorMatchesNativeDefaultFormat(t *testing.T) {
 	for range 100 {
 		color, err := randomWorkspaceBackgroundColor()
 		if err != nil {
@@ -101,7 +101,7 @@ func TestWorkspaceNameValidationUsesUnicodeAlphanumericAndPythonLength(t *testin
 	}
 }
 
-func TestWorkspaceSearchPatternEscapesDjangoContainsWildcards(t *testing.T) {
+func TestWorkspaceSearchPatternEscapesNativeContainsWildcards(t *testing.T) {
 	const search = `%_\`
 	const want = `%\%\_\\%`
 	got := "%" + issuequery.EscapeLikePattern(search) + "%"

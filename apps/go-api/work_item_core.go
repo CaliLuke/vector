@@ -299,7 +299,7 @@ func (s *workItemCoreService) execute(ctx context.Context, operation string, pay
 	data, err := json.Marshal(activityTimestamps(result.Body, p.timezone))
 	if err != nil {
 		workItemLogError(ctx, operation, "encode_response", err)
-		MarkReadServiceDjangoHTML500(ctx)
+		MarkReadServiceNativeHTML500(ctx)
 		return nil, nil, workItemError(err)
 	}
 	return &api.WorkItemResponse{}, io.NopCloser(bytes.NewReader(data)), nil

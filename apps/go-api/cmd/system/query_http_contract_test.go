@@ -59,7 +59,7 @@ func TestStickyHEADAllowsMalformedUnusedQueryValues(t *testing.T) {
 	}
 }
 
-func TestStickyHTTPMalformedSupportedQueryValuesKeepDjangoErrors(t *testing.T) {
+func TestStickyHTTPMalformedSupportedQueryValuesKeepNativeErrors(t *testing.T) {
 	stub := stickyHTTPStub{success: true}
 	handler := newHTTPHandlerWithStickies(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), sticky.NewEndpoints(stub), stub.APIKeyAuth)
 	for _, test := range []struct {
@@ -126,7 +126,7 @@ func TestReadServiceMalformedQueryPrecedesScalarSelection(t *testing.T) {
 
 func TestTolerantQueryPreservesRepeatedArrayValues(t *testing.T) {
 	request := httptest.NewRequest(http.MethodGet, "/?items=a&items=%ZZ&items=c&ignored=%", nil)
-	values := normalizeDjangoTolerantQuery(request).URL.Query()["items"]
+	values := normalizeNativeTolerantQuery(request).URL.Query()["items"]
 	if len(values) != 3 || values[0] != "a" || values[1] != "%ZZ" || values[2] != "c" {
 		t.Fatalf("repeated array values = %q", values)
 	}

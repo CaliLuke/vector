@@ -448,7 +448,7 @@ var ImportedRestFrameworkSerializersPaginatedmoduleresponseResponse = Type("Rest
 })
 
 var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
-	Description("Plane API token authentication.")
+	Description("Vector API token authentication.")
 })
 
 var _ = API("API Module Reads", func() {
@@ -581,7 +581,7 @@ var _ = Service("APIModuleReads", func() {
 				Meta("openapi:allowEmptyValue", "false")
 			})
 			Attribute("perPage", String, func() {
-				Description("Pagination input interpreted by Django-compatible pagination (default and maximum: 1000)")
+				Description("Pagination input interpreted by shared cursor pagination (default and maximum: 1000)")
 				Meta("openapi:allowEmptyValue", "false")
 				Meta("openapi:format", "")
 			})
@@ -633,7 +633,7 @@ var _ = Service("APIModuleReads", func() {
 				Meta("openapi:allowEmptyValue", "false")
 			})
 			Attribute("perPage", String, func() {
-				Description("Pagination input interpreted by Django-compatible pagination (default and maximum: 1000)")
+				Description("Pagination input interpreted by shared cursor pagination (default and maximum: 1000)")
 				Meta("openapi:allowEmptyValue", "false")
 				Meta("openapi:format", "")
 			})
@@ -691,7 +691,7 @@ var _ = Service("APIModuleReads", func() {
 				Meta("openapi:allowEmptyValue", "false")
 			})
 			Attribute("perPage", String, func() {
-				Description("Pagination input interpreted by Django-compatible pagination (default and maximum: 1000)")
+				Description("Pagination input interpreted by shared cursor pagination (default and maximum: 1000)")
 				Meta("openapi:allowEmptyValue", "false")
 				Meta("openapi:format", "")
 			})
@@ -755,7 +755,7 @@ var _ = Service("APIModuleReads", func() {
 				Meta("openapi:allowEmptyValue", "false")
 			})
 			Attribute("perPage", String, func() {
-				Description("Pagination input interpreted by Django-compatible pagination (default and maximum: 1000)")
+				Description("Pagination input interpreted by shared cursor pagination (default and maximum: 1000)")
 				Meta("openapi:allowEmptyValue", "false")
 				Meta("openapi:format", "")
 			})

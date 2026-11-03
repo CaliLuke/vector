@@ -18,7 +18,7 @@ import (
 // float64 overflow. This check prevents the upgrade from accepting new writes.
 // It does not change the existing transport error shape or move body parsing
 // into the domain layer to reproduce Django's lazy request.data evaluation.
-func djangoRequestDecoder(request *http.Request) loomhttp.Decoder {
+func nativeRequestDecoder(request *http.Request) loomhttp.Decoder {
 	media, _, _ := mime.ParseMediaType(request.Header.Get("Content-Type"))
 	if request.Header.Get("Content-Type") != "" && media != "application/json" {
 		return loomhttp.RequestDecoder(request)

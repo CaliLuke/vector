@@ -38,7 +38,7 @@ func TestAuthRedirectPlainViewCSRFProductionMount(t *testing.T) {
 	server := redirectserver.New(endpoints, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, nil, nil, loomhttp.RuntimeCORSPolicy{})
 	server.Use(authRedirectSecurityMiddleware)
 	redirectserver.Mount(mux, server)
-	productionMount := djangoPlainViewCSRFMiddleware(nil, defaultFileSizeLimit)(mux)
+	productionMount := nativePlainViewCSRFMiddleware(nil, defaultFileSizeLimit)(mux)
 	for _, method := range []string{http.MethodPost, http.MethodPut} {
 		for _, token := range []string{"missing", "invalid"} {
 			t.Run(method+"/"+token, func(t *testing.T) {
@@ -78,7 +78,7 @@ func TestAuthRedirectPlainViewCSRFProductionMount(t *testing.T) {
 	oversized := httptest.NewRequest(http.MethodPost, "http://app.example.test/auth/sign-in/", strings.NewReader("csrfmiddlewaretoken="+secret))
 	oversized.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	response = httptest.NewRecorder()
-	djangoPlainViewCSRFMiddleware(nil, 16)(mux).ServeHTTP(response, oversized)
+	nativePlainViewCSRFMiddleware(nil, 16)(mux).ServeHTTP(response, oversized)
 	if response.Code != http.StatusRequestEntityTooLarge || effects != 1 {
 		t.Fatalf("oversized form status=%d effects=%d, want 413 without dispatch", response.Code, effects)
 	}

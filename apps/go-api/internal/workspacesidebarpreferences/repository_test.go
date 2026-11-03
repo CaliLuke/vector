@@ -37,7 +37,7 @@ func (d *sidebarDB) Exec(_ context.Context, query string, args ...any) (pgconn.C
 	return pgconn.CommandTag{}, nil
 }
 
-func TestListLazilyCreatesDjangoKeysAndDefaults(t *testing.T) {
+func TestListLazilyCreatesNativeKeysAndDefaults(t *testing.T) {
 	db := &sidebarDB{row: sidebarRow(func(dest ...any) error {
 		*dest[0].(*[]byte) = []byte(`{}`)
 		return nil

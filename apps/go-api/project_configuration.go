@@ -363,9 +363,9 @@ func (service *projectConfigurationService) mapError(err error) error {
 	if errors.As(err, &apiErr) {
 		return serviceError(apiErr.Status, apiErr.Body)
 	}
-	var djangoErr *apicontract.HTTPError
-	if errors.As(err, &djangoErr) {
-		return serviceError(djangoErr.Status, djangoErr.Body)
+	var nativeErr *apicontract.HTTPError
+	if errors.As(err, &nativeErr) {
+		return serviceError(nativeErr.Status, nativeErr.Body)
 	}
 	return serviceError(500, map[string]any{"detail": "Something went wrong please try again later"})
 }

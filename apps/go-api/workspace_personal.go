@@ -10,8 +10,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/CaliLuke/go-plane/internal/requestinput"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	api "github.com/CaliLuke/go-plane/workspacepersonal/gen/personal_dashboard"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
@@ -96,7 +97,7 @@ func (s *personalDashboardService) month(value *string) (string, error) {
 	if value == nil {
 		return "1", nil
 	}
-	parsed, err := pythoncompat.DecimalInteger(*value)
+	parsed, err := requestinput.IntegerField(*value)
 	if err != nil {
 		return "", s.error(http.StatusBadRequest, map[string]any{"error": "Invalid month."})
 	}

@@ -24,7 +24,7 @@ func TestWorkItemMixedPathsPreserveSessionProtocol(t *testing.T) {
 	}
 	for _, path := range paths {
 		t.Run(path, func(t *testing.T) {
-			policy, err := djangoRuntimeCORSPolicy([]string{"https://app.example.test"})
+			policy, err := nativeRuntimeCORSPolicy([]string{"https://app.example.test"})
 			if err != nil {
 				t.Fatal(err)
 			}

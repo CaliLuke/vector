@@ -12,9 +12,11 @@ import (
 
 // A completed object PUT cannot participate in PostgreSQL rollback. The durable
 // source must survive a failed completion transaction so retry can safely finish.
+// Storage recovery is credential-neutral. TestMCPAttachmentStorageBatch and
+// the attachment credential/scope/wait suites retain both authentication modes.
 func TestMCPAttachmentRecoveryAfterCompletionRollback(t *testing.T) {
 	h := attachmentRecoveryFixture(t)
-	runCatalogueCredentials(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		before := h.fetched.Load()

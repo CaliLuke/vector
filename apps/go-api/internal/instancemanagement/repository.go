@@ -420,7 +420,7 @@ func (r *Repository) PatchConfigurations(ctx context.Context, fields map[string]
 	}
 	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	for _, c := range configs {
-		value := pythonString(fields[c.key])
+		value := nativeString(fields[c.key])
 		if c.encrypted {
 			encrypted, err := r.cipher.Encrypt(strings.TrimSpace(value))
 			if err != nil {
@@ -1027,7 +1027,7 @@ func readString(raw json.RawMessage) string {
 	return value
 }
 func strPtr(value string) *string { return &value }
-func pythonString(raw json.RawMessage) string {
+func nativeString(raw json.RawMessage) string {
 	if len(raw) == 0 {
 		return ""
 	}

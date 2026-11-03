@@ -83,92 +83,61 @@ func (issuer *redisMagicCodeIssuer) Issue(ctx context.Context, email string) (st
 	return key, token, nil
 }
 
-type djangoPasswordResetTokenIssuer struct {
+type passwordResetTokenIssuer struct {
 	secret string
 	now    func() time.Time
 }
 
-func newDjangoPasswordResetTokenIssuer(secret string) (*djangoPasswordResetTokenIssuer, error) {
+func newPasswordResetTokenIssuer(secret string) (*passwordResetTokenIssuer, error) {
 	if secret == "" {
-		return nil, errors.New("secret key for Django password reset tokens is required")
+		return nil, errors.New("password reset signing secret is required")
 	}
-	return &djangoPasswordResetTokenIssuer{secret: secret, now: time.Now}, nil
+	return &passwordResetTokenIssuer{secret: secret, now: time.Now}, nil
 }
 
-func (issuer *djangoPasswordResetTokenIssuer) Issue(_ context.Context, user store.User) (string, string, error) {
+func (issuer *passwordResetTokenIssuer) Issue(_ context.Context, user store.User) (string, string, error) {
 	if user.ID == "" {
 		return "", "", errors.New("password reset user id is required")
 	}
 	uid := base64.RawURLEncoding.EncodeToString([]byte(user.ID))
-	timestamp := issuer.now().UTC().Unix() - djangoPasswordResetEpoch.Unix()
-	if timestamp < 0 {
-		return "", "", errors.New("password reset timestamp predates Django epoch")
+	timestamp := strconv.FormatInt(issuer.now().UTC().Unix(), 10)
+	return uid, "v1." + timestamp + "." + issuer.hash(user, timestamp), nil
+}
+
+func (issuer *passwordResetTokenIssuer) Verify(_ context.Context, user store.User, uid, token string) (bool, error) {
+	return issuer.valid(user, uid, token), nil
+}
+
+func (issuer *passwordResetTokenIssuer) valid(user store.User, uid, token string) bool {
+	decoded, err := base64.RawURLEncoding.DecodeString(uid)
+	if err != nil || string(decoded) != user.ID {
+		return false
 	}
-	loginTimestamp := ""
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 || parts[0] != "v1" || len(parts[2]) != sha256.Size*2 {
+		return false
+	}
+	timestamp, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil || timestamp < 0 || strconv.FormatInt(timestamp, 10) != parts[1] {
+		return false
+	}
+	now := issuer.now().UTC().Unix()
+	if timestamp > now || now-timestamp > int64((72*time.Hour)/time.Second) {
+		return false
+	}
+	expected := issuer.hash(user, parts[1])
+	return subtle.ConstantTimeCompare([]byte(expected), []byte(parts[2])) == 1
+}
+
+func (issuer *passwordResetTokenIssuer) hash(user store.User, timestamp string) string {
+	login := ""
 	if user.LastLogin != nil {
-		loginTimestamp = user.LastLogin.UTC().Truncate(time.Second).Format("2006-01-02 15:04:05")
+		login = user.LastLogin.UTC().Format(time.RFC3339Nano)
 	}
-	return uid, djangoBase36(timestamp) + "-" + issuer.hash(user, loginTimestamp, timestamp), nil
-}
-
-func (issuer *djangoPasswordResetTokenIssuer) Verify(_ context.Context, user store.User, uidb64, token string) (bool, error) {
-	return issuer.matchesResetToken(user, uidb64, token), nil
-}
-
-// Malformed and expired tokens are ordinary negative verification results.
-func (issuer *djangoPasswordResetTokenIssuer) matchesResetToken(user store.User, uidb64, token string) bool {
-	decodedID, err := base64.RawURLEncoding.DecodeString(strings.TrimRight(uidb64, "="))
-	if err != nil || string(decodedID) != user.ID {
-		return false
-	}
-	parts := strings.Split(token, "-")
-	if len(parts) != 2 || len(parts[1]) != 32 {
-		return false
-	}
-	timestamp, err := strconv.ParseInt(parts[0], 36, 64)
-	if err != nil || timestamp < 0 {
-		return false
-	}
-	issuedAt := djangoPasswordResetEpoch.Add(time.Duration(timestamp) * time.Second)
-	age := issuer.now().UTC().Sub(issuedAt)
-	if age < 0 || age > 3*24*time.Hour {
-		return false
-	}
-	loginTimestamp := ""
-	if user.LastLogin != nil {
-		loginTimestamp = user.LastLogin.UTC().Truncate(time.Second).Format("2006-01-02 15:04:05")
-	}
-	expected := djangoBase36(timestamp) + "-" + issuer.hash(user, loginTimestamp, timestamp)
-	return subtle.ConstantTimeCompare([]byte(expected), []byte(token)) == 1
-}
-
-func (issuer *djangoPasswordResetTokenIssuer) hash(user store.User, loginTimestamp string, timestamp int64) string {
-	value := user.ID + user.Password + loginTimestamp + strconv.FormatInt(timestamp, 10) + user.Email
-	keySalt := "django.contrib.auth.tokens.PasswordResetTokenGenerator"
-	keyHash := sha256.Sum256([]byte(keySalt + issuer.secret))
-	mac := hmac.New(sha256.New, keyHash[:])
-	_, _ = mac.Write([]byte(value))
-	digest := hex.EncodeToString(mac.Sum(nil))
-	shortDigest := make([]byte, 0, len(digest)/2)
-	for index := 0; index < len(digest); index += 2 {
-		shortDigest = append(shortDigest, digest[index])
-	}
-	return string(shortDigest)
-}
-
-var djangoPasswordResetEpoch = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-
-func djangoBase36(value int64) string {
-	const alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
-	if value == 0 {
-		return "0"
-	}
-	var output [16]byte
-	i := len(output)
-	for value > 0 {
-		i--
-		output[i] = alphabet[value%36]
-		value /= 36
-	}
-	return string(output[i:])
+	// Length-framed JSON strings prevent different account fields from sharing a
+	// concatenation. The purpose and version isolate this signing domain.
+	value, _ := json.Marshal([]string{"vector.password-reset.v1", user.ID, user.Password, login, timestamp, user.Email})
+	mac := hmac.New(sha256.New, []byte(issuer.secret))
+	_, _ = mac.Write(value)
+	return hex.EncodeToString(mac.Sum(nil))
 }

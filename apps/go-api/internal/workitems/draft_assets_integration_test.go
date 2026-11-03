@@ -10,7 +10,6 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -19,7 +18,7 @@ import (
 // This database boundary isolates reference parsing and pending-upload scope.
 func TestDraftPublicationOnlyWaitsForReferencedOwnedUploads(t *testing.T) {
 	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, url string) error {
+	pairURL := suiteDatabases.SeedDatabase(t, func(ctx context.Context, url string) error {
 		conn, connectErr := pgx.Connect(ctx, url)
 		if connectErr != nil {
 			return connectErr
@@ -29,11 +28,8 @@ func TestDraftPublicationOnlyWaitsForReferencedOwnedUploads(t *testing.T) {
 CREATE TABLE work_item_properties(id uuid PRIMARY KEY, workspace_id uuid, definition jsonb);`)
 		return createErr
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { testsupport.Close(t, pair) }()
-	conn, err := pgx.Connect(ctx, pair.SeedURL())
+
+	conn, err := pgx.Connect(ctx, pairURL)
 	if err != nil {
 		t.Fatal(err)
 	}

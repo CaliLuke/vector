@@ -410,7 +410,7 @@ func projectSerializerProjectionSQL(app bool) string {
 		expression := "project." + key
 		switch key {
 		case "created_at", "updated_at", "deleted_at", "archived_at":
-			expression = djangoTimestamp(expression)
+			expression = nativeTimestamp(expression)
 		case "created_by", "updated_by", "workspace", "default_assignee", "project_lead", "cover_image_asset", "estimate", "default_state":
 			expression += "_id"
 		}

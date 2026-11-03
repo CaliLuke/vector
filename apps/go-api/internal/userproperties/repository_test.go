@@ -42,7 +42,7 @@ func TestRepositoryRequiresDatabase(t *testing.T) {
 	}
 }
 
-func TestWorkspaceGetCreatesDjangoDefaults(t *testing.T) {
+func TestWorkspaceGetCreatesNativeDefaults(t *testing.T) {
 	d := &db{rows: []pgx.Row{jsonRow(`{"filters":{},"navigation_project_limit":10}`)}}
 	r, constructorErr := NewRepository(d)
 	require.NoError(t, constructorErr)

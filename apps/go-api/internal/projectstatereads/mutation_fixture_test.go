@@ -9,9 +9,7 @@ import (
 	"time"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/bootstrap"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	googleuuid "github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/require"
@@ -52,10 +50,14 @@ func newStateMutationFixture(t *testing.T) stateMutationFixture {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	t.Cleanup(cancel)
-	pair, err := postgresfixture.StartUncloned(ctx, bootstrap.MigrateSchema)
+	database, err := stateSchema.CloneDatabase(ctx)
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, pair.Close()) })
-	config, err := pgxpool.ParseConfig(pair.SeedURL())
+	t.Cleanup(func() {
+		cleanup, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		require.NoError(t, database.Close(cleanup))
+	})
+	config, err := pgxpool.ParseConfig(database.URL)
 	require.NoError(t, err)
 	config.MaxConns = 4
 	config.ConnConfig.RuntimeParams["application_name"] = "state-mutation-tests"

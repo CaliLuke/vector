@@ -68,7 +68,7 @@ func TestGetMirrorsSerializerWorkspaceSelectionAndLogo(t *testing.T) {
 	}
 }
 
-func TestGetResponseShapeMatchesDjangoFallbackFixture(t *testing.T) {
+func TestGetResponseShapeMatchesNativeFallbackFixture(t *testing.T) {
 	db := &settingsDB{row: settingsJSON(`{"id":"<uuid-1>","email":"settings@example.com","workspace":{"fallback_workspace_id":"<uuid-2>","fallback_workspace_slug":"settings-parity","invites":1,"last_workspace_id":null,"last_workspace_slug":null}}`)}
 	r, constructorErr := NewRepository(db)
 	require.NoError(t, constructorErr)
@@ -88,7 +88,7 @@ func TestGetResponseShapeMatchesDjangoFallbackFixture(t *testing.T) {
 	}
 }
 
-func TestGetResponseShapeMatchesDjangoSelectedFixture(t *testing.T) {
+func TestGetResponseShapeMatchesNativeSelectedFixture(t *testing.T) {
 	db := &settingsDB{row: settingsJSON(`{"id":"<uuid-1>","email":"settings@example.com","workspace":{"fallback_workspace_id":"<uuid-2>","fallback_workspace_slug":"settings-parity","invites":1,"last_workspace_id":"<uuid-2>","last_workspace_logo":"","last_workspace_name":"Settings Parity","last_workspace_slug":"settings-parity"}}`)}
 	r, constructorErr := NewRepository(db)
 	require.NoError(t, constructorErr)

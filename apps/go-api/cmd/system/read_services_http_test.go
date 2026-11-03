@@ -314,9 +314,9 @@ func (workspaceProjectResponseService) UserWorkspacesOptions(context.Context, *w
 	}, nil
 }
 
-func TestReadServiceProtocolCompanionsMatchDjango(t *testing.T) {
+func TestReadServiceProtocolCompanionsMatchNative(t *testing.T) {
 	mux := loomhttp.NewMuxer()
-	corsPolicy, err := djangoRuntimeCORSPolicy([]string{"https://app.example.test"})
+	corsPolicy, err := nativeRuntimeCORSPolicy([]string{"https://app.example.test"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -395,7 +395,7 @@ func TestReadServiceProtocolCompanionsMatchDjango(t *testing.T) {
 	}
 }
 
-func TestReadServicesUseDjangoLastScalarQueryValue(t *testing.T) {
+func TestReadServicesUseNativeLastScalarQueryValue(t *testing.T) {
 	var got map[string][]string
 	handler := readServicesCompatibilityMiddleware(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		got = request.URL.Query()
@@ -417,7 +417,7 @@ func TestReadServicesUseDjangoLastScalarQueryValue(t *testing.T) {
 		t.Errorf("unclassified multi-value query changed: %v", values)
 	}
 }
-func TestReadServicesRewriteSemicolonsBeforeDjangoScalarSelection(t *testing.T) {
+func TestReadServicesRewriteSemicolonsBeforeNativeScalarSelection(t *testing.T) {
 	var got []string
 	handler := readServicesCompatibilityMiddleware(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		got = request.URL.Query()["created_at"]
@@ -524,8 +524,8 @@ func TestReadServicesHonorJSONRendererIndent(t *testing.T) {
 	}
 }
 
-func TestReadServicesRejectMalformedDjangoUUIDPathsBeforeAuthentication(t *testing.T) {
-	policy, err := djangoRuntimeCORSPolicy([]string{"https://app.example.test"})
+func TestReadServicesRejectMalformedNativeUUIDPathsBeforeAuthentication(t *testing.T) {
+	policy, err := nativeRuntimeCORSPolicy([]string{"https://app.example.test"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -534,7 +534,7 @@ func TestReadServicesRejectMalformedDjangoUUIDPathsBeforeAuthentication(t *testi
 		nextCalls++
 		response.WriteHeader(http.StatusNoContent)
 	})
-	handler := readServicesDjangoPathConverterMiddleware(policy, nil)(
+	handler := readServicesNativePathConverterMiddleware(policy, nil)(
 		readServicesCompatibilityMiddleware(next),
 	)
 	malformed := "/api/workspaces/acme/projects/00000000-0000-4000-8000-00000000000Z/modules/"
@@ -544,7 +544,7 @@ func TestReadServicesRejectMalformedDjangoUUIDPathsBeforeAuthentication(t *testi
 		request := httptest.NewRequest(method, malformed, nil)
 		request.Header.Set("Origin", "https://app.example.test")
 		handler.ServeHTTP(response, request)
-		if response.Code != http.StatusNotFound || response.Body.String() != string(djangoNotFoundBody) {
+		if response.Code != http.StatusNotFound || response.Body.String() != string(nativeNotFoundBody) {
 			t.Errorf("%s malformed UUID = %d %q", method, response.Code, response.Body.String())
 		}
 		if response.Header().Get("Allow") != "" {
@@ -561,7 +561,7 @@ func TestReadServicesRejectMalformedDjangoUUIDPathsBeforeAuthentication(t *testi
 	head := httptest.NewRecorder()
 	handler.ServeHTTP(head, httptest.NewRequest(http.MethodHead, malformed, nil))
 	if head.Code != http.StatusNotFound || head.Body.Len() != 0 ||
-		head.Header().Get("Content-Length") != fmt.Sprint(len(djangoNotFoundBody)) {
+		head.Header().Get("Content-Length") != fmt.Sprint(len(nativeNotFoundBody)) {
 		t.Errorf("HEAD malformed UUID = %d %q headers=%#v", head.Code, head.Body.String(), head.Header())
 	}
 
@@ -585,7 +585,7 @@ func TestReadServicesRejectMalformedDjangoUUIDPathsBeforeAuthentication(t *testi
 	}
 }
 
-func TestReadServicesGzipMiddlewareMatchesDjangoThreshold(t *testing.T) {
+func TestReadServicesGzipMiddlewareMatchesNativeThreshold(t *testing.T) {
 	for _, testCase := range []struct {
 		name       string
 		size       int
@@ -641,7 +641,7 @@ func TestReadServicesGzipMiddlewareMatchesDjangoThreshold(t *testing.T) {
 	}
 }
 
-func TestReadServicesPageDescriptionMatchesDjangoStreamingGzip(t *testing.T) {
+func TestReadServicesPageDescriptionMatchesNativeStreamingGzip(t *testing.T) {
 	body := []byte("page description")
 	handler := readServicesGzipMiddleware(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 		response.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -730,7 +730,7 @@ func TestReadServicesDerivedHEADUsesCompressedGETRepresentation(t *testing.T) {
 		t.Errorf("Vary = %q", response.Header().Get("Vary"))
 	}
 }
-func TestReadServicesSessionLifecycleMatchesDjango(t *testing.T) {
+func TestReadServicesSessionLifecycleMatchesNative(t *testing.T) {
 	config := browserSessionCookieConfig{Name: "session-id", Domain: ".example.test", Secure: true, Configured: true}
 	next := http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 		response.WriteHeader(http.StatusOK)
@@ -765,7 +765,7 @@ func TestReadServicesSessionLifecycleMatchesDjango(t *testing.T) {
 		response.Header().Set("Allow", "GET, HEAD, OPTIONS")
 		request := httptest.NewRequest(http.MethodGet, "/api/workspaces/", nil)
 		readServicesSessionMiddleware(sessions, config)(next).ServeHTTP(response, request)
-		if response.Code != http.StatusInternalServerError || response.Body.String() != string(djangoServerErrorBody) {
+		if response.Code != http.StatusInternalServerError || response.Body.String() != string(nativeServerErrorBody) {
 			t.Fatalf("status=%d body=%q", response.Code, response.Body.String())
 		}
 		if response.Header().Get("Content-Type") != "text/html; charset=utf-8" || response.Header().Get("Allow") != "" {
@@ -849,13 +849,13 @@ func TestReadServicesSessionLifecycleMatchesDjango(t *testing.T) {
 func TestMarkedInternalErrorsUseHTML500(t *testing.T) {
 	for _, method := range []string{http.MethodGet, http.MethodHead} {
 		t.Run(method, func(t *testing.T) {
-			ctx := systemapi.WithReadServiceDjangoHTML500(context.Background())
-			systemapi.MarkReadServiceDjangoHTML500(ctx)
+			ctx := systemapi.WithReadServiceNativeHTML500(context.Background())
+			systemapi.MarkReadServiceNativeHTML500(ctx)
 
 			response := httptest.NewRecorder()
 			request := httptest.NewRequest(method, "/api/workspaces/demo/projects/00000000-0000-4000-8000-000000000001/pages/", nil)
 			request = request.WithContext(ctx)
-			writer := &djangoReadServiceHTML500ResponseWriter{
+			writer := &nativeReadServiceHTML500ResponseWriter{
 				ResponseWriter: response,
 				request:        request,
 			}
@@ -869,7 +869,7 @@ func TestMarkedInternalErrorsUseHTML500(t *testing.T) {
 				response.Header().Get("loom-error") != "" {
 				t.Fatalf("response=%d headers=%#v", response.Code, response.Header())
 			}
-			wantBody := string(djangoServerErrorBody)
+			wantBody := string(nativeServerErrorBody)
 			if method == http.MethodHead {
 				wantBody = ""
 			}

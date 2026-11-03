@@ -13,7 +13,7 @@ func mountAuthRedirectsRoutes(ctx context.Context, pending pendingReplacementEnd
 	if pending.authRedirects != nil {
 		server := authredirectssvr.New(pending.authRedirects, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil, readServicesCORSPolicy)
 		server.Use(authRedirectSecurityMiddleware)
-		server.Use(djangoAuthSessionMiddleware(pending.readServicesAuthSession, pending.readServicesAuthCookie, authRedirectSessionPath))
+		server.Use(nativeAuthSessionMiddleware(pending.readServicesAuthSession, pending.readServicesAuthCookie, authRedirectSessionPath))
 		authredirectssvr.Mount(mux, server)
 		for _, mount := range server.Mounts {
 			logHTTPRouteMount(ctx, "auth_redirects", mount.Method, mount.Verb, mount.Pattern)
@@ -25,7 +25,7 @@ func mountOAuthRedirectsRoutes(ctx context.Context, pending pendingReplacementEn
 	if pending.oauthRedirects != nil {
 		server := oauthredirectssvr.New(pending.oauthRedirects, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil, readServicesCORSPolicy)
 		server.Use(authRedirectSecurityMiddleware)
-		server.Use(djangoAuthSessionMiddleware(pending.readServicesAuthSession, pending.readServicesAuthCookie, authRedirectSessionPath))
+		server.Use(nativeAuthSessionMiddleware(pending.readServicesAuthSession, pending.readServicesAuthCookie, authRedirectSessionPath))
 		oauthredirectssvr.Mount(mux, server)
 		for _, mount := range server.Mounts {
 			log.Print(ctx, log.KV{K: "msg", V: "HTTP route mounted"}, log.KV{K: "service", V: "oauth_redirects"}, log.KV{K: "http_method", V: mount.Verb}, log.KV{K: "http_path", V: mount.Pattern})

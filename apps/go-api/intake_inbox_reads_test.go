@@ -201,13 +201,13 @@ func TestDescriptionServiceRejectsExplicitEmptyCursorAsClientError(t *testing.T)
 	repository := &intakeInboxReadsRepositoryStub{err: store.ErrInvalidCursor}
 	service, ctx := authenticatedIntakeReadsService(t, repository)
 	ctx = WithReadServiceQueryPresence(ctx, url.Values{"cursor": {""}})
-	ctx = WithReadServiceDjangoHTML500(ctx)
+	ctx = WithReadServiceNativeHTML500(ctx)
 	_, _, err := service.DescriptionVersionList(ctx, &api.DescriptionVersionListPayload{
 		Slug: "demo", ProjectID: intakeReadsProjectID, WorkItemID: intakeReadsObjectID,
 	})
 	var badRequest *api.IntakeInboxReadsBadRequest
-	if !errors.As(err, &badRequest) || badRequest.Detail != "Invalid cursor parameter." || repository.descriptionCursor == nil || *repository.descriptionCursor != "" || ReadServiceDjangoHTML500(ctx) {
-		t.Fatalf("err=%T cursor=%v html500=%v", err, repository.descriptionCursor, ReadServiceDjangoHTML500(ctx))
+	if !errors.As(err, &badRequest) || badRequest.Detail != "Invalid cursor parameter." || repository.descriptionCursor == nil || *repository.descriptionCursor != "" || ReadServiceNativeHTML500(ctx) {
+		t.Fatalf("err=%T cursor=%v html500=%v", err, repository.descriptionCursor, ReadServiceNativeHTML500(ctx))
 	}
 }
 
@@ -358,7 +358,7 @@ func TestIntakeContainerCollectionsPreserveEmptyObjectResponse(t *testing.T) {
 	}
 }
 
-func TestRepositoryErrorsMapToStableDjangoShapes(t *testing.T) {
+func TestRepositoryErrorsMapToStableNativeShapes(t *testing.T) {
 	repository := &intakeInboxReadsRepositoryStub{data: map[string]jsontext.Value{}, err: store.ErrForbidden}
 	service, ctx := authenticatedIntakeReadsService(t, repository)
 	_, _, err := service.InboxList(ctx, &api.InboxListPayload{Slug: "other", ProjectID: intakeReadsProjectID})
@@ -416,7 +416,7 @@ func TestPaginationErrorsMapToClientDetails(t *testing.T) {
 	}
 }
 
-func TestDescriptionVersionOptionsReturnAuthenticatedDjangoMetadata(t *testing.T) {
+func TestDescriptionVersionOptionsReturnAuthenticatedNativeMetadata(t *testing.T) {
 	service, ctx := authenticatedIntakeReadsService(t, &intakeInboxReadsRepositoryStub{})
 	list, err := service.DescriptionVersionListOptions(ctx, &api.DescriptionVersionListOptionsPayload{})
 	if err != nil {

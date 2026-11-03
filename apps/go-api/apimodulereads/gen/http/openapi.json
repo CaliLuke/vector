@@ -1534,7 +1534,7 @@
       "QueryPerPage": {
         "name": "per_page",
         "in": "query",
-        "description": "Pagination input interpreted by Django-compatible pagination (default and maximum: 1000)",
+        "description": "Pagination input interpreted by shared cursor pagination (default and maximum: 1000)",
         "schema": {
           "type": "string"
         }
@@ -1632,7 +1632,7 @@
     "securitySchemes": {
       "ApiKeyAuth": {
         "type": "apiKey",
-        "description": "Plane API token authentication.",
+        "description": "Vector API token authentication.",
         "name": "X-Api-Key",
         "in": "header"
       }

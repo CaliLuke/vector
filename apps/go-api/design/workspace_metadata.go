@@ -2,9 +2,8 @@ package design
 
 import . "github.com/CaliLuke/loom/dsl"
 
-// These are the exact fields emitted by LabelSerializer and StateSerializer
-// for the workspace collection endpoints.  Keep UUIDs as strings because the
-// Django JSON representation is the canonical wire format.
+// Workspace collection responses expose the fields consumed by the web app.
+// UUIDs remain strings in the JSON contract.
 var workspaceLabel = Type("WorkspaceLabel", func() {
 	Attribute("parent", String, func() { Format(FormatUUID); Nullable() })
 	Attribute("name", String)

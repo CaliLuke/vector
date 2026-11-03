@@ -6,7 +6,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/instancecipher"
 )
 
-func TestInstanceConfigurationsPreserveDjangoDefaultsAndEncryptSecrets(t *testing.T) {
+func TestInstanceConfigurationsPreserveNativeDefaultsAndEncryptSecrets(t *testing.T) {
 	cipher, err := instancecipher.New("bootstrap-test-secret")
 	if err != nil {
 		t.Fatal(err)

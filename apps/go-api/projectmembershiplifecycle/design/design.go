@@ -364,7 +364,7 @@ var ImportedRoleC37Enum = Type("RoleC37Enum", Int, func() {
 })
 
 var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
-	Description("Plane API token authentication.")
+	Description("Vector API token authentication.")
 })
 
 var ImportedPlaneSessionCookieSecurity = APIKeySecurity("PlaneSessionCookie", func() {
@@ -376,7 +376,7 @@ var ImportedPlaneSession = SessionAuth("PlaneSession", func() {
 })
 
 var _ = API("Project Membership Lifecycle", func() {
-	Title("Plane Internal Django Migration API")
+	Title("Vector API")
 	Description("Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.")
 	Version("1.0.0")
 	Meta("openapi:example", "false")
@@ -784,7 +784,7 @@ var _ = Service("ProjectMembershipLifecycle", func() {
 				Meta("openapi:allowEmptyValue", "false")
 			})
 			Attribute("perPage", String, func() {
-				Description("Number of results per page, parsed by the Django-compatible paginator")
+				Description("Number of results per page, parsed by the shared cursor paginator")
 				Meta("openapi:allowEmptyValue", "false")
 				Meta("openapi:format", "")
 			})

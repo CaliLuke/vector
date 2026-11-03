@@ -1,5 +1,5 @@
 {
-  "loom_version": "v1.10.0-alpha.16",
+  "loom_version": "v1.10.0-alpha.22",
   "design_package": "github.com/CaliLuke/go-plane/workspaceanalytics/design",
-  "design_digest": "ed7871673ed9f5e5da949f8fefc36b57090370dbbfd9d0a2a537ae995852f582"
+  "design_digest": "14a6707d36c4861d1a8b923fbcdcbe9f192c89868b141f46ea8495f6eafc8f16"
 }

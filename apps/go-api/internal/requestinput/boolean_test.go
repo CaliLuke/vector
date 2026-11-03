@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestBooleanFieldDRFVocabulary(t *testing.T) {
+func TestBooleanFieldCheckboxValues(t *testing.T) {
 	for _, test := range []struct {
 		input any
 		want  bool
@@ -15,7 +15,7 @@ func TestBooleanFieldDRFVocabulary(t *testing.T) {
 			t.Errorf("input=%#v got=%v message=%q", test.input, got, message)
 		}
 	}
-	for _, value := range []any{" true ", "", json.Number("2"), []any{}, map[string]any{}} {
+	for _, value := range []any{" true ", "", json.Number("2"), json.Number("1.00000000000000000001"), json.Number("1e-999"), []any{}, map[string]any{}} {
 		if _, message := BooleanField(value); message != "Must be a valid boolean." {
 			t.Errorf("input=%#v message=%q", value, message)
 		}

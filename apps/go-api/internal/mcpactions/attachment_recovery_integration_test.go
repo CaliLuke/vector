@@ -87,9 +87,11 @@ func attachmentRecoveryFixture(t *testing.T) attachmentRecoveryHarness {
 	return attachmentRecoveryHarness{milestoneFixture: f, application: application, worker: recovery, storage: storage, healthy: healthy, fetched: fetched}
 }
 
+// Storage recovery is credential-neutral. TestMCPAttachmentStorageBatch and
+// the attachment credential/scope/wait suites retain both authentication modes.
 func TestMCPAttachmentRecoveryUsesDurableSourceBytes(t *testing.T) {
 	h := attachmentRecoveryFixture(t)
-	runCatalogueCredentials(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		before := h.fetched.Load()
@@ -138,7 +140,7 @@ func TestMCPAttachmentNativeWorkerRecoversPendingUpload(t *testing.T) {
 	h := attachmentRecoveryFixture(t)
 	redis := testsupport.StartRedis(t)
 	t.Setenv("REDIS_URL", "redis://"+redis.Options().Addr)
-	runCatalogueCredentials(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		before := h.fetched.Load()
@@ -202,7 +204,7 @@ func TestMCPAttachmentNativeWorkerRecoversPendingUpload(t *testing.T) {
 
 func TestMCPAttachmentDeletionCancelsPendingUpload(t *testing.T) {
 	h := attachmentRecoveryFixture(t)
-	runCatalogueCredentials(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		item := f.item(t)
 		call := catalogueScoped(root, map[string]any{"project_id": testsupport.LabelProject, "workitem_id": item})
 		before := h.fetched.Load()

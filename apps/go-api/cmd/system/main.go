@@ -6,16 +6,17 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"math"
-	"math/big"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 
 	milestonestore "github.com/CaliLuke/go-plane/internal/milestones"
 	milestoneapi "github.com/CaliLuke/go-plane/milestones/gen/milestones"
@@ -127,7 +128,6 @@ import (
 	projectpublicationstore "github.com/CaliLuke/go-plane/internal/projectpublication"
 	projectstatereadsstore "github.com/CaliLuke/go-plane/internal/projectstatereads"
 	publicprojectmetadatareadsstore "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/ratelimit"
 	standardviewsstore "github.com/CaliLuke/go-plane/internal/standardviews"
 	stickystore "github.com/CaliLuke/go-plane/internal/stickies"
@@ -206,7 +206,6 @@ type config struct {
 	readReplicaDatabaseURL     string
 	redisURL                   string
 	apiKeyRate                 string
-	amqpURL                    string
 	corsOrigins                []string
 	csrfTrustedOrigins         []string
 	sessionCookie              string
@@ -1258,7 +1257,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	postAuthWorkflow, err := authworkflow.NewPostUserAuthWorkflow(pool, invitationsCache, activityTaskPublisher)
+	postAuthWorkflow, err := authworkflow.NewPostUserAuthWorkflow(invitationsRepository)
 	if err != nil {
 		return err
 	}
@@ -1295,7 +1294,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	resetTokenIssuer, err := newDjangoPasswordResetTokenIssuer(cfg.secretKey)
+	resetTokenIssuer, err := newPasswordResetTokenIssuer(cfg.secretKey)
 	if err != nil {
 		return err
 	}
@@ -1469,7 +1468,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 		csrfToken:                               csrfTokenEndpoints,
 		csrfTokenCORS:                           cfg.corsOrigins,
 		accountAuthenticationCSRFTrustedOrigins: cfg.csrfTrustedOrigins,
-		csrfTokenCookie:                         djangoCSRFCookieConfig{Domain: cfg.cookieDomain, Secure: cfg.sessionCookieSecure},
+		csrfTokenCookie:                         nativeCSRFCookieConfig{Domain: cfg.cookieDomain, Secure: cfg.sessionCookieSecure},
 		csrfTokenThrottle:                       publicProjectMetadataReadsThrottle,
 		csrfTokenSessionCookie:                  browserSessionCookieConfig{Name: cfg.sessionCookie, Domain: cfg.cookieDomain, Secure: cfg.sessionCookieSecure, Configured: true},
 		csrfTokenBodyLimit:                      cfg.fileSizeLimit,
@@ -1662,7 +1661,7 @@ func parseConfig(args []string) (config, error) {
 	if err != nil {
 		return config{}, err
 	}
-	debugMode, err := envDjangoDebug()
+	debugMode, err := envNativeDebug()
 	if err != nil {
 		return config{}, err
 	}
@@ -1670,29 +1669,16 @@ func parseConfig(args []string) (config, error) {
 	flags := flag.NewFlagSet("go-plane", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
 
-	brokerURL := os.Getenv("AMQP_URL")
-	if brokerURL == "" {
-		brokerURL = fmt.Sprintf(
-			"amqp://%s:%s@%s:%s/%s",
-			envValueOrDefault("RABBITMQ_USER", "guest"),
-			envValueOrDefault("RABBITMQ_PASSWORD", "guest"),
-			envValueOrDefault("RABBITMQ_HOST", "localhost"),
-			envValueOrDefault("RABBITMQ_PORT", "5672"),
-			envValueOrDefault("RABBITMQ_VHOST", "/"),
-		)
-	}
-
 	cfg := config{sessionCookieAge: sessionCookieAge, adminSessionCookieAge: adminSessionCookieAge, mcp: mcpConfig, mcpOAuth: mcpOAuthConfigFromEnvironment(mcpConfig.ResourceURL)}
 	flags.StringVar(&cfg.httpAddress, "http-address", defaultHTTPAddress, "HTTP listen address")
 	flags.DurationVar(&cfg.shutdownTimeout, "shutdown-timeout", defaultShutdownTimeout, "graceful shutdown timeout")
-	flags.BoolVar(&cfg.debug, "debug", debugMode, "enable Django-compatible debug behavior and debug logs")
+	flags.BoolVar(&cfg.debug, "debug", debugMode, "enable debug responses and logs")
 	flags.BoolVar(&cfg.goBackgroundTasks, "go-background-tasks", false, "run native durable tasks and admit migrated task groups")
 	flags.BoolVar(&cfg.goBackgroundTasksNoWorkers, "go-background-tasks-no-workers", false, "initialize native durable admission without starting activity workers")
 	flags.StringVar(&cfg.databaseURL, "database-url", os.Getenv("DATABASE_URL"), "PostgreSQL URL")
 	flags.StringVar(&cfg.readReplicaDatabaseURL, "read-replica-database-url", "", "PostgreSQL read replica URL")
 	flags.StringVar(&cfg.redisURL, "redis-url", os.Getenv("REDIS_URL"), "Redis URL")
-	flags.StringVar(&cfg.apiKeyRate, "api-key-rate", envValueOrDefault("API_KEY_RATE_LIMIT", "60/minute"), "Django API-key throttle rate")
-	flags.StringVar(&cfg.amqpURL, "celery-broker-url", brokerURL, "legacy broker URL (unused by the native task runtime)")
+	flags.StringVar(&cfg.apiKeyRate, "api-key-rate", envValueOrDefault("API_KEY_RATE_LIMIT", "60/minute"), "API-key throttle rate")
 	var corsOrigins string
 	flags.StringVar(&corsOrigins, "cors-allowed-origins", os.Getenv("CORS_ALLOWED_ORIGINS"), "comma-separated CORS allowed origins")
 	csrfTrustedOriginsRaw, csrfTrustedOriginsSet := os.LookupEnv("CSRF_TRUSTED_ORIGINS")
@@ -1812,18 +1798,12 @@ func sessionAgeFlag(value string) (int64, error) {
 }
 
 func boundedInt64(value string) (int64, error) {
-	integer, err := pythoncompat.DecimalInteger(value)
+	integer, err := requestinput.IntegerField(value)
 	if err != nil {
 		return 0, err
 	}
-	if integer.Cmp(big.NewInt(math.MaxInt64)) > 0 {
-		// Python accepts values wider than int64 within its decimal conversion
-		// limit. Saturation keeps startup compatible; the session save rejects
-		// the resulting date as outside datetime's year 1..9999 range.
-		return math.MaxInt64, nil
-	}
-	if integer.Cmp(big.NewInt(math.MinInt64)) < 0 {
-		return math.MinInt64, nil
+	if !integer.IsInt64() {
+		return 0, fmt.Errorf("integer exceeds signed 64-bit range")
 	}
 	return integer.Int64(), nil
 }
@@ -1840,31 +1820,23 @@ func envInt64(name string, fallback int64) (int64, error) {
 	if !found {
 		return fallback, nil
 	}
-	value, err := pythoncompat.DecimalInteger(raw)
+	value, err := boundedInt64(raw)
 	if err != nil {
 		return 0, fmt.Errorf("%s must be an integer: %w", name, err)
 	}
-	if value.Cmp(big.NewInt(1<<63-1)) > 0 {
-		return 1<<63 - 1, nil
-	}
-	if value.Cmp(big.NewInt(-1<<63)) < 0 {
-		return -1 << 63, nil
-	}
-	return value.Int64(), nil
+	return value, nil
 }
 
-func envDjangoDebug() (bool, error) {
+func envNativeDebug() (bool, error) {
 	raw, found := os.LookupEnv("DEBUG")
 	if !found {
 		return false, nil
 	}
-	value, err := pythoncompat.DecimalInteger(raw)
+	value, err := strconv.ParseBool(strings.TrimSpace(raw))
 	if err != nil {
-		return false, fmt.Errorf("DEBUG must be an integer: %w", err)
+		return false, fmt.Errorf("DEBUG must be a boolean: %w", err)
 	}
-	// The API process loads plane.settings.production, which normalizes DEBUG
-	// with exactly this comparison after importing the shared settings.
-	return value.IsInt64() && value.Int64() == 1, nil
+	return value, nil
 }
 
 func newLogContext(ctx context.Context, output io.Writer, debug bool, additionalOutputs ...log.Output) context.Context {

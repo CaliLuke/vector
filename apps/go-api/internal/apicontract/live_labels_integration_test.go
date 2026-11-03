@@ -7,11 +7,10 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 )
 
 func TestCurrentIssueSerializationAndOrderingUseLiveLabels(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
+	ctx, connection := suiteDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
 	for _, id := range []string{testsupport.LabelIssue, testsupport.LabelEmptyIssue} {
 		var raw []byte
 		if err := connection.QueryRow(ctx, "SELECT "+IssueRowSQL("i")+" FROM issues i WHERE i.id=$1", id).Scan(&raw); err != nil {

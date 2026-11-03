@@ -1,5 +1,5 @@
 {
-  "loom_version": "v1.10.0-alpha.16",
+  "loom_version": "v1.10.0-alpha.22",
   "design_package": "github.com/CaliLuke/go-plane/externalintegrations/design",
-  "design_digest": "ee49926374e7638fc4e66afadbbb5814c115a544fc099b39f925882881e67082"
+  "design_digest": "281e6c22201f0bbf2a424522290eed8fa972d5568c423b89afd8cd2ed1d816f0"
 }

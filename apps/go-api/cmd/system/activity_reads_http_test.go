@@ -127,7 +127,7 @@ func newActivityHTTPHandlerWithOptions(service *activityHTTPService, options api
 
 func newActivityHTTPHandlerWithSession(service *activityHTTPService, options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie browserSessionCookieConfig) http.Handler {
 	mux := loomhttp.NewMuxer()
-	corsPolicy, err := djangoRuntimeCORSPolicy([]string{"https://app.example.com"})
+	corsPolicy, err := nativeRuntimeCORSPolicy([]string{"https://app.example.com"})
 	if err != nil {
 		panic(err)
 	}
@@ -138,7 +138,7 @@ func newActivityHTTPHandlerWithSession(service *activityHTTPService, options api
 	mountActivityReadsProtocolRoutes(mux, server, corsPolicy)
 	handler := newActivityReadsProtocolMiddleware(service, corsPolicy, stack, options, cookie, options.bodySizeLimit, true)(mux)
 	handler = readServicesCompatibilityMiddleware(handler)
-	handler = readServicesDjangoPathConverterMiddleware(corsPolicy, &options)(handler)
+	handler = readServicesNativePathConverterMiddleware(corsPolicy, &options)(handler)
 	handler = activityReadsSessionFinalizationMiddleware(sessions, cookie)(handler)
 	return loomhttp.RequestMetadataMiddleware(requestMetadataPolicy)(handler)
 }
@@ -213,7 +213,7 @@ func TestActivityMethodAuthorizerUsesPrimaryForUnsafeMethods(t *testing.T) {
 		t.Fatalf("read-only API=%d user=%d primary API=%d user=%d", readOnly.protocolCalls, readOnly.userProtocolCalls, primary.protocolCalls, primary.userProtocolCalls)
 	}
 }
-func TestActivitySlashlessRoutesPreserveDjangoStatusAndAPIAudit(t *testing.T) {
+func TestActivitySlashlessRoutesPreserveNativeStatusAndAPIAudit(t *testing.T) {
 	logger := &apiV1ActivityLoggerStub{}
 	service := &activityHTTPService{}
 	handler := newActivityHTTPHandlerWithOptions(service, apiV1CompatibilityOptions{
@@ -237,7 +237,7 @@ func TestActivitySlashlessRoutesPreserveDjangoStatusAndAPIAudit(t *testing.T) {
 			expectedVary := "Cookie, origin"
 			if unsafe {
 				expectedStatus, expectedLocation = http.StatusInternalServerError, ""
-				expectedBody = string(djangoDebugAppendSlashBody(request))
+				expectedBody = string(nativeDebugAppendSlashBody(request))
 			}
 			if response.Code != expectedStatus || response.Header().Get("Location") != expectedLocation || response.Header().Get("Content-Type") != "text/html; charset=utf-8" || response.Header().Get("Vary") != expectedVary || response.Body.String() != expectedBody {
 				t.Fatalf("%s %s status=%d headers=%#v body=%q", method, route, response.Code, response.Header(), response.Body.String())
@@ -276,7 +276,7 @@ func TestActivitySlashlessRoutesPreserveDjangoStatusAndAPIAudit(t *testing.T) {
 		t.Fatalf("slashless API audit records = %d, want %d", got, want)
 	}
 	for _, record := range logger.records {
-		if strings.HasSuffix(record.Path, "/") || record.TokenIdentifier == "" || record.ResponseCode != http.StatusNotFound || record.ResponseBody != string(djangoNotFoundBody) {
+		if strings.HasSuffix(record.Path, "/") || record.TokenIdentifier == "" || record.ResponseCode != http.StatusNotFound || record.ResponseBody != string(nativeNotFoundBody) {
 			t.Fatalf("slashless API audit record = %#v", record)
 		}
 	}
@@ -320,7 +320,7 @@ func TestActivitySlashlessUsesOuterSessionResponseSemantics(t *testing.T) {
 		request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 		response := httptest.NewRecorder()
 		handler.ServeHTTP(response, request)
-		expectedBody := string(djangoDebugAppendSlashBody(request))
+		expectedBody := string(nativeDebugAppendSlashBody(request))
 		if response.Code != http.StatusInternalServerError || response.Body.String() != expectedBody || sessions.calls != 0 || sessions.earlyCalls != 1 || sessions.earlyStatus != http.StatusInternalServerError || response.Header().Get("Set-Cookie") != "" {
 			t.Fatalf("status=%d body=%q inspected=%d finalized=%d final_status=%d headers=%#v", response.Code, response.Body.String(), sessions.calls, sessions.earlyCalls, sessions.earlyStatus, response.Header())
 		}
@@ -335,7 +335,7 @@ func TestActivitySlashlessUsesOuterSessionResponseSemantics(t *testing.T) {
 				request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 				response := httptest.NewRecorder()
 				handler.ServeHTTP(response, request)
-				if response.Code != http.StatusInternalServerError || response.Header().Get("Content-Type") != "text/plain; charset=utf-8" || !strings.Contains(response.Body.String(), "APPEND_SLASH=False") {
+				if response.Code != http.StatusInternalServerError || response.Header().Get("Content-Type") != "text/plain; charset=utf-8" || !strings.Contains(response.Body.String(), "requires a trailing slash") {
 					t.Fatalf("Accept=%q status=%d content_type=%q body=%q", accept, response.Code, response.Header().Get("Content-Type"), response.Body.String())
 				}
 			})
@@ -344,7 +344,7 @@ func TestActivitySlashlessUsesOuterSessionResponseSemantics(t *testing.T) {
 			t.Run(accept, func(t *testing.T) {
 				request := httptest.NewRequest(http.MethodPost, "/api/users/me/activities", nil)
 				request.Header.Set("Accept", accept)
-				body, contentType := djangoDebugAppendSlashResponse(request)
+				body, contentType := nativeDebugAppendSlashResponse(request)
 				if contentType != "text/html; charset=utf-8" || !strings.HasPrefix(string(body), "<!DOCTYPE html>") {
 					t.Fatalf("Accept=%q content_type=%q body=%q", accept, contentType, body)
 				}
@@ -490,7 +490,7 @@ func TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationTh
 		request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})
 		response := httptest.NewRecorder()
 		handler.ServeHTTP(response, request)
-		if response.Code != http.StatusBadRequest || response.Body.String() != string(djangoBadRequestBody) || sessions.refreshCalls != 1 || len(logger.records) != 1 || logger.records[0].ResponseCode != http.StatusOK {
+		if response.Code != http.StatusBadRequest || response.Body.String() != string(nativeBadRequestBody) || sessions.refreshCalls != 1 || len(logger.records) != 1 || logger.records[0].ResponseCode != http.StatusOK {
 			t.Fatalf("status=%d body=%q refresh=%d audit=%#v", response.Code, response.Body.String(), sessions.refreshCalls, logger.records)
 		}
 	})
@@ -518,7 +518,7 @@ func TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationTh
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})
 			response := httptest.NewRecorder()
 			handler.ServeHTTP(response, request)
-			if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(djangoRequestTooLargeBody) || sessions.calls != 0 || service.alias != "" {
+			if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(nativeRequestTooLargeBody) || sessions.calls != 0 || service.alias != "" {
 				t.Fatalf("method=%s status=%d body=%q session_calls=%d dispatch=%q", method, response.Code, response.Body.String(), sessions.calls, service.alias)
 			}
 		}
@@ -583,10 +583,10 @@ func TestActivityAPIV1PreservesRawIntegerSyntaxAndMalformedUUIDContract(t *testi
 	handler := newActivityHTTPHandler(service)
 	path := "/api/v1/workspaces/demo/projects/00000000-0000-4000-8000-000000000001/issues/00000000-0000-4000-8000-000000000002/activities/"
 	response := httptest.NewRecorder()
-	request := httptest.NewRequest(http.MethodGet, path+"?per_page=%20%31_%30%20", nil)
+	request := httptest.NewRequest(http.MethodGet, path+"?per_page=%20%31%30%20", nil)
 	request.Header.Set("X-Api-Key", "token")
 	handler.ServeHTTP(response, request)
-	if response.Code != http.StatusOK || service.query != " 1_0 " || service.decodedPerPage != 10 {
+	if response.Code != http.StatusOK || service.query != " 10 " || service.decodedPerPage != 10 {
 		t.Fatalf("status=%d raw=%q decoded=%d body=%q", response.Code, service.query, service.decodedPerPage, response.Body.String())
 	}
 
@@ -656,7 +656,7 @@ func TestActivityAPIKeyCompatibilityPreservesExactCredentialAndAuditsUserRoute(t
 	request.Header.Set("X-Api-Key", "audit-only")
 	request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})
 	handler.ServeHTTP(response, request)
-	if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(djangoRequestTooLargeBody) || len(logger.records) != 0 {
+	if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(nativeRequestTooLargeBody) || len(logger.records) != 0 {
 		t.Fatalf("oversized status=%d body=%q logs=%#v", response.Code, response.Body.String(), logger.records)
 	}
 }

@@ -164,14 +164,6 @@ var NotificationHTTPError = Type("NotificationHTTPError", func() {
 	Attribute("snoozed_till", Any)
 })
 
-var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
-	Description("Plane API token authentication.")
-})
-
-var ImportedPlaneAdminSessionCookieSecurity = APIKeySecurity("PlaneAdminSessionCookie", func() {
-	Description("Plane instance-administration session authentication without CSRF enforcement.")
-})
-
 var ImportedPlaneSessionCookieSecurity = APIKeySecurity("PlaneSessionCookie", func() {
 	Description("Plane session authentication without CSRF enforcement.")
 })

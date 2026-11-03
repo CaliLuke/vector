@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -44,7 +43,7 @@ func (effects *cycleCreationEffects) Task(_ context.Context, task string, _ []an
 
 func cycleLifecycleFixture(t *testing.T) (context.Context, *pgx.Conn, *LifecycleRepository, *cycleCreationEffects) {
 	t.Helper()
-	ctx, connection := postgresfixture.OpenSQL(t, cycleLifecycleSchema)
+	ctx, connection := suiteDatabases.OpenSQL(t, cycleLifecycleSchema)
 	effects := &cycleCreationEffects{}
 	repository, err := NewLifecycleRepository(connection, effects, "")
 	if err != nil {

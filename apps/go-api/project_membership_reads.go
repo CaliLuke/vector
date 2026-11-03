@@ -68,7 +68,7 @@ func NewProjectMembershipReads(
 		return nil, fmt.Errorf("project membership reads repository is required")
 	}
 	if sessions == nil {
-		return nil, fmt.Errorf("session validator for Django is required")
+		return nil, fmt.Errorf("session validator is required")
 	}
 	return &projectMembershipReadsService{repository: repository, sessions: sessions}, nil
 }

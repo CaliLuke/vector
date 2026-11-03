@@ -47,7 +47,7 @@ func readServiceProtocolHasMalformedUUID(requestPath string, protocol readServic
 			}
 			continue
 		}
-		if !djangoUUIDPathSegment(segments[index]) {
+		if !nativeUUIDPathSegment(segments[index]) {
 			return true
 		}
 	}
@@ -91,7 +91,7 @@ func stickyFormatToken(value string) bool {
 	return true
 }
 
-func djangoUUIDPathSegment(value string) bool {
+func nativeUUIDPathSegment(value string) bool {
 	if len(value) != 36 || value[8] != '-' || value[13] != '-' || value[18] != '-' || value[23] != '-' {
 		return false
 	}
@@ -148,11 +148,11 @@ func normalizeReadServiceScalarQueryValues(request *http.Request) *http.Request 
 	return clone
 }
 
-func readServicesDjangoPathConverterMiddleware(policy loomhttp.RuntimeCORSPolicy, activityOptions *apiV1CompatibilityOptions) func(http.Handler) http.Handler {
+func readServicesNativePathConverterMiddleware(policy loomhttp.RuntimeCORSPolicy, activityOptions *apiV1CompatibilityOptions) func(http.Handler) http.Handler {
 	notFound := policy.Handler(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		headers := response.Header()
 		headers.Set("Content-Type", "text/html; charset=utf-8")
-		headers.Set("Content-Length", strconv.Itoa(len(djangoNotFoundBody)))
+		headers.Set("Content-Length", strconv.Itoa(len(nativeNotFoundBody)))
 		headers.Set("Cross-Origin-Opener-Policy", "same-origin")
 		headers.Set("Referrer-Policy", "same-origin")
 		removeVary(headers, "Origin")
@@ -161,7 +161,7 @@ func readServicesDjangoPathConverterMiddleware(policy loomhttp.RuntimeCORSPolicy
 		headers.Set("X-Frame-Options", "DENY")
 		response.WriteHeader(http.StatusNotFound)
 		if request.Method != http.MethodHead {
-			_, _ = response.Write(djangoNotFoundBody)
+			_, _ = response.Write(nativeNotFoundBody)
 		}
 	}))
 	activityNotFound := http.Handler(notFound)
@@ -183,7 +183,7 @@ func readServicesDjangoPathConverterMiddleware(policy loomhttp.RuntimeCORSPolicy
 			if detail {
 				allow = "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
 			}
-			setDjangoProtocolCompatibilityHeaders(response.Header(), allow)
+			setNativeProtocolCompatibilityHeaders(response.Header(), allow)
 			writeReadServiceNegotiationResponse(response, request, http.StatusNotFound, "application/json", readServicesFormatNotFoundBody)
 		}))
 		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {

@@ -88,7 +88,7 @@ func TestUserAccountProtocolMetadataAndAppendSlash(t *testing.T) {
 }
 
 func TestWorkspaceCollectionOptionsUsesRecordedSourceMetadata(t *testing.T) {
-	policy, err := djangoRuntimeCORSPolicy([]string{"https://app.example.test"})
+	policy, err := nativeRuntimeCORSPolicy([]string{"https://app.example.test"})
 	if err != nil {
 		t.Fatal(err)
 	}

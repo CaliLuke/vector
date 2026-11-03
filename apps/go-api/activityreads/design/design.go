@@ -5,7 +5,7 @@ package design
 
 import . "github.com/CaliLuke/loom/dsl"
 
-const djangoURLUUIDPattern = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+const canonicalUUIDPattern = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
 
 var activityErrorResponseBody = Type("ActivityErrorResponseBody", func() {
 	ErrorName("name", String, func() { Meta("struct:tag:json", "-") })
@@ -414,7 +414,7 @@ var ImportedRestFrameworkSerializersUseractivitypageResponse = Type("RestFramewo
 })
 
 var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
-	Description("Plane API token authentication.")
+	Description("Vector API token authentication.")
 })
 
 var ImportedPlaneSessionCookieSecurity = APIKeySecurity("PlaneSessionCookie", func() {
@@ -530,7 +530,7 @@ var _ = Service("ActivityReads", func() {
 			})
 			Attribute("issue_id", String, func() {
 				Description("Issue ID")
-				Pattern(djangoURLUUIDPattern)
+				Pattern(canonicalUUIDPattern)
 			})
 			Attribute("orderBy", String, func() {
 				Description("Field to order results by. Prefix with '-' for descending order")
@@ -543,7 +543,7 @@ var _ = Service("ActivityReads", func() {
 			})
 			Attribute("project_id", String, func() {
 				Description("Project ID")
-				Pattern(djangoURLUUIDPattern)
+				Pattern(canonicalUUIDPattern)
 			})
 			Attribute("slug", String, func() {
 				Description("Workspace slug")
@@ -630,7 +630,7 @@ var _ = Service("ActivityReads", func() {
 			})
 			Attribute("issue_id", String, func() {
 				Description("Issue ID")
-				Pattern(djangoURLUUIDPattern)
+				Pattern(canonicalUUIDPattern)
 			})
 			Attribute("orderBy", String, func() {
 				Description("Field to order results by. Prefix with '-' for descending order")
@@ -643,11 +643,11 @@ var _ = Service("ActivityReads", func() {
 			})
 			Attribute("pk", String, func() {
 				Description("Activity ID")
-				Pattern(djangoURLUUIDPattern)
+				Pattern(canonicalUUIDPattern)
 			})
 			Attribute("project_id", String, func() {
 				Description("Project ID")
-				Pattern(djangoURLUUIDPattern)
+				Pattern(canonicalUUIDPattern)
 			})
 			Attribute("slug", String, func() {
 				Description("Workspace slug")
@@ -735,7 +735,7 @@ var _ = Service("ActivityReads", func() {
 			})
 			Attribute("issue_id", String, func() {
 				Description("Issue ID")
-				Pattern(djangoURLUUIDPattern)
+				Pattern(canonicalUUIDPattern)
 			})
 			Attribute("orderBy", String, func() {
 				Description("Field to order results by. Prefix with '-' for descending order")
@@ -748,7 +748,7 @@ var _ = Service("ActivityReads", func() {
 			})
 			Attribute("project_id", String, func() {
 				Description("Project ID")
-				Pattern(djangoURLUUIDPattern)
+				Pattern(canonicalUUIDPattern)
 			})
 			Attribute("slug", String, func() {
 				Description("Workspace slug")
@@ -835,7 +835,7 @@ var _ = Service("ActivityReads", func() {
 			})
 			Attribute("issue_id", String, func() {
 				Description("Issue ID")
-				Pattern(djangoURLUUIDPattern)
+				Pattern(canonicalUUIDPattern)
 			})
 			Attribute("orderBy", String, func() {
 				Description("Field to order results by. Prefix with '-' for descending order")
@@ -848,11 +848,11 @@ var _ = Service("ActivityReads", func() {
 			})
 			Attribute("pk", String, func() {
 				Description("Activity ID")
-				Pattern(djangoURLUUIDPattern)
+				Pattern(canonicalUUIDPattern)
 			})
 			Attribute("project_id", String, func() {
 				Description("Project ID")
-				Pattern(djangoURLUUIDPattern)
+				Pattern(canonicalUUIDPattern)
 			})
 			Attribute("slug", String, func() {
 				Description("Workspace slug")

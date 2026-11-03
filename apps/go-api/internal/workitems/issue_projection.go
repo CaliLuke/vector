@@ -9,7 +9,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/google/uuid"
 )
 
@@ -72,11 +72,11 @@ func issueSortOrder(number json.Number) (json.Number, error) {
 	if _, err := json.Marshal(number); err != nil {
 		return "", fmt.Errorf("invalid issue sort order: %w", err)
 	}
-	value, err := number.Float64()
+	_, err := number.Float64()
 	if err != nil {
 		return "", fmt.Errorf("convert issue sort order: %w", err)
 	}
-	return json.Number(pythoncompat.FloatString(value)), nil
+	return number, nil
 }
 
 func (r *Repository) annotateIssue(ctx context.Context, row map[string]any, actor string, identifier bool) (map[string]any, error) {
@@ -172,7 +172,7 @@ func (r *Repository) readIssue(ctx context.Context, q Request) (Result, error) {
 }
 
 func orderedDump(value map[string]any, keys []string) (string, error) {
-	return pythoncompat.Dumps(value, jsonOrder(keys, nil))
+	return jsonvalue.Ordered(value, jsonOrder(keys, nil))
 }
 
 func jsonOrder(keys []string, children map[string][]byte) []byte {

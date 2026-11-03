@@ -50,7 +50,7 @@ func TestAnalyticQueryPreservesJSONNumbersAndZeroTruthiness(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	const normalized = `{"state":[9007199254740993],"priority":0,"assignees":0.0,"labels":0.0,"project":123456789012345678901234567890}`
+	const normalized = `{"state":[9007199254740993],"priority":0,"assignees":0.0,"labels":1e-999,"project":123456789012345678901234567890}`
 	if string(repository.queryDict) != normalized {
 		t.Fatalf("stored query_dict = %s, want %s", repository.queryDict, normalized)
 	}
@@ -61,7 +61,7 @@ func TestAnalyticQueryPreservesJSONNumbersAndZeroTruthiness(t *testing.T) {
 	if string(fields["state__in"]) != "[9007199254740993]" || string(fields["project__in"]) != "123456789012345678901234567890" {
 		t.Fatalf("derived numeric query = %s", repository.query)
 	}
-	if fields["priority__in"] != nil || fields["assignees__in"] != nil || fields["labels__in"] != nil {
+	if fields["priority__in"] != nil || fields["assignees__in"] != nil {
 		t.Fatalf("zero-valued filters were retained: %s", repository.query)
 	}
 }

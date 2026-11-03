@@ -18,3 +18,12 @@ func TestModuleNameOrderingRequiresScopeOnlyForModuleLists(t *testing.T) {
 		t.Fatalf("scoped module ordering=%s err=%v", order, err)
 	}
 }
+
+func TestComplexFiltersRejectNonJSONConstants(t *testing.T) {
+	for _, raw := range []string{`{"priority":NaN}`, `{"priority":Infinity}`, `{"priority":-Infinity}`, `{"priority":"low"} {}`} {
+		args := []any{}
+		if _, err := BuildComplexFilter(raw, &args); err == nil {
+			t.Errorf("accepted invalid JSON filter %s", raw)
+		}
+	}
+}

@@ -62,3 +62,29 @@ func TestTemplateMigratesOnceForConcurrentIndependentDatabases(t *testing.T) {
 		}
 	}
 }
+
+func TestTemplateSQLFixturesIsolateWritesAndCleanUpEachClone(t *testing.T) {
+	template := NewTemplate(func(context.Context, string) error { return nil })
+	t.Cleanup(func() { testsupport.Close(t, template) })
+	parent := t
+	for _, name := range []string{"first", "second"} {
+		t.Run(name, func(t *testing.T) {
+			ctx, db := template.OpenSQL(t, `CREATE TABLE marker(value int); INSERT INTO marker VALUES(42)`)
+			var value int
+			if err := db.QueryRow(ctx, `DELETE FROM marker RETURNING value`).Scan(&value); err != nil || value != 42 {
+				t.Fatalf("independent fixture value=%d error=%v", value, err)
+			}
+			// Leave another connection open: cleanup must still reclaim the database.
+			leaked, err := pgx.Connect(ctx, db.Config().ConnString())
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Close the client after the child cleanup has dropped its database.
+			parent.Cleanup(func() { testsupport.CloseContext(parent, leaked, context.Background()) })
+		})
+		var clones int
+		if err := template.pair.adminPool.QueryRow(t.Context(), `SELECT count(*) FROM pg_database WHERE datname LIKE 'plane_test_%'`).Scan(&clones); err != nil || clones != 0 {
+			t.Fatalf("fixture cleanup left %d databases: %v", clones, err)
+		}
+	}
+}

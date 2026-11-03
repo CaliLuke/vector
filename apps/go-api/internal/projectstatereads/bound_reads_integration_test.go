@@ -3,14 +3,11 @@
 package projectstatereads
 
 import (
-	"context"
 	"encoding/json"
 	"testing"
-	"time"
 	"uuid"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
 )
@@ -36,15 +33,7 @@ func boundReadRequest(project, state string) APIV1Request {
 
 func boundStateDatabase(t *testing.T) *pgx.Conn {
 	t.Helper()
-	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
-	t.Cleanup(cancel)
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, url string) error {
-		db, err := pgx.Connect(ctx, url)
-		if err != nil {
-			return err
-		}
-		defer func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) }()
-		_, err = db.Exec(ctx, `
+	_, db := stateDatabases.OpenSQL(t, `
 CREATE TABLE users(id uuid PRIMARY KEY,is_active boolean NOT NULL DEFAULT true);
 CREATE TABLE workspaces(id uuid PRIMARY KEY,slug text,deleted_at timestamptz);
 CREATE TABLE projects(id uuid PRIMARY KEY,workspace_id uuid,deleted_at timestamptz,archived_at timestamptz);
@@ -63,13 +52,6 @@ INSERT INTO states(id,project_id,workspace_id) VALUES
  ('00000000-0000-4000-8000-000000000005','00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000002'),
  ('00000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000002');
 `)
-		return err
-	})
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, pair.Close()) })
-	db, err := pgx.Connect(ctx, pair.SeedURL())
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, db.Close(context.WithoutCancel(ctx))) })
 	return db
 }
 
@@ -90,7 +72,7 @@ func TestBoundStateReadsPreserveProjectionAndDeterministicPages(t *testing.T) {
 			require.Len(t, rows, 1)
 			record := rows[0].(map[string]any)
 			require.Equal(t, boundState, record["id"])
-			require.Equal(t, json.Number("0.0"), record["sequence"])
+			require.Equal(t, json.Number("0"), record["sequence"])
 			require.Equal(t, false, record["default"])
 			require.Len(t, record, 18)
 			detail, err := repository.ReadAPIV1(t.Context(), boundActor, boundReadRequest(project, boundState))

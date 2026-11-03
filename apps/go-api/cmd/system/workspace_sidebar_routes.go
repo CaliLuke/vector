@@ -8,7 +8,7 @@ import (
 )
 
 func workspaceSidebarPreferencesCompatibilityMiddleware(next http.Handler) http.Handler {
-	return djangoProtocolCompatibilityMiddleware(func(string) string { return "GET, PATCH, HEAD, OPTIONS" })(next)
+	return nativeProtocolCompatibilityMiddleware(func(string) string { return "GET, PATCH, HEAD, OPTIONS" })(next)
 }
 
 func mountWorkspaceSidebarPreferencesRoutes(pending pendingReplacementEndpoints, mux loomhttp.Muxer) {
@@ -16,7 +16,7 @@ func mountWorkspaceSidebarPreferencesRoutes(pending pendingReplacementEndpoints,
 		server := workspacesidebarpreferencessvr.New(pending.workspaceSidebarPreferences, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 		server.Use(workspaceSidebarPreferencesCompatibilityMiddleware)
 		workspacesidebarpreferencessvr.Mount(mux, server)
-		mountProtocolHandler(mux, http.MethodHead, "/api/workspaces/{slug}/sidebar-preferences/", djangoProtocolHeadHandler(workspaceSidebarPreferencesCompatibilityMiddleware, server.Get))
-		mountProtocolHandler(mux, http.MethodOptions, "/api/workspaces/{slug}/sidebar-preferences/", djangoProtocolOptionsHandler(workspaceSidebarPreferencesCompatibilityMiddleware, "Workspace User Preference Endpoint", true))
+		mountProtocolHandler(mux, http.MethodHead, "/api/workspaces/{slug}/sidebar-preferences/", nativeProtocolHeadHandler(workspaceSidebarPreferencesCompatibilityMiddleware, server.Get))
+		mountProtocolHandler(mux, http.MethodOptions, "/api/workspaces/{slug}/sidebar-preferences/", nativeProtocolOptionsHandler(workspaceSidebarPreferencesCompatibilityMiddleware, "Workspace User Preference Endpoint", true))
 	}
 }

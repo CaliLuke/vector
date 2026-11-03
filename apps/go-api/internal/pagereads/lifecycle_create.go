@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"time"
 	"uuid"
+
+	"github.com/CaliLuke/go-plane/internal/datetime"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
@@ -174,7 +175,7 @@ func (repository *Repository) validatePageCreateFields(ctx context.Context, work
 		date, ok := value.(string)
 		if !ok {
 			validationErrors["archived_at"] = []string{"Date has wrong format. Use one of these formats instead: YYYY-MM-DD."}
-		} else if _, err := time.Parse(time.DateOnly, date); err != nil {
+		} else if _, err := datetime.Date(date); err != nil {
 			validationErrors["archived_at"] = []string{"Date has wrong format. Use one of these formats instead: YYYY-MM-DD."}
 		} else {
 			archivedAt = date
@@ -195,18 +196,13 @@ func parsePageCreateContent(fields map[string]any) (pageCreateContent, error) {
 	if !present {
 		descriptionHTMLValue = "<p></p>"
 	}
-	// Create passes description_html through serializer context directly rather
-	// than through a declared DRF field. Keep its raw value for storage and task
-	// publication; in particular, form strings retain surrounding whitespace.
-	descriptionHTML := descriptionHTMLValue
-	if descriptionHTML != nil {
-		if _, ok := descriptionHTML.(string); !ok {
-			// The source model's save hook calls strip_tags on this raw context
-			// value before persistence. Non-string values fail there and reach
-			// the view's generic exception boundary without durable effects.
-			return pageCreateContent{}, &LifecycleError{Status: http.StatusInternalServerError, Body: map[string]any{"error": "Something went wrong please try again later"}}
-		}
+	// Keep HTML whitespace for editor round trips, but reject nontext input
+	// before opening a transaction.
+	descriptionHTML, ok := descriptionHTMLValue.(string)
+	if !ok {
+		return pageCreateContent{}, &apicontract.HTTPError{Status: 400, Body: map[string]any{"description_html": []string{"Must be a string."}}}
 	}
+
 	descriptionJSON, present := fields["description_json"]
 	if !present {
 		descriptionJSON = map[string]any{}
@@ -219,20 +215,22 @@ func parsePageCreateContent(fields map[string]any) (pageCreateContent, error) {
 		}
 		jsonBytes = encoded
 	}
-	binary := fields["description_binary"]
-	if binary != nil {
-		if _, ok := binary.([]byte); !ok {
-			// Create treats this value as raw model context, not the dedicated
-			// endpoint's base64 serializer field. The source database adapter
-			// rejects a request string here before any transaction commits.
-			return pageCreateContent{}, &LifecycleError{Status: http.StatusInternalServerError, Body: map[string]any{"error": "Something went wrong please try again later"}}
+	var binary any
+	if value := fields["description_binary"]; value != nil {
+		encoded, ok := value.(string)
+		if !ok {
+			return pageCreateContent{}, &apicontract.HTTPError{Status: 400, Body: map[string]any{"description_binary": []string{"Must be a base64 string."}}}
 		}
+		decoded, err := content.DecodeBase64Binary(encoded)
+		if err != nil {
+			return pageCreateContent{}, &apicontract.HTTPError{Status: 400, Body: map[string]any{"description_binary": []string{err.Error()}}}
+		}
+		binary = decoded
 	}
+
 	var descriptionStripped any
-	if html, ok := descriptionHTML.(string); ok {
-		if html != "" {
-			descriptionStripped = content.StripTags(html)
-		}
+	if descriptionHTML != "" {
+		descriptionStripped = content.StripTags(descriptionHTML)
 	}
 	return pageCreateContent{html: descriptionHTML, json: jsonBytes, binary: binary, stripped: descriptionStripped}, nil
 }

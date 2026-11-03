@@ -10,8 +10,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Defaults, option ownership and cardinality are credential-neutral. Credential
+// and current-access coverage lives in the customer authorization suites.
 func TestMCPCustomerPropertyOptionDefaultsAndIdentity(t *testing.T) {
-	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "customers": true}))
 		property := milestoneObject(t, call("customer_property", map[string]any{"action": "create", "display_name": "Options " + uuid.NewString(), "property_type": "OPTION", "options": `[{"name":"First","is_default":true},{"name":"Second"}]`}))
 		propertyID := property["id"].(string)
@@ -52,7 +54,7 @@ func TestMCPCustomerPropertyOptionDefaultsAndIdentity(t *testing.T) {
 }
 
 func TestMCPCustomerPropertyRejectsForeignOptionsAtomically(t *testing.T) {
-	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "customers": true}))
 		property := milestoneObject(t, call("customer_property", map[string]any{"action": "create", "display_name": "Own " + uuid.NewString(), "property_type": "OPTION", "options": `[{"name":"Own","is_default":true}]`}))
 		other := milestoneObject(t, call("customer_property", map[string]any{"action": "create", "display_name": "Other " + uuid.NewString(), "property_type": "OPTION", "options": `[{"name":"Other","is_default":true}]`}))
@@ -75,7 +77,7 @@ func TestMCPCustomerPropertyRejectsForeignOptionsAtomically(t *testing.T) {
 }
 
 func TestMCPCustomerPropertyOptionDefaultsRespectCardinality(t *testing.T) {
-	runCatalogueCredentials(t, newMilestoneFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
+	runCatalogue(t, newMilestoneFixture(t), func(t *testing.T, _ milestoneFixture, call catalogueCall) {
 		milestoneObject(t, call("workspace", map[string]any{"action": "update_features", "customers": true}))
 		options := `[{"name":"First","is_default":true},{"name":"Second","is_default":true}]`
 		milestoneFailure(t, call("customer_property", map[string]any{"action": "create", "display_name": "Single " + uuid.NewString(), "property_type": "OPTION", "options": options}), "invalid_params")

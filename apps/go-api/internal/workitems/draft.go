@@ -10,7 +10,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 )
@@ -472,7 +472,7 @@ func (r *draftOperation) publishDraft(ctx context.Context, q Request, draft map[
 		return Result{}, err
 	}
 	q.IssueID = row["id"].(string)
-	requested, err := pythoncompat.Dumps(input.Fields, input.Raw)
+	requested, err := jsonvalue.Ordered(input.Fields, input.Raw)
 	if err != nil {
 		return Result{}, err
 	}
@@ -517,7 +517,7 @@ func (r *draftOperation) publishDraft(ctx context.Context, q Request, draft map[
 			return Result{}, dbutil.RollbackTransaction(ctx, tx.Rollback, moduleAssignmentErr)
 		}
 		for _, id := range ids {
-			requested, _ := pythoncompat.Dumps(map[string]any{"module_id": id}, nil)
+			requested, _ := jsonvalue.Ordered(map[string]any{"module_id": id}, nil)
 			if moduleAssignmentErr = r.activity(ctx, q, "module.activity.created", requested, nil, false); moduleAssignmentErr != nil {
 				return Result{}, moduleAssignmentErr
 			}

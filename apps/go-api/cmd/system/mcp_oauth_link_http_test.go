@@ -122,7 +122,7 @@ func TestMCPLinkResponseWriteFailureIsSanitizedBeforeLogging(t *testing.T) {
 	}}
 	mux := loomhttp.NewMuxer()
 	var reported error
-	cors, err := djangoRuntimeCORSPolicy(nil)
+	cors, err := nativeRuntimeCORSPolicy(nil)
 	require.NoError(t, err)
 	mountMCPOAuthLinks(mux, pendingReplacementEndpoints{mcpLinks: endpoints, mcpResourceURL: "https://vector.example/mcp"}, cors,
 		func(_ context.Context, _ http.ResponseWriter, failure error) { reported = failure })

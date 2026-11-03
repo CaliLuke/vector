@@ -133,7 +133,7 @@ func TestCollaborationMalformedFiltersReachAuthorizedDomainValidation(t *testing
 	}
 }
 
-func TestCollaborationGeneratedTransportAcceptsDjangoUUIDVariants(t *testing.T) {
+func TestCollaborationGeneratedTransportAcceptsNativeUUIDVariants(t *testing.T) {
 	for _, id := range []string{"00000000-0000-0000-0000-000000000000", "00000000-0000-4000-c000-000000000001"} {
 		for _, prefix := range []string{
 			"/api/public/anchor/board/issues/",

@@ -40,6 +40,7 @@ func (repository *Repository) Deactivate(ctx context.Context, userID uuid.UUID, 
 		`UPDATE project_members SET is_active=false,updated_at=clock_timestamp() WHERE member_id=$1 AND is_active AND deleted_at IS NULL`,
 		`UPDATE workspace_members SET is_active=false,updated_at=clock_timestamp() WHERE member_id=$1 AND is_active AND deleted_at IS NULL`,
 		`UPDATE workspace_member_invites SET deleted_at=clock_timestamp(),updated_at=clock_timestamp() WHERE email=(SELECT email FROM users WHERE id=$1) AND deleted_at IS NULL`,
+		`UPDATE project_member_invites SET deleted_at=clock_timestamp(),updated_at=clock_timestamp() WHERE lower(email)=lower((SELECT email FROM users WHERE id=$1)) AND deleted_at IS NULL`,
 		`DELETE FROM account_email_challenges WHERE user_id=$1`,
 	} {
 		if _, err = tx.Exec(ctx, query, userID); err != nil {

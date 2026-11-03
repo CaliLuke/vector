@@ -19,7 +19,7 @@ pnpm dev
 ```
 
 Open [Vector](http://localhost:8000) and [instance administration](http://localhost:8000/god-mode/).
-Use the proxy on port 8000 for browser access. See the [development guide](docs/development.md) for configuration and tests.
+Use the proxy on port 8000 for browser access. See the [development guide](docs/development.md) for local workflow exceptions.
 
 ## Documentation
 

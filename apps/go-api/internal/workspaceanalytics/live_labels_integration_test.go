@@ -6,12 +6,10 @@ import (
 	"encoding/json"
 	"testing"
 	"uuid"
-
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 )
 
 func TestChartLabelsUseCanonicalLiveRelations(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, `
+	ctx, connection := suiteDatabases.OpenSQL(t, `
 CREATE TABLE workspaces(id uuid PRIMARY KEY,slug text,deleted_at timestamptz);
 CREATE TABLE projects(id uuid PRIMARY KEY,workspace_id uuid,deleted_at timestamptz,archived_at timestamptz);
 CREATE TABLE project_members(project_id uuid,member_id uuid,is_active boolean,deleted_at timestamptz);

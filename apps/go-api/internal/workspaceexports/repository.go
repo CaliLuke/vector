@@ -71,7 +71,7 @@ func (r *Repository) CreateIssueExport(ctx context.Context, userID, slug, provid
 func (r *Repository) createHistory(ctx context.Context, userID, workspaceID, provider string, projects []any, includeCustom bool) (json.RawMessage, string, string, []any, error) {
 	parsedProjects := make([]pgtype.UUID, 0, len(projects))
 	for _, value := range projects {
-		id, err := djangoUUIDArrayValue(value)
+		id, err := nativeUUIDArrayValue(value)
 		if err != nil {
 			return nil, "", "", nil, err
 		}
@@ -89,7 +89,7 @@ func (r *Repository) createHistory(ctx context.Context, userID, workspaceID, pro
 	return json.RawMessage(response), workspaceID, token, projects, nil
 }
 
-func djangoUUIDArrayValue(value any) (pgtype.UUID, error) {
+func nativeUUIDArrayValue(value any) (pgtype.UUID, error) {
 	if value == nil {
 		return pgtype.UUID{}, nil
 	}

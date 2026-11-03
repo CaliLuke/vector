@@ -190,7 +190,7 @@ WITH requester AS MATERIALIZED (`+apiProjectRequesterSQL(6)+`), rows AS (
     AND ($3 OR project.archived_at IS NULL)
     AND (project.network=2 OR EXISTS (SELECT 1 FROM project_members member WHERE member.project_id=project.id AND member.workspace_id=project.workspace_id AND member.member_id=$1 AND member.is_active=true AND member.deleted_at IS NULL))
 ), ordered AS (SELECT item, row_number() OVER (ORDER BY %s) AS ordinal FROM rows), totals AS (SELECT count(*)::int AS total FROM rows)
-SELECT COALESCE((SELECT json_agg(item ORDER BY ordinal) FROM ordered WHERE ordinal > $4 AND ordinal <= $4+$5), '[]'::json), total, EXISTS(SELECT 1 FROM requester) FROM totals`, apiProjectCoverImageURL(), djangoTimestamp("project.archived_at"), order)
+SELECT COALESCE((SELECT json_agg(item ORDER BY ordinal) FROM ordered WHERE ordinal > $4 AND ordinal <= $4+$5), '[]'::json), total, EXISTS(SELECT 1 FROM requester) FROM totals`, apiProjectCoverImageURL(), nativeTimestamp("project.archived_at"), order)
 	var body []byte
 	var total int
 	var authorized bool

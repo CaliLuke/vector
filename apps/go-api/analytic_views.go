@@ -10,7 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
+
+	"github.com/CaliLuke/go-plane/internal/jsonvalue"
 
 	"uuid"
 
@@ -160,32 +162,7 @@ func analyticQuery(value any) (json.RawMessage, error) {
 	return json.Marshal(query)
 }
 
-func analyticTruthy(value any) bool {
-	switch typed := value.(type) {
-	case nil:
-		return false
-	case bool:
-		return typed
-	case string:
-		return typed != ""
-	case []any:
-		return len(typed) > 0
-	case map[string]any:
-		return len(typed) > 0
-	case float64:
-		return typed != 0
-	case json.Number:
-		if strings.ContainsAny(string(typed), ".eE") {
-			// Python's JSON decoder uses binary64 for decimals and exponents.
-			// Underflow therefore becomes false even while the raw value survives.
-			number, floatErr := pythoncompat.DecimalFloat64(string(typed))
-			return floatErr != nil || number != 0
-		}
-		return strings.Trim(string(typed), "-0") != ""
-	default:
-		return true
-	}
-}
+func analyticTruthy(value any) bool { return requestinput.Nonempty(value) }
 
 func analyticDateFilters(query map[string]any, field string, value any) {
 	var candidates []string
@@ -257,7 +234,7 @@ func (s *analyticViewsService) Create(ctx context.Context, p *api.CreatePayload)
 	qd := json.RawMessage(`{}`)
 	query := json.RawMessage(`{}`)
 	if len(p.QueryDict) > 0 && p.QueryDict.Kind() != 'n' {
-		qd, e = pythoncompat.NormalizeJSONNumbers(p.QueryDict)
+		qd, e = jsonvalue.Validate(p.QueryDict)
 		if e != nil {
 			return nil, api.JSONFieldValidation{"query_dict": []string{"Value must be valid JSON."}}
 		}

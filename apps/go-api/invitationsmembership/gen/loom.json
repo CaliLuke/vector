@@ -1,5 +1,5 @@
 {
-  "loom_version": "v1.10.0-alpha.17",
+  "loom_version": "v1.10.0-alpha.22",
   "design_package": "github.com/CaliLuke/go-plane/invitationsmembership/design",
-  "design_digest": "7305e7ff0802da7dbeb7143eecfbdb286234348110de7c44ae354c04c202f6d9"
+  "design_digest": "2d9450ee4c0aa0377af57213a1ca30c367084d987133b69c60cf898cb8cb60a0"
 }

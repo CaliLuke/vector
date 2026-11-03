@@ -93,7 +93,7 @@ func TestStickyServiceSessionAuthenticationAndMembershipDifference(t *testing.T)
 	}
 }
 
-func TestStickyServiceListMatchesDjangoCursorWrapper(t *testing.T) {
+func TestStickyServiceListMatchesNativeCursorWrapper(t *testing.T) {
 	repository := &stubStickyRepository{list: stickystore.StickyPage{
 		Stickies: []stickystore.Sticky{testSticky()}, TotalCount: 21, Page: 0, Limit: 20, HasNext: true,
 	}}

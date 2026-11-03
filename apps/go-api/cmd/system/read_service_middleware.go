@@ -65,10 +65,10 @@ func (writer *readServicesJSONIndentResponseWriter) finish(indent int) {
 
 func readServicesContentNegotiationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		formats, formatErr := djangoQueryValues(readServicesOriginalRawQuery(request), "format")
+		formats, formatErr := nativeQueryValues(readServicesOriginalRawQuery(request), "format")
 		if formatErr != nil {
 			log.Error(request.Context(), formatErr, log.KV{K: "msg", V: "parse read-service renderer format"})
-			writeReadServiceNegotiationResponse(response, request, http.StatusInternalServerError, "text/html; charset=utf-8", djangoServerErrorBody)
+			writeReadServiceNegotiationResponse(response, request, http.StatusInternalServerError, "text/html; charset=utf-8", nativeServerErrorBody)
 			return
 		}
 		if len(formats) > 0 {
@@ -78,13 +78,9 @@ func readServicesContentNegotiationMiddleware(next http.Handler) http.Handler {
 				return
 			}
 		}
-		accept, present := djangoRequestAcceptHeader(request)
-		acceptsJSON, jsonIndent, err := projectMembershipReadsJSONNegotiation(accept, present)
-		if err != nil {
-			log.Error(request.Context(), err, log.KV{K: "msg", V: "negotiate read-service response"})
-			writeReadServiceNegotiationResponse(response, request, http.StatusInternalServerError, "text/html; charset=utf-8", djangoServerErrorBody)
-			return
-		}
+		accept, present := nativeRequestAcceptHeader(request)
+		acceptsJSON, jsonIndent := projectMembershipReadsJSONNegotiation(accept, present)
+
 		if !acceptsJSON {
 			writeReadServiceNegotiationResponse(response, request, http.StatusNotAcceptable, "application/json", readServicesNotAcceptableBody)
 			return
@@ -152,8 +148,8 @@ func (writer *readServicesGzipResponseWriter) finish(request *http.Request) {
 		(request.Method == http.MethodGet || request.Method == http.MethodHead) &&
 		status == http.StatusOK && writer.Header().Get("Content-Encoding") == "" {
 		prependAcceptEncodingVary(writer.Header())
-		if acceptsGzipEncoding(djangoJoinedHeader(request, "Accept-Encoding")) {
-			if compressed, err := djangoGzip(body, nil); err == nil {
+		if acceptsGzipEncoding(nativeJoinedHeader(request, "Accept-Encoding")) {
+			if compressed, err := nativeGzip(body, nil); err == nil {
 				writer.Header().Del("Content-Length")
 				writer.Header().Set("Content-Encoding", "gzip")
 				if request.Method == http.MethodHead {
@@ -179,11 +175,11 @@ func (writer *readServicesGzipResponseWriter) finish(request *http.Request) {
 	}
 	if representationLength >= 200 && writer.Header().Get("Content-Encoding") == "" {
 		prependAcceptEncodingVary(writer.Header())
-		if acceptsGzipEncoding(djangoJoinedHeader(request, "Accept-Encoding")) {
+		if acceptsGzipEncoding(nativeJoinedHeader(request, "Accept-Encoding")) {
 			if streamingHead {
 				writer.Header().Del("Content-Length")
 				writer.Header().Set("Content-Encoding", "gzip")
-			} else if compressed, err := djangoGzip(body, nil); err == nil && len(compressed) < len(body) {
+			} else if compressed, err := nativeGzip(body, nil); err == nil && len(compressed) < len(body) {
 				body = compressed
 				writer.Header().Set("Content-Encoding", "gzip")
 				writer.Header().Set("Content-Length", strconv.Itoa(len(body)))
@@ -324,10 +320,10 @@ func writeReadServicesSessionInspectionError(response http.ResponseWriter, reque
 
 func writeReadServicesSessionError(response http.ResponseWriter, request *http.Request, causes ...error) {
 	status := http.StatusInternalServerError
-	body := djangoServerErrorBody
+	body := nativeServerErrorBody
 	if len(causes) != 0 && (errors.Is(causes[0], browsersession.ErrSessionNotFound) || errors.Is(causes[0], browsersession.ErrSessionUpdate)) {
 		status = http.StatusBadRequest
-		body = djangoBadRequestBody
+		body = nativeBadRequestBody
 	}
 	headers := response.Header()
 	headers.Del("Allow")
@@ -347,7 +343,7 @@ func writeReadServicesSessionError(response http.ResponseWriter, request *http.R
 	}
 }
 
-type djangoReadServiceHTML500ResponseWriter struct {
+type nativeReadServiceHTML500ResponseWriter struct {
 	http.ResponseWriter
 	request     *http.Request
 	wroteHeader bool
@@ -355,12 +351,12 @@ type djangoReadServiceHTML500ResponseWriter struct {
 	omitAllow   bool
 }
 
-func (writer *djangoReadServiceHTML500ResponseWriter) WriteHeader(status int) {
+func (writer *nativeReadServiceHTML500ResponseWriter) WriteHeader(status int) {
 	if writer.wroteHeader {
 		return
 	}
 	writer.wroteHeader = true
-	if status == http.StatusInternalServerError && systemapi.ReadServiceDjangoHTML500(writer.request.Context()) {
+	if status == http.StatusInternalServerError && systemapi.ReadServiceNativeHTML500(writer.request.Context()) {
 		writer.failed = true
 		headers := writer.Header()
 		if writer.omitAllow {
@@ -369,17 +365,17 @@ func (writer *djangoReadServiceHTML500ResponseWriter) WriteHeader(status int) {
 		headers.Del("Content-Encoding")
 		headers.Del("loom-error")
 		headers.Set("Content-Type", "text/html; charset=utf-8")
-		headers.Set("Content-Length", strconv.Itoa(len(djangoServerErrorBody)))
+		headers.Set("Content-Length", strconv.Itoa(len(nativeServerErrorBody)))
 		writer.ResponseWriter.WriteHeader(status)
 		if writer.request.Method != http.MethodHead {
-			_, _ = writer.ResponseWriter.Write(djangoServerErrorBody)
+			_, _ = writer.ResponseWriter.Write(nativeServerErrorBody)
 		}
 		return
 	}
 	writer.ResponseWriter.WriteHeader(status)
 }
 
-func (writer *djangoReadServiceHTML500ResponseWriter) Write(body []byte) (int, error) {
+func (writer *nativeReadServiceHTML500ResponseWriter) Write(body []byte) (int, error) {
 	if !writer.wroteHeader {
 		writer.WriteHeader(http.StatusOK)
 	}
@@ -422,9 +418,9 @@ func readServicesCompatibilityMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		request = captureReadServicesOriginalRawQuery(request)
-		request = normalizeDjangoTolerantQuery(request)
+		request = normalizeNativeTolerantQuery(request)
 		request = normalizeReadServiceScalarQueryValues(request)
-		setDjangoProtocolCompatibilityHeaders(response.Header(), protocol.allow)
+		setNativeProtocolCompatibilityHeaders(response.Header(), protocol.allow)
 		if isInstanceManagementPlainRedirect(protocol.pattern) && readServiceMethodAllowed(protocol.allow, request.Method) {
 			// These three admin routes are plain Django Views. Their successful
 			// form responses do not carry DRF's Allow header; unsupported-method
@@ -474,7 +470,7 @@ func writeReadServiceJSON(response http.ResponseWriter, status int, value any) {
 	_, _ = response.Write(body)
 }
 
-func setDjangoProtocolCompatibilityHeaders(headers http.Header, allow string) {
+func setNativeProtocolCompatibilityHeaders(headers http.Header, allow string) {
 	headers.Set("Allow", allow)
 	headers.Set("Cross-Origin-Opener-Policy", "same-origin")
 	headers.Set("Referrer-Policy", "same-origin")

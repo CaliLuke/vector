@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
 )
@@ -22,7 +21,7 @@ type pqlIdentityFixture struct {
 
 func newPQLIdentityFixture(t *testing.T) pqlIdentityFixture {
 	t.Helper()
-	ctx, db := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed+pqlReadSeed+pqlIdentitySeed)
+	ctx, db := suiteDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed+pqlReadSeed+pqlIdentitySeed)
 	repo, err := NewRepository(db, modelPublisher{}, "https://example.test")
 	require.NoError(t, err)
 	repo.now = func() time.Time { return time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC) }

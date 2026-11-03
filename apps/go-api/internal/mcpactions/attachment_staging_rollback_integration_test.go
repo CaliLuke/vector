@@ -18,6 +18,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Storage recovery is credential-neutral. TestMCPAttachmentStorageBatch and
+// the attachment credential/scope/wait suites retain both authentication modes.
 func TestMCPAttachmentStagingAndDeletionRollBackWithStorage(t *testing.T) {
 	h := attachmentRecoveryFixture(t)
 	config, err := assets.StorageConfigFromEnv()
@@ -27,7 +29,7 @@ func TestMCPAttachmentStagingAndDeletionRollBackWithStorage(t *testing.T) {
 		options.UsePathStyle = config.PathStyle
 		options.RetryMaxAttempts = 1
 	})
-	runCatalogueCredentials(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
+	runCatalogue(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
 		for _, scenario := range []struct {
 			action string
 			tables []string

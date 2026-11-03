@@ -2,12 +2,10 @@ package apicontract
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"strings"
 
 	"github.com/CaliLuke/go-plane/internal/issuequery"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -67,13 +65,6 @@ func serialize(ctx context.Context, db Database, row map[string]any, declared []
 			}
 		}
 		value, present := row[source]
-		if number, ok := value.(json.Number); ok && (field == "sort_order" || strings.HasSuffix(field, "_estimates")) {
-			float, err := number.Float64()
-			if err != nil {
-				return nil, err
-			}
-			value = json.Number(pythoncompat.FloatString(float))
-		}
 		if present {
 			result[field] = value
 		}

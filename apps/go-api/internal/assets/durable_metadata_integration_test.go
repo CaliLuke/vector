@@ -135,6 +135,11 @@ func TestStorageMetadataCrashAfterWriteBeforeCompletion(t *testing.T) {
 	}
 	app := selvedge.NewApp(
 		selvedge.WithDatabase(databaseURL),
+		// Use real leases with a short test budget; SIGKILL still leaves the
+		// claim behind and recovery must wait for expiration before replay.
+		selvedge.WithLease(3*time.Second, 500*time.Millisecond, 500*time.Millisecond, 100*time.Millisecond),
+		selvedge.WithLeaderHeartbeatInterval(250*time.Millisecond),
+		selvedge.WithLeaderLeaseDuration(3*time.Second),
 		selvedge.WithActivityPollInterval(25*time.Millisecond),
 		selvedge.WithWorkflowResumptionInterval(25*time.Millisecond),
 	)
@@ -266,7 +271,11 @@ func runMetadataUntilSavedAndBlocked(t *testing.T, databaseURL string, assetID u
 	if err != nil {
 		t.Fatal(err)
 	}
-	app := selvedge.NewApp(selvedge.WithDatabase(databaseURL), selvedge.WithActivityPollInterval(25*time.Millisecond))
+	app := selvedge.NewApp(selvedge.WithDatabase(databaseURL),
+		selvedge.WithLease(3*time.Second, 500*time.Millisecond, 500*time.Millisecond, 100*time.Millisecond),
+		selvedge.WithLeaderHeartbeatInterval(250*time.Millisecond),
+		selvedge.WithLeaderLeaseDuration(3*time.Second),
+		selvedge.WithActivityPollInterval(25*time.Millisecond))
 	workflow, err := RegisterStorageMetadataWorkflow(app, metadataWriteBlocker{store: store, marker: marker}, objects, retry.Exponential(8, time.Second, time.Minute, 2))
 	if err != nil {
 		t.Fatal(err)

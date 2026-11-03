@@ -11,8 +11,6 @@ import (
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/bootstrap"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/CaliLuke/go-plane/internal/useridentity"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/require"
@@ -30,10 +28,14 @@ func newEmailFixture(t *testing.T) emailFixture {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	t.Cleanup(cancel)
-	pair, err := postgresfixture.StartUncloned(ctx, bootstrap.MigrateSchema)
+	database, err := migratedSchema.CloneDatabase(ctx)
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, pair.Close()) })
-	pool, err := pgxpool.New(ctx, pair.SeedURL())
+	t.Cleanup(func() {
+		cleanup, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		require.NoError(t, database.Close(cleanup))
+	})
+	pool, err := pgxpool.New(ctx, database.URL)
 	require.NoError(t, err)
 	t.Cleanup(pool.Close)
 	user, foreign := uuid.New(), uuid.New()
