@@ -6,7 +6,7 @@
   "license": "AGPL-3.0-only",
   "repository": "https://github.com/CaliLuke/vector.git",
   "scripts": {
-    "build": "node scripts/quality/run-bounded.mjs --seconds 1800 --memory-mib 4096 --heap-mib 2048 -- turbo run build --concurrency=1",
+    "build": "bun scripts/quality/run-bounded.mjs --seconds 1800 --memory-mib 4096 --heap-mib 2048 -- turbo run build --concurrency=1",
     "dev": "bash scripts/dev.sh",
     "dev:stop": "bash scripts/dev.sh stop",
     "dev:check-login": "go -C apps/go-api run ./cmd/devtools check-login",
@@ -31,7 +31,7 @@
     "test:setup": "bash tests/setup/test-setup.sh",
     "prepare": "husky",
     "doctor": "react-doctor",
-    "dev:frontend": "node scripts/quality/run-bounded.mjs --seconds 86400 --memory-mib 6144 --heap-mib 1024 -- turbo watch dev --filter='./apps/*' --concurrency=5",
+    "dev:frontend": "bun scripts/quality/run-bounded.mjs --seconds 86400 --memory-mib 6144 --heap-mib 1024 -- turbo watch dev --filter='./apps/*' --concurrency=5",
     "check:duplicates": "jscpd --config jscpd.json --baseline .quality/jscpd-baseline.json --fail-on-new-clones",
     "test:frontend:coverage": "bash scripts/quality/frontend-tests.sh --coverage"
   },
@@ -56,6 +56,7 @@
     "turbo": "catalog:"
   },
   "engines": {
+    "bun": "1.4.4",
     "node": "^26.12.1"
   },
   "packageManager": "pnpm@12.15.0+sha512.b3951d6d6ff4a9f13dc7cf56cd28d2b8eb37dbcc9c68e52e1e1191873ea9f82a017287ab50baadc5ccc494f036c67c0e47eb13608c2fa36f47711b61ea128e61"

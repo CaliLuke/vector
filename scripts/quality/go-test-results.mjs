@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 import { readFile } from "node:fs/promises";
 
 const allowedActions = new Set(["start", "run", "pause", "cont", "output", "pass", "fail", "skip", "bench"]);

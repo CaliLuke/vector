@@ -116,7 +116,7 @@ async function affectedFrontend() {
       "--heap-mib",
       "384",
       "--",
-      process.execPath,
+      "node",
       "--test",
       "--test-timeout=15000",
       "--test-concurrency=2",
@@ -169,7 +169,7 @@ export function stagePlan(scope) {
     {
       id: "runner-regressions",
       scope: "all",
-      command: [process.execPath, "--test", "scripts/quality/gate-stages.test.mjs"],
+      command: [process.execPath, "test", "--timeout", "15000", "./scripts/quality/gate-stages.test.mjs"],
     },
   ];
   if (scope !== "typescript")
@@ -227,6 +227,9 @@ export function stagePlan(scope) {
 }
 
 async function main(args) {
+  const expectedBun = fs.readFileSync(path.join(root, ".bun-version"), "utf8").trim();
+  if (process.versions.bun !== expectedBun)
+    throw new Error(`Quality checks require Bun ${expectedBun}; use ./check.sh`);
   if (args[0] === "--go-test-packages") return goTestPackages();
   if (args[0] === "--affected-frontend") return affectedFrontend();
   const pointer = path.join(root, ".quality/reports/full-gate-current.json");
@@ -250,7 +253,8 @@ async function main(args) {
   fs.writeFileSync(pointer, JSON.stringify({ directory }) + "\n", { mode: 0o600 });
   const identity = {
     head: output("git", ["rev-parse", "HEAD"]),
-    node: process.version,
+    bun: process.versions.bun,
+    node: output("node", ["--version"]),
     platform: process.platform,
     architecture: process.arch,
     environment: relevantEnvironment(process.env),

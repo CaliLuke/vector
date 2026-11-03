@@ -63,7 +63,7 @@ export function relevantEnvironment(env) {
     Object.entries(env)
       .filter(
         ([key]) =>
-          /^(GO|CGO|DOCKER|TESTCONTAINERS|LIVE_TEST|PLANE_|VECTOR_|VITE_|NODE_|SENTRY_|API_|WEB_|LIVE_|CORS_|APP_|LC_)/.test(
+          /^(BUN_|JSC_|GO|CGO|DOCKER|TESTCONTAINERS|LIVE_TEST|PLANE_|VECTOR_|VITE_|NODE_|SENTRY_|API_|WEB_|LIVE_|CORS_|APP_|LC_)/.test(
             key
           ) || ["PATH", "TZ", "LANG", "CI", "DEV", "LOG_LEVEL"].includes(key)
       )

@@ -164,8 +164,8 @@ async function verifyWorkerCleanup(result, pidPath) {
     cleanupWorker(pid);
   }
 }
-void test("preserves the child exit status", () => {
-  assert.equal(run("process.exit(7)").status, 7);
+void test("preserves the child exit status with its own argument delimiter", () => {
+  assert.equal(run("process.exit(7)", [], ["--", "child-argument"]).status, 7);
 });
 void test("external deadline interrupts a blocked child event loop", () => {
   const result = run("const end=Date.now()+5000; while(Date.now()<end) {} process.stdout.write('finished');", [
@@ -189,7 +189,7 @@ void test("memory ceiling includes native buffer allocations", () => {
   const sample = JSON.parse(line.slice(prefix.length));
   assert.ok(sample.totalMiB >= 60);
   assert.ok(sample.processes.length > 0 && sample.processes.length <= 10);
-  assert.ok(sample.processes.some(({ command, rssMiB }) => /node/i.test(command) && rssMiB > 0));
+  assert.ok(sample.processes.some(({ command, rssMiB }) => /(?:bun|node)/i.test(command) && rssMiB > 0));
   assert.ok(sample.processes.every(({ pid, command }) => Number.isInteger(pid) && !command.includes("/")));
   assert.doesNotMatch(result.stderr, /private-command-argument/);
 });

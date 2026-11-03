@@ -34,7 +34,7 @@ require_tools() {
 go_files() {
   cd "$MODULE"
   find . -type f -name '*.go' ! -path '*/gen/*' ! -path './vendor/*' -print0 |
-    node "$ROOT/scripts/quality/go-source-files.mjs" | sort
+    bun "$ROOT/scripts/quality/go-source-files.mjs" | sort
 }
 
 format_check() {
@@ -65,7 +65,7 @@ lint_gate() {
     golangci-lint run --allow-serial-runners --config .golangci.yml --issues-exit-code=0 \
       --output.json.path="$json" --output.text.path=stderr --output.text.colors=false
   )
-  node "$ROOT/scripts/quality/go-lint-ratchet.mjs" check "$json" "$BASELINE" "$MODULE"
+  bun "$ROOT/scripts/quality/go-lint-ratchet.mjs" check "$json" "$BASELINE" "$MODULE"
 }
 
 write_lint_baseline() {
@@ -76,7 +76,7 @@ write_lint_baseline() {
     golangci-lint run --config .golangci.yml --issues-exit-code=0 \
       --output.json.path="$json" --output.text.path=stderr --output.text.colors=false
   )
-  node "$ROOT/scripts/quality/go-lint-ratchet.mjs" write "$json" "$BASELINE" "$MODULE"
+  bun "$ROOT/scripts/quality/go-lint-ratchet.mjs" write "$json" "$BASELINE" "$MODULE"
 }
 
 build_gate() {
@@ -93,12 +93,12 @@ tidy_gate() {
 
 test_gate() {
   local coverage="$REPORTS/go-integration.cover" test_json="$REPORTS/go-test.jsonl" test_status=0 result_mode="${1:-check}"
-  node --test "$ROOT/scripts/quality/go-test-results.test.mjs" "$ROOT/scripts/quality/go-ratchets.test.mjs" \
+  bun test --timeout 15000 "$ROOT/scripts/quality/go-test-results.test.mjs" "$ROOT/scripts/quality/go-ratchets.test.mjs" \
     "$ROOT/scripts/quality/go-maintainability-ratchet.test.mjs" "$ROOT/scripts/quality/go-source-files.test.mjs"
   local coverage_packages
-  coverage_packages="$(node "$ROOT/scripts/quality/go-coverage-inventory.mjs" "$MODULE")"
+  coverage_packages="$(bun "$ROOT/scripts/quality/go-coverage-inventory.mjs" "$MODULE")"
   local ordered_packages
-  ordered_packages="$(node "$ROOT/scripts/quality/full-check.mjs" --go-test-packages)" || return "$?"
+  ordered_packages="$(bun "$ROOT/scripts/quality/full-check.mjs" --go-test-packages)" || return "$?"
   local -a test_packages
   read -r -a test_packages <<< "$ordered_packages"
   ((${#test_packages[@]})) || { printf 'no packages selected for full Go coverage\n' >&2; return 1; }
@@ -108,10 +108,10 @@ test_gate() {
     go test -json -failfast -tags=integration -count=1 -p 1 -parallel 2 -timeout=20m \
       -coverpkg="$coverage_packages" -coverprofile="$coverage" "${test_packages[@]}"
   ) >"$test_json" || test_status=$?
-  node "$ROOT/scripts/quality/go-test-results.mjs" "$test_json" "$ROOT/.quality/go-test-skips.json"
+  bun "$ROOT/scripts/quality/go-test-results.mjs" "$test_json" "$ROOT/.quality/go-test-skips.json"
   [[ "$test_status" -eq 0 ]] || return "$test_status"
   [[ -s "$coverage" ]] || { printf 'test run did not produce coverage: %s\n' "$coverage" >&2; return 1; }
-  node "$ROOT/scripts/quality/go-coverage-ratchet.mjs" "$result_mode" "$coverage" \
+  bun "$ROOT/scripts/quality/go-coverage-ratchet.mjs" "$result_mode" "$coverage" \
     "$ROOT/configs/quality/go-coverage-baseline.json" "$MODULE"
 }
 
@@ -124,7 +124,7 @@ deadcode_gate() {
     cd "$MODULE"
     deadcode -test -tags=integration -json -filter="^($filter)$" $packages >"$report"
   )
-  node "$ROOT/scripts/quality/go-deadcode-ratchet.mjs" check "$report" \
+  bun "$ROOT/scripts/quality/go-deadcode-ratchet.mjs" check "$report" \
     "$ROOT/configs/quality/go-deadcode-baseline.json"
 }
 
@@ -134,7 +134,7 @@ dupl_gate() {
     cd "$MODULE"
     dupl -plumbing -threshold 100 -files < <(go_files) >"$report"
   )
-  node "$ROOT/scripts/quality/go-dupl-ratchet.mjs" check "$report" \
+  bun "$ROOT/scripts/quality/go-dupl-ratchet.mjs" check "$report" \
     "$ROOT/configs/quality/go-dupl-baseline.json" "$MODULE"
 }
 
@@ -147,13 +147,13 @@ write_static_baselines() {
     cd "$MODULE"
     deadcode -test -tags=integration -json -filter="^($filter)$" $packages >"$deadcode_report"
   )
-  node "$ROOT/scripts/quality/go-deadcode-ratchet.mjs" write "$deadcode_report" \
+  bun "$ROOT/scripts/quality/go-deadcode-ratchet.mjs" write "$deadcode_report" \
     "$ROOT/configs/quality/go-deadcode-baseline.json"
   (
     cd "$MODULE"
     dupl -plumbing -threshold 100 -files < <(go_files) >"$dupl_report"
   )
-  node "$ROOT/scripts/quality/go-dupl-ratchet.mjs" write "$dupl_report" \
+  bun "$ROOT/scripts/quality/go-dupl-ratchet.mjs" write "$dupl_report" \
     "$ROOT/configs/quality/go-dupl-baseline.json" "$MODULE"
 }
 
@@ -167,7 +167,7 @@ maintainability_gate() {
     golangci-lint run --allow-serial-runners --enable-only maintidx --config .golangci.yml \
       --issues-exit-code=0 --output.json.path="$report" --output.text.path=stderr --output.text.colors=false
   )
-  node "$ROOT/scripts/quality/go-maintainability-ratchet.mjs" "$mode" "$MODULE" "$inventory" \
+  bun "$ROOT/scripts/quality/go-maintainability-ratchet.mjs" "$mode" "$MODULE" "$inventory" \
     "$ROOT/configs/quality/go-maintainability-baseline.json" "$report"
 }
 

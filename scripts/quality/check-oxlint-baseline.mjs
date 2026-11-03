@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -10,7 +10,7 @@ const root = fileURLToPath(new URL("../../", import.meta.url));
 const mode = process.argv[2];
 const writeBaseline = process.argv.includes("--write-baseline");
 if (!new Set(["fast", "full"]).has(mode)) {
-  console.error("Usage: node scripts/quality/check-oxlint-baseline.mjs fast|full [--write-baseline]");
+  console.error("Usage: bun scripts/quality/check-oxlint-baseline.mjs fast|full [--write-baseline]");
   process.exit(2);
 }
 

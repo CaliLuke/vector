@@ -193,7 +193,8 @@ void test("coverage profiles larger than the parser heap retain hits across repe
     const chunk = "example.test/fixture/p.go:2.1,2.25 1 0\n".repeat(4096);
     for (let index = 0; index < 256; index++) fs.appendFileSync(profile, chunk);
     const checked = spawnSync(
-      process.execPath,
+      // Keep the V8 heap-limit regression explicit; other parser tests use Bun.
+      "node",
       ["--max-old-space-size=32", path.join(scripts, "go-coverage-ratchet.mjs"), "check", profile, baseline, directory],
       { encoding: "utf8" }
     );

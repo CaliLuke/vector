@@ -29,11 +29,11 @@ for argument in "$@"; do
 done
 
 if [[ "$status" == true ]]; then
-  exec node scripts/quality/full-check.mjs --status
+  exec bun scripts/quality/full-check.mjs --status
 fi
 source scripts/dev-env.sh
 if [[ "$mode" == --full && "$scope" != build ]]; then
-  exec node scripts/quality/full-check.mjs "$scope" "${fresh[@]}"
+  exec bun scripts/quality/full-check.mjs "$scope" "${fresh[@]}"
 fi
 if ((${#fresh[@]})); then
   echo "--fresh applies only to full checks." >&2
@@ -52,10 +52,10 @@ run_gate() {
 
 if [[ "$scope" == build ]]; then
   run_gate "Frontend build" pnpm build
-  run_gate "Component Storybooks" node scripts/quality/run-bounded.mjs --seconds 1200 --memory-mib 4096 --heap-mib 2048 -- pnpm --workspace-concurrency=1 --filter @plane/ui --filter @plane/propel build-storybook
+  run_gate "Component Storybooks" bun scripts/quality/run-bounded.mjs --seconds 1200 --memory-mib 4096 --heap-mib 2048 -- pnpm --workspace-concurrency=1 --filter @plane/ui --filter @plane/propel build-storybook
 fi
 if [[ "$scope" == all || "$scope" == go ]]; then
-  run_gate Go node scripts/quality/run-bounded.mjs --seconds 3600 --memory-mib 6144 --heap-mib 512 -- env GOMEMLIMIT=2GiB GOMAXPROCS=2 bash scripts/quality/go.sh "$mode"
+  run_gate Go bun scripts/quality/run-bounded.mjs --seconds 3600 --memory-mib 6144 --heap-mib 512 -- env GOMEMLIMIT=2GiB GOMAXPROCS=2 bash scripts/quality/go.sh "$mode"
 fi
 if [[ "$scope" == all || "$scope" == typescript ]]; then
   run_gate TypeScript bash scripts/quality/typescript.sh "$mode"

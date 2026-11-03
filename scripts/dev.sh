@@ -61,5 +61,5 @@ echo "Ctrl-C stops the frontend servers. pnpm dev:stop stops the containers with
 echo "Logal: Docker volume plane_logaldata (48-hour retention). Query with pnpm dev:logs."
 # Populate the development build cache serially before app servers start.
 # Turbo watches this same dependency graph; rebuilds preserve live package outputs.
-node scripts/quality/run-bounded.mjs --seconds 600 --memory-mib 4096 --heap-mib 2048 -- pnpm exec turbo run dev:build --concurrency=1 --filter='./packages/*'
+bun scripts/quality/run-bounded.mjs --seconds 600 --memory-mib 4096 --heap-mib 2048 -- pnpm exec turbo run dev:build --concurrency=1 --filter='./packages/*'
 exec go -C apps/go-api run ./cmd/devtools start

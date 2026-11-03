@@ -21,7 +21,7 @@ fi
 test_files=(tests/frontend/*.test.mjs apps/web/tests/*.test.mjs)
 shard_directory="$(mktemp -d "${TMPDIR:-/tmp}/vector-frontend-shards.XXXXXX")" || exit 1
 trap 'rm -rf -- "$shard_directory"' EXIT
-node scripts/quality/frontend-test-shards.mjs "$shard_directory" "${test_files[@]}" || exit 1
+bun scripts/quality/frontend-test-shards.mjs "$shard_directory" "${test_files[@]}" || exit 1
 failed=0
 budget_seconds=600
 budget_started=$SECONDS
@@ -37,12 +37,12 @@ for shard in 1 2 3; do
     break
   fi
   shard_seconds=$((remaining < 300 ? remaining : 300))
-  node scripts/quality/run-bounded.mjs --seconds "$shard_seconds" --memory-mib 1024 --heap-mib 384 -- \
+  bun scripts/quality/run-bounded.mjs --seconds "$shard_seconds" --memory-mib 1024 --heap-mib 384 -- \
     node "${node_options[@]}" --test --test-timeout=15000 --test-concurrency=2 \
     "${shard_files[@]}" || { failed=1; break; }
 done
 if [[ "${1:-}" == --coverage && "$failed" == 0 ]]; then
-  node scripts/quality/run-bounded.mjs --seconds 600 --memory-mib 3072 --heap-mib 1024 -- \
-    node scripts/quality/frontend-coverage.mjs --directory "$VECTOR_FRONTEND_COVERAGE" || failed=1
+  bun scripts/quality/run-bounded.mjs --seconds 600 --memory-mib 3072 --heap-mib 1024 -- \
+    bun scripts/quality/frontend-coverage.mjs --directory "$VECTOR_FRONTEND_COVERAGE" || failed=1
 fi
 exit "$failed"

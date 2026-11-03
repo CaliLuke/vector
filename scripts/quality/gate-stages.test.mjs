@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import test from "node:test";
-import { acquireLock, executeStage, inputFingerprint, runStages } from "./gate-stages.mjs";
+import { acquireLock, executeStage, inputFingerprint, relevantEnvironment, runStages } from "./gate-stages.mjs";
 import { affectedGoPackages, orderedGoPackages, stagePlan } from "./full-check.mjs";
 
 function fixture(t) {
@@ -90,13 +90,15 @@ await test("untracked sources, deleted sources, and lockfile changes invalidate 
 
 await test("toolchain, environment and checker configuration changes invalidate successful results", async (t) => {
   const f = fixture(t);
+  const environment = relevantEnvironment({ BUN_OPTIONS: "--conditions=test", JSC_useJIT: "false" });
+  assert.deepEqual(environment, { BUN_OPTIONS: "--conditions=test", JSC_useJIT: "false" });
   await runStages(f.options);
-  await runStages({ ...f.options, identity: { tools: "v2", environment: { NODE_OPTIONS: "--conditions=test" } } });
+  await runStages({ ...f.options, identity: { tools: "v2", environment } });
   assert.deepEqual(f.calls, ["preflight", "build", "preflight", "build"]);
   f.write("scripts/quality/go.sh", "changed gate\n");
   const result = await runStages({
     ...f.options,
-    identity: { tools: "v2", environment: { NODE_OPTIONS: "--conditions=test" } },
+    identity: { tools: "v2", environment },
   });
   assert.deepEqual(
     result.map(({ state }) => state),
@@ -262,8 +264,8 @@ await test("check.sh routes full, scoped, fresh, and status requests through the
   const f = fixture(t);
   f.write("check.sh", fs.readFileSync(new URL("../../check.sh", import.meta.url), "utf8"));
   f.write("scripts/dev-env.sh", "# isolated fixture\n");
-  f.write("bin/node", '#!/bin/sh\nprintf "%s\\n" "$@" > "$VECTOR_FIXTURE_ARGS"\n');
-  fs.chmodSync(path.join(f.root, "bin/node"), 0o755);
+  f.write("bin/bun", '#!/bin/sh\nprintf "%s\\n" "$@" > "$VECTOR_FIXTURE_ARGS"\n');
+  fs.chmodSync(path.join(f.root, "bin/bun"), 0o755);
   const result = path.join(f.root, "arguments.txt");
   const env = {
     ...process.env,
@@ -293,7 +295,7 @@ await test("the Go gate executes the ordered package list once with full coverag
   f.write("scripts/quality/go-tools.sh", "exit 0\n");
   f.write("scripts/dev-env.sh", "# isolated fixture\n");
   f.write(
-    "bin/node",
+    "bin/bun",
     `#!${process.execPath}
 const command = process.argv[2];
 if (command.endsWith('/go-coverage-inventory.mjs')) console.log('example/changed,example/other');
@@ -313,7 +315,7 @@ fs.writeFileSync(profile.slice('-coverprofile='.length), 'mode: set\\n');
 console.log('{}');
 `
   );
-  for (const binary of ["node", "go"]) fs.chmodSync(path.join(f.root, "bin", binary), 0o755);
+  for (const binary of ["bun", "go"]) fs.chmodSync(path.join(f.root, "bin", binary), 0o755);
   const result = path.join(f.root, "go-arguments.jsonl");
   const env = {
     ...process.env,
@@ -352,8 +354,8 @@ await test("manual checks and Husky use the same tool path without removing call
   const f = fixture(t);
   f.write("check.sh", fs.readFileSync(new URL("../../check.sh", import.meta.url), "utf8"));
   f.write("scripts/dev-env.sh", "# isolated fixture\n");
-  f.write("bin/node", '#!/bin/sh\nprintf "%s" "$PATH" > "$VECTOR_FIXTURE_ARGS"\n');
-  fs.chmodSync(path.join(f.root, "bin/node"), 0o755);
+  f.write("bin/bun", '#!/bin/sh\nprintf "%s" "$PATH" > "$VECTOR_FIXTURE_ARGS"\n');
+  fs.chmodSync(path.join(f.root, "bin/bun"), 0o755);
   const result = path.join(f.root, "tool-path.txt");
   const callerPath = path.join(f.root, "bin") + path.delimiter + process.env.PATH;
   const paths = [callerPath, "node_modules/.bin" + path.delimiter + callerPath];

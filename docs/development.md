@@ -3,6 +3,14 @@
 Use [AGENTS.md](../AGENTS.md) for working agreements and the [README](../README.md#run-locally) for startup.
 Keep this guide limited to non-obvious instructions that are absent from code, configuration, and those documents.
 
+## JavaScript tooling runtime
+
+Quality scripts, their harness tests, and process supervisors run with Bun, pinned
+in `.bun-version` and `.mise.toml`. CI installs the same version; `check.sh` rejects
+a different runtime before starting full checks. Node remains explicit for the
+existing V8 frontend coverage/loader contracts and V8 heap-limit regression.
+The pnpm dependency lockfile and application runtime contracts are unchanged.
+
 ## Cancel checks
 
 Cancel through the launching terminal with Ctrl+C, or signal the invocation's process group.

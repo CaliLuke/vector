@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 // Run a POSIX process tree with an external deadline and sampled RSS ceiling.
 // The deadline stays responsive even when a test blocks its own event loop.
 import { spawn, execFile } from "node:child_process";
@@ -6,7 +6,10 @@ import path from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
-const separator = process.argv.indexOf("--");
+// Bun consumes the leading delimiter when the guard has no options.
+const explicitSeparator = process.argv.indexOf("--");
+const implicitCommand = process.argv[2] && !process.argv[2].startsWith("--");
+const separator = implicitCommand ? 2 : explicitSeparator;
 const options = new Map();
 for (let index = 2; index < separator; index += 2) {
   options.set(process.argv[index], Number(process.argv[index + 1]));
@@ -14,7 +17,7 @@ for (let index = 2; index < separator; index += 2) {
 const seconds = options.get("--seconds") ?? 120;
 const memoryMiB = options.get("--memory-mib") ?? 2048;
 const heapMiB = options.get("--heap-mib") ?? 1024;
-const command = process.argv.slice(separator + 1);
+const command = process.argv.slice(separator + (implicitCommand ? 0 : 1));
 if (
   separator < 2 ||
   command.length === 0 ||
@@ -34,6 +37,7 @@ const child = spawn(command[0], command.slice(1), {
   stdio: "inherit",
   env: {
     ...process.env,
+    // Node descendants use this heap cap; the process-tree RSS ceiling also covers Bun.
     NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --max-old-space-size=${heapMiB}`.trim(),
   },
 });

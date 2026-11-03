@@ -9,6 +9,10 @@ Read `docs/development.md` for local workflow exceptions and `docs/architecture.
 Store local test-account credentials in ignored `.env.test.local` with mode 0600.
 Check that file before asking for credentials. Never print or commit credentials.
 
+Use Bun for JavaScript quality scripts and their tests; pin it through `.bun-version` and `.mise.toml`.
+Do not add new Node-based tooling. Existing V8 frontend coverage, loader hooks, and the
+V8 heap-limit regression use explicit Node invocations until their contracts migrate.
+
 Use existing libraries and shared helpers. Keep authorization, tenant isolation, data integrity, and durable effects intact.
 Add focused regression tests for defects. Run affected tests, formatting, lint, and typechecks.
 Do not edit generated Go transport output. Regenerate only affected source designs.

@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 import fs from "node:fs";
 import { compareCountMaps, countTotal, readCountBaseline, writeCountBaseline } from "./count-baseline.mjs";
 

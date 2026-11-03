@@ -64,7 +64,8 @@ registerHooks({load(url,context,next) {
 }});
 const {render}=await import(${JSON.stringify(pathToFileURL(entry).href)});
 if(render({enabled:${enabled}}).text!==${JSON.stringify(enabled ? "on" : "off")})throw new Error('wrong branch');`;
-  await run(process.execPath, ["--input-type=module", "-e", program], {
+  // This fixture exercises the existing V8 coverage and loader-hook contract.
+  await run("node", ["--input-type=module", "-e", program], {
     env: {
       ...process.env,
       NODE_DISABLE_COMPILE_CACHE: "1",

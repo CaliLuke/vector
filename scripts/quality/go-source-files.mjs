@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 import fs from "node:fs";
 
 // find owns the directory boundary. Filter its NUL-delimited inventory in one
