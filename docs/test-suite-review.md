@@ -287,3 +287,8 @@ existing login-disabled regression now covers creation, cleanup and reset. The
 `BenchmarkDatabaseLifecycle` microbenchmark excludes container startup; its median
 create/drop time fell from 12.4ms to 8.9ms across three 20-iteration runs. Independent
 clone, cancellation, server-error and leaked-connection cleanup checks remain.
+
+Go formatting, duplication and maintainability discovery now filter generated
+headers in one process. The old and new inventories matched byte for byte across
+2,086 files; one scan fell from 22.3s to 0.56s on the same checkout. Focused fixtures
+preserve the ten-line marker boundary, empty files, and read-error failures.

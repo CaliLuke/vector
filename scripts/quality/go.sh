@@ -33,12 +33,8 @@ require_tools() {
 
 go_files() {
   cd "$MODULE"
-  find . -type f -name '*.go' ! -path '*/gen/*' ! -path './vendor/*' -print | sort | while IFS= read -r file; do
-    if awk 'NR <= 10 && /^\/\/ Code generated .* DO NOT EDIT\.$/ { found = 1 } END { exit !found }' "$file"; then
-      continue
-    fi
-    printf '%s\n' "$file"
-  done
+  find . -type f -name '*.go' ! -path '*/gen/*' ! -path './vendor/*' -print0 |
+    node "$ROOT/scripts/quality/go-source-files.mjs" | sort
 }
 
 format_check() {
@@ -98,7 +94,7 @@ tidy_gate() {
 test_gate() {
   local coverage="$REPORTS/go-integration.cover" test_json="$REPORTS/go-test.jsonl" test_status=0 result_mode="${1:-check}"
   node --test "$ROOT/scripts/quality/go-test-results.test.mjs" "$ROOT/scripts/quality/go-ratchets.test.mjs" \
-    "$ROOT/scripts/quality/go-maintainability-ratchet.test.mjs"
+    "$ROOT/scripts/quality/go-maintainability-ratchet.test.mjs" "$ROOT/scripts/quality/go-source-files.test.mjs"
   local coverage_packages
   coverage_packages="$(node "$ROOT/scripts/quality/go-coverage-inventory.mjs" "$MODULE")"
   local ordered_packages
