@@ -3,6 +3,8 @@
 package projectmembershipreads
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -11,11 +13,13 @@ import (
 	"github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 )
 
+var membershipDatabases = postgres.NewTemplate(func(context.Context, string) error { return nil })
+
 var migratedSchema = postgres.NewTemplate(bootstrap.MigrateSchema)
 
 func TestMain(m *testing.M) {
 	status := m.Run()
-	if err := migratedSchema.Close(); err != nil {
+	if err := errors.Join(migratedSchema.Close(), membershipDatabases.Close()); err != nil {
 		fmt.Fprintln(os.Stderr, "close projectmembershipreads test template:", err)
 		status = 1
 	}

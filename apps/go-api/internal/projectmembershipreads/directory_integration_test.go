@@ -8,8 +8,6 @@ import (
 	"testing"
 	"uuid"
 
-	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,20 +18,7 @@ const directoryGuest = "10000000-0000-4000-8000-000000000003"
 
 func directoryFixture(t *testing.T) (*DirectoryReader, *pgx.Conn) {
 	t.Helper()
-	pair, err := postgresfixture.StartUncloned(t.Context(), func(ctx context.Context, url string) error {
-		db, err := pgx.Connect(ctx, url)
-		if err != nil {
-			return err
-		}
-		defer func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) }()
-		_, err = db.Exec(ctx, directorySchema)
-		return err
-	})
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, pair.Close()) })
-	db, err := pgx.Connect(t.Context(), pair.SeedURL())
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, db.Close(context.Background())) })
+	_, db := membershipDatabases.OpenSQL(t, directorySchema)
 	reader, err := NewDirectoryReader(db)
 	require.NoError(t, err)
 	return reader, db

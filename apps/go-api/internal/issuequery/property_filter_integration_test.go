@@ -9,7 +9,6 @@ import (
 	"time"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -22,7 +21,7 @@ func propertyFilterDatabase(t *testing.T) (context.Context, *pgx.Conn) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	t.Cleanup(cancel)
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, url string) error {
+	address := QueryTestDatabases.SeedDatabase(t, func(ctx context.Context, url string) error {
 		db, err := pgx.Connect(ctx, url)
 		if err != nil {
 			return err
@@ -41,11 +40,7 @@ func propertyFilterDatabase(t *testing.T) (context.Context, *pgx.Conn) {
  INSERT INTO issue_labels SELECT id,'`+selectedTypeDeleted+`'::uuid,NULL FROM issues WHERE row_number=4;`)
 		return err
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { testsupport.Close(t, pair) })
-	db, err := pgx.Connect(ctx, pair.SeedURL())
+	db, err := pgx.Connect(ctx, address)
 	if err != nil {
 		t.Fatal(err)
 	}

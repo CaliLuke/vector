@@ -273,3 +273,17 @@ observable behavior rather than merely successful imports or route registration.
 The same transport behavior runs with Buffer, ArrayBuffer, and buffer-fragment
 messages. This closes the uncovered fragmented-message branch without lowering
 the coverage floor.
+
+## Shared PostgreSQL fixture lifecycle
+
+Membership, query and background label tests now share package-owned containers
+with a separate database for each test. Seeds and behavior assertions are unchanged;
+526 focused test/subtest names matched before and after. Indicative focused times
+fell from 14.6s to 6.4s for membership, 9.5s to 2.2s for query, and 6.4s to 4.9s for
+background label cases. These are package measurements, not a whole-suite estimate.
+
+Clone cleanup and pair reset reuse authenticated administrative connections. The
+existing login-disabled regression now covers creation, cleanup and reset. The
+`BenchmarkDatabaseLifecycle` microbenchmark excludes container startup; its median
+create/drop time fell from 12.4ms to 8.9ms across three 20-iteration runs. Independent
+clone, cancellation, server-error and leaked-connection cleanup checks remain.

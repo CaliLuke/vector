@@ -3,26 +3,14 @@
 package projectmembershipreads
 
 import (
-	"context"
 	"encoding/json"
 	"testing"
 
 	"uuid"
-
-	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
-	"github.com/jackc/pgx/v5"
 )
 
 func TestWorkspaceMembersMirrorsFileAssetURLBranches(t *testing.T) {
-	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
-		connection, err := pgx.Connect(ctx, databaseURL)
-		if err != nil {
-			return err
-		}
-		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
-		_, err = connection.Exec(ctx, `
+	ctx, connection := membershipDatabases.OpenSQL(t, `
 CREATE TABLE workspaces (
   id uuid PRIMARY KEY,
   slug text NOT NULL,
@@ -87,18 +75,6 @@ INSERT INTO workspace_members (
    '00000000-0000-4000-8000-000000000001',
    '00000000-0000-4000-8000-000000000006', 15, true);
 `)
-		return err
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testsupport.Close(t, pair)
-
-	connection, err := pgx.Connect(ctx, pair.SeedURL())
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 	repository, err := NewRepository(connection)
 	if err != nil {
 		t.Fatal(err)

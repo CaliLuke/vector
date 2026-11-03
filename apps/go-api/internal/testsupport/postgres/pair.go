@@ -43,9 +43,9 @@ type Pair struct {
 
 // Database is an independent clone of a fixture's migrated seed.
 type Database struct {
-	URL      string
-	adminURL string
-	name     string
+	URL       string
+	adminPool *pgxpool.Pool
+	name      string
 }
 
 // CloneDatabase preserves the seed and gives each test its own database.
@@ -55,7 +55,7 @@ func (pair *Pair) CloneDatabase(ctx context.Context) (result *Database, resultEr
 	if err != nil {
 		return nil, err
 	}
-	database := &Database{URL: cloneURL, adminURL: pair.adminURL, name: name}
+	database := &Database{URL: cloneURL, adminPool: pair.adminPool, name: name}
 	connection, err := pair.adminPool.Acquire(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("connect clone admin database: %w", err)
@@ -78,12 +78,12 @@ func (pair *Pair) CloneDatabase(ctx context.Context) (result *Database, resultEr
 }
 
 // Close drops only this test's clone, including any connections it left open.
-func (database *Database) Close(ctx context.Context) (resultErr error) {
-	connection, err := pgx.Connect(ctx, database.adminURL)
+func (database *Database) Close(ctx context.Context) error {
+	connection, err := database.adminPool.Acquire(ctx)
 	if err != nil {
 		return fmt.Errorf("connect drop admin database: %w", err)
 	}
-	defer func() { resultErr = errors.Join(resultErr, closeConnection(ctx, connection)) }()
+	defer connection.Release()
 	_, err = connection.Exec(ctx, "DROP DATABASE IF EXISTS "+pgx.Identifier{database.name}.Sanitize()+" WITH (FORCE)")
 	if err != nil {
 		return fmt.Errorf("drop fixture database %s: %w", database.name, err)
@@ -170,12 +170,12 @@ func StartUncloned(ctx context.Context, migrate SeedMigration) (_ *Pair, err err
 }
 
 // Reset discards both targets and restores them independently from the unchanged seed database.
-func (pair *Pair) Reset(ctx context.Context) (resultErr error) {
-	connection, err := pgx.Connect(ctx, pair.adminURL)
+func (pair *Pair) Reset(ctx context.Context) error {
+	connection, err := pair.adminPool.Acquire(ctx)
 	if err != nil {
 		return fmt.Errorf("connect to PostgreSQL testcontainer admin database: %w", err)
 	}
-	defer func() { resultErr = errors.Join(resultErr, closeConnection(ctx, connection)) }()
+	defer connection.Release()
 
 	for _, database := range []string{sourceDatabase, targetDatabase} {
 		if _, execErr := connection.Exec(

@@ -12,19 +12,14 @@ import (
 	"uuid"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
 func TestRolesExcludeUnavailableProjectsAndDeletedWorkspaces(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	pair, err := postgresfixture.StartUncloned(ctx, seedRoleScope)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { testsupport.Close(t, pair) }()
-	db, err := pgx.Connect(ctx, pair.SeedURL())
+	address := membershipDatabases.SeedDatabase(t, seedRoleScope)
+	db, err := pgx.Connect(ctx, address)
 	if err != nil {
 		t.Fatal(err)
 	}

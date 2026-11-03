@@ -13,6 +13,7 @@ import (
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestCloneDatabaseIdentifiesCreateFailureWithoutLeavingAClone(t *testing.T) {
@@ -50,16 +51,21 @@ func TestDatabaseCloseIdentifiesDropFailureAndPreservesServerCause(t *testing.T)
 	address := EmptyDatabase(t)
 	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
 	defer cancel()
-	database := &Database{URL: address, adminURL: address, name: seedDatabase}
+	pool, err := pgxpool.New(ctx, address)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(pool.Close)
+	database := &Database{URL: address, adminPool: pool, name: seedDatabase}
 
-	err := database.Close(ctx)
+	err = database.Close(ctx)
 	var pgErr *pgconn.PgError
 	if !errors.As(err, &pgErr) || pgErr.Code != "55006" || !strings.Contains(err.Error(), "drop fixture database") {
 		t.Fatalf("Close error=%v; want drop stage with current-database server cause", err)
 	}
 }
 
-func TestCloneCreationReusesAuthenticatedAdminConnection(t *testing.T) {
+func TestDatabaseLifecycleReusesAuthenticatedAdminConnection(t *testing.T) {
 	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
 	defer cancel()
 	pair, err := StartUncloned(ctx, func(context.Context, string) error { return nil })
@@ -67,8 +73,8 @@ func TestCloneCreationReusesAuthenticatedAdminConnection(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { testsupport.Close(t, pair) })
-	// Existing sessions remain usable, but another login would fail. Cloning
-	// must use the fixture-owned authenticated admin connection.
+	// Existing sessions remain usable, but another login would fail. Creation,
+	// cleanup and reset must reuse the fixture-owned admin connection.
 	if _, err := pair.adminPool.Exec(ctx, `ALTER ROLE plane NOLOGIN`); err != nil {
 		t.Fatal(err)
 	}
@@ -80,13 +86,13 @@ func TestCloneCreationReusesAuthenticatedAdminConnection(t *testing.T) {
 		}
 		databases = append(databases, database)
 	}
-	if _, err := pair.adminPool.Exec(ctx, `ALTER ROLE plane LOGIN`); err != nil {
-		t.Fatal(err)
-	}
 	for _, database := range databases {
 		if err := database.Close(ctx); err != nil {
 			t.Fatal(err)
 		}
+	}
+	if err := pair.Reset(ctx); err != nil {
+		t.Fatal(err)
 	}
 }
 

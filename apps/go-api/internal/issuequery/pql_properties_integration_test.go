@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/issuequery"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 )
@@ -15,7 +14,7 @@ import (
 // Compile public plans and evaluate their complete SQL truth tables. These rows
 // are already authorized candidates; route visibility is tested by workitems.
 func TestPQLPropertySQLPreservesUnknownAndRequestTimezone(t *testing.T) {
-	ctx, db := postgresfixture.OpenSQL(t, `CREATE TABLE issues(id uuid,priority text);
+	ctx, db := issuequery.QueryTestDatabases.OpenSQL(t, `CREATE TABLE issues(id uuid,priority text);
 INSERT INTO issues VALUES ('62000000-0000-4000-8000-000000000001','low'),('62000000-0000-4000-8000-000000000002','low'),('62000000-0000-4000-8000-000000000003','urgent');`)
 	ids := []string{pqlPropertyItem, "62000000-0000-4000-8000-000000000002", "62000000-0000-4000-8000-000000000003"}
 	request := issuequery.PQLContext{Timezone: "America/Los_Angeles", Now: time.Date(2026, 10, 28, 1, 0, 0, 0, time.UTC)}

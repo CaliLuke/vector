@@ -7,12 +7,11 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMilestoneReadScopeRequiresCurrentOwnedMembership(t *testing.T) {
-	ctx, db := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
+	ctx, db := issuequery.QueryTestDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
 	for _, tc := range []struct {
 		name, change string
 		want         bool

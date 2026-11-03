@@ -27,8 +27,13 @@ func TestCloneDatabaseIdentifiesCanceledAdminConnection(t *testing.T) {
 func TestDatabaseCloseIdentifiesCanceledAdminConnection(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
-	database := &Database{adminURL: "postgresql://127.0.0.1/postgres", name: "owned_clone"}
-	err := database.Close(ctx)
+	pool, err := pgxpool.New(t.Context(), "postgresql://127.0.0.1/postgres")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(pool.Close)
+	database := &Database{adminPool: pool, name: "owned_clone"}
+	err = database.Close(ctx)
 	if !errors.Is(err, context.Canceled) || !strings.Contains(err.Error(), "connect drop admin database") {
 		t.Fatalf("Close error=%v; want canceled admin connection stage", err)
 	}

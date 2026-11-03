@@ -4,6 +4,7 @@ package backgroundtasks
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -15,11 +16,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var backgroundTaskDatabases = postgresfixture.NewTemplate(func(context.Context, string) error { return nil })
+
 var backgroundTaskSchema = postgresfixture.NewTemplate(bootstrap.MigrateSchema)
 
 func TestMain(m *testing.M) {
 	status := m.Run()
-	if err := backgroundTaskSchema.Close(); err != nil {
+	if err := errors.Join(backgroundTaskSchema.Close(), backgroundTaskDatabases.Close()); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, "close background-task test template:", err)
 		status = 1
 	}

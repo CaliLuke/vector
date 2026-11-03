@@ -8,12 +8,11 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestCurrentIssueExportUsesLiveLabelsAndRetainsVisibility(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
+	ctx, connection := backgroundTaskDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
 	if _, err := connection.Exec(ctx, `INSERT INTO exporters(token,type,initiated_by_id) VALUES('label-contract','issue_exports',$1)`, testsupport.LabelActor); err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +58,7 @@ func TestCurrentIssueExportUsesLiveLabelsAndRetainsVisibility(t *testing.T) {
 }
 
 func TestCurrentAnalyticsExportUsesLiveLabelAxisAndSegments(t *testing.T) {
-	ctx, connection := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
+	ctx, connection := backgroundTaskDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
 	pool, err := pgxpool.New(ctx, connection.Config().ConnString())
 	if err != nil {
 		t.Fatal(err)

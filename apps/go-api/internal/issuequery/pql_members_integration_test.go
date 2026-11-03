@@ -8,14 +8,13 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/stretchr/testify/require"
 )
 
 // Exercise public compiler output as booleans, independently of root-item
 // authorization: earlier admission must not substitute for roster guards.
 func TestPQLRosterPredicatesRecheckActorAdmissionInTheDataStatement(t *testing.T) {
-	ctx, db := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed+`
+	ctx, db := issuequery.QueryTestDatabases.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed+`
 ALTER TABLE issue_assignees ADD COLUMN project_id uuid, ADD COLUMN workspace_id uuid;
 INSERT INTO issue_assignees(issue_id,assignee_id,project_id,workspace_id)
 SELECT id,created_by_id,project_id,workspace_id FROM issues WHERE sequence_id=1;

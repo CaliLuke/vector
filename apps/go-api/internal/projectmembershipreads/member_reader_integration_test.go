@@ -10,8 +10,6 @@ import (
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
-	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -22,20 +20,7 @@ const rosterProject = "00000000-0000-4000-8000-000000000101"
 
 func projectRosterDatabase(t *testing.T) *pgx.Conn {
 	t.Helper()
-	pair, err := postgresfixture.StartUncloned(t.Context(), func(ctx context.Context, url string) error {
-		conn, err := pgx.Connect(ctx, url)
-		if err != nil {
-			return err
-		}
-		defer func() { testsupport.CloseContext(t, conn, context.WithoutCancel(ctx)) }()
-		_, err = conn.Exec(ctx, projectRosterSchema)
-		return err
-	})
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, pair.Close()) })
-	conn, err := pgx.Connect(t.Context(), pair.SeedURL())
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, conn.Close(context.Background())) })
+	_, conn := membershipDatabases.OpenSQL(t, projectRosterSchema)
 	return conn
 }
 

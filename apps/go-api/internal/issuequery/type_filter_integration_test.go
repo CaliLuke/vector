@@ -9,14 +9,13 @@ import (
 	"time"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
 func TestTypeFiltersMatchRowsAndCountsInPostgres(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, url string) error {
+	address := QueryTestDatabases.SeedDatabase(t, func(ctx context.Context, url string) error {
 		db, connectErr := pgx.Connect(ctx, url)
 		if connectErr != nil {
 			return connectErr
@@ -26,11 +25,7 @@ func TestTypeFiltersMatchRowsAndCountsInPostgres(t *testing.T) {
 INSERT INTO issues VALUES(1,'`+selectedTypeA+`','low'),(2,'`+selectedTypeB+`','high'),(3,'00000000-0000-4000-8000-000000000003','low'),(4,NULL,'low')`)
 		return seedErr
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { testsupport.Close(t, pair) }()
-	db, err := pgx.Connect(ctx, pair.SeedURL())
+	db, err := pgx.Connect(ctx, address)
 	if err != nil {
 		t.Fatal(err)
 	}

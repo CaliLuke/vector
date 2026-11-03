@@ -6,7 +6,6 @@ import (
 	"context"
 	"testing"
 
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -14,7 +13,7 @@ import (
 
 func TestLabelDeletionWorkerCleansUpValidNestedTree(t *testing.T) {
 	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
+	address := backgroundTaskDatabases.SeedDatabase(t, func(ctx context.Context, databaseURL string) error {
 		connection, err := pgx.Connect(ctx, databaseURL)
 		if err != nil {
 			return err
@@ -28,15 +27,7 @@ func TestLabelDeletionWorkerCleansUpValidNestedTree(t *testing.T) {
 		}
 		return closeErr
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if closeErr := pair.Close(); closeErr != nil {
-			t.Errorf("close postgres fixture: %v", closeErr)
-		}
-	})
-	pool, err := pgxpool.New(ctx, pair.SeedURL())
+	pool, err := pgxpool.New(ctx, address)
 	if err != nil {
 		t.Fatal(err)
 	}
