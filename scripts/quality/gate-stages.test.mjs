@@ -40,7 +40,7 @@ function fixture(t) {
   return { root, directory, write, calls, stages, options };
 }
 
-test("a failing affected test prevents all expensive stages and never creates a success receipt", async (t) => {
+await test("a failing affected test prevents all expensive stages and never creates a success receipt", async (t) => {
   const f = fixture(t);
   await assert.rejects(
     runStages({
@@ -59,7 +59,7 @@ test("a failing affected test prevents all expensive stages and never creates a 
   assert.deepEqual(f.calls, ["preflight", "preflight", "build"]);
 });
 
-test("a Go fix reruns its preflight while reusing the unchanged frontend result", async (t) => {
+await test("a Go fix reruns its preflight while reusing the unchanged frontend result", async (t) => {
   const f = fixture(t);
   await runStages(f.options);
   f.write("apps/go-api/internal/example/value.go", "package example\n// fixed\n");
@@ -74,7 +74,7 @@ test("a Go fix reruns its preflight while reusing the unchanged frontend result"
   assert.equal(f.calls.at(-1), "build");
 });
 
-test("untracked sources, deleted sources, and lockfile changes invalidate affected results", async (t) => {
+await test("untracked sources, deleted sources, and lockfile changes invalidate affected results", async (t) => {
   const f = fixture(t);
   const stage = f.stages[1];
   const first = await inputFingerprint(f.root, stage, f.options.identity);
@@ -88,7 +88,7 @@ test("untracked sources, deleted sources, and lockfile changes invalidate affect
   assert.notEqual(deleted, await inputFingerprint(f.root, stage, f.options.identity));
 });
 
-test("toolchain, environment and checker configuration changes invalidate successful results", async (t) => {
+await test("toolchain, environment and checker configuration changes invalidate successful results", async (t) => {
   const f = fixture(t);
   await runStages(f.options);
   await runStages({ ...f.options, identity: { tools: "v2", environment: { NODE_OPTIONS: "--conditions=test" } } });
@@ -104,7 +104,7 @@ test("toolchain, environment and checker configuration changes invalidate succes
   );
 });
 
-test("missing or altered artifacts cannot certify a cached stage", async (t) => {
+await test("missing or altered artifacts cannot certify a cached stage", async (t) => {
   const f = fixture(t);
   const artifact = ".quality/reports/build/output.js";
   const stages = [{ ...f.stages[1], artifacts: () => [artifact] }];
@@ -124,7 +124,7 @@ test("missing or altered artifacts cannot certify a cached stage", async (t) => 
   assert.deepEqual(f.calls, ["build", "build", "build"]);
 });
 
-test("fresh runs and expired results execute tests again", async (t) => {
+await test("fresh runs and expired results execute tests again", async (t) => {
   const f = fixture(t);
   await runStages({ ...f.options, now: () => 1000 });
   await runStages({ ...f.options, now: () => 2000, maxAgeMs: 500 });
@@ -132,7 +132,7 @@ test("fresh runs and expired results execute tests again", async (t) => {
   assert.equal(f.calls.length, 6);
 });
 
-test("a failed fresh recheck removes an earlier success even if inputs are unchanged", async (t) => {
+await test("a failed fresh recheck removes an earlier success even if inputs are unchanged", async (t) => {
   const f = fixture(t);
   await runStages(f.options);
   await assert.rejects(
@@ -149,7 +149,7 @@ test("a failed fresh recheck removes an earlier success even if inputs are uncha
   assert.equal(result[0].state, "passed");
 });
 
-test("source mutation during a stage invalidates its result and stops the pipeline", async (t) => {
+await test("source mutation during a stage invalidates its result and stops the pipeline", async (t) => {
   const f = fixture(t);
   await assert.rejects(
     runStages({
@@ -165,7 +165,7 @@ test("source mutation during a stage invalidates its result and stops the pipeli
   assert.equal(fs.existsSync(path.join(f.directory, "affected-go-tests.json")), false);
 });
 
-test("corrupt receipts rerun checks and concurrent invocations cannot overwrite evidence", async (t) => {
+await test("corrupt receipts rerun checks and concurrent invocations cannot overwrite evidence", async (t) => {
   const f = fixture(t);
   await runStages(f.options);
   fs.writeFileSync(path.join(f.directory, "affected-go-tests.json"), "not json");
@@ -179,7 +179,7 @@ test("corrupt receipts rerun checks and concurrent invocations cannot overwrite 
   }
 });
 
-test("actual subprocess failures propagate and retain their output", async (t) => {
+await test("actual subprocess failures propagate and retain their output", async (t) => {
   const f = fixture(t);
   const log = path.join(f.root, "failure.log");
   await assert.rejects(
@@ -189,7 +189,7 @@ test("actual subprocess failures propagate and retain their output", async (t) =
   assert.match(fs.readFileSync(log, "utf8"), /failure evidence/);
 });
 
-test("affected Go selection includes reverse production and test imports and fails broad for deleted packages", () => {
+await test("affected Go selection includes reverse production and test imports and fails broad for deleted packages", () => {
   const module = "/fixture/apps/go-api";
   const packages = [
     { ImportPath: "example/domain", Dir: module + "/domain" },
@@ -212,7 +212,7 @@ test("affected Go selection includes reverse production and test imports and fai
   }
 });
 
-test("the full plan puts preflights before expensive work and retains complete coverage stages", () => {
+await test("the full plan puts preflights before expensive work and retains complete coverage stages", () => {
   const plan = stagePlan("all").map(({ id }) => id);
   assert.ok(plan.indexOf("go-integration-coverage") < plan.indexOf("go-static"));
   assert.equal(plan.filter((id) => id === "go-integration-coverage").length, 1);
@@ -224,7 +224,7 @@ test("the full plan puts preflights before expensive work and retains complete c
   assert.ok(stagePlan("typescript").every(({ scope }) => scope !== "go"));
 });
 
-test("later changes cannot leave an earlier stage falsely certified", async (t) => {
+await test("later changes cannot leave an earlier stage falsely certified", async (t) => {
   const f = fixture(t);
   await assert.rejects(
     runStages({
@@ -240,7 +240,7 @@ test("later changes cannot leave an earlier stage falsely certified", async (t) 
   assert.equal(JSON.parse(fs.readFileSync(path.join(f.directory, "status.json"))).state, "failed");
 });
 
-test("an interrupted subprocess cannot become reusable success", async (t) => {
+await test("an interrupted subprocess cannot become reusable success", async (t) => {
   const f = fixture(t);
   const controller = new AbortController();
   const promise = executeStage(
@@ -258,7 +258,7 @@ test("an interrupted subprocess cannot become reusable success", async (t) => {
   }
 });
 
-test("check.sh routes full, scoped, fresh, and status requests through the staged runner", (t) => {
+await test("check.sh routes full, scoped, fresh, and status requests through the staged runner", (t) => {
   const f = fixture(t);
   f.write("check.sh", fs.readFileSync(new URL("../../check.sh", import.meta.url), "utf8"));
   f.write("scripts/dev-env.sh", "# isolated fixture\n");
@@ -287,7 +287,7 @@ test("check.sh routes full, scoped, fresh, and status requests through the stage
   }
 });
 
-test("the Go gate executes the ordered package list once with full coverage and fails closed on selection errors", (t) => {
+await test("the Go gate executes the ordered package list once with full coverage and fails closed on selection errors", (t) => {
   const f = fixture(t);
   f.write("scripts/quality/go.sh", fs.readFileSync(new URL("./go.sh", import.meta.url), "utf8"));
   f.write("scripts/quality/go-tools.sh", "exit 0\n");

@@ -15,7 +15,7 @@ export function gitFiles(root) {
         .split("\0")
         .filter(Boolean)
     ),
-  ].toSorted();
+  ].toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
 export async function hashPaths(root, names, { required = false } = {}) {
@@ -40,13 +40,19 @@ export async function hashPaths(root, names, { required = false } = {}) {
       return;
     }
     if (stat.isDirectory()) {
-      await serial(fs.readdirSync(filename).toSorted(), (child) => add(path.join(name, child)));
+      await serial(
+        fs.readdirSync(filename).toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+        (child) => add(path.join(name, child))
+      );
     } else {
       for await (const chunk of fs.createReadStream(filename)) hash.update(chunk);
     }
     hash.update("\0");
   }
-  await serial([...new Set(names)].toSorted(), add);
+  await serial(
+    [...new Set(names)].toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+    add
+  );
   return hash.digest("hex");
 }
 

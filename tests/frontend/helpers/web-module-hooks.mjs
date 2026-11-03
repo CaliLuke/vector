@@ -13,10 +13,19 @@ const propelRoot = path.join(repositoryRoot, "packages/propel");
 const i18nRoot = path.join(repositoryRoot, "packages/i18n");
 const hooksRoot = path.join(repositoryRoot, "packages/hooks");
 const utilsRoot = path.join(repositoryRoot, "packages/utils");
+const constantsRoot = path.join(repositoryRoot, "packages/constants");
 const requireFromWeb = createRequire(path.join(webRoot, "package.json"));
-const appSourceRoots = [webRoot, adminRoot, spaceRoot, uiRoot, propelRoot, hooksRoot, i18nRoot, utilsRoot].map(
-  (root) => pathToFileURL(root).href
-);
+const appSourceRoots = [
+  webRoot,
+  adminRoot,
+  spaceRoot,
+  uiRoot,
+  propelRoot,
+  hooksRoot,
+  i18nRoot,
+  utilsRoot,
+  constantsRoot,
+].map((root) => pathToFileURL(root).href);
 const relativeSpecifiers = new Set([".", ".."]);
 const atlaskitPublicSubpaths = new Map(
   [

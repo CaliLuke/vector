@@ -17,7 +17,7 @@ export function changedFiles(directory) {
   const untracked = execFileSync("git", ["ls-files", "--others", "--exclude-standard", "-z"], { cwd: directory })
     .toString()
     .split("\0");
-  return [...new Set([...tracked, ...untracked].filter(Boolean))].toSorted();
+  return [...new Set([...tracked, ...untracked].filter(Boolean))].toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
 export function affectedGoPackages(packages, changed, moduleRoot) {
@@ -31,13 +31,13 @@ export function affectedGoPackages(packages, changed, moduleRoot) {
       )
     )
   )
-    return [...byName.keys()].toSorted();
+    return [...byName.keys()].toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   for (const name of changedGo) {
-    if (!name.endsWith(".go")) return [...byName.keys()].toSorted();
+    if (!name.endsWith(".go")) return [...byName.keys()].toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0));
     const directory = path.resolve(moduleRoot, "../..", path.dirname(name));
     const pkg = packages.find((candidate) => candidate.Dir === directory);
     // Deleted packages and shared non-Go fixtures cannot be mapped safely.
-    if (!pkg) return [...byName.keys()].toSorted();
+    if (!pkg) return [...byName.keys()].toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0));
     selected.add(pkg.ImportPath);
   }
   let expanded = true;
@@ -55,7 +55,7 @@ export function affectedGoPackages(packages, changed, moduleRoot) {
       }
     }
   }
-  return [...selected].toSorted();
+  return [...selected].toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
 async function command(args, options = {}) {
@@ -80,7 +80,7 @@ export function orderedGoPackages(packages, changed, moduleRoot) {
   return [
     ...new Set([
       ...affectedGoPackages(packages, changed, moduleRoot),
-      ...packages.map((pkg) => pkg.ImportPath).toSorted(),
+      ...packages.map((pkg) => pkg.ImportPath).toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
     ]),
   ];
 }
