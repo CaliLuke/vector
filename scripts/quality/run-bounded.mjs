@@ -16,15 +16,14 @@ for (let index = 2; index < separator; index += 2) {
 }
 const seconds = options.get("--seconds") ?? 120;
 const memoryMiB = options.get("--memory-mib") ?? 2048;
-const heapMiB = options.get("--heap-mib") ?? 1024;
 const command = process.argv.slice(separator + (implicitCommand ? 0 : 1));
 if (
   separator < 2 ||
   command.length === 0 ||
-  [...options.keys()].some((key) => !["--seconds", "--memory-mib", "--heap-mib"].includes(key)) ||
-  [seconds, memoryMiB, heapMiB].some((value) => !Number.isFinite(value) || value <= 0)
+  [...options.keys()].some((key) => !["--seconds", "--memory-mib"].includes(key)) ||
+  [seconds, memoryMiB].some((value) => !Number.isFinite(value) || value <= 0)
 ) {
-  process.stderr.write("Usage: run-bounded.mjs [--seconds N] [--memory-mib N] [--heap-mib N] -- command args...\n");
+  process.stderr.write("Usage: run-bounded.mjs [--seconds N] [--memory-mib N] -- command args...\n");
   process.exit(2);
 }
 if (process.platform === "win32") {
@@ -37,8 +36,6 @@ const child = spawn(command[0], command.slice(1), {
   stdio: "inherit",
   env: {
     ...process.env,
-    // Node descendants use this heap cap; the process-tree RSS ceiling also covers Bun.
-    NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --max-old-space-size=${heapMiB}`.trim(),
   },
 });
 let failureCode = 0;

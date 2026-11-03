@@ -1,3 +1,4 @@
+import { LightbulbIcon } from "@/lib/pdf/icons";
 import { describe, expect, it } from "vitest";
 import { resolveColorForPdf } from "@/lib/pdf/colors";
 import { applyMarks } from "@/lib/pdf/mark-renderers";
@@ -77,4 +78,12 @@ describe("PDF custom color marks", () => {
     const base = { fontSize: 14 };
     expect(applyMarks([{ type }, { type: "bold" }], base)).toEqual({ fontSize: 14, fontWeight: "bold" });
   });
+});
+
+it("default PDF callout icons retain their size, contrast and view box", () => {
+  const icon = LightbulbIcon({});
+  expect(icon.props.width).toBe(16);
+  expect(icon.props.height).toBe(16);
+  expect(icon.props.viewBox).toBe("0 0 24 24");
+  expect(icon.props.children.props.stroke).toBe("#ffffff");
 });

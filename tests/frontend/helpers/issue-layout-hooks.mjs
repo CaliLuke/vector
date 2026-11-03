@@ -1,4 +1,4 @@
-import { registerHooks } from "node:module";
+import { registerHooks } from "./module-hooks.mjs";
 import { registerWebModuleHooks } from "./web-module-hooks.mjs";
 
 export function registerIssueLayoutHooks() {

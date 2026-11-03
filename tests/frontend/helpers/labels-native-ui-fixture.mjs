@@ -1,6 +1,6 @@
 import * as ContractEnums from "../../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./module-hooks.mjs";
 import { React, act, createPermissionUiFixture, settleQuery } from "./permission-ui-fixture.mjs";
 
 globalThis.nativeLabelsUiReact = React;

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React, act } from "./helpers/react.mjs";
@@ -94,5 +94,5 @@ await test("change-email availability validation retains the draft and allows re
   assert.equal(changeEmailObserver.getForms(emailChangeSource).at(-1)?.state.isSubmitSuccessful, true);
 });
 
-observer.restore();
-changeEmailObserver.restore();
+test.after(() => observer.restore());
+test.after(() => changeEmailObserver.restore());

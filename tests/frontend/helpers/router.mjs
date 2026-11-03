@@ -1,5 +1,5 @@
 import { React, act } from "./react.mjs";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./module-hooks.mjs";
 import { routes } from "../../../apps/web/routes.ts";
 
 // jsdom exercises TanStack's browser entry points. Keep Node resolution for

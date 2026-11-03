@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./module-hooks.mjs";
 import { React, act } from "./react.mjs";
 import { createQueryRouterFixture, settleQuery } from "./query-router.mjs";
 import { resolvePackageStub } from "./module-stubs.mjs";

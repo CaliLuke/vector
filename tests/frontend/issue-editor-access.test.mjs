@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 const fromRoot = (file) => import(pathToFileURL(path.resolve(process.cwd(), file)).href);

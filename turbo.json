@@ -1,7 +1,7 @@
 {
   "$schema": "https://v2-8-12.turborepo.dev/schema.json",
-  "globalPassThroughEnv": ["NODE_OPTIONS", "GOMEMLIMIT", "GOMAXPROCS"],
-  "globalDependencies": [".npmrc", ".oxfmtrc.json", ".oxlintrc.json"],
+  "globalPassThroughEnv": ["GOMEMLIMIT", "GOMAXPROCS"],
+  "globalDependencies": ["bunfig.toml", ".oxfmtrc.json", ".oxlintrc.json"],
   "globalEnv": [
     "VITE_LOCAL_LOGGING",
     "APP_VERSION",

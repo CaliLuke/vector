@@ -68,7 +68,7 @@
     "@types/react": "catalog:",
     "@types/react-color": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
+    "@vitest/coverage-istanbul": "catalog:",
     "jsdom": "catalog:",
     "storybook": "catalog:",
     "tsdown": "catalog:",
@@ -79,8 +79,5 @@
   "peerDependencies": {
     "react": "catalog:",
     "react-dom": "catalog:"
-  },
-  "inlinedDependencies": {
-    "react-icons": "5.7.0"
   }
 }

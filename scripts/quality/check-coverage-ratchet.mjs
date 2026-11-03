@@ -133,6 +133,13 @@ function normalizeFile(file, root) {
   return normalized;
 }
 
+function uncoveredCount(coverage) {
+  const { total, covered } = coverage ?? {};
+  return Number.isInteger(total) && Number.isInteger(covered) && total >= covered && covered >= 0
+    ? total - covered
+    : undefined;
+}
+
 function extractSummary(summary, root) {
   const files = {};
   for (const [file, coverage] of Object.entries(summary)) {
@@ -144,7 +151,7 @@ function extractSummary(summary, root) {
       if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
         fail(`invalid ${metric} percentage for ${normalized}`);
       }
-      files[normalized][metric] = percent;
+      files[normalized][metric] = { percent, uncovered: uncoveredCount(coverage?.[metric]) };
     }
   }
   if (Object.keys(files).length === 0) fail("coverage summary contains no source files");
@@ -152,26 +159,51 @@ function extractSummary(summary, root) {
 }
 
 function writeBaseline(path, files) {
+  const measured = Object.fromEntries(
+    Object.entries(files).map(([file, metrics]) => [
+      file,
+      Object.fromEntries(
+        METRICS.map((metric) => {
+          const { percent, uncovered } = metrics[metric];
+          if (uncovered === undefined) fail(`missing or invalid ${metric} counts for ${file}`);
+          return [metric, [percent, uncovered]];
+        })
+      ),
+    ])
+  );
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, `${JSON.stringify({ version: 1, files }, null, 2)}\n`);
+  writeFileSync(path, `${JSON.stringify({ version: 2, files: measured }, null, 2)}\n`);
   process.stdout.write(`Coverage baseline written: ${path}\n`);
 }
 
-function compareExistingFile(file, current, expected, tolerance) {
+function compareUncovered(file, metric, uncovered, ceiling) {
+  if (!Number.isInteger(ceiling) || ceiling < 0 || uncovered === undefined)
+    return [`${file}: missing or invalid ${metric} counts`];
+  if (uncovered > ceiling) return [`${file}: uncovered ${metric} increased from ${ceiling} to ${uncovered}`];
+  return [];
+}
+
+function compareExistingFile(file, current, expected, tolerance, version) {
   const failures = [];
   for (const metric of METRICS) {
-    const floor = Number(expected?.[metric]);
-    if (!Number.isFinite(floor)) failures.push(`${file}: invalid baseline ${metric}`);
-    else if (current[metric] + tolerance < floor) {
-      failures.push(`${file}: ${metric} fell from ${floor}% to ${current[metric]}%`);
+    const entry = expected?.[metric];
+    if (version === 2 && (!Array.isArray(entry) || entry.length !== 2)) {
+      failures.push(`${file}: invalid baseline ${metric}`);
+      continue;
     }
+    const floor = Number(version === 2 ? entry[0] : entry);
+    if (!Number.isFinite(floor) || floor < 0 || floor > 100) failures.push(`${file}: invalid baseline ${metric}`);
+    else if (current[metric].percent + tolerance < floor) {
+      failures.push(`${file}: ${metric} fell from ${floor}% to ${current[metric].percent}%`);
+    }
+    if (version === 2) failures.push(...compareUncovered(file, metric, current[metric].uncovered, entry[1]));
   }
   return failures;
 }
 
 function compare(files, baseline, options) {
-  if (baseline.version !== 1 || !baseline.files || typeof baseline.files !== "object") {
-    fail("baseline must contain version 1 and a files object");
+  if (![1, 2].includes(baseline.version) || !baseline.files || typeof baseline.files !== "object") {
+    fail("baseline must contain version 1 or 2 and a files object");
   }
 
   const failures = [];
@@ -181,14 +213,14 @@ function compare(files, baseline, options) {
       if (existsSync(resolve(options.root, file))) failures.push(`${file}: missing from coverage summary`);
       continue;
     }
-    failures.push(...compareExistingFile(file, current, expected, options.tolerance));
+    failures.push(...compareExistingFile(file, current, expected, options.tolerance, baseline.version));
   }
 
   for (const [file, current] of Object.entries(files)) {
     if (baseline.files[file]) continue;
     for (const metric of METRICS) {
-      if (current[metric] + options.tolerance < options.newFileMin) {
-        failures.push(`${file}: new-file ${metric} is ${current[metric]}%, below ${options.newFileMin}%`);
+      if (current[metric].percent + options.tolerance < options.newFileMin) {
+        failures.push(`${file}: new-file ${metric} is ${current[metric].percent}%, below ${options.newFileMin}%`);
       }
     }
   }

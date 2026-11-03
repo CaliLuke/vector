@@ -1,3 +1,4 @@
+import { createOxcInstrumenter } from "oxc-coverage-instrument/vitest";
 import { defineConfig } from "vitest/config";
 import path from "path";
 
@@ -13,7 +14,8 @@ export default defineConfig({
     globals: true,
     include: ["tests/**/*.test.ts", "tests/**/*.spec.ts"],
     coverage: {
-      provider: "v8",
+      provider: "istanbul",
+      instrumenter: (options) => createOxcInstrumenter({ ...options, compat: "istanbul" }),
       reporter: ["text", "json-summary", "html"],
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/**/*.d.ts", "src/**/types.ts", "src/**/*.test.*"],

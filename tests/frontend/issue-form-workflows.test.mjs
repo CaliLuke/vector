@@ -630,4 +630,4 @@ await test("new work items without preloaded data start blank and retain their s
   assert.equal(saved.length, 1, "unloaded saved content must never be submitted as an empty description");
 });
 
-formObserver.restore();
+test.after(() => formObserver.restore());

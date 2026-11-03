@@ -30,7 +30,10 @@ void test("public-site uploads finalize only after storage succeeds and preserve
     writes.map(({ url }) => url),
     ["/api/public/assets/v2/anchor/anchor/", signedAsset.upload_data.url, "/api/public/assets/v2/anchor/anchor/asset/"]
   );
-  assert.equal(writes[1].body.get("file"), file);
+  const uploaded = writes[1].body.get("file");
+  assert.equal(uploaded.name, file.name);
+  assert.equal(uploaded.type, file.type);
+  assert.deepEqual(await uploaded.arrayBuffer(), await file.arrayBuffer());
   assert.equal(writes[1].config.withCredentials, false);
   assert.equal(writes[0].config.signal, writes[2].config.signal);
   service.cancelUpload();

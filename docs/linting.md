@@ -14,16 +14,16 @@ From the root of the repo:
 
 ```bash
 # Check lint diagnostics and TypeScript errors against the repository ratchets
-pnpm check:lint
+bun run check:lint
 
 # Auto-fix lint errors
-pnpm fix:lint
+bun run fix:lint
 ```
 
 To run the package-local Oxlint command:
 
 ```bash
-pnpm turbo run check:lint --filter=@plane/ui
+bun run turbo run check:lint --filter=@plane/ui
 ```
 
 The repository-wide command is the canonical check. Package-local commands are useful during development; they do not replace its per-finding diagnostic baseline.

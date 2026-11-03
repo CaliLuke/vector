@@ -9,13 +9,13 @@ completed updates and verification; this document records current constraints.
 
 | Family                                  | Selection                                              |
 | --------------------------------------- | ------------------------------------------------------ |
-| Node.js / pnpm                          | 26.12.1 / 12.15.0                                      |
+| Node.js / bun run                       | 26.12.1 / 12.15.0                                      |
 | React / React DOM                       | 19.3.1                                                 |
 | React Router                            | 8.5.1                                                  |
 | Tiptap                                  | 3.32.2; retain the scoped collaboration override below |
 | Hocuspocus                              | 4.8.0                                                  |
 | Vite / Storybook                        | 8.3.5 / 10.6.5                                         |
-| Vitest / coverage-v8                    | 5.0.5                                                  |
+| Vitest / coverage-istanbul              | 5.0.5                                                  |
 | TypeScript compiler / compatibility API | 7.0.2 / 6.0.2                                          |
 | Oxlint / Oxfmt / Knip                   | 1.90.0 / 0.75.0 / 6.44.0                               |
 | Go                                      | 1.27.3                                                 |
@@ -98,7 +98,7 @@ transport changes; do not edit generated transports manually.
 
 ## Validation
 
-Check available JavaScript updates with `pnpm outdated -r --format json` and
+Check available JavaScript updates with `bun run outdated -r --format json` and
 review prereleases and peer ranges before selection. For Go commands, first
 source `scripts/dev-env.sh`. Validate updates in this consumer with affected
 regressions and the complete repository quality gate described in

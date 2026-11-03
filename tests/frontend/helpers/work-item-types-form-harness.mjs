@@ -1,4 +1,4 @@
-import { registerHooks } from "node:module";
+import { registerHooks } from "./module-hooks.mjs";
 import { observeNativeForms } from "./native-form-observer.mjs";
 import { registerWebModuleHooks } from "./web-module-hooks.mjs";
 import { resolvePackageStub } from "./module-stubs.mjs";

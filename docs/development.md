@@ -5,11 +5,25 @@ Keep this guide limited to non-obvious instructions that are absent from code, c
 
 ## JavaScript tooling runtime
 
-Quality scripts, their harness tests, and process supervisors run with Bun, pinned
-in `.bun-version` and `.mise.toml`. CI installs the same version; `check.sh` rejects
-a different runtime before starting full checks. Node remains explicit for the
-existing V8 frontend coverage/loader contracts and V8 heap-limit regression.
-The pnpm dependency lockfile and application runtime contracts are unchanged.
+All JavaScript applications, quality scripts, tests and supervisors run with Bun,
+pinned in `.bun-version` and `.mise.toml`. CI and Docker use the same version.
+Use `bun install --frozen-lockfile` and `bun run <script>`. `bunfig.toml` forces
+Bun for dependency executables even when their shebang names Node.
+Every JavaScript workspace links to that config because Bun loads it from the
+command's working directory. The runner checks verify the runtime in each workspace.
+Frontend behavior tests run in isolated Bun processes. The normal run exercises
+built package exports; the coverage run resolves those exports to workspace source
+so bundling cannot discard executable source mappings. CommonJS fixtures and ESM
+imports share that resolution. Oxc collects Istanbul-format coverage, including
+unloaded source files. Vitest suites use Oxc too; do not use Babel for coverage.
+Frontend coverage baselines enforce both percentage floors and uncovered-count
+ceilings; see the [migration review](bun-coverage-migration.md).
+Node-compatible module imports and type packages do not require a Node runtime.
+
+Knip's workspace-specific `ws` and `@types/ws` ignores track
+[Knip #2294](https://github.com/webpro-nl/knip/issues/2294): Bun lists `ws` as a
+built-in, so Knip misses its package and type references. Remove the ignores when
+Knip recognizes those references under Bun.
 
 ## Cancel checks
 

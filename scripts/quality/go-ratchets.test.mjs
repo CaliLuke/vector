@@ -181,7 +181,7 @@ void test("file floors retain established coverage when aggregate package covera
   });
 });
 
-void test("coverage profiles larger than the parser heap retain hits across repeated blocks", () => {
+void test("coverage profiles larger than the process memory budget retain hits across repeated blocks", () => {
   fixture((directory) => {
     write(directory, "go.mod", "module example.test/fixture\n\ngo 1.27.3\n");
     write(directory, "p.go", "package fixture\nfunc F() int { return 1 }\n");
@@ -191,11 +191,23 @@ void test("coverage profiles larger than the parser heap retain hits across repe
     });
     const profile = write(directory, "coverage.out", "mode: set\nexample.test/fixture/p.go:2.1,2.25 1 1\n");
     const chunk = "example.test/fixture/p.go:2.1,2.25 1 0\n".repeat(4096);
-    for (let index = 0; index < 256; index++) fs.appendFileSync(profile, chunk);
+    for (let index = 0; index < 2048; index++) fs.appendFileSync(profile, chunk);
     const checked = spawnSync(
-      // Keep the V8 heap-limit regression explicit; other parser tests use Bun.
-      "node",
-      ["--max-old-space-size=32", path.join(scripts, "go-coverage-ratchet.mjs"), "check", profile, baseline, directory],
+      process.execPath,
+      [
+        path.join(scripts, "run-bounded.mjs"),
+        "--seconds",
+        "30",
+        "--memory-mib",
+        "128",
+        "--",
+        process.execPath,
+        path.join(scripts, "go-coverage-ratchet.mjs"),
+        "check",
+        profile,
+        baseline,
+        directory,
+      ],
       { encoding: "utf8" }
     );
     assert.equal(checked.status, 0, checked.stderr);

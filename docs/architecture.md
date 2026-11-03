@@ -5,7 +5,7 @@
 The Go service owns the application API, authentication, database bootstrap, and durable background jobs.
 Caddy routes API requests to Go and serves the browser applications through the same origin.
 PostgreSQL stores application data and durable work. Redis provides cache services.
-S3-compatible storage holds uploaded files. The Node.js collaboration service supports live editing.
+S3-compatible storage holds uploaded files. The Bun collaboration service supports live editing.
 
 The runtime does not require Django, Celery, or RabbitMQ.
 Startup requires native background tasks; unused broker flags have been removed.

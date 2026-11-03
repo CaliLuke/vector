@@ -5,8 +5,8 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
 import { parse } from "acorn";
-import { convert } from "ast-v8-to-istanbul";
-import { mergeScriptCovs } from "@bcoe/v8-coverage";
+import { createOxcInstrumenter as createInstrumenter } from "oxc-coverage-instrument/vitest";
+import { createSourceMapStore } from "istanbul-lib-source-maps";
 import { createCoverageMap, createFileCoverage } from "@vitest/istanbul-lib-coverage";
 import { transformSync } from "esbuild";
 import { sourceMapFor } from "../../tests/frontend/helpers/coverage-source.mjs";
@@ -103,34 +103,31 @@ function linkOnlyModule(code) {
   );
 }
 
-function capturedScripts(directory, root, suites) {
+function capturedCoverage(directory, root, suites, files) {
   const sources = readSources(directory);
-  const grouped = new Map();
+  const variants = new Map();
   let processes = 0;
   for (const filename of readdirSync(path.join(directory, "raw"))) {
-    const pid = /^coverage-(\d+)-.*\.json$/.exec(filename)?.[1];
+    const pid = /^coverage-(\d+)\.json$/.exec(filename)?.[1];
     if (!pid) continue;
-    const raw = readJSON(path.join(directory, "raw", filename));
-    if (!Array.isArray(raw.result)) throw new Error(`Invalid V8 report: ${filename}`);
     processes++;
-    for (const coverage of raw.result) {
-      if (!ownedURL(coverage.url, root, suites)) continue;
-      const source = sources.get(`${pid}:${coverage.url}`);
-      if (!source) throw new Error(`No executed source captured for ${coverage.url} in process ${pid}`);
-      if (coverage.url.includes("/dist/") && !source.map) {
-        // Bundlers omit maps for generated entry points that only re-export
-        // mapped chunks. They contain no owned executable statements.
+    for (const [name, coverage] of Object.entries(readJSON(path.join(directory, "raw", filename)))) {
+      const url = pathToFileURL(name).href;
+      if (!ownedURL(url, root, suites)) continue;
+      const source = sources.get(`${pid}:${url}`);
+      if (!source) throw new Error(`No executed source captured for ${url} in process ${pid}`);
+      if (url.includes("/dist/") && !source.map) {
         if (linkOnlyModule(source.code)) continue;
-        throw new Error(`Missing build source map for ${coverage.url}`);
+        throw new Error(`Missing build source map for ${url}`);
       }
-      const digest = source.digest;
-      const group = grouped.get(digest) ?? { source, coverage: [] };
-      group.coverage.push(coverage);
-      grouped.set(digest, group);
+      validateMappedSources(source, files);
+      const map = variants.get(source.digest) ?? createCoverageMap({});
+      map.addFileCoverage(coverage);
+      variants.set(source.digest, map);
     }
   }
-  if (!processes || !grouped.size) throw new Error("No owned V8 coverage was collected");
-  return Array.from(grouped.values());
+  if (!processes || !variants.size) throw new Error("No owned instrumented coverage was collected");
+  return [...variants.values()];
 }
 
 function validateMappedSources(source, files) {
@@ -145,17 +142,6 @@ function validateMappedSources(source, files) {
     if (source.map.sourcesContent?.[index] !== readFileSync(filename, "utf8"))
       throw new Error(`Build or transform source is stale: ${filename}`);
   }
-}
-
-async function remap(source, functions) {
-  const ast = parse(source.code, { ecmaVersion: "latest", sourceType: "module", locations: true });
-  return convert({
-    code: source.code,
-    sourceMap: source.map,
-    ast,
-    coverage: { url: source.url, functions },
-    wrapperLength: 0,
-  });
 }
 
 // Two conversions at a time keep the coverage pass within the existing guard.
@@ -175,14 +161,15 @@ export async function collectFrontendCoverage({ root, directory, suites, files =
   const mergeOwned = (converted) => {
     for (const [filename, coverage] of Object.entries(converted)) {
       const normalized = filename.startsWith("file:") ? fileURLToPath(filename) : filename;
-      if (owned.has(normalized)) map.addFileCoverage({ ...coverage, path: normalized });
+      if (owned.has(normalized)) map.addFileCoverage({ ...(coverage.toJSON?.() ?? coverage), path: normalized });
     }
   };
-  await visitBounded(capturedScripts(directory, root, suites), async ({ source, coverage }) => {
-    validateMappedSources(source, owned);
-    const merged = mergeScriptCovs(coverage);
-    if (!merged) throw new Error(`Cannot merge coverage for ${source.url}`);
-    mergeOwned(await remap(source, merged.functions));
+  const collected = capturedCoverage(directory, root, suites, owned);
+  // Different test transforms can emit the same path with different positions.
+  // Remap each captured variant before merging original-source coverage.
+  await visitBounded(collected, async (variant) => {
+    const remapped = await createSourceMapStore().transformCoverage(variant);
+    mergeOwned(remapped.toJSON());
   });
   const measured = new Set(map.files());
   await visitBounded(
@@ -197,7 +184,10 @@ export async function collectFrontendCoverage({ root, directory, suites, files =
         sourcemap: "inline",
         sourcesContent: true,
       }).code;
-      mergeOwned(await remap({ code, url: pathToFileURL(filename).href, map: sourceMapFor(code, filename) }, []));
+      const instrumenter = createInstrumenter({ compat: "istanbul", stripTypescript: false });
+      instrumenter.instrumentSync(code, filename, sourceMapFor(code, filename));
+      const zero = createCoverageMap({ [filename]: instrumenter.lastFileCoverage() });
+      mergeOwned((await createSourceMapStore().transformCoverage(zero)).toJSON());
       // Type-only files have no executable statements, but still belong to scope.
       if (!map.files().includes(filename)) map.addFileCoverage(createFileCoverage(filename));
     }
@@ -234,7 +224,7 @@ if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === imp
   if (!values.directory) throw new Error("--directory is required");
   const scope = readJSON(path.join(values.root, ".quality/coverage-scope.json"));
   const suites = Object.fromEntries(
-    Object.entries(scope.coveredSuites).filter(([, suite]) => suite.testCommand === "pnpm test:frontend:coverage")
+    Object.entries(scope.coveredSuites).filter(([, suite]) => suite.testCommand === "bun run test:frontend:coverage")
   );
   const summary = await collectFrontendCoverage({
     root: values.root,

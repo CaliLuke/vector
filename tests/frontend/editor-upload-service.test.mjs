@@ -38,7 +38,10 @@ await test("project uploads pass one abort signal through signing, storage and f
   );
   assert.equal(writes[0].body.entity_identifier, "issue");
   assert.equal(writes[0].config.signal, controller.signal);
-  assert.equal(writes[1].body.get("file"), file);
+  const uploaded = writes[1].body.get("file");
+  assert.equal(uploaded.name, file.name);
+  assert.equal(uploaded.type, file.type);
+  assert.deepEqual(await uploaded.arrayBuffer(), await file.arrayBuffer());
   assert.equal(writes[1].config.signal, controller.signal);
   assert.equal(writes[1].config.onUploadProgress, progress);
   assert.equal(writes[1].config.withCredentials, false);

@@ -21,12 +21,12 @@ func TestRunnerMergesAndRedactsChildOutputAndUsesRepositoryRoot(t *testing.T) {
 	if err := os.Mkdir(bin, 0700); err != nil {
 		t.Fatal(err)
 	}
-	cwdFile := filepath.Join(root, "pnpm-cwd")
+	cwdFile := filepath.Join(root, "bun-cwd")
 	dockerArgsFile := filepath.Join(root, "docker-args")
-	writeExecutable(t, filepath.Join(bin, "pnpm"), "#!/bin/sh\npwd > \"$PNPM_CWD_FILE\"\nprintf 'password=private words\\n' >&2\nexec sleep 20\n")
+	writeExecutable(t, filepath.Join(bin, "bun"), "#!/bin/sh\npwd > \"$BUN_CWD_FILE\"\nprintf 'password=private words\\n' >&2\nexec sleep 20\n")
 	writeExecutable(t, filepath.Join(bin, "docker"), "#!/bin/sh\nprintf '%s\\n' \"$*\" > \"$DOCKER_ARGS_FILE\"\nprintf 'go-migrator-1 | 2026-10-22T00:00:00Z ERROR token=private\\nproxy-1 | 2026-10-22T00:00:00Z ERROR token=private\\n'\nexec sleep 20\n")
 	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
-	t.Setenv("PNPM_CWD_FILE", cwdFile)
+	t.Setenv("BUN_CWD_FILE", cwdFile)
 	t.Setenv("DOCKER_ARGS_FILE", dockerArgsFile)
 	var recordsMu sync.Mutex
 	var exported []byte
@@ -97,7 +97,7 @@ func TestRunnerRetriesWhenDockerLogChildCannotRestart(t *testing.T) {
 	}
 	dockerPath := filepath.Join(bin, "docker")
 	writeExecutable(t, dockerPath, "#!/bin/sh\n/bin/rm \"$0\"\nexit 0\n")
-	writeExecutable(t, filepath.Join(bin, "pnpm"), "#!/bin/sh\nexec /bin/sleep 20\n")
+	writeExecutable(t, filepath.Join(bin, "bun"), "#!/bin/sh\nexec /bin/sleep 20\n")
 	t.Setenv("PATH", bin)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { setImmediate } from "node:timers/promises";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
@@ -237,7 +237,7 @@ await test("console diagnostics include their caller stack while keeping message
   assert.match(stacks[0], /navigationWarning/);
   assert.match(stacks[1], /componentError/);
   assert.match(stacks[2], /http:\/\/localhost:8000\/navigation\.ts/);
-  assert.match(stacks[2], /http:\/\/localhost:8000\/navigation\.ts:1:9/);
+  assert.match(stacks[2], /http:\/\/localhost:8000\/navigation\.ts:1:\d+/);
   assert.equal(exported.options.body.includes("private"), false, "caller stack URLs must discard query secrets");
 });
 
@@ -251,11 +251,10 @@ await test("Unicode and control-heavy records stay below the keepalive limit acr
   });
 
   const NativeError = globalThis.Error;
-  globalThis.Error = class extends NativeError {
-    constructor(...args) {
-      super(...args);
-      this.stack = `Error\n${"𐐀".repeat(8000)}`;
-    }
+  globalThis.Error = function (...args) {
+    const error = new NativeError(...args);
+    error.stack = `Error\n${"𐐀".repeat(8000)}`;
+    return error;
   };
   try {
     console.warn("\u0001".repeat(8000));

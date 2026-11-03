@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createRequire, registerHooks } from "node:module";
+import { createRequire, registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { registerSpaceModuleHooks } from "./helpers/web-module-hooks.mjs";
 registerSpaceModuleHooks();

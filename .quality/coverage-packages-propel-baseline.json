@@ -1,2075 +1,2147 @@
 {
-  "version": 1,
+  "version": 2,
   "files": {
     "src/accordion/accordion.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 7],
+      "statements": [0, 7],
+      "functions": [0, 4],
+      "branches": [0, 12]
     },
     "src/accordion/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/animated-counter/animated-counter.tsx": {
-      "lines": 55,
-      "statements": 50,
-      "functions": 40,
-      "branches": 31.81
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/animated-counter/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/avatar/avatar.tsx": {
-      "lines": 52.94,
-      "statements": 55.55,
-      "functions": 75,
-      "branches": 25
+      "lines": [52.94, 8],
+      "statements": [55.55, 8],
+      "functions": [75, 1],
+      "branches": [25, 15]
     },
     "src/avatar/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/badge/badge.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [90, 1]
     },
     "src/badge/helper.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [75, 1],
+      "statements": [75, 1],
+      "functions": [50, 1],
+      "branches": [100, 0]
     },
     "src/badge/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/banner/banner.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [9.52, 19],
+      "statements": [9.09, 20],
+      "functions": [0, 4],
+      "branches": [0, 17]
     },
     "src/banner/helper.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [61.53, 5],
+      "statements": [53.33, 7],
+      "functions": [0, 5],
+      "branches": [100, 0]
     },
     "src/banner/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/button/button.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 87.5
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [93.75, 1]
     },
     "src/button/helper.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/button/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/calendar/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/calendar/root.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/card/card.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [50, 2]
     },
     "src/card/helper.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/card/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/charts/area-chart/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/charts/area-chart/root.tsx": {
-      "lines": 92.85,
-      "statements": 89.65,
-      "functions": 75,
-      "branches": 54.16
+      "lines": [93.1, 2],
+      "statements": [90, 3],
+      "functions": [75, 2],
+      "branches": [65.38, 9]
     },
     "src/charts/bar-chart/bar.tsx": {
-      "lines": 69.69,
-      "statements": 66.66,
-      "functions": 37.5,
-      "branches": 15
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [91.66, 2]
     },
     "src/charts/bar-chart/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/charts/bar-chart/root.tsx": {
-      "lines": 64.1,
-      "statements": 63.41,
-      "functions": 63.63,
-      "branches": 41.37
+      "lines": [82.92, 7],
+      "statements": [79.54, 9],
+      "functions": [81.81, 2],
+      "branches": [66.66, 13]
     },
     "src/charts/components/cartesian-axes.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 90.47
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [90.47, 2]
     },
     "src/charts/components/layout.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/charts/components/legend.tsx": {
-      "lines": 93.75,
-      "statements": 94.11,
-      "functions": 90,
-      "branches": 41.66
+      "lines": [96.15, 1],
+      "statements": [96.29, 1],
+      "functions": [100, 0],
+      "branches": [90, 2]
     },
     "src/charts/components/tick.tsx": {
-      "lines": 52.94,
-      "statements": 52.94,
-      "functions": 66.66,
-      "branches": 28.57
+      "lines": [52.94, 8],
+      "statements": [52.94, 8],
+      "functions": [66.66, 1],
+      "branches": [9.52, 19]
     },
     "src/charts/components/tooltip.tsx": {
-      "lines": 87.5,
-      "statements": 77.77,
-      "functions": 75,
-      "branches": 53.12
+      "lines": [93.75, 1],
+      "statements": [88.88, 2],
+      "functions": [100, 0],
+      "branches": [56.25, 14]
     },
     "src/charts/line-chart/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/charts/line-chart/root.tsx": {
-      "lines": 90,
-      "statements": 90,
-      "functions": 66.66,
-      "branches": 75
+      "lines": [90, 2],
+      "statements": [90, 2],
+      "functions": [66.66, 2],
+      "branches": [68.75, 5]
     },
     "src/charts/pie-chart/active-shape.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [50, 2]
     },
     "src/charts/pie-chart/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/charts/pie-chart/root.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [83.33, 2],
+      "statements": [76.92, 3],
+      "functions": [80, 1],
+      "branches": [34.61, 17]
     },
     "src/charts/pie-chart/tooltip.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/charts/radar-chart/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/charts/radar-chart/root.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 13],
+      "statements": [0, 13],
+      "functions": [0, 3],
+      "branches": [0, 7]
     },
     "src/charts/scatter-chart/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/charts/scatter-chart/root.tsx": {
-      "lines": 90,
-      "statements": 90,
-      "functions": 66.66,
-      "branches": 60
+      "lines": [90, 2],
+      "statements": [90, 2],
+      "functions": [66.66, 2],
+      "branches": [50, 5]
     },
     "src/charts/tree-map/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/charts/tree-map/map-content.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 61],
+      "statements": [0, 66],
+      "functions": [0, 11],
+      "branches": [0, 68]
     },
     "src/charts/tree-map/root.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 4],
+      "statements": [0, 4],
+      "functions": [0, 1],
+      "branches": [0, 5]
     },
     "src/charts/tree-map/tooltip.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [87.5, 1],
+      "functions": [100, 0],
+      "branches": [85.71, 2]
     },
     "src/collapsible/collapsible.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 19],
+      "statements": [0, 22],
+      "functions": [0, 7],
+      "branches": [0, 13]
     },
     "src/collapsible/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/combobox/combobox.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [54.76, 19],
+      "statements": [52.08, 23],
+      "functions": [61.53, 5],
+      "branches": [43.33, 34]
     },
     "src/combobox/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/command/command.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 6],
+      "statements": [0, 6],
+      "functions": [0, 5],
+      "branches": [100, 0]
     },
     "src/command/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/context-menu/context-menu.tsx": {
-      "lines": 95.23,
-      "statements": 95.23,
-      "functions": 83.33,
-      "branches": 100
+      "lines": [95.23, 1],
+      "statements": [95.23, 1],
+      "functions": [83.33, 1],
+      "branches": [100, 0]
     },
     "src/context-menu/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/dialog/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/dialog/root.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 35],
+      "statements": [0, 37],
+      "functions": [0, 9],
+      "branches": [0, 4]
     },
     "src/emoji-icon-picker/emoji-picker.tsx": {
-      "lines": 67.85,
-      "statements": 64.51,
-      "functions": 69.23,
-      "branches": 63.63
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/emoji-icon-picker/emoji/emoji.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [5.88, 16],
+      "statements": [5.88, 16],
+      "functions": [0, 7],
+      "branches": [0, 8]
     },
     "src/emoji-icon-picker/helper.tsx": {
-      "lines": 32.55,
-      "statements": 32.69,
-      "functions": 50,
-      "branches": 17.39
+      "lines": [48.83, 22],
+      "statements": [47.82, 24],
+      "functions": [70, 3],
+      "branches": [29.41, 12]
     },
     "src/emoji-icon-picker/icon/icon-root.tsx": {
-      "lines": 50,
-      "statements": 48,
-      "functions": 40,
-      "branches": 47.36
+      "lines": [83.78, 6],
+      "statements": [80.48, 8],
+      "functions": [75, 3],
+      "branches": [80.95, 4]
     },
     "src/emoji-icon-picker/icon/lucide-root.tsx": {
-      "lines": 80,
-      "statements": 83.33,
-      "functions": 75,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/emoji-icon-picker/icon/material-root.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 6],
+      "statements": [0, 7],
+      "functions": [0, 4],
+      "branches": [0, 2]
     },
     "src/emoji-icon-picker/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/emoji-icon-picker/logo.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 20],
+      "statements": [0, 24],
+      "functions": [0, 3],
+      "branches": [0, 20]
     },
     "src/emoji-icon-picker/lucide-icons.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/emoji-icon-picker/material-icons.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/emoji-reaction/emoji-reaction-picker.tsx": {
-      "lines": 75,
-      "statements": 70.58,
-      "functions": 75,
-      "branches": 80
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/emoji-reaction/emoji-reaction.tsx": {
-      "lines": 80,
-      "statements": 82.6,
-      "functions": 100,
-      "branches": 66.66
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [95.45, 1]
     },
     "src/emoji-reaction/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
+    },
+    "src/emoji-reaction/message-example.tsx": {
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
+    },
+    "src/emoji-reaction/reaction-examples.ts": {
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
+    },
+    "src/empty-state/actions.tsx": {
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/asset-registry.tsx": {
-      "lines": 53.33,
-      "statements": 53.33,
-      "functions": 50,
-      "branches": 25
+      "lines": [58.82, 7],
+      "statements": [58.82, 7],
+      "functions": [50, 1],
+      "branches": [25, 3]
     },
     "src/empty-state/assets/asset-types.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/helper.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/constant.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 100,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/customer.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/epic.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/estimate.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/export.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/intake.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/label.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/link.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/members.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/note.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/priority.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/project.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/settings.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/state.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/template.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/token.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/unknown.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/update.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/webhook.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/work-item.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/horizontal-stack/worklog.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/illustration/constant.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 100,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/illustration/inbox.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/illustration/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/illustration/search.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/404-error.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/archived-cycle.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/archived-module.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/archived-work-item.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/changelog.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/constant.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 100,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/customer.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/cycle.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/dashboard.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [50, 2],
+      "statements": [50, 2],
+      "functions": [0, 2],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/draft.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/epic.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/initiative.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/invalid-link.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/module.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/no-access.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/page.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/project.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/server-error.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/teamspace.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/view.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/assets/vertical-stack/work-item.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/empty-state/compact-empty-state.tsx": {
-      "lines": 14.28,
-      "statements": 14.28,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [52.63, 9]
     },
     "src/empty-state/detailed-empty-state.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 82.35
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/empty-state/empty-state.tsx": {
-      "lines": 25,
-      "statements": 25,
-      "functions": 0,
-      "branches": 0
+      "lines": [25, 3],
+      "statements": [25, 3],
+      "functions": [0, 1],
+      "branches": [0, 5]
     },
     "src/empty-state/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
+    },
+    "src/empty-state/story-controls.ts": {
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/empty-state/types.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icon-button/helper.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icon-button/icon-button.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icon-button/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/add-circle-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/add-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/add-reaction-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/add-workitem-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/actions/check-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/close-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/copy-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/copy-link.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/actions/edit-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/filter-applied-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 2],
+      "statements": [0, 2],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/actions/filter-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/globe-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/link-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/lock-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/new-tab-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/plus-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/preferences-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/actions/search-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/trash-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/actions/upgrade-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/activity-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/ai-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 3]
     },
     "src/icons/arrows/chevron-down.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/arrows/chevron-left.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/arrows/chevron-right.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/arrows/chevron-up.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/arrows/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/arrows/reply-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/at-risk-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 2]
     },
     "src/icons/attachments/audio-file-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/attachments/code-file-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/attachments/document-file-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/attachments/image-file-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/attachments/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/attachments/video-file-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/bar-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/blocked-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/blocker-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/brand/accenture-logo.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 3]
     },
     "src/icons/brand/dolby-logo.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 3]
     },
     "src/icons/brand/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/brand/plane-lockup.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/brand/plane-logo.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 3]
     },
     "src/icons/brand/plane-wordmark.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/brand/sony-logo.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 3]
     },
     "src/icons/brand/zerodha-logo.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 3]
     },
     "src/icons/calendar-after-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/calendar-before-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/center-panel-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/comment-fill-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/constants.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 100,
-      "branches": 100
+      "lines": [0, 8],
+      "statements": [0, 8],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/create-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/cycle/circle-dot-full-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/cycle/contrast-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/cycle/cycle-group-icon.tsx": {
-      "lines": 33.33,
-      "statements": 33.33,
-      "functions": 0,
-      "branches": 0
+      "lines": [33.33, 2],
+      "statements": [33.33, 2],
+      "functions": [0, 1],
+      "branches": [0, 7]
     },
     "src/icons/cycle/double-circle-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/cycle/helper.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/cycle/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/default-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/dice-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/display-properties.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/done-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 2]
     },
     "src/icons/dropdown-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/favorite-folder-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 2]
     },
     "src/icons/full-screen-panel-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/github-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [75, 1]
     },
     "src/icons/gitlab-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/helpers.ts": {
-      "lines": 80,
-      "statements": 61.53,
-      "functions": 0,
-      "branches": 0
+      "lines": [80, 1],
+      "statements": [44.44, 5],
+      "functions": [0, 5],
+      "branches": [0, 2]
     },
     "src/icons/icon-wrapper.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 2],
+      "statements": [0, 2],
+      "functions": [0, 1],
+      "branches": [0, 2]
     },
     "src/icons/in-progress-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 6]
     },
     "src/icons/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/info-fill-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/intake.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/layer-stack.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/layers-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/layouts/board-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/layouts/calendar-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/layouts/card-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/layouts/grid-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/layouts/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/layouts/list-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/layouts/sheet-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/layouts/timeline-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/lead-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/misc/check-circle-filled-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/misc/close-circle-filled-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/misc/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/misc/info-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/module/backlog.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [33.33, 2]
     },
     "src/icons/module/cancelled.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/module/completed.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/module/in-progress.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [33.33, 2]
     },
     "src/icons/module/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/module/module-status-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/module/paused.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/module/planned.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/monospace-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/multiple-sticky.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/off-track-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 2]
     },
     "src/icons/on-track-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 2]
     },
     "src/icons/overview-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/pending-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 3]
     },
     "src/icons/photo-filter-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/planned-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 2]
     },
     "src/icons/priority-icon.tsx": {
-      "lines": 100,
-      "statements": 86.66,
-      "functions": 100,
-      "branches": 77.77
+      "lines": [90, 1],
+      "statements": [84.61, 2],
+      "functions": [100, 0],
+      "branches": [68.75, 5]
     },
     "src/icons/project/cycle-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/project/epic-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/project/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/project/intake-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/project/module-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/project/page-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/project/view-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/project/work-items-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/properties/boolean-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/properties/comment-reply-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/properties/dropdown-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 2],
+      "statements": [0, 2],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/properties/due-date-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/properties/duplicate-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/properties/estimate-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/properties/hash-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/properties/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/properties/label-filled-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/properties/label-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 2],
+      "statements": [0, 2],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/properties/members-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/properties/overdue-date-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/properties/parent-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/properties/priority-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/properties/relates-to-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/properties/relation-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/properties/scope-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 2],
+      "statements": [0, 2],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/properties/start-date-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/properties/state-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/properties/user-circle-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/properties/user-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/properties/user-square-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 2],
+      "statements": [0, 2],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/properties/workflows-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/registry.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/related-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [0, 1]
     },
     "src/icons/sans-serif-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/serif-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/set-as-default-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/side-panel-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
+    },
+    "src/icons/square-icon-frame.tsx": {
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/state/backlog-group-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 4],
+      "statements": [0, 4],
+      "functions": [0, 1],
+      "branches": [0, 3]
     },
     "src/icons/state/cancelled-group-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/state/completed-group-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/state/dashed-circle.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
+    },
+    "src/icons/state/filled-group-icon.tsx": {
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/state/helper.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/state/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/state/intake-state-group-icon.tsx": {
-      "lines": 33.33,
-      "statements": 33.33,
-      "functions": 0,
-      "branches": 0
+      "lines": [33.33, 2],
+      "statements": [33.33, 2],
+      "functions": [0, 1],
+      "branches": [0, 6]
     },
     "src/icons/state/progress-circle.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
+    },
+    "src/icons/state/progress-group-icon.tsx": {
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/state/started-group-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/state/state-group-icon.tsx": {
-      "lines": 33.33,
-      "statements": 33.33,
-      "functions": 0,
-      "branches": 0
+      "lines": [33.33, 2],
+      "statements": [33.33, 2],
+      "functions": [0, 1],
+      "branches": [0, 6]
     },
     "src/icons/state/triage-group-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 2],
+      "statements": [0, 2],
+      "functions": [0, 1],
+      "branches": [0, 3]
     },
     "src/icons/state/unstarted-group-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/sticky-note-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 2]
     },
     "src/icons/sub-brand/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/sub-brand/pi-chat.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/sub-brand/plane-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/sub-brand/wiki-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/suspended-user.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/teams.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/transfer-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [0, 1]
     },
     "src/icons/tree-map-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/type.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/updates-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/user-activity-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/workspace-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/icons/workspace/analytics-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/workspace/archive-icon.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/workspace/dashboard-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/workspace/draft-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/workspace/home-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/workspace/inbox-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/workspace/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icons/workspace/multiple-sticky-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/workspace/project-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/icons/workspace/your-work-icon.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [0, 1]
     },
     "src/input/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/input/input.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [85.71, 1]
     },
     "src/menu/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/menu/menu.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [92.3, 2],
+      "statements": [93.1, 2],
+      "functions": [90, 1],
+      "branches": [90.62, 3]
     },
     "src/menu/types.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
+    },
+    "src/menu/use-submenu-registry.ts": {
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/pill/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/pill/pill.tsx": {
-      "lines": 94.44,
-      "statements": 94.44,
-      "functions": 66.66,
-      "branches": 0
+      "lines": [95.23, 1],
+      "statements": [95.83, 1],
+      "functions": [75, 1],
+      "branches": [66.66, 3]
     },
     "src/popover/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/popover/root.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [80, 1]
     },
     "src/portal/constants.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/portal/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/portal/modal-portal.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [90.9, 1],
+      "functions": [100, 0],
+      "branches": [80.76, 5]
     },
     "src/portal/portal-wrapper.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/portal/types.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/scrollarea/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/scrollarea/scrollarea.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [64.28, 5]
     },
     "src/separator/separator.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 3],
+      "statements": [0, 3],
+      "functions": [0, 1],
+      "branches": [0, 3]
     },
     "src/skeleton/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/skeleton/root.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 5],
+      "statements": [0, 5],
+      "functions": [0, 2],
+      "branches": [0, 5]
     },
     "src/spinners/circular-bar-spinner.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 75
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [66.66, 1]
     },
     "src/spinners/circular-spinner.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [75, 1]
+    },
+    "src/spinners/index.ts": {
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
+    },
+    "src/spinners/spinner-examples.tsx": {
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
+    },
+    "src/storybook/example-gallery.tsx": {
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
+    },
+    "src/storybook/icon-example-args.tsx": {
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/switch/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/switch/root.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 2],
+      "statements": [0, 2],
+      "functions": [0, 1],
+      "branches": [0, 23]
     },
     "src/tab-navigation/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/tab-navigation/tab-navigation-item.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 2],
+      "statements": [0, 2],
+      "functions": [0, 1],
+      "branches": [0, 4]
     },
     "src/tab-navigation/tab-navigation-list.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 2],
+      "statements": [0, 2],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/tab-navigation/tab-navigation-types.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/table/core.tsx": {
-      "lines": 91.66,
-      "statements": 91.66,
-      "functions": 75,
-      "branches": 100
+      "lines": [91.66, 2],
+      "statements": [91.66, 2],
+      "functions": [75, 2],
+      "branches": [100, 0]
     },
     "src/table/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/tabs/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/tabs/tabs.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [50, 1]
     },
     "src/toast/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/toast/toast.tsx": {
-      "lines": 80,
-      "statements": 81.81,
-      "functions": 73.33,
-      "branches": 39.47
+      "lines": [80, 7],
+      "statements": [78.94, 8],
+      "functions": [71.42, 4],
+      "branches": [42.85, 20]
     },
     "src/toolbar/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/toolbar/toolbar.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 20],
+      "statements": [0, 20],
+      "functions": [0, 5],
+      "branches": [0, 12]
     },
     "src/tooltip/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/tooltip/root.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/utils/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/utils/placement.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 50
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [50, 1]
     }
   }
 }

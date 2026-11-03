@@ -1,4 +1,4 @@
-FROM node:26.12.1-alpine
+FROM oven/bun:1.4.4-alpine
 
 RUN apk add --no-cache libc6-compat
 
@@ -7,8 +7,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN npm install --global corepack@0.36.0 && corepack enable pnpm && pnpm add -g turbo@2.11.10
-RUN pnpm install
+RUN --mount=type=cache,id=bun-cache,target=/root/.bun/install/cache NODE_ENV=development bun install --frozen-lockfile
 
 EXPOSE 3002
 
@@ -16,4 +15,4 @@ ENV VITE_SPACE_BASE_PATH="/spaces"
 
 VOLUME [ "/app/node_modules", "/app/apps/space/node_modules"]
 
-CMD ["pnpm", "dev", "--filter=space"]
+CMD ["bun", "run", "--filter", "space", "dev"]

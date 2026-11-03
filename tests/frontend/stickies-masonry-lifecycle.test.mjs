@@ -1,7 +1,7 @@
 import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { EUserWorkspaceRoles } from "../../packages/types/dist/index.mjs";
 import test from "node:test";
 import { pathToFileURL } from "node:url";

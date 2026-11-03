@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { QueryClient } from "@tanstack/react-query";
 import { React, act } from "./helpers/react.mjs";
@@ -233,4 +233,4 @@ await test("a workspace create without a loaded catalogue waits for the complete
   assert.deepEqual(client.getQueryData(workspaceKeys.list(user.id)), [canonical]);
 });
 
-formObserver.restore();
+test.after(() => formObserver.restore());

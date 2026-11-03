@@ -1,7 +1,7 @@
 import { createQueryDomFixture } from "./helpers/query-dom.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { React, act, webRequire } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
@@ -162,4 +162,4 @@ await test("empty results retain the selected deletion footer and search failure
   await f.submit();
   assert.deepEqual(f.actions.removeIssues.mock.calls[0].arguments, ["project", ["issue"]]);
 });
-forms.restore();
+test.after(() => forms.restore());

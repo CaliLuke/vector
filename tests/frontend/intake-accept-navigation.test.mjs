@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React, act, webRequire } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
@@ -21,7 +21,8 @@ globalThis.intakeAcceptNavigationFixture = fixture;
 const state = "globalThis.intakeAcceptNavigationFixture";
 const empty = (name) => `export const ${name} = () => null;`;
 const stubs = {
-  "@plane/utils/string": `export const copyUrlToClipboard = path => ${state}.copy(path);`,
+  "@plane/utils/string": `export * from ${JSON.stringify(new URL("../../packages/utils/src/string.ts", import.meta.url).href)};
+    export const copyUrlToClipboard = path => ${state}.copy(path);`,
   "@plane/propel/toast": `export const TOAST_TYPE={SUCCESS:'success',ERROR:'error'};export const setToast=toast=>${state}.toasts.push(toast);`,
   "@tanstack/react-router": `export const useRouter = () => ({ navigate: (to) => { ${state}.navigations.push(to); return Promise.resolve(); } });`,
   "@plane/i18n": `export const useTranslation = () => ({ t: (key) => key });`,

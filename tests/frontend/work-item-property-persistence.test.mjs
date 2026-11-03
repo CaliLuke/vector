@@ -350,7 +350,7 @@ await test("Cascading creation opens options only after acceptance using canonic
   assert.equal(submissions.length, 2);
 });
 
-forms.restore();
+test.after(() => forms.restore());
 
 await test("invalid numeric defaults are rejected before JSON can turn them into null", () => {
   for (const text of ["not a number", "1e999"]) {

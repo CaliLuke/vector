@@ -1,10 +1,6 @@
 # syntax=docker/dockerfile:1.7
-FROM node:26.12.1-alpine AS base
+FROM oven/bun:1.4.4-alpine AS base
 
-# Setup pnpm package manager with corepack and configure global bin directory for caching
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PNPM_HOME/bin:$PATH"
-RUN npm install --global corepack@0.36.0 && corepack enable
 
 # *****************************************************************************
 # STAGE 1: Build the project
@@ -14,11 +10,9 @@ RUN apk add --no-cache libc6-compat
 # Set working directory
 WORKDIR /app
 
-ARG TURBO_VERSION=2.11.10
-RUN corepack enable pnpm && pnpm add -g turbo@${TURBO_VERSION}
 COPY . .
 
-RUN turbo prune web --docker
+RUN bun x --bun turbo@2.11.10 prune web --docker
 
 # *****************************************************************************
 # STAGE 2: Install dependencies & build the project
@@ -32,16 +26,16 @@ WORKDIR /app
 # First install the dependencies (as they change less often)
 COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
-RUN corepack enable pnpm
+COPY --from=builder /app/out/bun.lock ./bun.lock
+COPY bunfig.toml bunfig.toml
 
-# Copy full directory structure before fetch to ensure all package.json files are available
+# Copy the pruned workspace before installing dependencies.
 COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
+COPY scripts/vite-config.mts scripts/vite-config.mts
 
-# Fetch dependencies to cache store, then install offline with dev deps
-RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm fetch --store-dir=/pnpm/store
-RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store CI=true pnpm install --offline --frozen-lockfile --store-dir=/pnpm/store
+# Install the frozen pruned workspace with build dependencies.
+RUN --mount=type=cache,id=bun-cache,target=/root/.bun/install/cache NODE_ENV=development bun install --frozen-lockfile
 
 ARG VITE_API_BASE_URL=""
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
@@ -70,7 +64,7 @@ ENV VITE_WEB_BASE_URL=$VITE_WEB_BASE_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV TURBO_TELEMETRY_DISABLED=1
 
-RUN pnpm turbo run build --filter=web
+RUN bun run turbo run build --filter=web
 
 # *****************************************************************************
 # STAGE 3: Serve with nginx

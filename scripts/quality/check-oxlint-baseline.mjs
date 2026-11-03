@@ -20,11 +20,11 @@ const baselinePath = path.join(root, ".quality", `oxlint-${mode}-baseline.json`)
 const inputGroups = mode === "full" ? [["apps/web"], [".", "--ignore-pattern", "apps/web/**"]] : [["."]];
 const reports = [];
 for (const inputs of inputGroups) {
-  const args = ["exec", "oxlint", "--threads", "2", "--format", "json", "--deny-warnings"];
+  const args = ["--silent", "run", "oxlint", "--threads", "2", "--format", "json", "--deny-warnings"];
   if (mode === "full") args.push("--type-aware", "--type-check");
   args.push(...inputs);
 
-  const result = spawnSync("pnpm", args, {
+  const result = spawnSync("bun", args, {
     cwd: root,
     encoding: "utf8",
     maxBuffer: 128 * 1024 * 1024,

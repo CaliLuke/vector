@@ -44,13 +44,13 @@ output or mocked logger calls.
 - Property command spans carry an allowlisted action for successes and failures.
   The HTTP span supplies status/duration. Fine-grained domain validation codes are
   not implemented and must not be implied by the diagnostic coverage claim.
-- `pnpm dev:check-logs` must find the current proxy-ingested marker and a server
+- `bun run dev:check-logs` must find the current proxy-ingested marker and a server
   error log with its matching error span. Queries use the probe's exact received
   cutoff and a bounded 15-second query deadline for concurrent dev/test workloads.
   Tests assert correlation, command classification, timing, cancellation,
   deduplication, privacy and matching-log/span requirements.
-- Inspect logs only through `pnpm dev:logs`, `pnpm dev:errors`, and
-  `pnpm dev:traces`; never query the collector's live SQLite file from the host.
+- Inspect logs only through `bun run dev:logs`, `bun run dev:errors`, and
+  `bun run dev:traces`; never query the collector's live SQLite file from the host.
 
 ## Parity corrections and explicit boundaries — 2026-10-26
 

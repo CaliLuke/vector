@@ -264,6 +264,33 @@ describe("page persistence during document load and title sync", () => {
     vi.useRealTimers();
   });
 
+  it("unload waits for an active title save and coalesces a repeated pending value", async () => {
+    vi.useFakeTimers();
+    let finishSave!: (value: TPage) => void;
+    const completion = new Promise<TPage>((resolve) => {
+      finishSave = resolve;
+    });
+    service.updatePageProperties.mockReturnValueOnce(completion);
+    const manager = new TitleUpdateManager(pageId, context);
+    manager.scheduleUpdate("Saved title");
+    await vi.advanceTimersByTimeAsync(5000);
+    manager.scheduleUpdate("Saved title");
+    let unloaded = false;
+    const unload = manager.forceSave().then(() => {
+      unloaded = true;
+      return undefined;
+    });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(unloaded).toBe(false);
+    finishSave(makePage());
+    await unload;
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(service.updatePageProperties).toHaveBeenCalledOnce();
+    expect(unloaded).toBe(true);
+    manager.cancel();
+    vi.useRealTimers();
+  });
+
   it("force-saves an empty title instead of treating it as no pending update", async () => {
     const manager = new TitleUpdateManager(pageId, context, 60_000, "Loaded title");
     manager.scheduleUpdate("");

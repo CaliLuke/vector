@@ -2,10 +2,27 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import test from "node:test";
 import { acquireLock, executeStage, inputFingerprint, relevantEnvironment, runStages } from "./gate-stages.mjs";
 import { affectedGoPackages, orderedGoPackages, stagePlan } from "./full-check.mjs";
+
+await test("workspace commands keep Node-compatible executables on the pinned Bun runtime", () => {
+  const root = fileURLToPath(new URL("../../", import.meta.url));
+  const expected = fs.readFileSync(path.join(root, ".bun-version"), "utf8").trim();
+  for (const parent of ["apps", "packages"]) {
+    for (const name of fs.readdirSync(path.join(root, parent))) {
+      const cwd = path.join(root, parent, name);
+      if (!fs.existsSync(path.join(cwd, "package.json"))) continue;
+      const actual = execFileSync("bun", ["run", "node", "-p", "process.versions.bun"], {
+        cwd,
+        encoding: "utf8",
+      }).trim();
+      assert.equal(actual, expected, `${parent}/${name} must use Bun for dependency executables`);
+    }
+  }
+});
 
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vector-gate-test-"));
@@ -18,7 +35,7 @@ function fixture(t) {
   write("apps/go-api/internal/example/value.go", "package example\n");
   write("apps/web/src/value.ts", "export const value = 1;\n");
   write("scripts/quality/go.sh");
-  write("pnpm-lock.yaml");
+  write("bun.lock");
   execFileSync("git", ["init", "-q"], { cwd: root });
   execFileSync("git", ["add", "."], { cwd: root });
   execFileSync(
@@ -84,7 +101,7 @@ await test("untracked sources, deleted sources, and lockfile changes invalidate 
   fs.unlinkSync(path.join(f.root, "apps/web/src/value.ts"));
   const deleted = await inputFingerprint(f.root, stage, f.options.identity);
   assert.notEqual(added, deleted);
-  f.write("pnpm-lock.yaml", "changed dependencies\n");
+  f.write("bun.lock", "changed dependencies\n");
   assert.notEqual(deleted, await inputFingerprint(f.root, stage, f.options.identity));
 });
 

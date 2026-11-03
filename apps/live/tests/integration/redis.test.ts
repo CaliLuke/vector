@@ -233,7 +233,6 @@ describe("Redis manager and collaboration transport", () => {
       cwd: fileURLToPath(new URL("../../", import.meta.url)),
       env: {
         ...process.env,
-        NODE_OPTIONS: "",
         API_BASE_URL: "http://127.0.0.1:1",
         LIVE_SERVER_SECRET_KEY: "native-server-smoke-test-secret",
         LIVE_BASE_PATH: "/live",

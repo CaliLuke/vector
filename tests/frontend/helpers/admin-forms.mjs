@@ -1,4 +1,4 @@
-import { createRequire, registerHooks } from "node:module";
+import { createRequire, registerHooks } from "./module-hooks.mjs";
 import { pathToFileURL } from "node:url";
 import { act } from "./react.mjs";
 import { observeNativeForms } from "./native-form-observer.mjs";

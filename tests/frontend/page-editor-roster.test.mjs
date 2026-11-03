@@ -305,4 +305,4 @@ await test("markdown export preserves selected content on failure and downloads 
   assert.equal(exportState.closes, 2);
 });
 
-nativeForms.restore();
+test.after(() => nativeForms.restore());

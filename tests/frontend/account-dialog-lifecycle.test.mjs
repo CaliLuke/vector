@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createRequire } from "node:module";
+import { createRequire } from "./helpers/module-hooks.mjs";
 import { React, act } from "./helpers/react.mjs";
 import { createReactDomTestEnvironment, waitForReactCondition } from "./helpers/react-dom.mjs";
 import { registerWebTestModules } from "./helpers/web-test-modules.mjs";

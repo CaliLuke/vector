@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createRequire, registerHooks } from "node:module";
+import { createRequire, registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { QueryClient, QueryClientProvider, InfiniteQueryObserver } from "@tanstack/react-query";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";

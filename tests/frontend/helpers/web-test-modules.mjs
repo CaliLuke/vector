@@ -1,4 +1,4 @@
-import { registerHooks } from "node:module";
+import { registerHooks } from "./module-hooks.mjs";
 import { pathToFileURL } from "node:url";
 import { webRequire } from "./react.mjs";
 import { resolvePackageStub } from "./module-stubs.mjs";

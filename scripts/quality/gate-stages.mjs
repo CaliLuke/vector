@@ -92,7 +92,7 @@ export async function inputFingerprint(root, stage, identity) {
   const files = gitFiles(root).filter((name) => stageInput(stage.scope, name));
   // Ignored local configuration and installed dependency manifests also affect
   // results; git's source inventory alone cannot establish equivalence.
-  const extras = [".env", ".env.test.local", "node_modules/.modules.yaml", "node_modules/.pnpm/lock.yaml"];
+  const extras = [".env", ".env.test.local", "bun.lock", "bunfig.toml"];
   for (const parent of ["apps", "packages"]) {
     if (!fs.existsSync(path.join(root, parent))) continue;
     for (const entry of fs.readdirSync(path.join(root, parent))) {
@@ -111,7 +111,7 @@ export async function inputFingerprint(root, stage, identity) {
   // The source digest already covers the checked tree. A commit alone must not
   // invalidate unchanged stages, including frontend checks after a Go-only fix.
   delete scopedIdentity.head;
-  if (stage.scope === "go") delete scopedIdentity.pnpm;
+  if (stage.scope === "go") delete scopedIdentity.packageManager;
   if (stage.scope === "frontend") delete scopedIdentity.go;
   return createHash("sha256")
     .update(JSON.stringify({ source, identity: scopedIdentity, command: stage.command, version: 1 }))

@@ -1,7 +1,7 @@
 import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createRequire } from "node:module";
+import { createRequire } from "./helpers/module-hooks.mjs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -12,7 +12,7 @@ const { registerWebModuleHooks } = await fromRoot("tests/frontend/helpers/web-mo
 registerWebModuleHooks();
 const requireFromWeb = createRequire(path.resolve("apps/web/package.json"));
 const reactQueryModuleUrl = pathToFileURL(requireFromWeb.resolve("@tanstack/react-query")).href;
-const { registerHooks } = await import("node:module");
+const { registerHooks } = await import("./helpers/module-hooks.mjs");
 registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier === "@tanstack/react-query") return { shortCircuit: true, url: reactQueryModuleUrl };

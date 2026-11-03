@@ -9,17 +9,17 @@ This document outlines the standard tools and commands used in this monorepo.
 
 ## Package Manager
 
-We use **pnpm** for package management.
+We use **Bun** for package management.
 
 - **Do not use `npm` or `yarn`.**
-- Lockfile: `pnpm-lock.yaml`
-- Workspace configuration: `pnpm-workspace.yaml`
+- Lockfile: `bun.lock`
+- Workspace configuration: `package.json#workspaces`
 
 ### Common Commands
 
-- Install dependencies: `pnpm install`
-- Run a script in a specific package: `pnpm --filter <package_name> run <script>`
-- Run a script in all packages: `pnpm -r run <script>`
+- Install dependencies: `bun install --frozen-lockfile`
+- Run a script in a specific package: `bun run --filter <package_name> <script>`
+- Run a script in all packages: `bun run --filter "*" <script>`
 
 ## Monorepo Tooling
 
@@ -38,11 +38,11 @@ We use **Turbo** for build system orchestration.
 - To run tests in a specific package (e.g., codemods):
   ```bash
   cd packages/codemods
-  pnpm run test
+  bun run test
   ```
 - Or from root:
   ```bash
-  pnpm --filter @plane/codemods run test
+  bun run --filter @plane/codemods test
   ```
 
 ## Docker

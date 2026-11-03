@@ -47,17 +47,15 @@ for (const [name, modulePath, exportName] of [
   }
 }
 
-const { EmojiPicker } = await import("../../packages/propel/src/emoji-icon-picker/emoji-picker.tsx");
-const { EmojiReactionPicker } = await import("../../packages/propel/src/emoji-reaction/emoji-reaction-picker.tsx");
-
-for (const { name, Component } of [
-  { name: "emoji", Component: EmojiPicker },
-  { name: "reaction", Component: EmojiReactionPicker },
+for (const [name, modulePath, exportName] of [
+  ["emoji", "../../packages/propel/src/emoji-icon-picker/emoji-picker.tsx", "EmojiPicker"],
+  ["reaction", "../../packages/propel/src/emoji-reaction/emoji-reaction-picker.tsx", "EmojiReactionPicker"],
 ]) {
   for (const closeOnSelect of [true, false]) {
     void test(`${name} selections serialize the emoji and honor closeOnSelect=${closeOnSelect}`, async (t) => {
       const env = await createReactDomTestEnvironment();
       t.after(() => env.unmount());
+      const Component = (await import(modulePath))[exportName];
       const changes = [];
       function Harness() {
         const [isOpen, handleToggle] = React.useState(false);
@@ -96,6 +94,7 @@ for (const closeOnSelect of [true, false]) {
   void test(`icon tab returns the selected name and color with closeOnSelect=${closeOnSelect}`, async (t) => {
     const env = await createReactDomTestEnvironment();
     t.after(() => env.unmount());
+    const { EmojiPicker } = await import("../../packages/propel/src/emoji-icon-picker/emoji-picker.tsx");
     const changes = [];
     function Harness() {
       const [isOpen, handleToggle] = React.useState(false);

@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const scope = JSON.parse(readFileSync(new URL("../../.quality/coverage-scope.json", import.meta.url), "utf8"));
 const workspaces = Object.entries(scope.coveredSuites)
-  .filter(([, suite]) => suite.testCommand === "pnpm test:frontend:coverage")
+  .filter(([, suite]) => suite.testCommand === "bun run test:frontend:coverage")
   .map(([workspace]) => workspace);
 if (!workspaces.length) throw new Error("No frontend coverage suites are configured");
 if (process.argv.slice(2).some((argument) => argument !== "--write-baseline"))

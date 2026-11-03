@@ -1,6 +1,6 @@
 import { waitForQueryState } from "./helpers/query-state.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { notifyManager } from "@tanstack/react-query";
 import { React, act } from "./helpers/react.mjs";
@@ -373,4 +373,4 @@ await test("project-count Form preserves an edited value when the workspace defa
   );
 });
 
-nativeForms.restore();
+test.after(() => nativeForms.restore());

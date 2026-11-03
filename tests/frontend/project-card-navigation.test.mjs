@@ -1,4 +1,4 @@
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";

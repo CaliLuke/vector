@@ -12,7 +12,12 @@ function runFrontendFixture(t, failedFile, { addDuringRun = false, coverage = fa
   mkdirSync(path.join(root, "scripts/quality"), { recursive: true });
   mkdirSync(path.join(root, "tests/frontend"), { recursive: true });
   mkdirSync(path.join(root, "apps/web/tests"), { recursive: true });
-  for (const script of ["frontend-tests.sh", "frontend-test-shards.mjs", "run-bounded.mjs"]) {
+  for (const script of [
+    "frontend-tests.sh",
+    "frontend-test-shards.mjs",
+    "frontend-test-workers.mjs",
+    "run-bounded.mjs",
+  ]) {
     copyFileSync(new URL(script, import.meta.url), path.join(root, "scripts/quality", script));
   }
   if (coverage) {
@@ -21,9 +26,8 @@ function runFrontendFixture(t, failedFile, { addDuringRun = false, coverage = fa
       path.join(root, "tests/frontend/helpers/coverage-preload.mjs"),
       `
       import assert from 'node:assert/strict';
-      assert.equal(process.env.NODE_DISABLE_COMPILE_CACHE, '1');
-      assert.equal(process.env.NODE_COMPILE_CACHE, undefined);
-      assert.ok(process.env.NODE_V8_COVERAGE.endsWith('/coverage/frontend/raw'));
+      assert.ok(process.versions.bun);
+      assert.ok(process.env.VECTOR_FRONTEND_COVERAGE.endsWith('/coverage/frontend'));
     `
     );
     writeFileSync(

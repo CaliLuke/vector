@@ -96,12 +96,12 @@ await test("development watches dependency rebuilds without starting per-package
   execFileSync("git", ["init", "--quiet"], { cwd: root, env: fixtureEnvironment });
   await writeFile(
     path.join(root, "package.json"),
-    JSON.stringify({ name: "watch-fixture", private: true, packageManager: manifest.packageManager })
-  );
-  await writeFile(path.join(root, "pnpm-workspace.yaml"), "packages:\n  - 'apps/*'\n  - 'packages/*'\n");
-  await writeFile(
-    path.join(root, "pnpm-lock.yaml"),
-    "lockfileVersion: '9.0'\nimporters:\n  .: {}\n  packages/shared: {}\n  apps/web:\n    dependencies:\n      '@fixture/shared':\n        specifier: 'workspace:*'\n        version: 'link:../../packages/shared'\n"
+    JSON.stringify({
+      name: "watch-fixture",
+      private: true,
+      packageManager: manifest.packageManager,
+      workspaces: ["apps/*", "packages/*"],
+    })
   );
   await writeFile(
     path.join(root, "turbo.json"),
@@ -109,7 +109,7 @@ await test("development watches dependency rebuilds without starting per-package
   );
   await writeFile(
     path.join(root, "packages/shared/package.json"),
-    JSON.stringify({ name: "@fixture/shared", version: "1.0.0", scripts: { "dev:build": "node build.mjs" } })
+    JSON.stringify({ name: "@fixture/shared", version: "1.0.0", scripts: { "dev:build": "bun build.mjs" } })
   );
   await writeFile(path.join(root, "packages/shared/input.txt"), "initial");
   await writeFile(
@@ -124,7 +124,7 @@ await test("development watches dependency rebuilds without starting per-package
       name: "web",
       version: "1.0.0",
       dependencies: { "@fixture/shared": "workspace:*" },
-      scripts: { dev: "node server.mjs" },
+      scripts: { dev: "bun server.mjs" },
     })
   );
   await writeFile(
@@ -133,8 +133,9 @@ await test("development watches dependency rebuilds without starting per-package
     if(readFileSync('../../packages/shared/dist/value.txt','utf8')!=='initial')process.exit(2);
     appendFileSync('../../events.txt','started\\n');setInterval(()=>{},1000);`
   );
+  execFileSync(process.execPath, ["install", "--ignore-scripts"], { cwd: root, env: fixtureEnvironment });
   const turbo = fileURLToPath(new URL("../../node_modules/.bin/turbo", import.meta.url));
-  child = spawn(turbo, ["watch", "dev", "--filter=./apps/*", "--concurrency=5", "--ui=stream"], {
+  child = spawn(process.execPath, [turbo, "watch", "dev", "--filter=./apps/*", "--concurrency=5", "--ui=stream"], {
     cwd: root,
     env: { ...fixtureEnvironment, TURBO_TELEMETRY_DISABLED: "1" },
     stdio: ["ignore", "pipe", "pipe"],

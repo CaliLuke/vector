@@ -1,4 +1,4 @@
-import { createRequire } from "node:module";
+import { createRequire } from "./module-hooks.mjs";
 import { Input } from "../../../packages/ui/src/form-fields/input.tsx";
 
 const requireFromWeb = createRequire(new URL("../../../apps/web/package.json", import.meta.url));

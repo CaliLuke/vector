@@ -78,7 +78,7 @@ func runLocalDevelopment(ctx context.Context, root string, stdout, stderr io.Wri
 	go exportLoop(readerCtx, queue, endpoint, diagnostics, writerDone)
 	start := func(docker bool) (*child, error) {
 		args := []string{"run", "dev:frontend"}
-		name := "pnpm"
+		name := "bun"
 		if docker {
 			name = "docker"
 			args = []string{"compose", "-p", "plane", "-f", "docker-compose-local.yml", "logs", "--follow", "--since", "1m", "--no-color", "--timestamps", "go-migrator", "proxy"}

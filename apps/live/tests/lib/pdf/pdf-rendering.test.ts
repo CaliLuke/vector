@@ -91,10 +91,7 @@ describe("PDF Rendering Integration", () => {
     });
 
     it("should render empty document to valid PDF", async () => {
-      const doc: TipTapDocument = {
-        type: "doc",
-        content: [],
-      };
+      const doc: TipTapDocument = { type: "doc" };
 
       const buffer = await renderPlaneDocToPdfBuffer(doc);
 
@@ -501,7 +498,18 @@ describe("PDF Rendering Integration", () => {
 
       expect(portraitText).toContain("Landscape content here");
       expect(landscapeText).toContain("Landscape content here");
-      expect(portraitBuffer.length).not.toBe(landscapeBuffer.length);
+      const portraitParser = new PDFParse(new Uint8Array(portraitBuffer));
+      const landscapeParser = new PDFParse(new Uint8Array(landscapeBuffer));
+      try {
+        const portrait = (await portraitParser.getInfo({ parsePageInfo: true })).pages[0];
+        const landscape = (await landscapeParser.getInfo({ parsePageInfo: true })).pages[0];
+        expect(portrait.width).toBeLessThan(portrait.height);
+        expect(landscape.width).toBe(portrait.height);
+        expect(landscape.height).toBe(portrait.width);
+      } finally {
+        await portraitParser.destroy();
+        await landscapeParser.destroy();
+      }
     });
 
     it("should include author metadata in PDF", async () => {

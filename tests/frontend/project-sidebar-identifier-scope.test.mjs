@@ -1,6 +1,6 @@
 import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { React, act } from "./helpers/react.mjs";
 import { createQueryRouterFixture } from "./helpers/query-router.mjs";

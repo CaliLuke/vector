@@ -1,6 +1,6 @@
 import { changeFormControl as change, submitForm as submit } from "./helpers/native-forms.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React } from "./helpers/react.mjs";
@@ -97,4 +97,4 @@ await test("changing a new module's project clears members from the previous pro
   assert.deepEqual(saved[0].member_ids, []);
 });
 
-nativeForms.restore();
+test.after(() => nativeForms.restore());

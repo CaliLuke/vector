@@ -1,3 +1,4 @@
+import { createOxcInstrumenter } from "oxc-coverage-instrument/vitest";
 import { createHash } from "node:crypto";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -24,6 +25,29 @@ export function sourceMapFor(code, filename) {
 }
 
 const recorded = new Set();
+function instrument(code, filename, map) {
+  const instrumenter = createOxcInstrumenter({ compat: "istanbul", stripTypescript: false });
+  return instrumenter.instrumentSync(code, filename, map);
+}
+let flushing = false;
+function flushAtExit(directory) {
+  if (flushing) return;
+  flushing = true;
+  process.on("exit", () => {
+    mkdirSync(path.join(directory, "raw"), { recursive: true });
+    writeFileSync(
+      path.join(directory, "raw", `coverage-${process.pid}.json`),
+      JSON.stringify(globalThis["__coverage__"] ?? {})
+    );
+  });
+}
+export function instrumentCoverageSource(filename, code) {
+  const directory = process.env.VECTOR_FRONTEND_COVERAGE;
+  if (!directory) return code;
+  recordCoverageSource(filename, code);
+  flushAtExit(directory);
+  return instrument(code, filename, sourceMapFor(code, filename));
+}
 export function recordCoverageSource(filename, code) {
   const directory = process.env.VECTOR_FRONTEND_COVERAGE;
   if (!directory) return;

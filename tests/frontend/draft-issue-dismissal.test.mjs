@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { React, act } from "./helpers/react.mjs";
 import { setup, issueProps } from "./helpers/issue-form-harness.mjs";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { resolvePackageStub } from "./helpers/module-stubs.mjs";
 const modalStubs = {
   "@plane/ui": `const React=globalThis.issueFormReact;export const EModalPosition={TOP:'top'},EModalWidth={XXL:'xxl'};export const ModalCore=({isOpen,children})=>isOpen?React.createElement('section',{role:'dialog'},children):null;`,

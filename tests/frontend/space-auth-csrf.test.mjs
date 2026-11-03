@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createRequire, registerHooks } from "node:module";
+import { createRequire, registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { QueryClient, QueryClientProvider, notifyManager } from "@tanstack/react-query";
 import { submitForm } from "./helpers/native-forms.mjs";

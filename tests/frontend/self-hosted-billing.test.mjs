@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { after, afterEach, test } from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { act, React } from "./helpers/react.mjs";

@@ -2,27 +2,27 @@
   "version": 1,
   "coveredSuites": {
     "apps/live": {
-      "testCommand": "pnpm --filter live test:coverage",
+      "testCommand": "bun run --filter live test:coverage",
       "sourcePatterns": ["src/**/*.{ts,tsx}"],
       "exclusions": ["src/**/*.d.ts", "src/**/types.ts", "src/**/*.test.*", "src/**/*.spec.*"]
     },
     "packages/codemods": {
-      "testCommand": "pnpm --filter @plane/codemods test:coverage",
+      "testCommand": "bun run --filter @plane/codemods test:coverage",
       "sourcePatterns": ["*.ts"],
       "exclusions": ["vitest.config.ts", "**/*.d.ts", "tests/**"]
     },
     "packages/editor": {
-      "testCommand": "pnpm --filter @plane/editor test:coverage",
+      "testCommand": "bun run --filter @plane/editor test:coverage",
       "sourcePatterns": ["src/**/*.{ts,tsx}"],
       "exclusions": ["src/**/*.d.ts", "src/**/*.test.*", "src/**/*.spec.*", "src/**/*.stories.*"]
     },
     "packages/ui": {
-      "testCommand": "pnpm --filter @plane/ui test:coverage",
+      "testCommand": "bun run --filter @plane/ui test:coverage",
       "sourcePatterns": ["src/**/*.{ts,tsx}"],
       "exclusions": ["src/**/*.d.ts", "src/**/types.ts", "src/**/*.test.*", "src/**/*.spec.*", "src/**/*.stories.*"]
     },
     "apps/admin": {
-      "testCommand": "pnpm test:frontend:coverage",
+      "testCommand": "bun run test:frontend:coverage",
       "sourcePatterns": ["**/*.{ts,tsx}"],
       "exclusions": [
         "**/*.d.ts",
@@ -38,7 +38,7 @@
       ]
     },
     "apps/space": {
-      "testCommand": "pnpm test:frontend:coverage",
+      "testCommand": "bun run test:frontend:coverage",
       "sourcePatterns": ["**/*.{ts,tsx}"],
       "exclusions": [
         "**/*.d.ts",
@@ -54,7 +54,7 @@
       ]
     },
     "apps/web": {
-      "testCommand": "pnpm test:frontend:coverage",
+      "testCommand": "bun run test:frontend:coverage",
       "sourcePatterns": ["**/*.{ts,tsx}"],
       "exclusions": [
         "**/*.d.ts",
@@ -70,7 +70,7 @@
       ]
     },
     "packages/constants": {
-      "testCommand": "pnpm test:frontend:coverage",
+      "testCommand": "bun run test:frontend:coverage",
       "sourcePatterns": ["src/**/*.{ts,tsx}"],
       "exclusions": [
         "**/*.d.ts",
@@ -86,7 +86,7 @@
       ]
     },
     "packages/decorators": {
-      "testCommand": "pnpm test:frontend:coverage",
+      "testCommand": "bun run test:frontend:coverage",
       "sourcePatterns": ["src/**/*.{ts,tsx}"],
       "exclusions": [
         "**/*.d.ts",
@@ -102,7 +102,7 @@
       ]
     },
     "packages/hooks": {
-      "testCommand": "pnpm test:frontend:coverage",
+      "testCommand": "bun run test:frontend:coverage",
       "sourcePatterns": ["src/**/*.{ts,tsx}"],
       "exclusions": [
         "**/*.d.ts",
@@ -118,7 +118,7 @@
       ]
     },
     "packages/i18n": {
-      "testCommand": "pnpm test:frontend:coverage",
+      "testCommand": "bun run test:frontend:coverage",
       "sourcePatterns": ["src/**/*.{ts,tsx}"],
       "exclusions": [
         "**/*.d.ts",
@@ -134,7 +134,7 @@
       ]
     },
     "packages/logger": {
-      "testCommand": "pnpm test:frontend:coverage",
+      "testCommand": "bun run test:frontend:coverage",
       "sourcePatterns": ["src/**/*.{ts,tsx}"],
       "exclusions": [
         "**/*.d.ts",
@@ -150,7 +150,7 @@
       ]
     },
     "packages/propel": {
-      "testCommand": "pnpm test:frontend:coverage",
+      "testCommand": "bun run test:frontend:coverage",
       "sourcePatterns": ["src/**/*.{ts,tsx}"],
       "exclusions": [
         "**/*.d.ts",
@@ -166,7 +166,7 @@
       ]
     },
     "packages/services": {
-      "testCommand": "pnpm test:frontend:coverage",
+      "testCommand": "bun run test:frontend:coverage",
       "sourcePatterns": ["src/**/*.{ts,tsx}"],
       "exclusions": [
         "**/*.d.ts",
@@ -182,7 +182,7 @@
       ]
     },
     "packages/shared-state": {
-      "testCommand": "pnpm test:frontend:coverage",
+      "testCommand": "bun run test:frontend:coverage",
       "sourcePatterns": ["src/**/*.{ts,tsx}"],
       "exclusions": [
         "**/*.d.ts",
@@ -198,12 +198,12 @@
       ]
     },
     "packages/tailwind-config": {
-      "testCommand": "pnpm test:frontend:coverage",
+      "testCommand": "bun run test:frontend:coverage",
       "sourcePatterns": ["postcss.config.js"],
       "exclusions": []
     },
     "packages/types": {
-      "testCommand": "pnpm test:frontend:coverage",
+      "testCommand": "bun run test:frontend:coverage",
       "sourcePatterns": ["src/**/*.{ts,tsx}"],
       "exclusions": [
         "**/*.d.ts",
@@ -219,7 +219,7 @@
       ]
     },
     "packages/utils": {
-      "testCommand": "pnpm test:frontend:coverage",
+      "testCommand": "bun run test:frontend:coverage",
       "sourcePatterns": ["src/**/*.{ts,tsx}"],
       "exclusions": [
         "**/*.d.ts",

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
@@ -146,4 +146,4 @@ await test("comment editing waits for uploads and preserves failed edits until s
   ]);
 });
 
-formObserver.restore();
+test.after(() => formObserver.restore());

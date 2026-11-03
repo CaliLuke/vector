@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
@@ -170,4 +170,4 @@ await test("project-count save blocks dialog dismissal until persistence settles
   delete prefs.onSaveStarted;
 });
 
-nativeForms.restore();
+test.after(() => nativeForms.restore());

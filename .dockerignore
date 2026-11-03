@@ -67,3 +67,6 @@ temp/
 build/
 node_modules/
 README.md
+
+# Local quality execution artifacts
+.quality/reports/

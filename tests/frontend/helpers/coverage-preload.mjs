@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./module-hooks.mjs";
 import { fileURLToPath } from "node:url";
 import { transformFrontendSource } from "./source-transform.mjs";
 import { recordCoverageSource } from "./coverage-source.mjs";
@@ -9,9 +9,9 @@ registerHooks({
   load(url, context, nextLoad) {
     const owned =
       url.startsWith(root) && /^(apps|packages)\//.test(url.slice(root.length)) && !url.includes("/node_modules/");
-    if (!owned || !/\.(?:[cm]?js|tsx?)$/.test(url)) return nextLoad(url, context);
+    if (!owned || !/\.(?:[cm]?[jt]s|tsx)$/.test(url)) return nextLoad(url, context);
     const filename = fileURLToPath(url);
-    if (/\.tsx?$/.test(url)) {
+    if (/\.(?:[cm]?ts|tsx)$/.test(url)) {
       const output = transformFrontendSource(readFileSync(filename, "utf8"), {
         format: "esm",
         loader: url.endsWith(".tsx") ? "tsx" : "ts",

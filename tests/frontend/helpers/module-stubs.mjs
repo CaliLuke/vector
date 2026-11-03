@@ -1,7 +1,8 @@
+import { registerFixture } from "./module-hooks.mjs";
 export function createModuleStub(source) {
   return {
     shortCircuit: true,
-    url: `data:text/javascript,${encodeURIComponent(source)}`,
+    url: registerFixture(source),
   };
 }
 

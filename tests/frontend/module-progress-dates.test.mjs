@@ -1,7 +1,7 @@
 import { resolvePackageStub } from "./helpers/module-stubs.mjs";
 import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React, act } from "./helpers/react.mjs";

@@ -154,7 +154,7 @@ function main(): void {
 
 // AUTO-GENERATED — DO NOT EDIT
 // Generated from ${jsonFiles.length} English namespace files (${sortedKeys.length} keys)
-// Run: pnpm run generate:types
+// Run: bun run generate:types
 
 export type TTranslationKeys =
 ${keyLines}

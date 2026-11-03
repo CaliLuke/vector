@@ -3,17 +3,10 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
-node_options=()
 if [[ "${1:-}" == --coverage ]]; then
   export VECTOR_FRONTEND_COVERAGE="$ROOT/coverage/frontend"
   rm -rf -- "$VECTOR_FRONTEND_COVERAGE"
   mkdir -p "$VECTOR_FRONTEND_COVERAGE/raw" "$VECTOR_FRONTEND_COVERAGE/sources"
-  export NODE_V8_COVERAGE="$VECTOR_FRONTEND_COVERAGE/raw"
-  export NODE_DISABLE_COMPILE_CACHE=1
-  unset NODE_COMPILE_CACHE
-  node_options=(--import "$ROOT/tests/frontend/helpers/coverage-preload.mjs")
-else
-  export NODE_COMPILE_CACHE="$ROOT/node_modules/.cache/frontend-node"
 fi
 
 # Keep each shard within the process guard without adding concurrent workers.
@@ -37,12 +30,12 @@ for shard in 1 2 3; do
     break
   fi
   shard_seconds=$((remaining < 300 ? remaining : 300))
-  bun scripts/quality/run-bounded.mjs --seconds "$shard_seconds" --memory-mib 1024 --heap-mib 384 -- \
-    node "${node_options[@]}" --test --test-timeout=15000 --test-concurrency=2 \
+  bun scripts/quality/run-bounded.mjs --seconds "$shard_seconds" --memory-mib 1024 -- \
+    bun scripts/quality/frontend-test-workers.mjs \
     "${shard_files[@]}" || { failed=1; break; }
 done
 if [[ "${1:-}" == --coverage && "$failed" == 0 ]]; then
-  bun scripts/quality/run-bounded.mjs --seconds 600 --memory-mib 3072 --heap-mib 1024 -- \
+  bun scripts/quality/run-bounded.mjs --seconds 600 --memory-mib 3072 -- \
     bun scripts/quality/frontend-coverage.mjs --directory "$VECTOR_FRONTEND_COVERAGE" || failed=1
 fi
 exit "$failed"

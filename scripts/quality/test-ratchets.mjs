@@ -66,9 +66,9 @@ try {
     copyFileSync(path.join(repositoryRoot, "scripts", "quality", script), path.join(scriptDirectory, script));
   }
 
-  const fakePnpm = path.join(fakeBin, "pnpm");
+  const fakeBun = path.join(fakeBin, "bun");
   writeFileSync(
-    fakePnpm,
+    fakeBun,
     `#!/bin/sh
 case "$*" in
   *oxlint*)
@@ -94,7 +94,7 @@ case "$*" in
 esac
 `
   );
-  chmodSync(fakePnpm, 0o755);
+  chmodSync(fakeBun, 0o755);
   const fakeGit = path.join(fakeBin, "git");
   writeFileSync(fakeGit, '#!/bin/sh\nprintf "%s\\n" "$GIT_SCOPE_FILES"\n');
   chmodSync(fakeGit, 0o755);
@@ -374,6 +374,28 @@ esac
   assertFails(runScript("check-coverage-ratchet.mjs", coverageArgs), "malformed coverage report");
   rmSync(coverageSummary);
   assertFails(runScript("check-coverage-ratchet.mjs", coverageArgs), "missing coverage report");
+
+  const measuredCoverage = (total, covered) =>
+    Object.fromEntries(
+      Object.keys(coverageMetrics(0)).map((metric) => [metric, { total, covered, pct: (covered * 100) / total }])
+    );
+  writeJson(coverageSummary, { "src/a.ts": measuredCoverage(100, 90) });
+  assert.equal(runScript("check-coverage-ratchet.mjs", [...coverageArgs, "--write-baseline"]).status, 0);
+  assert.equal(runScript("check-coverage-ratchet.mjs", coverageArgs).status, 0);
+  writeJson(coverageSummary, { "src/a.ts": measuredCoverage(400, 380) });
+  assertFails(
+    runScript("check-coverage-ratchet.mjs", coverageArgs),
+    "higher percentages cannot hide more uncovered code"
+  );
+  writeJson(coverageSummary, { "src/a.ts": measuredCoverage(1, 0) });
+  assert.equal(runScript("check-coverage-ratchet.mjs", [...coverageArgs, "--write-baseline"]).status, 0);
+  writeJson(coverageSummary, { "src/a.ts": measuredCoverage(2, 0) });
+  assertFails(
+    runScript("check-coverage-ratchet.mjs", coverageArgs),
+    "zero-percent floors still reject new uncovered code"
+  );
+  writeJson(coverageSummary, { "src/a.ts": coverageMetrics(100) });
+  assertFails(runScript("check-coverage-ratchet.mjs", coverageArgs), "count-based baselines require counter data");
 
   const suiteRoot = path.join(fixtureRoot, "packages", "app");
   mkdirSync(path.join(suiteRoot, "coverage"), { recursive: true });

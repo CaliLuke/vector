@@ -1,7 +1,7 @@
 import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import { setPositioningGeometry } from "./helpers/positioning.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { pathToFileURL } from "node:url";
 import test from "node:test";
 import { React } from "./helpers/react.mjs";

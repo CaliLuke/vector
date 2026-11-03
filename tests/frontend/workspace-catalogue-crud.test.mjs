@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { React, act } from "./helpers/react.mjs";
 import { changeFormControl, submitForm, waitForSubmitCompletion } from "./helpers/native-forms.mjs";
@@ -340,4 +340,4 @@ await test("workspace logo completion reports a failed catalogue refresh and rec
   assert.equal(environment.container.querySelector('[role="dialog"]'), null);
 });
 
-formObserver.restore();
+test.after(() => formObserver.restore());

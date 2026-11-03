@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import assert from "node:assert/strict";
-import { createRequire, registerHooks } from "node:module";
+import { createRequire, registerHooks } from "./helpers/module-hooks.mjs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";

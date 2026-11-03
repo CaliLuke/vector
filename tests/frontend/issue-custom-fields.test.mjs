@@ -651,7 +651,7 @@ await test("reopening creation waits for the refreshed project default instead o
   await act(async () => finish());
   assert.match(env.container.querySelector('[aria-label="Work item type"]').textContent, /bug/);
 });
-formObserver.restore();
+test.after(() => formObserver.restore());
 
 await test("copying a compact issue reads its description and custom values with cancellation", async (t) => {
   const env = await setup(t);

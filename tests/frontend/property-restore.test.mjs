@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 
 const fixture = { calls: [], saved: [] };
 globalThis.propertyRestoreFixture = fixture;
@@ -70,4 +70,6 @@ await test("property restore does not submit without a current source or while c
   assert.equal(fixture.calls.length, 0);
 });
 
-delete globalThis.propertyRestoreFixture;
+test.after(() => {
+  delete globalThis.propertyRestoreFixture;
+});

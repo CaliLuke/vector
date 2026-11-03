@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";

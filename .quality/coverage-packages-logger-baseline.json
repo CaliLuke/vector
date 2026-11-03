@@ -1,23 +1,23 @@
 {
-  "version": 1,
+  "version": 2,
   "files": {
     "src/config.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/middleware.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     }
   }
 }

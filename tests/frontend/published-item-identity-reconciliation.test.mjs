@@ -1,7 +1,7 @@
 import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";

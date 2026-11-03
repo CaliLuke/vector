@@ -31,7 +31,7 @@ if ! docker info >/dev/null 2>&1; then
     if [[ "$(uname -s)" == "Darwin" ]] && command -v colima >/dev/null 2>&1; then
         colima start
     else
-        echo "Start Docker, then run pnpm dev again." >&2
+        echo "Start Docker, then run bun run dev again." >&2
         exit 1
     fi
 fi
@@ -57,9 +57,9 @@ export VITE_LOCAL_LOGGING=1
 echo "Vector: http://localhost:8000/"
 echo "Instance administration: http://localhost:8000/god-mode/"
 echo "Web, admin and space upstreams: localhost:${PLANE_WEB_PORT}, localhost:${PLANE_ADMIN_PORT}, localhost:${PLANE_SPACE_PORT}"
-echo "Ctrl-C stops the frontend servers. pnpm dev:stop stops the containers without deleting data."
-echo "Logal: Docker volume plane_logaldata (48-hour retention). Query with pnpm dev:logs."
+echo "Ctrl-C stops the frontend servers. bun run dev:stop stops the containers without deleting data."
+echo "Logal: Docker volume plane_logaldata (48-hour retention). Query with bun run dev:logs."
 # Populate the development build cache serially before app servers start.
 # Turbo watches this same dependency graph; rebuilds preserve live package outputs.
-bun scripts/quality/run-bounded.mjs --seconds 600 --memory-mib 4096 --heap-mib 2048 -- pnpm exec turbo run dev:build --concurrency=1 --filter='./packages/*'
+bun scripts/quality/run-bounded.mjs --seconds 600 --memory-mib 4096 -- bun run turbo run dev:build --concurrency=1 --filter='./packages/*'
 exec go -C apps/go-api run ./cmd/devtools start

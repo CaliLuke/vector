@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { resolvePackageStub } from "./helpers/module-stubs.mjs";
 import { QueryClient, QueryClientProvider, notifyManager } from "@tanstack/react-query";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";

@@ -12,6 +12,7 @@ globalThis.projectPermissionAccessHarness = {
   fetchProjectDetails: async () => ({ id: "project-1" }),
 };
 const stubs = {
+  "@plane/i18n": "export const useTranslation=()=>({t:key=>key});",
   "@/app/assets/auth/project-not-authorized.svg?url": `export default "project-not-authorized.svg";`,
   "@/app/assets/auth/unauthorized.svg?url": `export default "unauthorized.svg";`,
   "@/app/assets/auth/workspace-not-authorized.svg?url": `export default "workspace-not-authorized.svg";`,

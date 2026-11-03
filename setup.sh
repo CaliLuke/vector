@@ -84,12 +84,11 @@ else
     success=false
 fi
 
-# Install Node dependencies with the pnpm version from package.json.
-# Calling pnpm through Corepack avoids writing global package-manager shims.
-if command -v corepack >/dev/null 2>&1; then
-    corepack pnpm install || success=false
+# Install the locked workspace with the repository's Bun version.
+if command -v bun >/dev/null 2>&1; then
+    bun install --frozen-lockfile || success=false
 else
-    echo -e "${RED}✗${NC} Corepack 0.36.0 is required. Run 'npm install --global corepack@0.36.0', then run this script again."
+    echo -e "${RED}✗${NC} Bun is required. Install the version in .bun-version, then run this script again."
     success=false
 fi
 
@@ -99,7 +98,7 @@ if [ "$success" = true ]; then
     echo -e "${GREEN}✓${NC} Environment setup completed successfully!\n"
     echo -e "${BOLD}Next steps:${NC}"
     echo -e "1. Review the .env files in each folder if needed"
-    echo -e "2. Start the complete local stack with: ${BOLD}pnpm dev${NC}"
+    echo -e "2. Start the complete local stack with: ${BOLD}bun run dev${NC}"
     echo -e "3. Open ${BOLD}http://localhost:8000/${NC} (admin: http://localhost:8000/god-mode/)"
     echo -e "\n${GREEN}Happy coding! 🚀${NC}"
 else

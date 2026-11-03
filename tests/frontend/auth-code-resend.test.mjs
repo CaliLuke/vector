@@ -75,4 +75,4 @@ await test("code resend retains the current code after failure and starts its co
   assert.equal(button.disabled, false);
 });
 
-resendFormObserver.restore();
+test.after(() => resendFormObserver.restore());

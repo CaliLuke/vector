@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
@@ -208,4 +208,4 @@ await test("late workspace type save cannot repopulate a cleared session cache",
   assert.equal(client.getQueryData(key), undefined);
   assert.equal(client.getQueryCache().getAll().length, 0);
 });
-forms.restore();
+test.after(() => forms.restore());

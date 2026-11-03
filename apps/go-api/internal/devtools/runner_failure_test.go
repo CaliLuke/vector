@@ -35,7 +35,7 @@ func (failedRunnerOutput) Write([]byte) (int, error) { return 0, io.ErrClosedPip
 func runnerFailureCommands(t *testing.T, frontend, docker string) string {
 	t.Helper()
 	root := t.TempDir()
-	for name, script := range map[string]string{"pnpm": frontend, "docker": docker} {
+	for name, script := range map[string]string{"bun": frontend, "docker": docker} {
 		if err := os.WriteFile(filepath.Join(root, name), []byte("#!/bin/sh\n"+script+"\n"), 0700); err != nil {
 			t.Fatal(err)
 		}

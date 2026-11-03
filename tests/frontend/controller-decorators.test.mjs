@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { once } from "node:events";
-import { createRequire } from "node:module";
+import { createRequire } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import {
   Controller,

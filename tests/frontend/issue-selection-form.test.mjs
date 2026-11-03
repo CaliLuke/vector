@@ -1,7 +1,7 @@
 import { createQueryDomFixture } from "./helpers/query-dom.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import { React, act, webRequire } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
@@ -226,4 +226,4 @@ await test("failed permission verification hides cached results and blocks an ex
   assert.equal(f.option("Alpha task").getAttribute("aria-selected"), "true");
   assert.equal(f.button("issue.select.add_selected").disabled, false);
 });
-formObserver.restore();
+test.after(() => formObserver.restore());

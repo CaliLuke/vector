@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { React, act, createPermissionUiFixture, settleQuery } from "./helpers/permission-ui-fixture.mjs";
 import { resolvePackageStub } from "./helpers/module-stubs.mjs";
 import { changeFormControl, submitForm } from "./helpers/native-forms.mjs";

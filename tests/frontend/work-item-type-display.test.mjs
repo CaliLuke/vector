@@ -1,7 +1,7 @@
 import { createProjectQueryDomFixture } from "./helpers/query-dom.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { QueryClientProvider, notifyManager } from "@tanstack/react-query";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React, act } from "./helpers/react.mjs";

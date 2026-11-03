@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { createRequire, registerHooks } from "node:module";
+import { createRequire, registerHooks } from "./module-hooks.mjs";
 import { transformFrontendSource } from "./source-transform.mjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createModuleStub } from "./module-stubs.mjs";

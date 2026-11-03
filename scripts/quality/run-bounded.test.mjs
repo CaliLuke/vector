@@ -180,7 +180,7 @@ void test("external deadline interrupts a blocked child event loop", () => {
   assert.doesNotMatch(result.stdout, /finished/);
 });
 void test("memory ceiling includes native buffer allocations", () => {
-  const result = run(memoryConsumer, ["--memory-mib", "60", "--heap-mib", "64"], ["private-command-argument"]);
+  const result = run(memoryConsumer, ["--memory-mib", "60"], ["private-command-argument"]);
   assert.equal(result.status, 137, result.stderr);
   assert.match(result.stderr, /RSS exceeded/);
   const prefix = "[bounded] memory sample ";
@@ -302,7 +302,7 @@ setInterval(()=>{},1000);
 `;
     const result = spawnSync(
       process.execPath,
-      [runner, "--seconds", "5", "--memory-mib", "100", "--heap-mib", "64", "--", process.execPath, "-e", script],
+      [runner, "--seconds", "5", "--memory-mib", "100", "--", process.execPath, "-e", script],
       {
         encoding: "utf8",
         timeout: 10_000,

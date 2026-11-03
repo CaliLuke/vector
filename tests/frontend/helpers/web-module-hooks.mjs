@@ -1,4 +1,4 @@
-import { createRequire, registerHooks } from "node:module";
+import { createRequire, registerHooks } from "./module-hooks.mjs";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { transformFrontendSource } from "./source-transform.mjs";
 import path from "node:path";

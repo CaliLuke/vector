@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createRequire, registerHooks } from "node:module";
+import { createRequire, registerHooks } from "./helpers/module-hooks.mjs";
 import { pathToFileURL } from "node:url";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";

@@ -1,4 +1,4 @@
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

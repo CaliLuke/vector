@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createRequire } from "node:module";
+import { createRequire } from "./helpers/module-hooks.mjs";
 import { pathToFileURL } from "node:url";
 import test from "node:test";
 import { React } from "./helpers/react.mjs";

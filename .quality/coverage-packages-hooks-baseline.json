@@ -1,71 +1,71 @@
 {
-  "version": 1,
+  "version": 2,
   "files": {
     "src/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/query-client.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [0, 1]
     },
     "src/record-collection.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 90
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [88.23, 2]
     },
     "src/use-clipboard-copy.ts": {
-      "lines": 100,
-      "statements": 96.77,
-      "functions": 100,
-      "branches": 88.88
+      "lines": [100, 0],
+      "statements": [96.66, 1],
+      "functions": [100, 0],
+      "branches": [88.88, 1]
     },
     "src/use-hash-scroll.ts": {
-      "lines": 60.97,
-      "statements": 64.58,
-      "functions": 60,
-      "branches": 43.75
+      "lines": [96.66, 1],
+      "statements": [91.89, 3],
+      "functions": [90.9, 1],
+      "branches": [93.33, 1]
     },
     "src/use-local-storage.tsx": {
-      "lines": 100,
-      "statements": 94.64,
-      "functions": 100,
-      "branches": 83.33
+      "lines": [100, 0],
+      "statements": [94.11, 3],
+      "functions": [100, 0],
+      "branches": [84.61, 4]
     },
     "src/use-navigation-progress.ts": {
-      "lines": 92.3,
-      "statements": 93.1,
-      "functions": 100,
-      "branches": 75
+      "lines": [92.3, 2],
+      "statements": [92.59, 2],
+      "functions": [100, 0],
+      "branches": [75, 4]
     },
     "src/use-outside-click-detector.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/use-platform-os.tsx": {
-      "lines": 83.33,
-      "statements": 86.95,
-      "functions": 100,
-      "branches": 50
+      "lines": [83.33, 3],
+      "statements": [83.33, 3],
+      "functions": [100, 0],
+      "branches": [50, 4]
     },
     "src/use-record-collection.ts": {
-      "lines": 95.12,
-      "statements": 96,
-      "functions": 94.73,
-      "branches": 93.22
+      "lines": [95.12, 2],
+      "statements": [96, 2],
+      "functions": [94.73, 1],
+      "branches": [93.54, 4]
     },
     "src/use-resend-code-form.ts": {
-      "lines": 100,
-      "statements": 84.21,
-      "functions": 66.66,
-      "branches": 75
+      "lines": [100, 0],
+      "statements": [95.65, 1],
+      "functions": [100, 0],
+      "branches": [75, 1]
     }
   }
 }

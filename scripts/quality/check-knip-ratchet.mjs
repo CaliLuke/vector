@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const baselinePath = path.join(root, ".quality", "knip-baseline.json");
 const writeBaseline = process.argv.includes("--write-baseline");
-const result = spawnSync("pnpm", ["exec", "knip", "--no-progress", "--reporter", "json"], {
+const result = spawnSync("bun", ["--silent", "run", "knip", "--no-progress", "--reporter", "json"], {
   cwd: root,
   encoding: "utf8",
   maxBuffer: 64 * 1024 * 1024,

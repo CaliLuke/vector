@@ -1,7 +1,7 @@
 import { seedInstanceInfo } from "./helpers/instance-info.mjs";
 import { changeFormControl as change, submitForm as submit } from "./helpers/native-forms.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { MutationObserver } from "@tanstack/react-query";
 import { React, act } from "./helpers/react.mjs";
@@ -299,4 +299,4 @@ await test("onboarding durable writes succeed natively when only follow-up setti
   assert.equal(client.getQueryData(identityKeys.profile(user.id)).is_onboarded, true);
 });
 
-formObserver.restore();
+test.after(() => formObserver.restore());

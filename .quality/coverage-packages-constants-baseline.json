@@ -1,359 +1,359 @@
 {
-  "version": 1,
+  "version": 2,
   "files": {
     "src/ai.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/analytics/common.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/analytics/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/auth/core.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/auth/extended.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/auth/index.ts": {
-      "lines": 98.97,
-      "statements": 98.97,
-      "functions": 88.88,
-      "branches": 100
+      "lines": [98.97, 1],
+      "statements": [99.05, 1],
+      "functions": [88.88, 1],
+      "branches": [100, 0]
     },
     "src/calendar.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/chart.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/cycle.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/dashboard.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/emoji.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/endpoints.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 96.15
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [96.15, 1]
     },
     "src/estimates.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/event-tracker/core.ts": {
-      "lines": 97.56,
-      "statements": 97.56,
-      "functions": 0,
-      "branches": 100
+      "lines": [97.56, 1],
+      "statements": [97.56, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "src/event-tracker/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/file.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/filter.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/gantt-chart.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/graph.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/icon.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/instance.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/intake.ts": {
-      "lines": 64.28,
-      "statements": 64.28,
-      "functions": 16.66,
-      "branches": 100
+      "lines": [64.28, 5],
+      "statements": [66.66, 5],
+      "functions": [16.66, 5],
+      "branches": [100, 0]
     },
     "src/issue/common.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/issue/filter.ts": {
-      "lines": 100,
-      "statements": 97.22,
-      "functions": 100,
-      "branches": 50
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/issue/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/issue/layout.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/issue/modal.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/label.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/members.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/metadata.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/module.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/notification.ts": {
-      "lines": 61.11,
-      "statements": 61.11,
-      "functions": 22.22,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/page.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/payment.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/profile.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/project.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/query-keys.ts": {
-      "lines": 71.11,
-      "statements": 68,
-      "functions": 33.33,
-      "branches": 100
+      "lines": [71.11, 13],
+      "statements": [68, 16],
+      "functions": [33.33, 16],
+      "branches": [100, 0]
     },
     "src/rich-filters/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/rich-filters/operator-labels/core.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/rich-filters/operator-labels/extended.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/rich-filters/operator-labels/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/rich-filters/option.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/settings/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/settings/profile.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/settings/project.ts": {
-      "lines": 43.47,
-      "statements": 43.47,
-      "functions": 7.14,
-      "branches": 100
+      "lines": [43.47, 13],
+      "statements": [45.83, 13],
+      "functions": [7.14, 13],
+      "branches": [100, 0]
     },
     "src/settings/workspace.ts": {
-      "lines": 58.82,
-      "statements": 58.82,
-      "functions": 22.22,
-      "branches": 100
+      "lines": [58.82, 7],
+      "statements": [61.11, 7],
+      "functions": [22.22, 7],
+      "branches": [100, 0]
     },
     "src/sidebar-favorites.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/sidebar.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/spreadsheet.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/state.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/stickies.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/subscription.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/tab-indices.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/themes.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/user.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/views.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/workspace-drafts.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/workspace.ts": {
-      "lines": 64,
-      "statements": 64,
-      "functions": 0,
-      "branches": 100
+      "lines": [64, 9],
+      "statements": [64, 9],
+      "functions": [0, 9],
+      "branches": [100, 0]
     }
   }
 }

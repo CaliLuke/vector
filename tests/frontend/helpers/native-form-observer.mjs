@@ -1,4 +1,4 @@
-import { registerHooks } from "node:module";
+import { registerHooks } from "./module-hooks.mjs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { createModuleStub } from "./module-stubs.mjs";

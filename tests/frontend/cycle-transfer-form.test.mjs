@@ -133,4 +133,4 @@ await test("failed cycle progress refresh releases its loading state", async (t)
   assert.equal(result.fetchStatus, "idle");
 });
 
-nativeForms.restore();
+test.after(() => nativeForms.restore());

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { React, createPermissionUiFixture } from "./helpers/permission-ui-fixture.mjs";
 import { resolvePackageStub } from "./helpers/module-stubs.mjs";

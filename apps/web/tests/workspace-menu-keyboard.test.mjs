@@ -1,7 +1,7 @@
 import { routerApi } from "../../../tests/frontend/helpers/router.mjs";
 import { createQueryRouterFixture } from "../../../tests/frontend/helpers/query-router.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "../../../tests/frontend/helpers/module-hooks.mjs";
 import test from "node:test";
 import { act, React } from "../../../tests/frontend/helpers/react.mjs";
 import { registerWebModuleHooks } from "../../../tests/frontend/helpers/web-module-hooks.mjs";

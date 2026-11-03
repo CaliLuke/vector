@@ -1,7 +1,7 @@
 import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createRequire, registerHooks } from "node:module";
+import { createRequire, registerHooks } from "./helpers/module-hooks.mjs";
 import { createModuleStub } from "./helpers/module-stubs.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";

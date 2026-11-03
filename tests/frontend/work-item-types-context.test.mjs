@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React, act } from "./helpers/react.mjs";
@@ -225,4 +225,4 @@ await test("type icon sheet preserves an existing color, toggles closed, and rep
   assert.equal(document.querySelector('input[aria-label="Database"]').checked, true);
 });
 
-nativeForms.restore();
+test.after(() => nativeForms.restore());

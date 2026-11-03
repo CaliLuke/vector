@@ -5,7 +5,7 @@ import { React, act } from "./helpers/react.mjs";
 import { createRouterFixture } from "./helpers/router.mjs";
 import { resolvePackageStub } from "./helpers/module-stubs.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 
 registerWebModuleHooks();
 globalThis.archiveRouteTest = { React };

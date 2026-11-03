@@ -132,7 +132,7 @@ func TestLocalDevBuildCompletesBeforeWatchersStart(t *testing.T) {
 			}
 			bin := filepath.Join(root, "bin")
 			writeExecutable(t, filepath.Join(bin, "docker"), "#!/bin/sh\nexit 0\n")
-			writeExecutable(t, filepath.Join(bin, "pnpm"), "#!/bin/sh\nprintf 'build\\n' >> \"$DEV_TEST_EVENTS\"\nexit \"$DEV_TEST_BUILD_EXIT\"\n")
+			writeExecutable(t, filepath.Join(bin, "bun"), "#!/bin/sh\nprintf 'build\\n' >> \"$DEV_TEST_EVENTS\"\nexit \"$DEV_TEST_BUILD_EXIT\"\n")
 			writeExecutable(t, filepath.Join(bin, "go"), "#!/bin/sh\nprintf 'watchers\\n' >> \"$DEV_TEST_EVENTS\"\n")
 			events := filepath.Join(root, "events")
 			t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))

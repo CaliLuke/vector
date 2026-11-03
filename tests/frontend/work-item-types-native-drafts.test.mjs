@@ -331,5 +331,5 @@ await test("attachment empty states distinguish a new library from an exhausted 
   assert.equal(addButton().disabled, true);
 });
 
-nativeForms.restore();
-await environment.unmount();
+test.after(() => nativeForms.restore());
+test.after(() => environment.unmount());

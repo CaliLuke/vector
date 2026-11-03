@@ -11,6 +11,7 @@ import { collectFrontendCoverage } from "./frontend-coverage.mjs";
 
 const run = promisify(execFile);
 const sourceHook = new URL("../../tests/frontend/helpers/source-transform.mjs", import.meta.url).href;
+const loaderHook = new URL("../../tests/frontend/helpers/module-hooks.mjs", import.meta.url).href;
 const recordHook = new URL("../../tests/frontend/helpers/coverage-source.mjs", import.meta.url).href;
 const suites = { "apps/web": { sourcePatterns: ["**/*.tsx", "**/*.ts"], exclusions: [] } };
 const source = `type Choice = { enabled: boolean };
@@ -34,7 +35,7 @@ function fixture(t) {
   const directory = path.join(root, "coverage");
   return { root, directory, filename, untouched, types, files: [filename, untouched, types], suites };
 }
-async function execute(f, enabled = true, { built = false, emitMap = true, facade = false } = {}) {
+async function execute(f, enabled = true, { built = false, emitMap = true, facade = false, minify = false } = {}) {
   const target = built ? path.join(f.root, "apps/web/dist/component.mjs") : f.filename;
   if (built) {
     mkdirSync(path.dirname(target), { recursive: true });
@@ -51,25 +52,22 @@ async function execute(f, enabled = true, { built = false, emitMap = true, facad
   const entry = facade ? path.join(path.dirname(target), "facade.mjs") : target;
   if (facade) writeFileSync(entry, 'export {render} from "./component.mjs";');
   const program = `import {readFileSync} from 'node:fs';
-import {registerHooks} from 'node:module';
+import {registerHooks} from ${JSON.stringify(loaderHook)};
 import {fileURLToPath} from 'node:url';
 import {transformFrontendSource} from ${JSON.stringify(sourceHook)};
 import {recordCoverageSource} from ${JSON.stringify(recordHook)};
 registerHooks({load(url,context,next) {
   if(!${JSON.stringify([pathToFileURL(target).href, pathToFileURL(entry).href])}.includes(url))return next(url,context);
   const filename=fileURLToPath(url), source=readFileSync(filename,'utf8');
-  const code=${built} ? source : transformFrontendSource(source,{loader:'tsx',format:'esm',jsxFactory:'element',sourcefile:filename});
+  const code=${built} ? source : transformFrontendSource(source,{loader:'tsx',format:'esm',jsxFactory:'element',sourcefile:filename,minifyWhitespace:${minify}});
   recordCoverageSource(filename,code);
   return {format:'module',shortCircuit:true,source:code};
 }});
 const {render}=await import(${JSON.stringify(pathToFileURL(entry).href)});
 if(render({enabled:${enabled}}).text!==${JSON.stringify(enabled ? "on" : "off")})throw new Error('wrong branch');`;
-  // This fixture exercises the existing V8 coverage and loader-hook contract.
-  await run("node", ["--input-type=module", "-e", program], {
+  await run("bun", ["-e", program], {
     env: {
       ...process.env,
-      NODE_DISABLE_COMPILE_CACHE: "1",
-      NODE_V8_COVERAGE: path.join(f.directory, "raw"),
       VECTOR_FRONTEND_COVERAGE: f.directory,
     },
   });
@@ -94,9 +92,13 @@ void test("source coverage counts the skipped TSX return as uncovered, includes 
 });
 void test("source coverage combines worker runs and separately mapped build output", async (t) => {
   const f = fixture(t);
-  await Promise.all([execute(f, true), execute(f, false), execute(f, false, { built: true, facade: true })]);
+  await Promise.all([
+    execute(f, true),
+    execute(f, false, { minify: true }),
+    execute(f, false, { built: true, facade: true }),
+  ]);
   const summary = await collectFrontendCoverage(f);
-  assert.equal(readdirSync(path.join(f.directory, "variants")).length, 3);
+  assert.equal(readdirSync(path.join(f.directory, "variants")).length, 4);
   assert.equal(readdirSync(path.join(f.directory, "sources")).length, 3);
   assert.equal(summary[f.filename].branches.pct, 100);
   assert.equal(summary[f.filename].lines.pct, 100);

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React } from "./helpers/react.mjs";
@@ -66,4 +66,4 @@ await test("confirmation validation blocks work and failed work remains retryabl
   assert.equal(closed, 1);
 });
 
-nativeForms.restore();
+test.after(() => nativeForms.restore());

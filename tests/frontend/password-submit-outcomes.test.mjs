@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import test from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React, act } from "./helpers/react.mjs";
@@ -125,4 +125,4 @@ await test("set password navigation retry does not repeat the saved credential",
   assert.equal(formApi()?.state.isSubmitSuccessful, true);
 });
 
-formObserver.restore();
+test.after(() => formObserver.restore());

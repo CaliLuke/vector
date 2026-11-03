@@ -1,7 +1,7 @@
 import { setPositioningGeometry } from "./helpers/positioning.mjs";
 import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";

@@ -24,6 +24,12 @@
     },
     "packages/editor": {
       "postcss": true
+    },
+    "apps/live": {
+      "ignoreDependencies": ["ws", "@types/ws"]
+    },
+    "packages/decorators": {
+      "ignoreDependencies": ["@types/ws"]
     }
   },
   "rules": {

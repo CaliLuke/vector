@@ -58,7 +58,7 @@ also carry a safe action attribute. Independent review found no blocking issues.
 Ten browser logging tests pass, including request-ID/timing/privacy regressions;
 backend tests verify wrapped SQLSTATE/cancellation classification, trace/span
 correlation, unchanged 409/422 responses, and success/rejection command spans.
-The live `pnpm dev:check-logs` probe passes after narrowing its queries to the
+The live `bun run dev:check-logs` probe passes after narrowing its queries to the
 probe's timestamp and setting a bounded 15-second deadline. Its original
 2-second query deadline failed under concurrent checks; no correlation assertion
 was removed. Evidence: `tmp/parity-observability-smoke-final.log`,

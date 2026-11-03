@@ -8,7 +8,7 @@ import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 import test from "node:test";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import path from "node:path";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import assert from "node:assert/strict";
 
 registerWebModuleHooks();

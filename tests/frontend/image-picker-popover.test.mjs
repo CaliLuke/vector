@@ -3,7 +3,7 @@ import { seedInstanceInfo } from "./helpers/instance-info.mjs";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import path from "node:path";
 import test, { beforeEach } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";

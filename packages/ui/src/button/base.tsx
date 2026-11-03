@@ -5,7 +5,7 @@
  */
 
 import * as React from "react";
-import { cn } from "../utils";
+import { cn } from "../utils/classname";
 
 export interface ButtonBaseProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;

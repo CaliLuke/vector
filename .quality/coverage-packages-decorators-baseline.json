@@ -1,35 +1,35 @@
 {
-  "version": 1,
+  "version": 2,
   "files": {
     "src/controller.ts": {
-      "lines": 100,
-      "statements": 93.75,
-      "functions": 100,
-      "branches": 83.33
+      "lines": [100, 0],
+      "statements": [93.75, 2],
+      "functions": [100, 0],
+      "branches": [83.33, 3]
     },
     "src/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/metadata.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/rest.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [0, 1]
     },
     "src/websocket.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     }
   }
 }

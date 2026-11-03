@@ -1,7 +1,7 @@
 import * as ContractEnums from "../../../packages/types/dist/index.mjs";
 import { fileURLToPath } from "node:url";
 import { seedInstanceInfo } from "./instance-info.mjs";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./module-hooks.mjs";
 import { QueryClient, QueryClientProvider, notifyManager, useMutation } from "@tanstack/react-query";
 import { createReactDomTestEnvironment } from "./react-dom.mjs";
 import { React } from "./react.mjs";

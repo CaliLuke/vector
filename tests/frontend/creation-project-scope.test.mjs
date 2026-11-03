@@ -4,7 +4,7 @@ import {
   waitForJoinedProjectText,
   workspace,
 } from "./helpers/joined-project-fixture.mjs";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import assert from "node:assert/strict";
 import { notifyManager } from "@tanstack/react-query";
 import test from "node:test";

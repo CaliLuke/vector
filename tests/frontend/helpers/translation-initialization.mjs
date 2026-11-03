@@ -1,4 +1,4 @@
-import { createRequire } from "node:module";
+import { createRequire } from "./module-hooks.mjs";
 
 const requireFromI18n = createRequire(new URL("../../../packages/i18n/package.json", import.meta.url));
 const i18next = requireFromI18n("i18next");

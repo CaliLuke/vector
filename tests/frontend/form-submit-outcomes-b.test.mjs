@@ -66,4 +66,4 @@ await test("invitation submission rejection is a native failure and retries the 
   assert.equal(attempts.length, 2);
 });
 
-formObserver.restore();
+test.after(() => formObserver.restore());

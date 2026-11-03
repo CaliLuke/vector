@@ -9,9 +9,11 @@ Read `docs/development.md` for local workflow exceptions and `docs/architecture.
 Store local test-account credentials in ignored `.env.test.local` with mode 0600.
 Check that file before asking for credentials. Never print or commit credentials.
 
-Use Bun for JavaScript quality scripts and their tests; pin it through `.bun-version` and `.mise.toml`.
-Do not add new Node-based tooling. Existing V8 frontend coverage, loader hooks, and the
-V8 heap-limit regression use explicit Node invocations until their contracts migrate.
+Use Bun for all JavaScript runtimes, package scripts, dependency installs and tests.
+Pin it through `.bun-version` and `.mise.toml`; commit `bun.lock`.
+Do not introduce Node runtime invocations, V8-only coverage, or Babel instrumentation. `bunfig.toml` forces
+package executables and child scripts to use Bun. Node-compatible imports and
+package names remain valid APIs under Bun.
 
 Use existing libraries and shared helpers. Keep authorization, tenant isolation, data integrity, and durable effects intact.
 Add focused regression tests for defects. Run affected tests, formatting, lint, and typechecks.
@@ -28,10 +30,10 @@ Before TanStack work, read the installed package's `skills/**/SKILL.md` and its 
 Find bundled skills, including transitive core packages, with:
 
 ```sh
-rg --files --hidden --no-ignore node_modules/.pnpm -g SKILL.md | rg '/@tanstack/'
+rg --files --hidden --no-ignore node_modules/.bun -g SKILL.md | rg '/@tanstack/'
 ```
 
-Use the version linked by the consuming workspace; `.pnpm` can retain older package copies.
+Use the version linked by the consuming workspace; `.bun` can retain older package copies.
 
 Run `prek run --all-files --group full` for the complete quality gate.
 Use `./check.sh --fast` for non-mutating fast checks and `./check.sh --fix` for formatting/lint fixes.
@@ -41,7 +43,7 @@ Review baseline changes explicitly. Do not increase a baseline to hide a new def
 
 Use `http://localhost:8000/` for local browser checks. Keep the proxy and application origins consistent.
 While the development stack runs, use package typecheck scripts directly. Do not clean shared package output.
-Read local logs through `pnpm dev:logs`, `pnpm dev:errors`, and `pnpm dev:traces`.
+Read local logs through `bun run dev:logs`, `bun run dev:errors`, and `bun run dev:traces`.
 Never read the collector's live SQLite database from the host.
 
 Before Docker or Go checks, run:

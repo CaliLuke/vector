@@ -1,449 +1,449 @@
 {
-  "version": 1,
+  "version": 2,
   "files": {
     "app/(all)/(dashboard)/ai/form.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 9],
+      "statements": [0, 9],
+      "functions": [0, 4],
+      "branches": [0, 6]
     },
     "app/(all)/(dashboard)/ai/page.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 5],
+      "statements": [0, 6],
+      "functions": [0, 2],
+      "branches": [0, 2]
     },
     "app/(all)/(dashboard)/authentication/gitea/page.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 2],
+      "statements": [0, 3],
+      "functions": [0, 2],
+      "branches": [100, 0]
     },
     "app/(all)/(dashboard)/authentication/github/page.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 2],
+      "statements": [0, 3],
+      "functions": [0, 2],
+      "branches": [100, 0]
     },
     "app/(all)/(dashboard)/authentication/gitlab/page.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 2],
+      "statements": [0, 3],
+      "functions": [0, 2],
+      "branches": [100, 0]
     },
     "app/(all)/(dashboard)/authentication/google/page.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 2],
+      "statements": [0, 3],
+      "functions": [0, 2],
+      "branches": [100, 0]
     },
     "app/(all)/(dashboard)/authentication/page.tsx": {
-      "lines": 86.95,
-      "statements": 84,
-      "functions": 66.66,
-      "branches": 71.42
+      "lines": [86.95, 3],
+      "statements": [84, 4],
+      "functions": [66.66, 2],
+      "branches": [71.42, 4]
     },
     "app/(all)/(dashboard)/email/email-config-form.tsx": {
-      "lines": 92.59,
-      "statements": 93.1,
-      "functions": 84.61,
-      "branches": 76.47
+      "lines": [92.59, 2],
+      "statements": [93.1, 2],
+      "functions": [84.61, 2],
+      "branches": [76.47, 8]
     },
     "app/(all)/(dashboard)/email/page.tsx": {
-      "lines": 58.33,
-      "statements": 56,
-      "functions": 60,
-      "branches": 68.75
+      "lines": [58.33, 10],
+      "statements": [56, 11],
+      "functions": [60, 2],
+      "branches": [68.75, 5]
     },
     "app/(all)/(dashboard)/email/test-email-modal.tsx": {
-      "lines": 90.9,
-      "statements": 83.33,
-      "functions": 88.88,
-      "branches": 83.33
+      "lines": [90.9, 1],
+      "statements": [83.33, 2],
+      "functions": [88.88, 1],
+      "branches": [83.33, 2]
     },
     "app/(all)/(dashboard)/general/form.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 50
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [50, 3]
     },
     "app/(all)/(dashboard)/general/page.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 7],
+      "statements": [0, 8],
+      "functions": [0, 3],
+      "branches": [0, 8]
     },
     "app/(all)/(dashboard)/general/telemetry-status.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 90
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [90, 1]
     },
     "app/(all)/(dashboard)/image/form.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 7],
+      "statements": [0, 7],
+      "functions": [0, 3],
+      "branches": [0, 2]
     },
     "app/(all)/(dashboard)/image/page.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 5],
+      "statements": [0, 6],
+      "functions": [0, 2],
+      "branches": [0, 2]
     },
     "app/(all)/(dashboard)/layout.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 11],
+      "statements": [0, 12],
+      "functions": [0, 2],
+      "branches": [0, 8]
     },
     "app/(all)/(dashboard)/sidebar-dropdown.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 25],
+      "statements": [0, 26],
+      "functions": [0, 9],
+      "branches": [0, 13]
     },
     "app/(all)/(dashboard)/sidebar-help-section.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 14],
+      "statements": [0, 15],
+      "functions": [0, 5],
+      "branches": [0, 18]
     },
     "app/(all)/(dashboard)/sidebar-menu.tsx": {
-      "lines": 80,
-      "statements": 80,
-      "functions": 66.66,
-      "branches": 50
+      "lines": [80, 2],
+      "statements": [80, 2],
+      "functions": [66.66, 1],
+      "branches": [50, 4]
     },
     "app/(all)/(dashboard)/sidebar.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 16],
+      "statements": [0, 16],
+      "functions": [0, 5],
+      "branches": [0, 14]
     },
     "app/(all)/(dashboard)/workspace/create/form.tsx": {
-      "lines": 100,
-      "statements": 97.5,
-      "functions": 100,
-      "branches": 79.16
+      "lines": [100, 0],
+      "statements": [97.5, 1],
+      "functions": [100, 0],
+      "branches": [79.16, 5]
     },
     "app/(all)/(dashboard)/workspace/create/page.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 4],
+      "statements": [0, 5],
+      "functions": [0, 2],
+      "branches": [100, 0]
     },
     "app/(all)/(dashboard)/workspace/page.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 18],
+      "statements": [0, 20],
+      "functions": [0, 8],
+      "branches": [0, 20]
     },
     "app/(all)/(home)/auth-banner.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "app/(all)/(home)/auth-header.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "app/(all)/(home)/auth-helpers.tsx": {
-      "lines": 48,
-      "statements": 50,
-      "functions": 16.66,
-      "branches": 20
+      "lines": [48, 13],
+      "statements": [53.57, 13],
+      "functions": [35.71, 9],
+      "branches": [43.75, 9]
     },
     "app/(all)/(home)/layout.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 7],
+      "statements": [0, 8],
+      "functions": [0, 2],
+      "branches": [0, 4]
     },
     "app/(all)/(home)/page.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 11],
+      "statements": [0, 12],
+      "functions": [0, 2],
+      "branches": [0, 10]
     },
     "app/(all)/(home)/sign-in-form.tsx": {
-      "lines": 72.5,
-      "statements": 74.41,
-      "functions": 71.42,
-      "branches": 58.13
+      "lines": [93.54, 2],
+      "statements": [94.11, 2],
+      "functions": [84.61, 2],
+      "branches": [93.93, 2]
     },
     "app/components/404.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 2],
+      "statements": [0, 2],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "app/entry.client.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 5],
+      "statements": [0, 5],
+      "functions": [0, 1],
+      "branches": [0, 4]
     },
     "app/root.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 9],
+      "statements": [0, 10],
+      "functions": [0, 6],
+      "branches": [100, 0]
     },
     "app/routes.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 100,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "components/authentication/authentication-method-card.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 2],
+      "statements": [0, 2],
+      "functions": [0, 1],
+      "branches": [0, 5]
     },
     "components/authentication/configuration-control.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 83.33
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [83.33, 2]
     },
     "components/authentication/oauth-configuration-form.tsx": {
-      "lines": 76.19,
-      "statements": 80,
-      "functions": 75,
-      "branches": 53.33
+      "lines": [76.19, 5],
+      "statements": [80, 5],
+      "functions": [75, 3],
+      "branches": [53.33, 7]
     },
     "components/authentication/oauth-settings.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 50
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [50, 1]
     },
     "components/authentication/oauth-setup-page.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 15],
+      "statements": [0, 15],
+      "functions": [0, 6],
+      "branches": [0, 16]
     },
     "components/common/banner.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [50, 3]
     },
     "components/common/breadcrumb-link.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 50
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [50, 3]
     },
     "components/common/code-block.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "components/common/confirm-discard-modal.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "components/common/copy-field.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "components/common/header/core.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "components/common/header/extended.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "components/common/header/index.tsx": {
-      "lines": 94.11,
-      "statements": 94.11,
-      "functions": 83.33,
-      "branches": 66.66
+      "lines": [94.11, 1],
+      "statements": [94.11, 1],
+      "functions": [83.33, 1],
+      "branches": [66.66, 2]
     },
     "components/common/logo-spinner.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "components/common/new-user-popup.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 7],
+      "statements": [0, 8],
+      "functions": [0, 2],
+      "branches": [0, 7]
     },
     "components/common/page-wrapper.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 77.77
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [77.77, 2]
     },
     "components/common/settings-form.tsx": {
-      "lines": 94.11,
-      "statements": 95,
-      "functions": 92.3,
-      "branches": 81.48
+      "lines": [94.11, 1],
+      "statements": [95, 1],
+      "functions": [92.3, 1],
+      "branches": [77.77, 6]
     },
     "components/common/use-configuration-form.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 50
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [50, 1]
     },
     "components/instance/failure.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 6],
+      "statements": [0, 6],
+      "functions": [0, 2],
+      "branches": [0, 2]
     },
     "components/instance/form-header.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "components/instance/setup-form.tsx": {
-      "lines": 58.2,
-      "statements": 59.15,
-      "functions": 42.3,
-      "branches": 56.52
+      "lines": [62.96, 20],
+      "statements": [63.79, 21],
+      "functions": [48.27, 15],
+      "branches": [72.13, 17]
     },
     "components/workspace/list-item.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 2],
+      "statements": [0, 2],
+      "functions": [0, 1],
+      "branches": [0, 14]
     },
     "helpers/authentication.ts": {
-      "lines": 100,
-      "statements": 88.88,
-      "functions": 100,
-      "branches": 83.33
+      "lines": [100, 0],
+      "statements": [88.88, 1],
+      "functions": [100, 0],
+      "branches": [83.33, 2]
     },
     "helpers/configuration-save.ts": {
-      "lines": 50,
-      "statements": 50,
-      "functions": 33.33,
-      "branches": 100
+      "lines": [50, 2],
+      "statements": [50, 2],
+      "functions": [33.33, 2],
+      "branches": [100, 0]
     },
     "hooks/oauth/core.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 50
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [50, 1]
     },
     "hooks/oauth/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "hooks/oauth/types.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "hooks/use-instance-configurations.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "hooks/use-sidebar-menu/core.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 100,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "hooks/use-sidebar-menu/index.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "hooks/use-sidebar-menu/types.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "lib/b-progress/AppProgressBar.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 3],
+      "statements": [0, 3],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "lib/b-progress/index.tsx": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "providers/core.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "providers/extended.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "providers/index.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 1],
+      "statements": [0, 1],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "providers/query.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 2],
+      "statements": [0, 3],
+      "functions": [0, 2],
+      "branches": [100, 0]
     },
     "providers/sidebar.tsx": {
-      "lines": 95,
-      "statements": 88,
-      "functions": 88.88,
-      "branches": 16.66
+      "lines": [95, 1],
+      "statements": [88, 3],
+      "functions": [88.88, 1],
+      "branches": [16.66, 5]
     },
     "providers/toast.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
+      "lines": [0, 2],
+      "statements": [0, 2],
+      "functions": [0, 1],
+      "branches": [100, 0]
     },
     "queries/instance.ts": {
-      "lines": 91.42,
-      "statements": 92.5,
-      "functions": 84.21,
-      "branches": 100
+      "lines": [91.42, 3],
+      "statements": [92.5, 3],
+      "functions": [84.21, 3],
+      "branches": [100, 0]
     },
     "queries/workspaces.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     }
   }
 }

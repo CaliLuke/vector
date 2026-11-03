@@ -113,13 +113,9 @@ async function affectedFrontend() {
       "600",
       "--memory-mib",
       "1024",
-      "--heap-mib",
-      "384",
       "--",
-      "node",
-      "--test",
-      "--test-timeout=15000",
-      "--test-concurrency=2",
+      "bun",
+      "scripts/quality/frontend-test-workers.mjs",
       ...changed,
     ]);
   else await command(["bash", "scripts/quality/frontend-tests.sh"]);
@@ -142,7 +138,7 @@ function buildArtifacts() {
 function frontendCoverageArtifacts() {
   const scope = JSON.parse(fs.readFileSync(path.join(root, ".quality/coverage-scope.json"), "utf8"));
   return Object.entries(scope.coveredSuites).map(([workspace, suite]) =>
-    suite.testCommand === "pnpm test:frontend:coverage"
+    suite.testCommand === "bun run test:frontend:coverage"
       ? `coverage/frontend/workspaces/${workspace.replaceAll("/", "-")}.json`
       : `${workspace}/coverage/coverage-summary.json`
   );
@@ -155,8 +151,6 @@ const boundedGo = (args) => [
   "3600",
   "--memory-mib",
   "6144",
-  "--heap-mib",
-  "512",
   "--",
   "env",
   "GOMEMLIMIT=2GiB",
@@ -181,7 +175,7 @@ export function stagePlan(scope) {
     });
   if (scope !== "go")
     stages.push(
-      { id: "frontend-format", scope: "all", command: ["pnpm", "exec", "oxfmt", "--check", "."] },
+      { id: "frontend-format", scope: "all", command: ["bun", "run", "oxfmt", "--check", "."] },
       {
         id: "affected-frontend-tests",
         scope: "frontend",
@@ -192,7 +186,7 @@ export function stagePlan(scope) {
     stages.push({ id: "go-static", scope: "go", command: boundedGo(["bash", "scripts/quality/go.sh", "--static"]) });
   if (scope !== "go")
     stages.push(
-      { id: "frontend-build", scope: "frontend", command: ["pnpm", "build"], artifacts: buildArtifacts },
+      { id: "frontend-build", scope: "frontend", command: ["bun", "run", "build"], artifacts: buildArtifacts },
       {
         id: "storybook-build",
         scope: "frontend",
@@ -203,11 +197,10 @@ export function stagePlan(scope) {
           "1200",
           "--memory-mib",
           "4096",
-          "--heap-mib",
-          "2048",
           "--",
-          "pnpm",
-          "--workspace-concurrency=1",
+          "bun",
+          "run",
+          "--sequential",
           "--filter",
           "@plane/ui",
           "--filter",
@@ -254,13 +247,11 @@ async function main(args) {
   const identity = {
     head: output("git", ["rev-parse", "HEAD"]),
     bun: process.versions.bun,
-    node: output("node", ["--version"]),
     platform: process.platform,
     architecture: process.arch,
     environment: relevantEnvironment(process.env),
   };
   if (scope !== "typescript") identity.go = output("go", ["version"]);
-  if (scope !== "go") identity.pnpm = output("pnpm", ["--version"]);
   const controller = new AbortController();
   const stop = () => controller.abort();
   process.once("SIGINT", stop);

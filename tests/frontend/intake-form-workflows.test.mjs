@@ -2,7 +2,7 @@ import { createProjectAccessScope } from "./helpers/permission-query-fixture.mjs
 import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { registerHooks } from "node:module";
+import { registerHooks } from "./helpers/module-hooks.mjs";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React, act, webRequire } from "./helpers/react.mjs";
@@ -230,7 +230,7 @@ await test("changing the selector scope cancels its old search and excludes late
   assert.equal(document.querySelectorAll('[role="option"]').length, 1);
 });
 
-nativeForms.restore();
+test.after(() => nativeForms.restore());
 
 await test("failed intake text writes retain the saved record and commit a successful retry", async (t) => {
   const { mutateIssue, detail } = intake(t);

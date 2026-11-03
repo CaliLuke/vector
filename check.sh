@@ -51,11 +51,11 @@ run_gate() {
 }
 
 if [[ "$scope" == build ]]; then
-  run_gate "Frontend build" pnpm build
-  run_gate "Component Storybooks" bun scripts/quality/run-bounded.mjs --seconds 1200 --memory-mib 4096 --heap-mib 2048 -- pnpm --workspace-concurrency=1 --filter @plane/ui --filter @plane/propel build-storybook
+  run_gate "Frontend build" bun run build
+  run_gate "Component Storybooks" bun scripts/quality/run-bounded.mjs --seconds 1200 --memory-mib 4096 -- bun run --sequential --filter @plane/ui --filter @plane/propel build-storybook
 fi
 if [[ "$scope" == all || "$scope" == go ]]; then
-  run_gate Go bun scripts/quality/run-bounded.mjs --seconds 3600 --memory-mib 6144 --heap-mib 512 -- env GOMEMLIMIT=2GiB GOMAXPROCS=2 bash scripts/quality/go.sh "$mode"
+  run_gate Go bun scripts/quality/run-bounded.mjs --seconds 3600 --memory-mib 6144 -- env GOMEMLIMIT=2GiB GOMAXPROCS=2 bash scripts/quality/go.sh "$mode"
 fi
 if [[ "$scope" == all || "$scope" == typescript ]]; then
   run_gate TypeScript bash scripts/quality/typescript.sh "$mode"

@@ -3,13 +3,20 @@ import test from "node:test";
 import { React } from "./helpers/react.mjs";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { registerWebTestModules } from "./helpers/web-test-modules.mjs";
-registerWebTestModules({
-  "./profile": "export const ProfileSetupStep=()=>null;",
-  "./role": "export const RoleSetupStep=()=>null;",
-  "./team": "export const InviteTeamStep=()=>null;",
-  "./usecase": "export const UseCaseSetupStep=()=>null;",
-  "./workspace": "export const WorkspaceSetupStep=()=>null;",
-});
+registerWebTestModules(
+  {
+    "./profile": "export const ProfileSetupStep=()=>null;",
+    "./role": "export const RoleSetupStep=()=>null;",
+    "./team": "export const InviteTeamStep=()=>null;",
+    "./usecase": "export const UseCaseSetupStep=()=>null;",
+    "./workspace": "export const WorkspaceSetupStep=()=>null;",
+  },
+  (specifier, context, next) => {
+    // Step fixtures must not replace similarly named workspace-package exports.
+    const scoped = specifier.startsWith(".") && context.parentURL?.includes("/packages/");
+    return next(scoped ? new URL(specifier, context.parentURL).href : specifier, context);
+  }
+);
 
 await test("onboarding resets scroll when a step mounts, retaining scroll during same-step updates", async (t) => {
   const env = await createReactDomTestEnvironment();

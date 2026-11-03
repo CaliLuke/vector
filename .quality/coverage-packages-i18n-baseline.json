@@ -1,65 +1,65 @@
 {
-  "version": 1,
+  "version": 2,
   "files": {
     "src/constants/language.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/constants/namespaces.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/core/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/core/instance.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/core/set-language.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": [0, 5],
+      "statements": [0, 5],
+      "functions": [0, 1],
+      "branches": [0, 2]
     },
     "src/hooks/use-translation.ts": {
-      "lines": 31.25,
-      "statements": 31.57,
-      "functions": 60,
-      "branches": 21.42
+      "lines": [38.88, 11],
+      "statements": [38.09, 13],
+      "functions": [71.42, 2],
+      "branches": [35.29, 11]
     },
     "src/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/provider/index.tsx": {
-      "lines": 77.77,
-      "statements": 81.81,
-      "functions": 75,
-      "branches": 100
+      "lines": [77.77, 2],
+      "statements": [80, 2],
+      "functions": [75, 1],
+      "branches": [100, 0]
     },
     "src/types/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     },
     "src/types/language.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
+      "lines": [100, 0],
+      "statements": [100, 0],
+      "functions": [100, 0],
+      "branches": [100, 0]
     }
   }
 }
