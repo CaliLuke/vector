@@ -26,6 +26,10 @@ unchanged frontend builds or coverage. CI and `./check.sh --full --fresh` always
 execute every required stage. Outside Codex, reuse is off unless the shell sets
 `VECTOR_CHECK_SESSION` to an identifier for the current task.
 
+Manual checks and Husky use the same repository-local tool path. Committing a
+checked tree does not invalidate its results; source and configuration changes
+still invalidate the affected stages.
+
 Use `./check.sh --status` for the current stage, elapsed time, results and log path.
 Logs and success records live under ignored `.quality/reports/stages/`.
 A full result still requires every configured stage; focused tests alone do not

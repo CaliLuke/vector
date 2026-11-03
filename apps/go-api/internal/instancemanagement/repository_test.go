@@ -233,3 +233,15 @@ func TestWorkspaceCompanyRoleUsesNativeJSONText(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateAdminRejectsMalformedRoleBeforeDatabaseAccess(t *testing.T) {
+	repository := &Repository{}
+	for _, role := range []string{`"owner"`, `1.5`, `{}`, `9223372036854775808`} {
+		t.Run(role, func(t *testing.T) {
+			require.NotPanics(t, func() {
+				_, err := repository.CreateAdmin(t.Context(), uuid.Nil(), map[string]json.RawMessage{"email": json.RawMessage(`"admin@example.test"`), "role": json.RawMessage(role)})
+				require.Error(t, err)
+			}, "invalid role must not reach the database with the default administrator role")
+		})
+	}
+}

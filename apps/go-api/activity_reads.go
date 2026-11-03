@@ -288,11 +288,9 @@ func activityRawResult(body any, err error) (*api.ActivityRawJSONResponseMetadat
 	return &api.ActivityRawJSONResponseMetadata{ContentType: "application/json"}, io.NopCloser(bytes.NewReader(raw)), nil
 }
 
-func decodeActivityError(body map[string]any, name string) *api.ActivityErrorResponseBody {
+func decodeActivityError(body map[string]any, name string) error {
 	result := api.ActivityErrorResponseBody{Name: name}
-	raw, _ := json.Marshal(body)
-	_ = json.Unmarshal(raw, &result)
-	return &result
+	return apicontract.ProjectError(body, &result)
 }
 
 func activityStatusError(status int, body map[string]any) error {

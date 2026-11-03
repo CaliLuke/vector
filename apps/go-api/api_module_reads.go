@@ -2,7 +2,6 @@ package systemapi
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -79,9 +78,7 @@ func (s *apiModuleReadsService) execute(ctx context.Context, operation string, p
 
 func apiModuleError(status int, body map[string]any) error {
 	result := &api.APIModuleReadsErrorResponseBody{Name: fmt.Sprintf("status_%d", status)}
-	raw, _ := json.Marshal(body)
-	_ = json.Unmarshal(raw, result)
-	return result
+	return apicontract.ProjectError(body, result)
 }
 func mapAPIModuleError(err error) error {
 	var response *apicontract.HTTPError

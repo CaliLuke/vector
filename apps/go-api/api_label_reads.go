@@ -2,7 +2,6 @@ package systemapi
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -79,9 +78,7 @@ func (s *apiLabelReadsService) execute(ctx context.Context, operation string, pa
 
 func apiLabelError(status int, body map[string]any) error {
 	result := &api.APILabelReadsErrorResponseBody{Name: fmt.Sprintf("status_%d", status)}
-	raw, _ := json.Marshal(body)
-	_ = json.Unmarshal(raw, result)
-	return result
+	return apicontract.ProjectError(body, result)
 }
 func mapAPILabelError(err error) error {
 	var response *apicontract.HTTPError

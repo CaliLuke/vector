@@ -3,6 +3,9 @@ package backgroundtasks
 import (
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNextIssueEmailBeatUsesUTCFiveMinuteBoundaries(t *testing.T) {
@@ -21,4 +24,13 @@ func TestNextIssueEmailBeatUsesUTCFiveMinuteBoundaries(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestEmailMentionsKeepUnknownUsersAndContinue(t *testing.T) {
+	const known = "11111111-1111-4111-8111-111111111111"
+	const unknown = "22222222-2222-4222-8222-222222222222"
+	input := `<p>before <mention-component entity_identifier="broken">invalid</mention-component> <mention-component entity_identifier="` + unknown + `">unknown</mention-component> <mention-component entity_identifier="` + known + `">old</mention-component> after</p>`
+	got, err := replaceEmailMentions(input, map[uuid.UUID]string{uuid.MustParse(known): "Ada", uuid.Nil: "must not match malformed IDs"})
+	require.NoError(t, err)
+	require.Equal(t, "before invalid unknown @Ada after", got)
 }

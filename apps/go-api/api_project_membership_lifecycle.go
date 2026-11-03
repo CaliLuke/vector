@@ -152,9 +152,7 @@ func (s *projectMembershipLifecycleService) raw(ctx context.Context, method, ope
 }
 func projectMembershipLifecycleError(status int, body map[string]any) error {
 	result := &api.MembershipLifecycleErrorResponseBody{Name: fmt.Sprintf("status_%d", status)}
-	data, _ := json.Marshal(body)
-	_ = json.Unmarshal(data, result)
-	return result
+	return apicontract.ProjectError(body, result)
 }
 func projectMembershipLifecycleMapError(err error) error {
 	var response *apicontract.HTTPError

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -118,7 +119,10 @@ func preferenceError(status int, body map[string]any) error {
 	if statusName, ok := map[int]string{400: "status_400", 401: "status_401", 403: "status_403", 404: "status_404", 415: "status_415"}[status]; ok {
 		name = statusName
 	}
-	encoded, _ := json.Marshal(body)
+	encoded, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("encode preference error: %w", err)
+	}
 	return &api.PreferenceError{Name: name, Body: loom.JSONValue(encoded)}
 }
 

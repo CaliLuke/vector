@@ -40,9 +40,12 @@ func equivalent(a, b any) bool {
 			return slices.Equal(left, right)
 		}
 	}
-	left, _ := json.Marshal(a)
-	right, _ := json.Marshal(b)
-	return string(left) == string(right)
+	left, err := json.Marshal(a)
+	if err != nil {
+		return false
+	}
+	right, err := json.Marshal(b)
+	return err == nil && string(left) == string(right)
 }
 
 func fieldChanges(current Object, desired map[string]any, entry *Entry) (map[string]any, []string) {

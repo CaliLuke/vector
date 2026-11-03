@@ -9,6 +9,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/apiuseridentity/gen/api_user_identity"
@@ -124,9 +126,7 @@ func (s *apiUserIdentityReadsService) AuthorizeAPIIdentityProtocol(ctx context.C
 
 func apiUserIdentityError(status int, body map[string]any) error {
 	result := &api.APIUserIdentityErrorBody{Name: fmt.Sprintf("status_%d", status)}
-	raw, _ := json.Marshal(body)
-	_ = json.Unmarshal(raw, result)
-	return result
+	return apicontract.ProjectError(body, result)
 }
 func mapAPIUserIdentityError(err error) error {
 	if errors.Is(err, store.ErrNotFound) {

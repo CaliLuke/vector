@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"strconv"
 
@@ -112,7 +113,10 @@ func projectIntakeProtocolError(err error) (int, map[string]any) {
 }
 
 func intakeWriteError(status int, body map[string]any) error {
-	encoded, _ := json.Marshal(body)
+	encoded, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("encode intake error: %w", err)
+	}
 	return &api.ProjectIntakeWritesErrorResponse{Name: "status_" + strconv.Itoa(status), Body: loom.JSONValue(encoded)}
 }
 

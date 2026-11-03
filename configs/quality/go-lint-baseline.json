@@ -120,14 +120,6 @@
     {
       "fingerprint": [
         "staticcheck",
-        "internal/assets/bindingsgen/main.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 11
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
         "internal/bootstrap/install.go",
         "ST1005: error strings should not end with punctuation or newlines"
       ],

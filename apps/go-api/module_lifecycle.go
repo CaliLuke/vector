@@ -72,7 +72,7 @@ func NewModuleLifecycle(repo moduleLifecycleRepository, sessions activityReadsSe
 func moduleLifecycleError(status int, body map[string]any) error {
 	encoded, err := loom.JSONValueFrom(body)
 	if err != nil {
-		encoded, _ = loom.JSONValueFrom(map[string]any{"error": "Something went wrong please try again later"})
+		encoded = loom.JSONValue(`{"error":"Something went wrong please try again later"}`)
 		status = 500
 	}
 	return &api.ModuleLifecycleError{Kind: fmt.Sprintf("status_%d", status), Body: encoded}

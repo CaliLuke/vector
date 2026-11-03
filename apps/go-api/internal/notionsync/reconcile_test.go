@@ -282,3 +282,12 @@ func TestAssigneeOrderingDoesNotCauseConflict(t *testing.T) {
 		t.Fatal("set ordering caused a change")
 	}
 }
+
+func TestReconcileDoesNotTreatInvalidJSONAsAcknowledged(t *testing.T) {
+	current := Object{"description": json.RawMessage(`{"invalid":`)}
+	desired := map[string]any{"description": json.RawMessage(`{"also_invalid":`)}
+	changes, conflicts := fieldChanges(current, desired, &Entry{Base: map[string]any{}})
+	if len(changes) != 0 || len(conflicts) != 1 || conflicts[0] != "description" {
+		t.Fatalf("invalid values must remain a conflict, got changes %v and conflicts %v", changes, conflicts)
+	}
+}

@@ -261,7 +261,9 @@ func (r *Repository) CreateAdmin(ctx context.Context, actor uuid.UUID, body map[
 	}
 	role := 20
 	if raw := body["role"]; len(raw) != 0 {
-		_ = json.Unmarshal(raw, &role)
+		if err := json.Unmarshal(raw, &role); err != nil {
+			return nil, fmt.Errorf("decode administrator role: %w", err)
+		}
 	}
 	var result []byte
 	err := r.db.QueryRow(ctx, `INSERT INTO instance_admins(id, instance_id, user_id, role, is_verified, created_by_id, created_at, updated_at)

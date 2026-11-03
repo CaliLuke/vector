@@ -93,7 +93,7 @@ func generate() ([]byte, error) {
 	imports := importedPackages(file)
 	service := findServiceInterface(file)
 	if service == nil {
-		return nil, fmt.Errorf("Service interface not found in %s", servicePath)
+		return nil, fmt.Errorf("service interface not found in %s", servicePath)
 	}
 
 	usedImports := map[string]importedPackage{}
@@ -110,7 +110,7 @@ func generate() ([]byte, error) {
 		}
 		methodType, ok := field.Type.(*ast.FuncType)
 		if !ok {
-			return nil, fmt.Errorf("Service.%s is not a method", name)
+			return nil, fmt.Errorf("service method %s is not a method", name)
 		}
 		method, imports, err := renderMethod(name, methodType, imports)
 		if err != nil {
@@ -122,7 +122,7 @@ func generate() ([]byte, error) {
 		methods = append(methods, method)
 	}
 	if len(methods) == 0 {
-		return nil, fmt.Errorf("Service interface has no methods to generate")
+		return nil, fmt.Errorf("service interface has no methods to generate")
 	}
 	for name := range explicitMethods {
 		if !methodExists(service, name) {
@@ -514,41 +514,41 @@ func importedPackages(file *ast.File) map[string]importedPackage {
 
 func renderMethod(name string, method *ast.FuncType, imported map[string]importedPackage) (string, []importedPackage, error) {
 	if method.Params == nil || len(method.Params.List) < 2 || len(method.Params.List) > 3 {
-		return "", nil, fmt.Errorf("Service.%s has unsupported parameter list", name)
+		return "", nil, fmt.Errorf("service method %s has unsupported parameter list", name)
 	}
 	if renderExpr(method.Params.List[0].Type) != "context.Context" {
-		return "", nil, fmt.Errorf("Service.%s first parameter is not context.Context", name)
+		return "", nil, fmt.Errorf("service method %s first parameter is not context.Context", name)
 	}
 	payload, ok := method.Params.List[1].Type.(*ast.StarExpr)
 	if !ok {
-		return "", nil, fmt.Errorf("Service.%s payload is not a pointer", name)
+		return "", nil, fmt.Errorf("service method %s payload is not a pointer", name)
 	}
 	payloadName, ok := payload.X.(*ast.Ident)
 	if !ok {
-		return "", nil, fmt.Errorf("Service.%s payload type is not local to generated API package", name)
+		return "", nil, fmt.Errorf("service method %s payload type is not local to generated API package", name)
 	}
 	args := "ctx context.Context, payload *api." + payloadName.Name
 	body := "nil"
 	if len(method.Params.List) == 3 {
 		if renderExpr(method.Params.List[2].Type) != "io.ReadCloser" {
-			return "", nil, fmt.Errorf("Service.%s third parameter is not io.ReadCloser", name)
+			return "", nil, fmt.Errorf("service method %s third parameter is not io.ReadCloser", name)
 		}
 		args += ", body io.ReadCloser"
 		body = "body"
 	}
 
 	if method.Results == nil || len(method.Results.List) == 0 {
-		return "", nil, fmt.Errorf("Service.%s has no result list", name)
+		return "", nil, fmt.Errorf("service method %s has no result list", name)
 	}
 	if len(method.Results.List) == 1 && renderExpr(method.Results.List[0].Type) == "error" {
 		return fmt.Sprintf("func (service *LifecycleService) %s(%s) error {\n\t_, err := service.invoke(ctx, %q, payload, %s)\n\tif err != nil {\n\t\treturn mapAssetsLifecycleError(%q, err)\n\t}\n\treturn nil\n}", name, args, name, body, name), nil, nil
 	}
 	if len(method.Results.List) != 2 || renderExpr(method.Results.List[1].Type) != "error" {
-		return "", nil, fmt.Errorf("Service.%s has unsupported result list", name)
+		return "", nil, fmt.Errorf("service method %s has unsupported result list", name)
 	}
 	resultType, resultImports, err := renderResultType(method.Results.List[0].Type, imported)
 	if err != nil {
-		return "", nil, fmt.Errorf("Service.%s result: %w", name, err)
+		return "", nil, fmt.Errorf("service method %s result: %w", name, err)
 	}
 	methodSource := fmt.Sprintf("func (service *LifecycleService) %s(%s) (%s, error) {\n\tresult, err := service.invoke(ctx, %q, payload, %s)\n\tif err != nil {\n\t\treturn nil, mapAssetsLifecycleError(%q, err)\n\t}\n\treturn castBindingResult[%s](%q, result)\n}", name, args, resultType, name, body, name, resultType, name)
 	return methodSource, resultImports, nil

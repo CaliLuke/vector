@@ -61,9 +61,9 @@ await test("a failing affected test prevents all expensive stages and never crea
 
 await test("a Go fix reruns its preflight while reusing the unchanged frontend result", async (t) => {
   const f = fixture(t);
-  await runStages(f.options);
+  await runStages({ ...f.options, identity: { ...f.options.identity, head: "before-fix" } });
   f.write("apps/go-api/internal/example/value.go", "package example\n// fixed\n");
-  const result = await runStages(f.options);
+  const result = await runStages({ ...f.options, identity: { ...f.options.identity, head: "after-fix" } });
   assert.deepEqual(f.calls, ["preflight", "build", "preflight"]);
   assert.deepEqual(
     result.map(({ state }) => state),
@@ -346,4 +346,24 @@ console.log('{}');
     { status: 17 }
   );
   assert.equal(fs.existsSync(result), false);
+});
+
+await test("manual checks and Husky use the same tool path without removing caller tool directories", (t) => {
+  const f = fixture(t);
+  f.write("check.sh", fs.readFileSync(new URL("../../check.sh", import.meta.url), "utf8"));
+  f.write("scripts/dev-env.sh", "# isolated fixture\n");
+  f.write("bin/node", '#!/bin/sh\nprintf "%s" "$PATH" > "$VECTOR_FIXTURE_ARGS"\n');
+  fs.chmodSync(path.join(f.root, "bin/node"), 0o755);
+  const result = path.join(f.root, "tool-path.txt");
+  const callerPath = path.join(f.root, "bin") + path.delimiter + process.env.PATH;
+  const paths = [callerPath, "node_modules/.bin" + path.delimiter + callerPath];
+  const observed = paths.map((PATH) => {
+    execFileSync("bash", [path.join(f.root, "check.sh"), "--status"], {
+      cwd: f.root,
+      env: { ...process.env, PATH, VECTOR_FIXTURE_ARGS: result },
+    });
+    return fs.readFileSync(result, "utf8");
+  });
+  assert.equal(observed[0], path.join(f.root, "node_modules/.bin") + path.delimiter + callerPath);
+  assert.equal(observed[1], observed[0]);
 });

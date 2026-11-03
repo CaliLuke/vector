@@ -230,9 +230,7 @@ func (service *invitationsMembershipService) APIKeyAuth(ctx context.Context, key
 
 func invitationsMembershipError(status int, body map[string]any) error {
 	response := &api.InvitationsMembershipAPIKeyError{Name: fmt.Sprintf("status_%d", status)}
-	data, _ := json.Marshal(body)
-	_ = json.Unmarshal(data, response)
-	return response
+	return apicontract.ProjectError(body, response)
 }
 
 func invitationsMembershipRepositoryError(err error) error {

@@ -2,12 +2,13 @@ package systemapi
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"math"
 	"net/http"
+
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
@@ -54,12 +55,8 @@ func labelWriteError(err error) error {
 	if errors.As(err, &domain) {
 		failure = domain
 	}
-	data, _ := json.Marshal(failure.Body)
 	result := &api.LabelError{Kind: fmt.Sprintf("status_%d", failure.Status)}
-	if err := json.Unmarshal(data, result); err != nil {
-		panic(err)
-	}
-	return result
+	return apicontract.ProjectError(failure.Body, result)
 }
 
 func (s *projectLabelWritesService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {

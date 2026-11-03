@@ -332,8 +332,8 @@ func collaborationTimestamps(value any, zone string) {
 		case map[string]any:
 			for _, key := range []string{"created_at", "updated_at", "deleted_at", "completed_at", "snoozed_till", "edited_at"} {
 				if raw, ok := typed[key].(string); ok {
-					location, _ := time.LoadLocation(zone)
-					if location == nil {
+					location, err := time.LoadLocation(zone)
+					if err != nil {
 						location = time.UTC
 					}
 					if parsed, err := time.Parse(time.RFC3339Nano, raw); err == nil {

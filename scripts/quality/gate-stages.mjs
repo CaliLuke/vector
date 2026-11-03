@@ -108,6 +108,9 @@ export async function inputFingerprint(root, stage, identity) {
     extras.push(...["golangci-lint", "goimports", "deadcode", "dupl"].map((name) => `.quality/bin/${name}`));
   const source = await hashPaths(root, [...files, ...extras]);
   const scopedIdentity = { ...identity };
+  // The source digest already covers the checked tree. A commit alone must not
+  // invalidate unchanged stages, including frontend checks after a Go-only fix.
+  delete scopedIdentity.head;
   if (stage.scope === "go") delete scopedIdentity.pnpm;
   if (stage.scope === "frontend") delete scopedIdentity.go;
   return createHash("sha256")

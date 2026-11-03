@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/notifications"
 	api "github.com/CaliLuke/go-plane/notificationreads/gen/notifications"
@@ -48,12 +50,8 @@ func NewNotificationReads(repository, counts notificationsRepository, sessions a
 	return &notificationsService{repository, counts, sessions}, nil
 }
 func notificationError(status int, body map[string]any) error {
-	encoded, _ := json.Marshal(body)
 	result := &api.NotificationError{Name: fmt.Sprintf("status_%d", status)}
-	if err := json.Unmarshal(encoded, result); err != nil {
-		panic(err)
-	}
-	return result
+	return apicontract.ProjectError(body, result)
 }
 func mapNotificationError(err error) error {
 	if err == nil {

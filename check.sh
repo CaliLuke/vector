@@ -5,6 +5,13 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
+# Manual checks and Husky must resolve tools from the same PATH so a successful
+# manual stage remains reusable by publication hooks. Preserve all other entries.
+while [[ "$PATH" == node_modules/.bin:* || "$PATH" == "$ROOT/node_modules/.bin:"* ]]; do
+  PATH="${PATH#*:}"
+done
+export PATH="$ROOT/node_modules/.bin:$PATH"
+
 mode=--full
 scope=all
 fresh=()

@@ -450,8 +450,8 @@ func replaceEmailMentions(value string, users map[uuid.UUID]string) (string, err
 	}
 	var replace func(*html.Node)
 	replace = func(node *html.Node) {
-		for child := node.FirstChild; child != nil; {
-			next := child.NextSibling
+		for child, next := node.FirstChild, (*html.Node)(nil); child != nil; child = next {
+			next = child.NextSibling
 			if child.Type == html.ElementNode && child.Data == "mention-component" {
 				var raw string
 				for _, attribute := range child.Attr {
@@ -460,9 +460,9 @@ func replaceEmailMentions(value string, users map[uuid.UUID]string) (string, err
 						break
 					}
 				}
-				id, _ := uuid.Parse(raw)
+				id, parseErr := uuid.Parse(raw)
 				name, exists := users[id]
-				if !exists {
+				if parseErr != nil || !exists {
 					continue
 				}
 				text := &html.Node{Type: html.TextNode, Data: "@" + name}
@@ -483,7 +483,6 @@ func replaceEmailMentions(value string, users map[uuid.UUID]string) (string, err
 			} else {
 				replace(child)
 			}
-			child = next
 		}
 	}
 	replace(root)

@@ -264,7 +264,10 @@ func serializePlanningRecords(kind string, rows []map[string]any) (string, error
 		delete(fields, "sub_issues_count")
 		for _, key := range []string{"created_at", "updated_at"} {
 			if raw, ok := fields[key].(string); ok {
-				t, _ := time.Parse(time.RFC3339Nano, raw)
+				t, err := time.Parse(time.RFC3339Nano, raw)
+				if err != nil {
+					return "", err
+				}
 				fields[key] = t.UTC().Format("2006-01-02T15:04:05.000Z")
 			}
 		}
@@ -273,7 +276,10 @@ func serializePlanningRecords(kind string, rows []map[string]any) (string, error
 			return "", err
 		}
 		model, _ := jsonvalue.Ordered("db."+kind+"issue", nil)
-		id, _ := jsonvalue.Ordered(row["id"], nil)
+		id, err := jsonvalue.Ordered(row["id"], nil)
+		if err != nil {
+			return "", err
+		}
 		results = append(results, `{"model": `+model+`, "pk": `+id+`, "fields": `+data+`}`)
 	}
 	return "[" + strings.Join(results, ", ") + "]", nil

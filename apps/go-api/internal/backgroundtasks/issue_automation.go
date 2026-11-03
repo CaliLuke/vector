@@ -295,10 +295,10 @@ WHERE project.deleted_at IS NULL AND project.archived_at IS NULL
 
 func applyIssueAutomationCandidate(ctx context.Context, tx pgx.Tx, input issueAutomationBatchInput, candidate issueAutomationCandidate) (issueActivityExecutionInput, bool, error) {
 	eventID := uuid.NewSHA1(uuid.NameSpaceOID, []byte(fmt.Sprintf("plane.issue-automation:%s:%s:%s", input.Operation, input.ScheduledAt.Format(time.RFC3339Nano), candidate.IssueID))).String()
-	if _, err := uuid.Parse(eventID); err != nil {
-		return issueActivityExecutionInput{}, false, err
+	eventUUID, parseErr := uuid.Parse(eventID)
+	if parseErr != nil {
+		return issueActivityExecutionInput{}, false, parseErr
 	}
-	eventUUID, _ := uuid.Parse(eventID)
 	activityID := uuid.NewSHA1(eventUUID, []byte("plane.issue_activity:0"))
 	var alreadyRecorded bool
 	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issue_activities WHERE id=$1)`, activityID).Scan(&alreadyRecorded); err != nil {

@@ -8,1342 +8,1596 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 190,
+    "findings": 158,
     "also_in_ERR_01": 0,
-    "additional_ERR_02": 190,
+    "additional_ERR_02": 158,
     "test_file_findings": 0,
-    "non_test_file_findings": 190
+    "non_test_file_findings": 158,
+    "dispositions": {
+      "retained": 153,
+      "deferred": 5
+    }
   },
   "findings": [
     {
       "file": "apps/go-api/account_authentication.go",
-      "line": 439,
+      "line": 445,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/activity_reads.go",
-      "line": 293,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/activity_reads.go",
-      "line": 294,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_cycle_reads.go",
-      "line": 82,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_cycle_reads.go",
-      "line": 83,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_label_reads.go",
-      "line": 82,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_label_reads.go",
-      "line": 83,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_module_reads.go",
-      "line": 82,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_module_reads.go",
-      "line": 83,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_project_membership_lifecycle.go",
-      "line": 155,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_project_membership_lifecycle.go",
-      "line": 156,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_state_reads.go",
-      "line": 107,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_state_reads.go",
-      "line": 108,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_state_reads.go",
-      "line": 243,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_user_identity.go",
-      "line": 127,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_user_identity.go",
-      "line": 128,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Unauthenticated body is a fixed map containing a string constant.",
+      "evidence": "func (s *accountAuthenticationService) unauthenticated() error {"
     },
     {
       "file": "apps/go-api/auth_redirects.go",
       "line": 196,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Internal error body is a fixed map containing a string constant.",
+      "evidence": "func authRedirectHTTPError(err error) error {"
     },
     {
       "file": "apps/go-api/cmd/bootstrap/main.go",
       "line": 147,
       "column": 4,
       "message": "Error return value of `runtime.Shutdown` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Shutdown follows durable metrics admission and uses an independent bounded context; admission/start errors remain primary. CLI shutdown-error reporting remains explicit operational debt.",
+      "evidence": "func install(ctx context.Context) error {"
     },
     {
       "file": "apps/go-api/cmd/system-cli/main.go",
       "line": 94,
       "column": 6,
       "message": "Error return value of `json.MarshalIndent` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Endpoint results are generated transport values decoded from JSON; no arbitrary caller values enter the CLI output path.",
+      "evidence": "func main() {"
+    },
+    {
+      "file": "apps/go-api/cmd/system/account_authentication_adapters.go",
+      "line": 139,
+      "column": 9,
+      "message": "Error return value of `json.Marshal` is not checked",
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Signing input is a []string; encoding cannot encounter unsupported values or non-finite numbers.",
+      "evidence": "func (issuer *passwordResetTokenIssuer) hash(user store.User, timestamp string) string {"
     },
     {
       "file": "apps/go-api/cmd/system/activity_reads_routes.go",
-      "line": 342,
+      "line": 343,
       "column": 8,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func activityReadsSlashRedirectMiddleware(next http.Handler, debugMode bool) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/activity_reads_routes.go",
-      "line": 360,
+      "line": 361,
       "column": 6,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func activityReadsSlashlessCompatibilityHandler(stack func(http.Handler) http.Handler, redirect http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/activity_reads_routes.go",
-      "line": 381,
+      "line": 382,
       "column": 7,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func activityReadsSlashlessCompatibilityHandler(stack func(http.Handler) http.Handler, redirect http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/activity_reads_routes.go",
-      "line": 455,
+      "line": 456,
       "column": 8,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func activityReadsRequestSizeMiddleware(limit int64) func(http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/activity_reads_routes.go",
-      "line": 463,
+      "line": 464,
       "column": 9,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func activityReadsRequestSizeMiddleware(limit int64) func(http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/activity_reads_routes.go",
-      "line": 499,
+      "line": 500,
       "column": 8,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func activityReadsAuditFallbackMiddleware(options apiV1CompatibilityOptions) func(http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/activity_reads_routes.go",
-      "line": 518,
+      "line": 519,
       "column": 8,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func activityReadsCompatibilityMiddleware(options apiV1CompatibilityOptions) func(http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/activity_reads_routes.go",
-      "line": 526,
+      "line": 527,
       "column": 9,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func activityReadsCompatibilityMiddleware(options apiV1CompatibilityOptions) func(http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/activity_reads_routes.go",
-      "line": 548,
+      "line": 549,
       "column": 8,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func activityReadsCompatibilityMiddleware(options apiV1CompatibilityOptions) func(http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/api_v1_compatibility.go",
       "line": 61,
       "column": 8,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func apiV1CompatibilityMiddleware(options apiV1CompatibilityOptions) func(http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/api_v1_compatibility.go",
       "line": 69,
       "column": 9,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func apiV1CompatibilityMiddleware(options apiV1CompatibilityOptions) func(http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/api_v1_compatibility.go",
       "line": 124,
       "column": 8,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func apiV1CompatibilityMiddleware(options apiV1CompatibilityOptions) func(http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/auth_session_http.go",
       "line": 102,
       "column": 18,
       "message": "Error return value of `mime.ParseMediaType` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Media type selects the JSON/form path; requestinput owns body validation and the existing CSRF boundary remains active. Changing malformed-parameter acceptance is a separate transport policy change.",
+      "evidence": "func nativePlainViewCSRFMiddleware(trustedOrigins []string, bodyLimit int64) func(http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/auth_session_http.go",
       "line": 121,
       "column": 5,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func writeAuthRedirectCSRFFailure(response http.ResponseWriter) {"
     },
     {
       "file": "apps/go-api/cmd/system/auth_session_http.go",
       "line": 220,
       "column": 16,
       "message": "Error return value of `mime.ParseMediaType` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Media type selects the JSON/form path; requestinput owns body validation and the existing CSRF boundary remains active. Changing malformed-parameter acceptance is a separate transport policy change.",
+      "evidence": "func accountAuthenticationCSRFSubmittedToken(request *http.Request) (string, string) {"
     },
     {
       "file": "apps/go-api/cmd/system/auth_session_http.go",
       "line": 338,
       "column": 5,
       "message": "Error return value of `loomhttp.SetResponseCookie` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Cookie name, path and attributes are constants and its value is produced by NewCSRFToken; no user-defined cookie attributes enter this call.",
+      "evidence": "func (writer *passwordLoginCSRFCookieWriter) WriteHeader(status int) {"
     },
     {
       "file": "apps/go-api/cmd/system/http_cors.go",
       "line": 289,
       "column": 6,
       "message": "Error return value of `writer.ResponseWriter.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func (writer *csrfTokenResponseWriter) finish() {"
+    },
+    {
+      "file": "apps/go-api/cmd/system/http_headers.go",
+      "line": 38,
+      "column": 11,
+      "message": "Error return value of `json.Marshal` is not checked",
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Header projection contains only header-name/string values.",
+      "evidence": "func nativeRequestHeaders(request *http.Request) string {"
     },
     {
       "file": "apps/go-api/cmd/system/http_request.go",
       "line": 93,
       "column": 8,
       "message": "Error return value of `(*golang.org/x/text/encoding.Decoder).String` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "UTF8 decoder intentionally replaces malformed bytes for display-safe query text; this is not an input authorization parser.",
+      "evidence": "func nativeQueryUnescape(value string) string {"
     },
     {
       "file": "apps/go-api/cmd/system/json_request.go",
       "line": 22,
       "column": 12,
       "message": "Error return value of `mime.ParseMediaType` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Media type selects the JSON/form path; requestinput owns body validation and the existing CSRF boundary remains active. Changing malformed-parameter acceptance is a separate transport policy change.",
+      "evidence": "func nativeRequestDecoder(request *http.Request) loomhttp.Decoder {"
     },
     {
       "file": "apps/go-api/cmd/system/mcp_oauth_link_http.go",
       "line": 35,
       "column": 13,
       "message": "Error return value of `url.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Resource URLs are validated by configuration construction before provider/transport mounting; reparsing retains the configured canonical resource.",
+      "evidence": "func mcpOAuthLinkBoundary(resource string, trustedOrigins []string) func(http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/public_project_metadata_routes.go",
       "line": 127,
       "column": 7,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func publicProjectMetadataNotFoundHandler("
     },
     {
       "file": "apps/go-api/cmd/system/public_project_metadata_routes.go",
       "line": 202,
       "column": 7,
       "message": "Error return value of `writer.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func publicProjectMetadataNotFoundHandler("
     },
     {
       "file": "apps/go-api/cmd/system/public_project_metadata_routes.go",
       "line": 352,
       "column": 6,
       "message": "Error return value of `writer.ResponseWriter.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func (writer *publicProjectMetadataReadsResponseWriter) finish() {"
     },
     {
       "file": "apps/go-api/cmd/system/public_project_metadata_routes.go",
       "line": 439,
       "column": 8,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func publicProjectMetadataReadsCompatibilityMiddleware("
     },
     {
       "file": "apps/go-api/cmd/system/public_project_metadata_routes.go",
-      "line": 680,
+      "line": 673,
       "column": 5,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func writePublicProjectMetadataRequestTooLarge("
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
       "line": 62,
       "column": 6,
       "message": "Error return value of `writer.ResponseWriter.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func (writer *readServicesJSONIndentResponseWriter) finish(indent int) {"
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
-      "line": 118,
+      "line": 114,
       "column": 6,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func writeReadServiceNegotiationResponse("
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
-      "line": 168,
+      "line": 164,
       "column": 7,
       "message": "Error return value of `writer.ResponseWriter.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func (writer *readServicesGzipResponseWriter) finish(request *http.Request) {"
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
-      "line": 195,
+      "line": 191,
       "column": 6,
       "message": "Error return value of `writer.ResponseWriter.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func (writer *readServicesGzipResponseWriter) finish(request *http.Request) {"
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
-      "line": 346,
+      "line": 342,
       "column": 6,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func writeReadServicesSessionError(response http.ResponseWriter, request *http.Request, causes ...error) {"
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
-      "line": 375,
+      "line": 371,
       "column": 7,
       "message": "Error return value of `writer.ResponseWriter.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func (writer *nativeReadServiceHTML500ResponseWriter) WriteHeader(status int) {"
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
-      "line": 474,
+      "line": 470,
       "column": 5,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func writeReadServiceJSON(response http.ResponseWriter, status int, value any) {"
     },
     {
       "file": "apps/go-api/cmd/system/read_services_paths.go",
       "line": 164,
       "column": 7,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func readServicesNativePathConverterMiddleware(policy loomhttp.RuntimeCORSPolicy, activityOptions *apiV1CompatibilityOptions) func(http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/session_service_protocol.go",
       "line": 185,
       "column": 10,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func newSessionServiceProtocolMiddleware(metadata func(readServiceProtocol) (int, any), authorizer systemapi.SessionProtocolAuthorizer, policy loomhttp.RuntimeCORSPolicy, stack func(http.Handler) http.Handler, cookie browserSessionCookieConfig, debugMode bool, options apiV1CompatibilityOptions, csrfTrustedOrigins ...[]string) func(http.Handler) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/sticky_routes.go",
       "line": 370,
       "column": 2,
       "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "All writeStickyJSON callers supply fixed response metadata, string maps or structured validation messages. Encode write errors occur after status selection; no second response is attempted.",
+      "evidence": "func writeStickyJSON(response http.ResponseWriter, status int, value any) {"
     },
     {
       "file": "apps/go-api/cmd/system/user_account_writes_http.go",
       "line": 45,
       "column": 7,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func userAccountMeSlashlessCompatibilityMiddleware(next http.Handler, debugMode bool, corsPolicy loomhttp.RuntimeCORSPolicy) http.Handler {"
     },
     {
       "file": "apps/go-api/cmd/system/user_identity_routes.go",
       "line": 79,
       "column": 9,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func userMeReadCompatibilityMiddleware("
     },
     {
       "file": "apps/go-api/cmd/system/user_identity_routes.go",
       "line": 97,
       "column": 8,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func userMeReadCompatibilityMiddleware("
     },
     {
       "file": "apps/go-api/cmd/system/user_profile_flags_routes.go",
       "line": 61,
       "column": 17,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Error body is a fixed string map.",
+      "evidence": "func normalizeUserProfileFlagsBody(path string, body []byte) ([]byte, int, map[string]string) {"
     },
     {
       "file": "apps/go-api/cmd/system/work_item_core_http.go",
       "line": 491,
       "column": 6,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "This owner has already selected/committed the HTTP response, or writes to its capture buffer. Network write failure cannot be repaired with a second response; no durable operation depends on delivery success.",
+      "evidence": "func writeWorkItemProtocolJSON(response http.ResponseWriter, request *http.Request, status int, body any) {"
     },
     {
       "file": "apps/go-api/cycle_reads.go",
       "line": 259,
       "column": 2,
       "message": "Error return value of `service.recentVisits.Record` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Recent-visit bookkeeping is explicitly best effort and must not fail an otherwise authorized successful read.",
+      "evidence": "func (service *cycleReadsService) Detail("
     },
     {
       "file": "apps/go-api/entity_favorites.go",
       "line": 127,
       "column": 7,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "entityFavoritesService.auth parses the project before list/write invokes the callback; principal and entity validation remain at that boundary.",
+      "evidence": "func (s *entityFavoritesService) CycleList(c context.Context, p *api.CycleListPayload) ([]*api.EntityFavorite, error) {"
     },
     {
       "file": "apps/go-api/entity_favorites.go",
       "line": 133,
       "column": 7,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "entityFavoritesService.auth parses the project before list/write invokes the callback; principal and entity validation remain at that boundary.",
+      "evidence": "func (s *entityFavoritesService) ModuleList(c context.Context, p *api.ModuleListPayload) ([]*api.EntityFavorite, error) {"
     },
     {
       "file": "apps/go-api/entity_favorites.go",
       "line": 139,
       "column": 7,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "entityFavoritesService.auth parses the project before list/write invokes the callback; principal and entity validation remain at that boundary.",
+      "evidence": "func (s *entityFavoritesService) ViewList(c context.Context, p *api.ViewListPayload) ([]*api.EntityFavorite, error) {"
     },
     {
       "file": "apps/go-api/entity_favorites.go",
       "line": 148,
       "column": 7,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "entityFavoritesService.auth parses the project before list/write invokes the callback; principal and entity validation remain at that boundary.",
+      "evidence": "func (s *entityFavoritesService) CycleCreate(c context.Context, p *api.CycleCreatePayload) error {"
     },
     {
       "file": "apps/go-api/entity_favorites.go",
       "line": 154,
       "column": 7,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "entityFavoritesService.auth parses the project before list/write invokes the callback; principal and entity validation remain at that boundary.",
+      "evidence": "func (s *entityFavoritesService) ModuleCreate(c context.Context, p *api.ModuleCreatePayload) error {"
     },
     {
       "file": "apps/go-api/entity_favorites.go",
       "line": 160,
       "column": 7,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "entityFavoritesService.auth parses the project before list/write invokes the callback; principal and entity validation remain at that boundary.",
+      "evidence": "func (s *entityFavoritesService) ViewCreate(c context.Context, p *api.ViewCreatePayload) error {"
     },
     {
       "file": "apps/go-api/entity_favorites.go",
       "line": 166,
       "column": 7,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "entityFavoritesService.auth parses the project before list/write invokes the callback; principal and entity validation remain at that boundary.",
+      "evidence": "func (s *entityFavoritesService) PageCreate(c context.Context, p *api.PageCreatePayload) error {"
     },
     {
       "file": "apps/go-api/entity_favorites.go",
       "line": 175,
       "column": 7,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "entityFavoritesService.auth parses the project before list/write invokes the callback; principal and entity validation remain at that boundary.",
+      "evidence": "func (s *entityFavoritesService) CycleDelete(c context.Context, p *api.CycleDeletePayload) error {"
     },
     {
       "file": "apps/go-api/entity_favorites.go",
       "line": 181,
       "column": 7,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "entityFavoritesService.auth parses the project before list/write invokes the callback; principal and entity validation remain at that boundary.",
+      "evidence": "func (s *entityFavoritesService) ModuleDelete(c context.Context, p *api.ModuleDeletePayload) error {"
     },
     {
       "file": "apps/go-api/entity_favorites.go",
       "line": 187,
       "column": 7,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "entityFavoritesService.auth parses the project before list/write invokes the callback; principal and entity validation remain at that boundary.",
+      "evidence": "func (s *entityFavoritesService) ViewDelete(c context.Context, p *api.ViewDeletePayload) error {"
     },
     {
       "file": "apps/go-api/entity_favorites.go",
       "line": 193,
       "column": 7,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "entityFavoritesService.auth parses the project before list/write invokes the callback; principal and entity validation remain at that boundary.",
+      "evidence": "func (s *entityFavoritesService) PageDelete(c context.Context, p *api.PageDeletePayload) error {"
     },
     {
       "file": "apps/go-api/instance_management.go",
       "line": 443,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Email receiver decoding uses empty-string rejection; successful-email body is fixed text. Typed error body originates from the checked instanceManagementError constructor.",
+      "evidence": "func (service *instanceManagementService) EmailCheck(ctx context.Context, _ *api.EmailCheckPayload, bodyReader io.ReadCloser) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {"
     },
     {
       "file": "apps/go-api/instance_management.go",
       "line": 477,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Email receiver decoding uses empty-string rejection; successful-email body is fixed text. Typed error body originates from the checked instanceManagementError constructor.",
+      "evidence": "func (service *instanceManagementService) EmailCheck(ctx context.Context, _ *api.EmailCheckPayload, bodyReader io.ReadCloser) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {"
     },
     {
       "file": "apps/go-api/instance_management.go",
       "line": 665,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Email receiver decoding uses empty-string rejection; successful-email body is fixed text. Typed error body originates from the checked instanceManagementError constructor.",
+      "evidence": "func instanceManagementProtocolError(err error) (int, map[string]any) {"
     },
     {
       "file": "apps/go-api/internal/assets/attachment.go",
-      "line": 94,
+      "line": 92,
       "column": 13,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "attachmentScope and issuePermissionV1 validate project/issue UUIDs before the scoped repository operation; only the validated text is reparsed.",
+      "evidence": "func (service *LifecycleService) listScopedIssueAttachments(ctx context.Context, slug, rawProjectID, rawIssueID string, uploadedOnly bool) ([]*api.PlaneAppSerializersIssueIssueattachmentserializerResponse, error) {"
     },
     {
       "file": "apps/go-api/internal/assets/attachment.go",
-      "line": 111,
+      "line": 109,
       "column": 13,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "attachmentScope and issuePermissionV1 validate project/issue UUIDs before the scoped repository operation; only the validated text is reparsed.",
+      "evidence": "func (service *LifecycleService) createLegacyIssueAttachment(ctx context.Context, slug, rawProjectID, rawIssueID string, body io.ReadCloser) (*api.PlaneAppSerializersIssueIssueattachmentserializerResponse, error) {"
     },
     {
       "file": "apps/go-api/internal/assets/attachment.go",
-      "line": 299,
+      "line": 297,
       "column": 12,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "attachmentScope and issuePermissionV1 validate project/issue UUIDs before the scoped repository operation; only the validated text is reparsed.",
+      "evidence": "func (service *LifecycleService) createIssueAttachmentAPI(ctx context.Context, slug, rawProjectID, rawIssueID string, body io.ReadCloser, apiV1 bool) (*api.RestFrameworkSerializersIssueattachmentuploadresponseResponse, error) {"
     },
     {
       "file": "apps/go-api/internal/assets/attachment.go",
-      "line": 305,
+      "line": 303,
       "column": 14,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "attachmentScope and issuePermissionV1 validate project/issue UUIDs before the scoped repository operation; only the validated text is reparsed.",
+      "evidence": "func (service *LifecycleService) createIssueAttachmentAPI(ctx context.Context, slug, rawProjectID, rawIssueID string, body io.ReadCloser, apiV1 bool) (*api.RestFrameworkSerializersIssueattachmentuploadresponseResponse, error) {"
     },
     {
       "file": "apps/go-api/internal/assets/attachment.go",
-      "line": 394,
+      "line": 392,
       "column": 11,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "attachmentScope and issuePermissionV1 validate project/issue UUIDs before the scoped repository operation; only the validated text is reparsed.",
+      "evidence": "func (service *LifecycleService) getIssueAttachmentV1(ctx context.Context, slug, rawProjectID, rawIssueID, rawAssetID string) (*string, error) {"
     },
     {
       "file": "apps/go-api/internal/assets/attachment.go",
-      "line": 514,
+      "line": 512,
       "column": 13,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "attachmentScope and issuePermissionV1 validate project/issue UUIDs before the scoped repository operation; only the validated text is reparsed.",
+      "evidence": "func (service *LifecycleService) getIssueAttachment(ctx context.Context, slug, rawProjectID, rawIssueID, rawAssetID string) (*api.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkResult, error) {"
     },
     {
       "file": "apps/go-api/internal/assets/attachment.go",
-      "line": 551,
+      "line": 549,
       "column": 13,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "attachmentScope and issuePermissionV1 validate project/issue UUIDs before the scoped repository operation; only the validated text is reparsed.",
+      "evidence": "func (service *LifecycleService) confirmIssueAttachment(ctx context.Context, slug, rawProjectID, rawIssueID, rawAssetID string) error {"
     },
     {
       "file": "apps/go-api/internal/assets/domain.go",
-      "line": 391,
+      "line": 371,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "dataField extracts a field from the JSON response already produced by the asset serializer.",
+      "evidence": "func dataField(data []byte, key string) loom.JSONValue {"
     },
     {
       "file": "apps/go-api/internal/assets/service.go",
       "line": 492,
       "column": 11,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "The preceding asset lookup validates rawAssetID and authorizes the workspace/draft asset before reparsing for mutation.",
+      "evidence": "func (service *LifecycleService) patchProjectAsset(ctx context.Context, slug, rawProjectID, rawAssetID string, body io.ReadCloser) error {"
     },
     {
       "file": "apps/go-api/internal/assets/service.go",
       "line": 512,
       "column": 11,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "The preceding asset lookup validates rawAssetID and authorizes the workspace/draft asset before reparsing for mutation.",
+      "evidence": "func (service *LifecycleService) deleteProjectAsset(ctx context.Context, slug, rawProjectID, rawAssetID string) error {"
     },
     {
       "file": "apps/go-api/internal/assets/service.go",
       "line": 559,
       "column": 11,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "The preceding asset lookup validates rawAssetID and authorizes the workspace/draft asset before reparsing for mutation.",
+      "evidence": "func (service *LifecycleService) patchWorkspaceAsset(ctx context.Context, slug, rawAssetID string, body io.ReadCloser) error {"
     },
     {
       "file": "apps/go-api/internal/assets/service.go",
       "line": 581,
       "column": 11,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "The preceding asset lookup validates rawAssetID and authorizes the workspace/draft asset before reparsing for mutation.",
+      "evidence": "func (service *LifecycleService) deleteWorkspaceAsset(ctx context.Context, slug, rawAssetID string) error {"
     },
     {
       "file": "apps/go-api/internal/assets/service.go",
       "line": 1616,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Upload attributes contain only name/content-type strings and an int64 size.",
+      "evidence": "func (request uploadRequest) Attributes(name, contentType string, size int64) []byte {"
     },
     {
       "file": "apps/go-api/internal/authredirects/service.go",
-      "line": 575,
-      "column": 3,
-      "message": "Error return value of `service.accounts.UpdateLogoutMetadata` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/authredirects/service.go",
-      "line": 576,
-      "column": 3,
-      "message": "Error return value of `service.sessions.Flush` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/authredirects/service.go",
-      "line": 592,
+      "line": 601,
       "column": 3,
       "message": "Error return value of `service.activation.Task` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "deferred",
+      "reason": "Activation metadata is already updated before email admission. Durable retry requires atomic activation/outbox ownership; merely returning 500 would not restore the lost first-activation signal. Keep this as a separate transaction-design follow-up.",
+      "evidence": "func (service *Service) completeLogin(ctx context.Context, request Request, user accountauthentication.User, app bool, medium string, autoset bool) Result {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/description_asset_copy.go",
       "line": 246,
       "column": 11,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "validateDescriptionAssetCopyInput precedes Copy through both dispatcher and executor; event, project, user and selected entity identifiers are validated there.",
+      "evidence": "func (store *PostgresDescriptionAssetCopyStore) Copy(ctx context.Context, input DescriptionAssetCopyInput, source descriptionAssetRecord) (descriptionAssetCopyOutput, error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/description_asset_copy.go",
       "line": 256,
       "column": 13,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "validateDescriptionAssetCopyInput precedes Copy through both dispatcher and executor; event, project, user and selected entity identifiers are validated there.",
+      "evidence": "func (store *PostgresDescriptionAssetCopyStore) Copy(ctx context.Context, input DescriptionAssetCopyInput, source descriptionAssetRecord) (descriptionAssetCopyOutput, error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/description_asset_copy.go",
       "line": 257,
       "column": 10,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "validateDescriptionAssetCopyInput precedes Copy through both dispatcher and executor; event, project, user and selected entity identifiers are validated there.",
+      "evidence": "func (store *PostgresDescriptionAssetCopyStore) Copy(ctx context.Context, input DescriptionAssetCopyInput, source descriptionAssetRecord) (descriptionAssetCopyOutput, error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/description_asset_copy.go",
       "line": 278,
       "column": 16,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "validateDescriptionAssetCopyInput precedes Copy through both dispatcher and executor; event, project, user and selected entity identifiers are validated there.",
+      "evidence": "func (store *PostgresDescriptionAssetCopyStore) Copy(ctx context.Context, input DescriptionAssetCopyInput, source descriptionAssetRecord) (descriptionAssetCopyOutput, error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/description_asset_copy.go",
       "line": 281,
       "column": 14,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "validateDescriptionAssetCopyInput precedes Copy through both dispatcher and executor; event, project, user and selected entity identifiers are validated there.",
+      "evidence": "func (store *PostgresDescriptionAssetCopyStore) Copy(ctx context.Context, input DescriptionAssetCopyInput, source descriptionAssetRecord) (descriptionAssetCopyOutput, error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/issue_activities.go",
       "line": 250,
       "column": 13,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "validateIssueActivityInput runs before transaction creation and validates both eventID and ProjectID.",
+      "evidence": "func (store *PostgresIssueActivityStore) RecordIssueActivity(ctx context.Context, eventID string, input IssueActivityInput) (_ []string, resultErr error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/issue_activities.go",
       "line": 251,
       "column": 13,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "validateIssueActivityInput runs before transaction creation and validates both eventID and ProjectID.",
+      "evidence": "func (store *PostgresIssueActivityStore) RecordIssueActivity(ctx context.Context, eventID string, input IssueActivityInput) (_ []string, resultErr error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/issue_activities.go",
       "line": 373,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "deferred",
+      "reason": "Optional activity snapshots/array decoders currently coerce malformed or differently shaped legacy payloads to partial/empty values. Define rejection/retry handling for persisted tasks before changing this contract.",
+      "evidence": "func decodeActivityObject(raw json.RawMessage) map[string]json.RawMessage {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/issue_activities.go",
       "line": 500,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "deferred",
+      "reason": "Optional activity snapshots/array decoders currently coerce malformed or differently shaped legacy payloads to partial/empty values. Define rejection/retry handling for persisted tasks before changing this contract.",
+      "evidence": "func rawStringArray(raw json.RawMessage) []string {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/issue_activities.go",
       "line": 513,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/issue_automation.go",
-      "line": 301,
-      "column": 13,
-      "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "deferred",
+      "reason": "Optional activity snapshots/array decoders currently coerce malformed or differently shaped legacy payloads to partial/empty values. Define rejection/retry handling for persisted tasks before changing this contract.",
+      "evidence": "func rawObjectArray(raw json.RawMessage) []map[string]json.RawMessage {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/issue_email_notifications.go",
-      "line": 463,
-      "column": 9,
-      "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/issue_email_notifications.go",
-      "line": 558,
+      "line": 557,
       "column": 5,
       "message": "Error return value of `(*github.com/redis/go-redis/v9.Cmd).Result` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Token-checked Redis lock release is best effort; the acquired lock has a TTL and cannot delete another owner's lock.",
+      "evidence": "func releaseEmailNotificationLock(ctx context.Context, client *redis.Client, lockID, token string) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/issue_notifications.go",
       "line": 37,
       "column": 13,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "ProcessIssueNotifications invokes validateIssueActivityInput before these parses; the optional issue ID is checked before dereferencing.",
+      "evidence": "func (store *PostgresIssueActivityStore) ProcessIssueNotifications(ctx context.Context, eventID string, input IssueActivityInput, activityIDs []string) (resultErr error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/issue_notifications.go",
       "line": 38,
       "column": 11,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "ProcessIssueNotifications invokes validateIssueActivityInput before these parses; the optional issue ID is checked before dereferencing.",
+      "evidence": "func (store *PostgresIssueActivityStore) ProcessIssueNotifications(ctx context.Context, eventID string, input IssueActivityInput, activityIDs []string) (resultErr error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/issue_notifications.go",
       "line": 39,
       "column": 13,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "ProcessIssueNotifications invokes validateIssueActivityInput before these parses; the optional issue ID is checked before dereferencing.",
+      "evidence": "func (store *PostgresIssueActivityStore) ProcessIssueNotifications(ctx context.Context, eventID string, input IssueActivityInput, activityIDs []string) (resultErr error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/issue_version_task.go",
       "line": 153,
       "column": 11,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "validateIssueVersionTaskInput precedes database access and validates IssueID and UserID.",
+      "evidence": "func (store *PostgresIssueVersionTaskStore) TrackIssueVersion(ctx context.Context, input IssueVersionTaskInput) (resultErr error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/issue_version_task.go",
       "line": 154,
       "column": 10,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "validateIssueVersionTaskInput precedes database access and validates IssueID and UserID.",
+      "evidence": "func (store *PostgresIssueVersionTaskStore) TrackIssueVersion(ctx context.Context, input IssueVersionTaskInput) (resultErr error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/link_preview.go",
       "line": 106,
       "column": 10,
       "message": "Error return value of `html.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Link previews are optional enrichment; failed fetch/charset/HTML processing falls back to URL metadata.",
+      "evidence": "func (s *PostgresLinkPreviewStore) preview(ctx context.Context, rawURL string) LinkPreviewMetadata {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/recent_visits.go",
       "line": 158,
       "column": 10,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "validateRecentVisitInput precedes these parses and validates optional IDs when present.",
+      "evidence": "func (store *PostgresRecentVisitStore) RecordRecentVisit(ctx context.Context, input RecentVisitInput) (resultErr error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/recent_visits.go",
       "line": 161,
       "column": 11,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "validateRecentVisitInput precedes these parses and validates optional IDs when present.",
+      "evidence": "func (store *PostgresRecentVisitStore) RecordRecentVisit(ctx context.Context, input RecentVisitInput) (resultErr error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/recent_visits.go",
       "line": 166,
       "column": 11,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "validateRecentVisitInput precedes these parses and validates optional IDs when present.",
+      "evidence": "func (store *PostgresRecentVisitStore) RecordRecentVisit(ctx context.Context, input RecentVisitInput) (resultErr error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/version_history.go",
       "line": 179,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "deferred",
+      "reason": "Non-string prior description currently becomes empty text. Changing handling of already-persisted version payloads requires an explicit task rejection/retry policy.",
+      "evidence": "func (store *PostgresVersionHistoryStore) TrackPageVersion(ctx context.Context, input PageVersionInput) (resultErr error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/webhook_tasks.go",
       "line": 341,
       "column": 10,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Inputs are JSON string keys/IDs, []string membership IDs, or http.Header string slices; none introduces unsupported JSON values.",
+      "evidence": "func (store *PostgresWebhookTaskStore) ModelActivities(ctx context.Context, input WebhookTaskInput) ([]webhookActivityInput, error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/webhook_tasks.go",
       "line": 372,
       "column": 7,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Inputs are JSON string keys/IDs, []string membership IDs, or http.Header string slices; none introduces unsupported JSON values.",
+      "evidence": "func (store *PostgresWebhookTaskStore) Fanout(ctx context.Context, input webhookActivityInput) ([]webhookSendInput, error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/webhook_tasks.go",
       "line": 594,
       "column": 12,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Inputs are JSON string keys/IDs, []string membership IDs, or http.Header string slices; none introduces unsupported JSON values.",
+      "evidence": "func (store *PostgresWebhookTaskStore) serializedScopedModel(ctx context.Context, event, id, workspaceID string) (json.RawMessage, error) {"
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/webhook_tasks.go",
       "line": 748,
       "column": 11,
       "message": "Error return value is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Inputs are JSON string keys/IDs, []string membership IDs, or http.Header string slices; none introduces unsupported JSON values.",
+      "evidence": "func headerString(headers http.Header) string {"
     },
     {
       "file": "apps/go-api/internal/customers/property_values.go",
       "line": 182,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "validateValues establishes the string-array property representation before persistence.",
+      "evidence": "func setValues(ctx context.Context, tx pgx.Tx, in Command) error {"
     },
     {
       "file": "apps/go-api/internal/customers/property_values.go",
       "line": 211,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "validateValues establishes the string-array property representation before persistence.",
+      "evidence": "func applyDefaults(ctx context.Context, tx pgx.Tx, in Command) error {"
     },
     {
       "file": "apps/go-api/internal/features/repository.go",
       "line": 162,
       "column": 14,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Normalized input is a map of booleans and an optional string revision; event snapshots originate in PostgreSQL JSON.",
+      "evidence": "func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.Result, error) {"
     },
     {
       "file": "apps/go-api/internal/features/repository.go",
       "line": 219,
       "column": 9,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Normalized input is a map of booleans and an optional string revision; event snapshots originate in PostgreSQL JSON.",
+      "evidence": "func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.Result, error) {"
     },
     {
       "file": "apps/go-api/internal/features/repository.go",
       "line": 220,
       "column": 13,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Normalized input is a map of booleans and an optional string revision; event snapshots originate in PostgreSQL JSON.",
+      "evidence": "func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.Result, error) {"
     },
     {
       "file": "apps/go-api/internal/initiatives/mutations.go",
       "line": 162,
       "column": 14,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "normalize restricts fields to validated strings; UUID lists and revision are typed. Before/after snapshots originate in PostgreSQL JSON.",
+      "evidence": "func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.Result, error) {"
     },
     {
       "file": "apps/go-api/internal/initiatives/mutations.go",
       "line": 208,
       "column": 9,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "normalize restricts fields to validated strings; UUID lists and revision are typed. Before/after snapshots originate in PostgreSQL JSON.",
+      "evidence": "func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.Result, error) {"
     },
     {
       "file": "apps/go-api/internal/initiatives/mutations.go",
       "line": 209,
       "column": 13,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "normalize restricts fields to validated strings; UUID lists and revision are typed. Before/after snapshots originate in PostgreSQL JSON.",
+      "evidence": "func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.Result, error) {"
     },
     {
       "file": "apps/go-api/internal/initiatives/mutations.go",
       "line": 256,
       "column": 7,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "normalize restricts fields to validated strings; UUID lists and revision are typed. Before/after snapshots originate in PostgreSQL JSON.",
+      "evidence": "func writeRow(ctx context.Context, tx pgx.Tx, in Command, id uuid.UUID) error {"
     },
     {
       "file": "apps/go-api/internal/instancemanagement/repository.go",
-      "line": 264,
-      "column": 3,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/instancemanagement/repository.go",
-      "line": 1026,
+      "line": 1028,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "readString intentionally maps non-string/missing fields to empty strings; required-field validation owns their rejection.",
+      "evidence": "func readString(raw json.RawMessage) string {"
+    },
+    {
+      "file": "apps/go-api/internal/jsonvalue/ordered.go",
+      "line": 81,
+      "column": 3,
+      "message": "Error return value of `json.Unmarshal` is not checked",
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Original array JSON supplies optional ordering hints, not data; malformed hints are ignored. dumpString marshals a Go string, which is always encodable.",
+      "evidence": "func dumpValue(output *strings.Builder, value any, original []byte) error {"
+    },
+    {
+      "file": "apps/go-api/internal/jsonvalue/ordered.go",
+      "line": 144,
+      "column": 11,
+      "message": "Error return value of `json.Marshal` is not checked",
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Original array JSON supplies optional ordering hints, not data; malformed hints are ignored. dumpString marshals a Go string, which is always encodable.",
+      "evidence": "func dumpString(output *strings.Builder, value string) {"
     },
     {
       "file": "apps/go-api/internal/mcpactions/milestone_writes.go",
       "line": 28,
       "column": 8,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "The deferred success-only telemetry runs after milestoneScope validates the project/target; errors do not emit committed identifiers.",
+      "evidence": "func (s *Service) milestoneMutation(ctx context.Context, input milestoneInput) (result *api.MilestoneResult, err error) {"
     },
     {
       "file": "apps/go-api/internal/mcpactions/milestone_writes.go",
       "line": 40,
       "column": 9,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "The deferred success-only telemetry runs after milestoneScope validates the project/target; errors do not emit committed identifiers.",
+      "evidence": "func (s *Service) milestoneMutation(ctx context.Context, input milestoneInput) (result *api.MilestoneResult, err error) {"
     },
     {
       "file": "apps/go-api/internal/mcpactions/mutation_observability.go",
       "line": 53,
       "column": 7,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Success-only telemetry reparses ProjectID after archiveProject validates and commits the scoped command.",
+      "evidence": "func mutationFields(actor mcpauth.Principal, input *api.ProjectArchive, result *api.ProjectResult, err error) map[string]any {"
     },
     {
       "file": "apps/go-api/internal/mcpoauth/linking.go",
       "line": 90,
       "column": 4,
       "message": "Error return value of `s.links.Fail` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Consume is durable before callback processing. Failed cleanup cannot authorize replay; encrypted verifier expiry remains bounded, as documented at Complete.",
+      "evidence": "func (s *Linking) Complete(ctx context.Context, code, state, denial string) (CallbackProof, error) {"
     },
     {
       "file": "apps/go-api/internal/mcpoauth/provider.go",
       "line": 51,
       "column": 12,
       "message": "Error return value of `url.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Resource URLs are validated by configuration construction before provider/transport mounting; reparsing retains the configured canonical resource.",
+      "evidence": "func (c Config) Validate() error {"
     },
     {
       "file": "apps/go-api/internal/mcpoauth/provider.go",
       "line": 108,
       "column": 12,
       "message": "Error return value of `url.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Resource URLs are validated by configuration construction before provider/transport mounting; reparsing retains the configured canonical resource.",
+      "evidence": "func NewProvider(ctx context.Context, config Config, client *http.Client) (*Provider, error) {"
     },
     {
       "file": "apps/go-api/internal/mcptransport/handler.go",
       "line": 131,
       "column": 12,
       "message": "Error return value of `url.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Resource URLs are validated by configuration construction before provider/transport mounting; reparsing retains the configured canonical resource.",
+      "evidence": "func protect(config Config, authenticate Authenticate, next http.Handler, oauth bool) http.Handler {"
     },
     {
       "file": "apps/go-api/internal/mcptransport/oauth_metadata.go",
       "line": 15,
       "column": 12,
       "message": "Error return value of `url.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Resource URLs are validated by configuration construction before provider/transport mounting; reparsing retains the configured canonical resource.",
+      "evidence": "func oauthMetadata(config Config, issuer string) http.Handler {"
     },
     {
       "file": "apps/go-api/internal/mcptransport/oauth_metadata.go",
       "line": 33,
       "column": 12,
       "message": "Error return value of `url.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/reconcile.go",
-      "line": 43,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/reconcile.go",
-      "line": 44,
-      "column": 9,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Resource URLs are validated by configuration construction before provider/transport mounting; reparsing retains the configured canonical resource.",
+      "evidence": "func writeOAuthChallenge(w http.ResponseWriter, config Config, invalid, insufficient bool) {"
     },
     {
       "file": "apps/go-api/internal/pagereads/api_mutations.go",
       "line": 327,
       "column": 9,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Before/after event snapshots are decoded PostgreSQL JSON and validated field values.",
+      "evidence": "func (r *Repository) MutatePageAPI(ctx context.Context, in PageAPICommand) (projectmutations.Result, error) {"
     },
     {
       "file": "apps/go-api/internal/pagereads/api_mutations.go",
       "line": 328,
       "column": 13,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Before/after event snapshots are decoded PostgreSQL JSON and validated field values.",
+      "evidence": "func (r *Repository) MutatePageAPI(ctx context.Context, in PageAPICommand) (projectmutations.Result, error) {"
     },
     {
       "file": "apps/go-api/internal/pagereads/lifecycle.go",
-      "line": 152,
+      "line": 154,
       "column": 10,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Archive/success responses are string-only maps; the page-version payload contains the stored HTML string.",
+      "evidence": "func (repository *Repository) Lifecycle("
     },
     {
       "file": "apps/go-api/internal/pagereads/lifecycle.go",
-      "line": 687,
+      "line": 642,
       "column": 13,
-      "message": "Error return value of `pythoncompat.Dumps` is not checked",
-      "also_in_configured_audit": false
+      "message": "Error return value of `jsonvalue.Ordered` is not checked",
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Archive/success responses are string-only maps; the page-version payload contains the stored HTML string.",
+      "evidence": "func (repository *Repository) updatePageDescription(ctx context.Context, db lifecycleDatabase, user, page uuid.UUID, state pageLifecycleState, input requestinput.Input) (int, json.RawMessage, error) {"
     },
     {
       "file": "apps/go-api/internal/pagereads/lifecycle.go",
-      "line": 692,
+      "line": 647,
       "column": 10,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Archive/success responses are string-only maps; the page-version payload contains the stored HTML string.",
+      "evidence": "func (repository *Repository) updatePageDescription(ctx context.Context, db lifecycleDatabase, user, page uuid.UUID, state pageLifecycleState, input requestinput.Input) (int, json.RawMessage, error) {"
     },
     {
       "file": "apps/go-api/internal/projectintakewrites/repository.go",
       "line": 251,
       "column": 45,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "detail is reached after the scoped write/read SQL has accepted UUID columns; id comes from the database. Reworking this internal typed boundary is structural debt, not new input acceptance.",
+      "evidence": "func mustUUID(value string) uuid.UUID { id, _ := uuid.Parse(value); return id }"
     },
     {
       "file": "apps/go-api/internal/projectmembershipreads/invitations_create.go",
       "line": 19,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Invitation token input is the constructed email/role record plus a finite timestamp. Existing users are returned by PostgreSQL JSON aggregation.",
+      "evidence": "func invitationToken(secret string, item map[string]any) string {"
     },
     {
       "file": "apps/go-api/internal/projectmembershipreads/invitations_create.go",
-      "line": 195,
+      "line": 187,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/invitations_repr.go",
-      "line": 59,
-      "column": 6,
-      "message": "Error return value of `decoder.Token` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Invitation token input is the constructed email/role record plus a finite timestamp. Existing users are returned by PostgreSQL JSON aggregation.",
+      "evidence": "func (r *InvitationsRepository) validateWorkspaceInvitationBatch(ctx context.Context, userID, slug string, emails []any) (string, string, error) {"
     },
     {
       "file": "apps/go-api/internal/projectstatereads/writes.go",
       "line": 77,
       "column": 3,
       "message": "Error return value of `repository.cache.Invalidate` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pythoncompat/dumps.go",
-      "line": 91,
-      "column": 3,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Post-write cache invalidation is best effort; database mutation and authorization do not use the cached result as authority.",
+      "evidence": "func (repository *WriteRepository) InvalidateAppCache(ctx context.Context, slug string) {"
     },
     {
       "file": "apps/go-api/internal/releases/mutations.go",
       "line": 86,
       "column": 10,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Event snapshots contain PostgreSQL JSON plus validated native mutation fields.",
+      "evidence": "func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.Result, error) {"
     },
     {
       "file": "apps/go-api/internal/releases/mutations.go",
       "line": 87,
       "column": 14,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Event snapshots contain PostgreSQL JSON plus validated native mutation fields.",
+      "evidence": "func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.Result, error) {"
     },
     {
       "file": "apps/go-api/internal/useraccountwrites/repository.go",
       "line": 143,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitems/collaboration_projection.go",
-      "line": 335,
-      "column": 16,
-      "message": "Error return value of `time.LoadLocation` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "rawString implements optional string extraction; owning name validators enforce field constraints.",
+      "evidence": "func rawString(raw json.RawMessage) string {"
     },
     {
       "file": "apps/go-api/internal/workitems/collaboration_projection.go",
       "line": 408,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Ordering helpers consume JSON rows from the collaboration serializer; original bytes are hints and the final Ordered call checks actual output serialization.",
+      "evidence": "func orderedJSON(value any, keys []string) []byte {"
     },
     {
       "file": "apps/go-api/internal/workitems/collaboration_projection.go",
       "line": 425,
       "column": 12,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Ordering helpers consume JSON rows from the collaboration serializer; original bytes are hints and the final Ordered call checks actual output serialization.",
+      "evidence": "func orderedArrayJSON(value any, keys []string) []byte {"
     },
     {
       "file": "apps/go-api/internal/workitems/collaboration_writes.go",
       "line": 397,
       "column": 14,
       "message": "Error return value is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Deletion activity payload uses the stored JSON row ID and a fixed field name.",
+      "evidence": "func (r *Repository) destroyCollaboration(ctx context.Context, q Request, kind, table string) (Result, error) {"
     },
     {
       "file": "apps/go-api/internal/workitems/cycle_transfer.go",
       "line": 82,
       "column": 13,
-      "message": "Error return value of `pythoncompat.Dumps` is not checked",
-      "also_in_configured_audit": false
+      "message": "Error return value of `jsonvalue.Ordered` is not checked",
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Activity request contains an empty array. Numeric chart aggregation uses PostgreSQL COUNT or float8 SUM rather than arbitrary submitted numeric strings.",
+      "evidence": "func (r *Repository) transferCycle(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {"
     },
     {
       "file": "apps/go-api/internal/workitems/cycle_transfer.go",
       "line": 167,
       "column": 7,
       "message": "Error return value of `n.Float64` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Activity request contains an empty array. Numeric chart aggregation uses PostgreSQL COUNT or float8 SUM rather than arbitrary submitted numeric strings.",
+      "evidence": "func (r *Repository) transferChart(ctx context.Context, q Request, cycle map[string]any, total any, points bool) (map[string]any, error) {"
     },
     {
       "file": "apps/go-api/internal/workitems/draft.go",
       "line": 493,
       "column": 12,
       "message": "Error return value is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Ordered activity snapshots contain stored planning rows and validated module IDs; persisted payload format remains unchanged.",
+      "evidence": "func (r *draftOperation) publishDraft(ctx context.Context, q Request, draft map[string]any, input requestinput.Input, changes issueChanges, submitted map[string]any) (Result, error) {"
     },
     {
       "file": "apps/go-api/internal/workitems/draft.go",
       "line": 520,
       "column": 15,
-      "message": "Error return value of `pythoncompat.Dumps` is not checked",
-      "also_in_configured_audit": false
+      "message": "Error return value of `jsonvalue.Ordered` is not checked",
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Ordered activity snapshots contain stored planning rows and validated module IDs; persisted payload format remains unchanged.",
+      "evidence": "func (r *draftOperation) publishDraft(ctx context.Context, q Request, draft map[string]any, input requestinput.Input, changes issueChanges, submitted map[string]any) (Result, error) {"
     },
     {
       "file": "apps/go-api/internal/workitems/intake.go",
       "line": 578,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "input.Raw has already passed requestinput decoding; the second decode reads the optional issue ordering hint.",
+      "evidence": "func (r *Repository) prepareIntakeIssueEdit(ctx context.Context, q Request, project map[string]any, input requestinput.Input, nested any, role *int) (intakeIssueEdit, error) {"
     },
     {
       "file": "apps/go-api/internal/workitems/issue_projection.go",
       "line": 185,
       "column": 12,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "JSON object keys are strings, which always encode.",
+      "evidence": "func jsonOrder(keys []string, children map[string][]byte) []byte {"
     },
     {
       "file": "apps/go-api/internal/workitems/issue_writes.go",
       "line": 554,
       "column": 13,
-      "message": "Error return value of `pythoncompat.Dumps` is not checked",
-      "also_in_configured_audit": false
+      "message": "Error return value of `jsonvalue.Ordered` is not checked",
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Delete activity contains the already-authorized issue identifier string.",
+      "evidence": "func (r *Repository) destroyIssue(ctx context.Context, q Request) (Result, error) {"
     },
     {
       "file": "apps/go-api/internal/workitems/item_edit_planning.go",
       "line": 65,
       "column": 10,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Planning request contains a string slice of one authorized issue ID.",
+      "evidence": "func (r *Repository) applyItemEditPlanning(ctx context.Context, q Request, command itemEditCommand, relations map[string]any) error {"
     },
     {
       "file": "apps/go-api/internal/workitems/item_edit_review.go",
       "line": 190,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitems/lifecycle.go",
-      "line": 189,
-      "column": 12,
-      "message": "Error return value of `time.LoadLocation` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "normalizedItemEdit explicitly checks JSON encodability before itemEditBody runs.",
+      "evidence": "func itemEditBody(command itemEditCommand) *bytes.Reader {"
     },
     {
       "file": "apps/go-api/internal/workitems/planning.go",
       "line": 163,
       "column": 14,
-      "message": "Error return value of `pythoncompat.Dumps` is not checked",
-      "also_in_configured_audit": false
+      "message": "Error return value of `jsonvalue.Ordered` is not checked",
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Remaining payloads contain model/kind strings, validated module IDs, nullable stored module names, and decoded request values. Malformed record timestamps/IDs are now rejected separately.",
+      "evidence": "func (r *Repository) publishPlanningCreation(ctx context.Context, q Request, kind string, input requestinput.Input, selected []string, created []map[string]any, updated []any) error {"
     },
     {
       "file": "apps/go-api/internal/workitems/planning.go",
-      "line": 267,
-      "column": 8,
-      "message": "Error return value of `time.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitems/planning.go",
-      "line": 275,
+      "line": 278,
       "column": 10,
-      "message": "Error return value of `pythoncompat.Dumps` is not checked",
-      "also_in_configured_audit": false
+      "message": "Error return value of `jsonvalue.Ordered` is not checked",
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Remaining payloads contain model/kind strings, validated module IDs, nullable stored module names, and decoded request values. Malformed record timestamps/IDs are now rejected separately.",
+      "evidence": "func serializePlanningRecords(kind string, rows []map[string]any) (string, error) {"
     },
     {
       "file": "apps/go-api/internal/workitems/planning.go",
-      "line": 276,
-      "column": 7,
-      "message": "Error return value of `pythoncompat.Dumps` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitems/planning.go",
-      "line": 326,
+      "line": 332,
       "column": 13,
-      "message": "Error return value of `pythoncompat.Dumps` is not checked",
-      "also_in_configured_audit": false
+      "message": "Error return value of `jsonvalue.Ordered` is not checked",
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Remaining payloads contain model/kind strings, validated module IDs, nullable stored module names, and decoded request values. Malformed record timestamps/IDs are now rejected separately.",
+      "evidence": "func (r *Repository) removePlanning(ctx context.Context, q Request, kind string, allowMissing bool) (Result, error) {"
     },
     {
       "file": "apps/go-api/internal/workitems/planning.go",
-      "line": 328,
+      "line": 334,
       "column": 8,
       "message": "Error return value is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Remaining payloads contain model/kind strings, validated module IDs, nullable stored module names, and decoded request values. Malformed record timestamps/IDs are now rejected separately.",
+      "evidence": "func (r *Repository) removePlanning(ctx context.Context, q Request, kind string, allowMissing bool) (Result, error) {"
     },
     {
       "file": "apps/go-api/internal/workitems/planning.go",
-      "line": 398,
+      "line": 404,
       "column": 14,
-      "message": "Error return value of `pythoncompat.Dumps` is not checked",
-      "also_in_configured_audit": false
+      "message": "Error return value of `jsonvalue.Ordered` is not checked",
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Remaining payloads contain model/kind strings, validated module IDs, nullable stored module names, and decoded request values. Malformed record timestamps/IDs are now rejected separately.",
+      "evidence": "func (r *Repository) issueModules(ctx context.Context, q Request, input requestinput.Input) (out Result, resultErr error) {"
     },
     {
       "file": "apps/go-api/internal/workitems/relationships.go",
       "line": 447,
       "column": 15,
-      "message": "Error return value of `pythoncompat.Dumps` is not checked",
-      "also_in_configured_audit": false
+      "message": "Error return value of `jsonvalue.Ordered` is not checked",
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Parent activity payloads contain the validated request ID and stored nullable previous-parent identifiers.",
+      "evidence": "func (r *Repository) subissuesTransaction(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {"
     },
     {
       "file": "apps/go-api/internal/workitems/relationships.go",
       "line": 448,
       "column": 14,
-      "message": "Error return value of `pythoncompat.Dumps` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitems/timestamps.go",
-      "line": 7,
-      "column": 12,
-      "message": "Error return value of `time.LoadLocation` is not checked",
-      "also_in_configured_audit": false
+      "message": "Error return value of `jsonvalue.Ordered` is not checked",
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Parent activity payloads contain the validated request ID and stored nullable previous-parent identifiers.",
+      "evidence": "func (r *Repository) subissuesTransaction(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {"
     },
     {
       "file": "apps/go-api/internal/workitemtypes/property_predicate.go",
       "line": 226,
       "column": 9,
       "message": "Error return value of `time.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/invitations_membership.go",
-      "line": 232,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/invitations_membership.go",
-      "line": 233,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/module_lifecycle.go",
-      "line": 75,
-      "column": 12,
-      "message": "Error return value of `loom.JSONValueFrom` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "The date is formatted with time.DateOnly immediately before parsing with that same layout; input validation already succeeded.",
+      "evidence": "func orderedPredicateValue(kind property.Kind, raw any) (float64, error) {"
     },
     {
       "file": "apps/go-api/module_reads.go",
       "line": 330,
       "column": 2,
       "message": "Error return value of `service.recentVisits.Record` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/notification_reads.go",
-      "line": 51,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Recent-visit bookkeeping is explicitly best effort and must not fail an otherwise authorized successful read.",
+      "evidence": "func (service *moduleReadsService) Detail(ctx context.Context, payload *api.DetailPayload) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {"
     },
     {
       "file": "apps/go-api/page_reads.go",
       "line": 180,
       "column": 3,
       "message": "Error return value of `service.recentVisits.Record` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_intake_writes.go",
-      "line": 115,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_label_writes.go",
-      "line": 57,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_member_preferences.go",
-      "line": 121,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Recent-visit bookkeeping is explicitly best effort and must not fail an otherwise authorized successful read.",
+      "evidence": "func (service *pageReadsService) Detail("
     },
     {
       "file": "apps/go-api/user_account_writes.go",
       "line": 400,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Typed error body originates from the checked account-write error serializer; this decode only projects the already serialized error.",
+      "evidence": "func userAccountWritesProtocolError(err error) (int, map[string]any) {"
     },
     {
       "file": "apps/go-api/user_properties.go",
       "line": 123,
       "column": 5,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "rawValue consumes generated Nullable JSON/string/bool inputs after transport validation; missing and explicit null remain distinct.",
+      "evidence": "func rawValue[T any](n loom.Nullable[T]) json.RawMessage {"
     },
     {
       "file": "apps/go-api/workspace_project_reads.go",
       "line": 210,
       "column": 2,
       "message": "Error return value of `service.recentVisits.Record` is not checked",
-      "also_in_configured_audit": false
+      "also_in_configured_audit": false,
+      "disposition": "retained",
+      "reason": "Recent-visit bookkeeping is explicitly best effort and must not fail an otherwise authorized successful read.",
+      "evidence": "func (service *workspaceProjectReadsService) Project(ctx context.Context, payload *api.ProjectPayload) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {"
     }
   ]
 }

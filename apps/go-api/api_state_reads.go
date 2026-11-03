@@ -104,9 +104,7 @@ func (s *apiStateReadsService) execute(ctx context.Context, operation string, pa
 
 func apiStateError(status int, body map[string]any) error {
 	result := &api.APIStateReadsErrorResponseBody{Name: fmt.Sprintf("status_%d", status)}
-	raw, _ := json.Marshal(body)
-	_ = json.Unmarshal(raw, result)
-	return result
+	return apicontract.ProjectError(body, result)
 }
 
 func mapAPIStateError(err error) error {
@@ -240,7 +238,10 @@ func apiStateWriteMethod(ctx context.Context) bool {
 
 func apiStateWriteError(status int, body map[string]any) error {
 	result := &api.APIStateWritesErrorResponseBody{Kind: fmt.Sprintf("status_%d", status)}
-	raw, _ := json.Marshal(body)
+	raw, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("encode state write error: %w", err)
+	}
 	result.Body = json.RawMessage(raw)
 	return result
 }

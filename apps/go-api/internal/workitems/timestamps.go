@@ -4,8 +4,8 @@ import "time"
 
 // Serializer timestamps use the request timezone; arbitrary JSON fields do not.
 func timestampProjection(value any, zone string) any {
-	location, _ := time.LoadLocation(zone)
-	if location == nil {
+	location, err := time.LoadLocation(zone)
+	if err != nil {
 		location = time.UTC
 	}
 	switch typed := value.(type) {

@@ -408,15 +408,24 @@ func (service *Service) magicAuthenticate(ctx context.Context, request Request, 
 }
 
 func (service *Service) SignOut(ctx context.Context, request Request, userID string) Result {
-	if err := service.accounts.UpdateLogoutMetadata(ctx, userID, request.ClientIP, service.requestNow(request)); err != nil {
-		return Result{Status: http.StatusFound, Location: service.baseRedirect(request)}
-	}
-	if err := service.sessions.Flush(ctx, request.CurrentSession); err != nil {
-		return Result{Status: http.StatusFound, Location: service.baseRedirect(request)}
-	}
 	location := request.BaseURL
 	if request.IsSpace {
 		location = SafeRedirectURL(request.BaseURL, request.NextPath, nil, request.AllowedHosts)
+	}
+	if userID == "" {
+		return Result{Status: http.StatusFound, Location: location}
+	}
+	return service.signOut(ctx, request, userID, location)
+}
+
+// Revoke the session before recording logout metadata. A metadata write failure
+// must not leave a usable session, and a failed revocation must not report success.
+func (service *Service) signOut(ctx context.Context, request Request, userID, location string) Result {
+	if err := service.sessions.Flush(ctx, request.CurrentSession); err != nil {
+		return Result{Status: http.StatusInternalServerError}
+	}
+	if err := service.accounts.UpdateLogoutMetadata(ctx, userID, request.ClientIP, service.requestNow(request)); err != nil {
+		return Result{Status: http.StatusInternalServerError, ExpireSession: true}
 	}
 	return Result{Status: http.StatusFound, Location: location, ExpireSession: true}
 }
@@ -571,11 +580,11 @@ func (service *Service) AdminSignUp(ctx context.Context, request Request) Result
 }
 
 func (service *Service) AdminSignOut(ctx context.Context, request Request, userID string) Result {
-	if userID != "" {
-		_ = service.accounts.UpdateLogoutMetadata(ctx, userID, request.ClientIP, service.requestNow(request))
-		_ = service.sessions.Flush(ctx, request.CurrentSession)
+	location := SafeRedirectURL(request.BaseURL, "", nil, request.AllowedHosts)
+	if userID == "" {
+		return Result{Status: http.StatusFound, Location: location}
 	}
-	return Result{Status: http.StatusFound, Location: SafeRedirectURL(request.BaseURL, "", nil, request.AllowedHosts), ExpireSession: userID != ""}
+	return service.signOut(ctx, request, userID, location)
 }
 
 func (service *Service) completeLogin(ctx context.Context, request Request, user accountauthentication.User, app bool, medium string, autoset bool) Result {
@@ -685,13 +694,6 @@ func (service *Service) sessionAge(request Request) int64 {
 		return request.SessionAgeSeconds
 	}
 	return defaultSessionAge
-}
-
-func (service *Service) baseRedirect(request Request) string {
-	if request.IsSpace {
-		return SafeRedirectURL(request.BaseURL, request.NextPath, nil, request.AllowedHosts)
-	}
-	return request.BaseURL
 }
 
 func normalizeEmail(value string) (string, bool) {

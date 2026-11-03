@@ -186,8 +186,8 @@ func (r *Repository) deletedIssues(ctx context.Context, q Request) (Result, erro
 	return Result{200, ids}, nil
 }
 func parseQueryDateTime(raw, zone string) (string, error) {
-	location, _ := time.LoadLocation(zone)
-	if location == nil {
+	location, err := time.LoadLocation(zone)
+	if err != nil {
 		location = time.UTC
 	}
 	if value, err := datetime.Parse(raw, location); err == nil {
