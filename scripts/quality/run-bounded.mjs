@@ -168,7 +168,9 @@ function sampleFailureDetails(error, started) {
 }
 
 async function checkMemory() {
-  if (monitoring || finished) return;
+  // Failed inspection has exhausted its retry. Do not start another inspector
+  // while the application drains or waits for forced termination.
+  if (monitoring || finished || failureCode === 125) return;
   monitoring = true;
   const sampleStarted = performance.now();
   try {

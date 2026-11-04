@@ -387,7 +387,9 @@ setInterval(() => {}, 1000);
     `#!/bin/sh\nexec ${shellQuote(process.execPath)} -e ${shellQuote(inspector)}\n`,
     { mode: 0o700 }
   );
-  const application = `require("node:fs").writeFileSync(${JSON.stringify(childPath)}, String(process.pid)); setInterval(() => {}, 1000);`;
+  // Keep shutdown pending until the guard escalates, so another sampling tick
+  // would deterministically launch an unauthorized third inspector.
+  const application = `process.on("SIGTERM", () => {}); require("node:fs").writeFileSync(${JSON.stringify(childPath)}, String(process.pid)); setInterval(() => {}, 1000);`;
   const child = spawn(process.execPath, [runner, "--seconds", "30", "--", process.execPath, "-e", application], {
     stdio: ["ignore", "ignore", "pipe"],
     env: { ...process.env, PATH: `${directory}${path.delimiter}${process.env.PATH}` },
