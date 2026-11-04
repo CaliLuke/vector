@@ -24,7 +24,7 @@ func TestMCPPlanningWaitRechecksAuthorizationBeforeWriteAndReplay(t *testing.T) 
 			if kind == "cycle" {
 				extra["owned_by"] = testsupport.LabelActor
 			}
-			runMutationAuthorizationWait(t, mutationWaitScenario{
+			runMutationAuthorizationWait(t, mutationWaitScenario{reuseCredentials: true,
 				tool: kind, fixture: planningAuthorizationWaitFixture, createFields: extra, snapshot: planningMutationSnapshot,
 			})
 		})

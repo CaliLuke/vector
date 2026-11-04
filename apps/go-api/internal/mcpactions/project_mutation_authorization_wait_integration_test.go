@@ -25,14 +25,18 @@ type mutationWaitChange struct {
 }
 
 type mutationWaitScenario struct {
-	changes      []mutationWaitChange
-	schemaLock   bool
-	tool         string
-	action       string
-	fixture      func(*testing.T) milestoneFixture
-	createFields map[string]any
-	snapshot     func(*testing.T, milestoneFixture) []byte
-	prepare      func(*testing.T, milestoneFixture, catalogueCall) map[string]any
+	changes []mutationWaitChange
+	// Opt in only when prepare creates independent action inputs. Each credential
+	// change restores its original state before the next case starts; reference
+	// mutations retain their own fixtures even when this option is enabled.
+	reuseCredentials bool
+	schemaLock       bool
+	tool             string
+	action           string
+	fixture          func(*testing.T) milestoneFixture
+	createFields     map[string]any
+	snapshot         func(*testing.T, milestoneFixture) []byte
+	prepare          func(*testing.T, milestoneFixture, catalogueCall) map[string]any
 }
 
 // Every action retains both credential bindings and OAuth write-scope enforcement,
@@ -56,6 +60,8 @@ func runMutationAuthorizationWait(t *testing.T, scenario mutationWaitScenario) {
 			mutationWaitChange{name: "OAuth membership revoked", mode: "OAuth", kind: "membership", code: "forbidden"},
 		)
 	}
+	owner := t
+	var credentialFixture *milestoneFixture
 	for _, change := range changes {
 		t.Run(change.name, func(t *testing.T) {
 			// A rejected new write leaves domain storage unchanged. Reuse that
@@ -66,7 +72,15 @@ func runMutationAuthorizationWait(t *testing.T, scenario mutationWaitScenario) {
 			var input map[string]any
 			reusable := change.apply == nil || change.restore != nil
 			if reusable {
-				shared = scenario.fixture(t)
+				if scenario.reuseCredentials && change.apply == nil {
+					if credentialFixture == nil {
+						value := scenario.fixture(owner)
+						credentialFixture = &value
+					}
+					shared = *credentialFixture
+				} else {
+					shared = scenario.fixture(t)
+				}
 			}
 			for _, replay := range []bool{false, true} {
 				phase := "new write"

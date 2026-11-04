@@ -3,35 +3,38 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/CaliLuke/go-plane/internal/commandline"
 
 	"github.com/CaliLuke/go-plane/internal/devtools"
 )
 
-func main() {
-	if len(os.Args) < 2 {
-		usage()
+func main() { os.Exit(run(os.Args[1:], os.Stdout, os.Stderr)) }
+
+func run(args []string, stdout, stderr io.Writer) int {
+	if len(args) == 0 || (args[0] != "start" && args[0] != "check-login" && args[0] != "check-logs") {
+		return commandline.Diagnostic(stderr, 2, "usage: devtools {start|check-login|check-logs}")
 	}
 	root, err := repositoryRoot()
 	if err != nil {
-		fail(err)
+		return commandline.Diagnostic(stderr, 1, fmt.Sprint(err))
 	}
 	var runErr error
-	switch os.Args[1] {
+	switch args[0] {
 	case "start":
-		os.Exit(devtools.RunLocalDevelopment(context.Background(), root, os.Stdout, os.Stderr))
+		return devtools.RunLocalDevelopment(context.Background(), root, stdout, stderr)
 	case "check-login":
-		runErr = devtools.CheckLocalLogin(context.Background(), os.Getenv("PLANE_TEST_EMAIL"), os.Getenv("PLANE_TEST_PASSWORD"), os.Stdout)
+		runErr = devtools.CheckLocalLogin(context.Background(), os.Getenv("PLANE_TEST_EMAIL"), os.Getenv("PLANE_TEST_PASSWORD"), stdout)
 	case "check-logs":
-		runErr = devtools.CheckLocalLogging(context.Background(), root, os.Stdout)
-	default:
-		usage()
+		runErr = devtools.CheckLocalLogging(context.Background(), root, stdout)
 	}
 	if runErr != nil {
-		fmt.Fprintf(os.Stderr, "devtools %s failed: %v\n", os.Args[1], runErr)
-		os.Exit(1)
+		return commandline.Diagnostic(stderr, 1, fmt.Sprintf("devtools %s failed: %v", args[0], runErr))
 	}
+	return 0
 }
 
 func repositoryRoot() (string, error) {
@@ -49,14 +52,4 @@ func repositoryRoot() (string, error) {
 		}
 		dir = parent
 	}
-}
-
-func usage() {
-	fmt.Fprintln(os.Stderr, "usage: devtools {start|check-login|check-logs}")
-	os.Exit(2)
-}
-
-func fail(err error) {
-	fmt.Fprintln(os.Stderr, err)
-	os.Exit(1)
 }

@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/recentvisits"
+
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
@@ -87,17 +89,8 @@ func NewRepositoryWithRecentVisits(database database, publisher taskPublisher, r
 }
 
 func (repository *Repository) admitRecentVisit(ctx context.Context, userID uuid.UUID, slug string, projectID uuid.UUID) error {
-	if repository.recentVisits != nil {
-		return repository.recentVisits.AdmitRecentVisit(ctx, uuid.New().String(), slug, "project", projectID.String(), userID.String(), projectID.String())
-	}
-	if repository.publisher == nil {
-		return nil
-	}
-	return repository.publisher.Task(ctx, "plane.bgtasks.recent_visited_task.recent_visited_task", []any{}, map[string]any{
-		"slug": slug, "entity_name": "project", "entity_identifier": projectID.String(), "user_id": userID.String(), "project_id": projectID.String(),
-	})
+	return recentvisits.Admit(ctx, repository.recentVisits, repository.publisher, recentvisits.Visit{Slug: slug, Entity: "project", EntityID: projectID.String(), UserID: userID.String(), ProjectID: projectID.String()})
 }
-
 func (repository *Repository) UserWorkspaces(ctx context.Context, userID uuid.UUID, options WorkspaceOptions) (jsontext.Value, error) {
 	return repository.workspaceList(ctx, userID, options, true, "created_at DESC")
 }

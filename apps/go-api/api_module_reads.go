@@ -2,7 +2,6 @@ package systemapi
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 
@@ -33,25 +32,8 @@ func NewAPIModuleReads(repository apiModuleRepository, keys activityReadsAPIKeys
 }
 
 func (s *apiModuleReadsService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	principal, err := s.keys.Validate(ctx, key)
-	if err != nil {
-		if key == "" {
-			return ctx, apiModuleError(401, map[string]any{"detail": "Authentication credentials were not provided."})
-		}
-		if errors.Is(err, apikey.ErrInvalid) {
-			return ctx, apiModuleError(403, map[string]any{"detail": "Given API token is not valid"})
-		}
-		return ctx, apiModuleError(500, map[string]any{"detail": "Something went wrong please try again later"})
-	}
-	if effects := apikey.EffectsFromContext(ctx); effects != nil {
-		effects.Authenticated = true
-	}
-	return context.WithValue(ctx, apiModulePrincipalKey{}, struct {
-		apikey.Principal
-		Key string
-	}{principal, key}), nil
+	return authenticateAPIRead(ctx, key, s.keys, apiModulePrincipalKey{}, apiModuleError)
 }
-
 func (s *apiModuleReadsService) execute(ctx context.Context, operation string, payload any) (*api.APIModuleReadsRawJSONResponseMetadata, io.ReadCloser, error) {
 	principal, ok := ctx.Value(apiModulePrincipalKey{}).(struct {
 		apikey.Principal
@@ -81,17 +63,7 @@ func apiModuleError(status int, body map[string]any) error {
 	return apicontract.ProjectError(body, result)
 }
 func mapAPIModuleError(err error) error {
-	var response *apicontract.HTTPError
-	switch {
-	case errors.As(err, &response):
-		return apiModuleError(response.Status, response.Body)
-	case errors.Is(err, store.ErrForbidden):
-		return apiModuleError(403, map[string]any{"detail": "You do not have permission to perform this action."})
-	case errors.Is(err, store.ErrNotFound):
-		return apiModuleError(404, map[string]any{"error": "The requested resource does not exist."})
-	default:
-		return apiModuleError(500, map[string]any{"error": "Something went wrong please try again later"})
-	}
+	return mapAPIReadError(err, store.ErrForbidden, store.ErrNotFound, apiModuleError)
 }
 
 func (s *apiModuleReadsService) GetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedModules(ctx context.Context, payload *api.GetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedModulesPayload) (*api.APIModuleReadsRawJSONResponseMetadata, io.ReadCloser, error) {

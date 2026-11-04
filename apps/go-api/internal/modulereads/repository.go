@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/recentvisits"
+
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 
 	"uuid"
@@ -123,17 +125,8 @@ func NewRepositoryWithRecentVisits(database database, publisher taskPublisher, r
 }
 
 func (repository *Repository) admitRecentVisit(ctx context.Context, userID uuid.UUID, slug string, projectID, moduleID uuid.UUID) error {
-	if repository.recentVisits != nil {
-		return repository.recentVisits.AdmitRecentVisit(ctx, uuid.New().String(), slug, "module", moduleID.String(), userID.String(), projectID.String())
-	}
-	if repository.publisher == nil {
-		return nil
-	}
-	return repository.publisher.Task(ctx, "plane.bgtasks.recent_visited_task.recent_visited_task", []any{}, map[string]any{
-		"slug": slug, "entity_name": "module", "entity_identifier": moduleID.String(), "user_id": userID.String(), "project_id": projectID.String(),
-	})
+	return recentvisits.Admit(ctx, repository.recentVisits, repository.publisher, recentvisits.Visit{Slug: slug, Entity: "module", EntityID: moduleID.String(), UserID: userID.String(), ProjectID: projectID.String()})
 }
-
 func (repository *Repository) WorkspaceList(ctx context.Context, userID uuid.UUID, slug string) (json.RawMessage, error) {
 	if err := repository.authorizeWorkspace(ctx, userID, slug); err != nil {
 		return nil, err

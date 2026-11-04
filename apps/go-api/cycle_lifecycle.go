@@ -19,12 +19,10 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/cyclereads"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
-	"github.com/CaliLuke/loom/clue/log"
 	loomhttp "github.com/CaliLuke/loom/http"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 const cycleLifecycleUnauthenticatedDetail = "Authentication credentials were not provided."
@@ -282,41 +280,7 @@ func (service *cycleLifecycleService) create(ctx context.Context, slug, projectI
 // metadata. Request bodies, credentials, and error strings can contain user
 // data and are deliberately excluded.
 func cycleLifecycleLogError(ctx context.Context, operation, stage string, err error) {
-	var httpError *apicontract.HTTPError
-	if errors.As(err, &httpError) && httpError.Status < 500 {
-		return
-	}
-	fields := []log.Fielder{
-		log.KV{K: "msg", V: "Cycle lifecycle operation failed"},
-		log.KV{K: "operation", V: operation},
-		log.KV{K: "stage", V: stage},
-		log.KV{K: "error_type", V: fmt.Sprintf("%T", err)},
-		log.KV{K: "error_kind", V: cycleLifecycleErrorKind(err)},
-	}
-	var postgres *pgconn.PgError
-	if errors.As(err, &postgres) {
-		fields = append(fields,
-			log.KV{K: "sqlstate", V: postgres.Code},
-			log.KV{K: "table", V: postgres.TableName},
-			log.KV{K: "column", V: postgres.ColumnName},
-			log.KV{K: "constraint", V: postgres.ConstraintName},
-		)
-	}
-	log.Print(ctx, fields...)
-}
-
-func cycleLifecycleErrorKind(err error) string {
-	switch {
-	case errors.Is(err, context.Canceled):
-		return "context_canceled"
-	case errors.Is(err, context.DeadlineExceeded):
-		return "deadline_exceeded"
-	}
-	var postgres *pgconn.PgError
-	if errors.As(err, &postgres) {
-		return "postgres"
-	}
-	return "other"
+	logOperationError(ctx, "Cycle lifecycle operation failed", operation, stage, err)
 }
 
 func cycleLifecycleRepoError(ctx context.Context, err error, apiV1 bool) error {

@@ -1,90 +1,108 @@
 # Technical debt catalog
 
-This is the authoritative queue of outstanding technical debt. Completed work is
-removed; Git retains the history. Counts overlap and do not represent equally
-sized tasks or an estimate of time remaining.
+This is the authoritative queue of outstanding technical debt. Git retains
+completed work. Reviewed analyzer findings are recorded separately below;
+they are not a count of confirmed defects or independent refactors.
 
-## Next work
+## Remaining backend work
 
-1. **TEST-01 and runtime reliability:** investigate the recorded runtime failures
-   with evidence. The shared MCP lock-wait harness reuses setup between a
-   rejected write and receipt replay for reversible credential and customer-reference
-   changes, while preserving every authorization case.
-2. **COV-01:** address unproven backend behavior in bounded domain batches.
-3. **DUP-01/EXT-01:** consolidate remaining duplicate responsibilities and retire
-   dependency limitations when their removal conditions hold.
+**EXT-01 — Dependency limitations.** Keep the upstream reports and removal
+conditions in [dependency-refresh.md](dependency-refresh.md#dependency-limitations)
+and the [Colima test setup](development.md#colima-test-vm). The latest tagged
+Testcontainers release still lacks the pinned HostPort fix. Colima forwarding,
+Go overlay coverage, bodyclose, nilerr, errorlint and Lagotto limitations remain.
+Dependency development is outside this repository's scope. A passing consumer
+run alone does not establish that a workaround can be removed.
 
-Frontend test review and COV-03 remain outside this backend batch.
+**Runtime investigations.** These observations have no confirmed cause or proof
+that they are obsolete. Current passing runs do not close them:
 
-## Outstanding inventory
+- **NEW-04:** `TestModuleLinkEditsPreserveOmittedMetadataAndAdmitScopedDeletion`
+  exhausted its one-minute fixture deadline at the initial parent lookup.
+- **NEW-07:** consecutive two-second `ps` samples timed out in Go/frontend gates;
+  the native-allocation regression also exceeded its seven-second harness limit.
+  The original harness did not retain inspector output; current failures do.
+- **NEW-08:** attachment import returned `internal_error` for the personal-token
+  `empty_path` case. Current assertions retain the native mutation error.
+- **NEW-09:** template reauthorization setup returned HTTP 503. A later page
+  credential case failed during PostgreSQL SASL with a broken pipe; cleanup then
+  waited on an authenticating backend's `ProcSignalBarrier`. The barrier explains
+  the cleanup wait, not the preceding transport failure.
+- **NEW-10:** milestone setup exhausted two minutes at initial creation and at
+  database cloning for the archived-item association case. The latter failed
+  before domain assertions. The independently reproduced Colima direct-address
+  limitation is documented; its contribution to these failures is unconfirmed.
+- **NEW-11:** OAuth proof cleanup missed its ten-second polling deadline. The
+  original run omitted the attempt result and row count; current assertions
+  capture both while checking expired-proof deletion and active-flow retention.
+- **NEW-12:** MCP completed 320 top-level tests without case failures, then
+  exceeded its 20-minute package deadline during template cleanup under elevated
+  host load. Shared credential fixtures reduce measured setup cost, but the
+  historical contention mechanism remains unconfirmed.
 
-Counts are findings or allowances. Do not add overlapping counts to produce a
-single tasks-remaining total. Go counts are recorded analyzer allowances and
-coverage floors; they require fresh checks before closure. MCP counts reflect
-remaining-proof rows in the tracker, not a new acceptance audit. Frontend counts
-are per-file floors in the 18 `.quality/coverage-*-baseline.json` files. Measuring
-coverage does not retire the uncovered behavior.
+Close an observation only after reproducing and resolving its cause or proving
+that the affected behavior is obsolete. Preserve current deadlines, memory
+limits, fail-closed monitoring, tenant isolation, authorization, replay,
+concurrency, durable effects and coverage scope. Do not repeat broad suites
+merely to accumulate passing reruns of an unconfirmed failure.
 
-| ID      | Work                                      | Current evidence and scope                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Closure evidence                                                                                                                                                                                                                                         |
-| ------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TEST-01 | Consolidate redundant test matrices       | Review remaining credential, action, revocation, and replay products in `internal/mcpactions`. Credential-neutral property, template and initiative catalogue checks now run once. Review remaining direct credential loops for independent domain assertions; the lock-wait harness shares fixtures across reversible credential and customer-reference changes. Customer storage assertions read the same ten tables in one database snapshot. Shared transport/authentication contracts, generated action smoke checks, and authorization interactions need distinct evidence. | Map each removed combination to retained behavior at its owning boundary. Keep supported protocol and credential contracts, tenant isolation, current authorization, replay, concurrency, and coverage floors. Run affected tests and the full gate.     |
-| ERR-01  | Resolve configured Go findings            | [Exact file/message inventory](../configs/quality/go-lint-baseline.json): **36** occurrences: 22 staticcheck, 7 errorlint, 4 bodyclose, 3 nilerr. The batch reviewed every allowance; retained classifications are recorded below.                                                                                                                                                                                                                                                                                                                                                | Fix the underlying behavior or remove an obsolete finding with evidence. No increased allowances, blanket suppressions, or source exclusions. Retained upstream limitations stay in EXT-01.                                                              |
-| ERR-02  | Retire stricter unchecked-error inventory | [Exact file/line inventory](unchecked-error-inventory.json): **153** findings with `errcheck.check-blank: true`; **0 overlap ERR-01**. All are retained production invariants with source-level reasons; no deferred policy decisions remain. Each inventory entry records its disposition and owner.                                                                                                                                                                                                                                                                             | Resolve each retained error according to resource/effect ownership and refresh the inventory. Findings are not automatically defects; no blanket suppression or unchecked-error wrapper. Keep the overlap count current when configured findings change. |
-| DUP-01  | Consolidate Go duplication                | [Fingerprint inventory](../configs/quality/go-dupl-baseline.json): **464 directed reports**, represented by 357 fingerprints.                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Consolidate duplicated responsibilities with behavior checks; reduce the reviewed baseline without adding allowances. Directed reports are not independent refactors.                                                                                    |
-| COV-01  | Retire Go coverage gaps                   | [Package and file floors](../configs/quality/go-coverage-baseline.json): 165 package floors, **38 at zero**, and 12 file floors. Package names are enumerated in that file. The number of measured packages is not a debt count.                                                                                                                                                                                                                                                                                                                                                  | Add meaningful behavior tests for unproven owned behavior and tighten floors. A zero floor or lack of tests must be resolved explicitly; do not inflate coverage with implementation-mirroring assertions.                                               |
-| COV-03  | Retire measured frontend coverage gaps    | The [per-file baselines](../.quality/) contain **1,903 files with line-coverage floors below 80%, including 1,510 at zero**, across 18 measured workspaces. These are a subset of 3,184 recorded file floors, not 1,904 independent tasks. The 80% reference is the existing new-file minimum; other metric gaps also remain in those baselines.                                                                                                                                                                                                                                  | Add behavior tests for unproven owned behavior and tighten the affected floors. Preserve the source scope, per-file ratchets, and new-file minimum. Measurement alone does not close this item.                                                          |
-| EXT-01  | Review retained dependency limitations    | [Dependency limitations and removal conditions](dependency-refresh.md#dependency-limitations), plus the Testcontainers/Colima guidance in [Colima test setup](development.md#colima-test-vm). Includes PostgreSQL authentication/barrier waits, Ryuk reuse, Colima direct-address connectivity and forwarding, bodyclose analysis, nilerr result conversions, errorlint EOF handling, Go overlay coverage, Lagotto loading, router CommonJS initialization, next-themes client rendering, and the [retained dependency constraints](dependency-refresh.md#retained-constraints).  | Use upstream reports and pinned consumer reproductions. Remove a workaround only when the consumer passes its removal condition. No dependency edits, forks, or publication without separate authorization.                                              |
+## Retained review decisions
 
-## Error-audit follow-ups
+- **Tests:** credential-neutral domain checks run once. Credential/action
+  matrices remain for authorization, replay and generated action smoke coverage.
+  Compatible lock-wait scenarios share a database after restoring each credential;
+  domain-reference mutations and fixtures requiring a fresh named catalogue keep
+  isolation. Work-item type tests clone a migrated, seeded template; their writes
+  and concurrent connections remain in independent databases.
+- **Go diagnostics:** the [lint baseline](../configs/quality/go-lint-baseline.json)
+  retains 36 findings: 22 validation/CLI text diagnostics, seven bodyclose/nilerr
+  limitations, six exact sentinel comparisons and one intentionally non-wrapped
+  logging regression. These preserve contracts; upstream analyzer limitations
+  remain in EXT-01. No new allowances or suppressions were added.
+- **Unchecked errors:** the [reviewed inventory](unchecked-error-inventory.json)
+  retains 150 source-level ownership decisions, with no overlap with the lint
+  baseline and no deferred policy decisions. These cover validated input,
+  infallible typed encoding, best-effort bookkeeping and writes after response
+  commitment. They are not 150 unhandled operational failures.
+- **Duplication:** the [ratchet](../configs/quality/go-dupl-baseline.json) retains
+  378 directed reports in 279 fingerprints: 303 authored-design reports, 17
+  regression-fixture reports and 58 typed adapter/workflow reports. Distinct
+  schemas, payload bindings, authorization policies, durable task identities and
+  assertions remain explicit. Shared execution policy has one owner; do not add
+  generic abstractions solely to erase similar declarations. New or increased
+  duplication still fails the gate.
+- **Backend coverage:** [168 package floors and 12 file floors](../configs/quality/go-coverage-baseline.json)
+  remain enforced. The only zero floor is `internal/testsupport/mcpstub`, a
+  transport test double whose unconfigured methods reject unexpected calls.
+  It remains measured; asserting each canned rejection would add test quantity
+  without product protection. All runtime packages and authored designs execute
+  in the suite. Coverage is evidence of execution, not exhaustive behavior proof;
+  new gaps should name the missing behavior rather than a percentage alone.
 
-ERR-02 retains validated parsing, string/typed JSON encoding, optional ordering
-hints, best-effort bookkeeping and response writes after commitment. The inventory
-records the specific invariant for each occurrence; these are not 153 confirmed bugs.
-Activation email admission now commits with account metadata. Malformed consumed
-activity collections and prior-description payloads fail permanently before effects;
-missing/null fields and valid encoded legacy collections retain their behavior.
+## Frontend work outside this batch
 
-ERR-01 retains 22 existing validation/CLI text diagnostics, seven documented
-bodyclose/nilerr limitations, six exact-EOF comparisons, and one deliberately
-non-wrapped error in a logging regression. Secondary reconciliation, export and parse failures are diagnostic text; the
-existing primary error or permanent sentinel continues to control retry classification.
-No allowance increased; no dependency or generated transport was modified.
+- **COV-03:** the 18 [coverage baselines](../.quality/) retain 1,903 files below
+  the existing 80% line reference, including 1,510 zero floors, out of 3,184 files.
+  Review meaningful missing behavior before adding tests; preserve per-file
+  ratchets, source scope and new-file minimums.
+- **NEW-02:** intermittent color-picker pending-save timeout at five seconds.
+- **NEW-13:** command palette lifecycle exceeded 15 seconds during source
+  coverage; the failed phase was not captured. Preserve initial focus, Escape
+  handling and focus return.
+- **NEW-14:** issue source-version refresh exceeded 15 seconds during source
+  coverage; it passes alone in about 3.4 seconds. Preserve retained local edits
+  and the submitted source-version assertion.
 
-## Open findings
+## Deferred product work
 
-Ten recorded failures still lack a confirmed cause or evidence that they are
-obsolete. Passing rechecks alone do not close them.
-
-| ID     | Outstanding work                                                                                                                                                                                                                                                                                                                                                                              | Closure evidence                                                                                                                                                            |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NEW-02 | Investigate the intermittent color-picker pending-save timeout at its existing five-second limit. The cause remains unknown; rechecks pass.                                                                                                                                                                                                                                                   | Reproduce and resolve the cause, or establish that the observation is obsolete. Do not relax the deadline or coverage floor.                                                |
-| NEW-04 | Investigate `TestModuleLinkEditsPreserveOmittedMetadataAndAdmitScopedDeletion` exhausting its one-minute fixture deadline on the initial module-parent lookup. Coverage-enabled rechecks pass; the cause remains unknown.                                                                                                                                                                     | Reproduce and resolve the cause, or establish that the observation is obsolete. Preserve the existing deadline and tenant-scoping assertions.                               |
-| NEW-07 | Investigate process-memory monitoring failures: consecutive two-second `ps` sample timeouts in the frontend and Go gates, and the native-allocation guard regression exceeding its seven-second harness deadline. The causes remain unconfirmed; the original harness timeout did not retain inspector output.                                                                                | Establish and resolve each failure cause, or prove the observation obsolete. Preserve memory enforcement, deadlines and fail-closed behavior.                               |
-| NEW-08 | Investigate the attachment-import `internal_error` in `TestMCPAttachmentImportNamesTypesAndLimits/2026-07-28/personal_token/empty_path`. The native cause is unconfirmed.                                                                                                                                                                                                                     | Resolve the cause or prove the observation obsolete. Preserve import-name/type/size assertions and the protocol/credential matrix.                                          |
-| NEW-09 | Investigate template reauthorization fixture failures: the recorded HTTP 503 setup timeout and a later PostgreSQL SASL write broken pipe during `page/delete/OAuth_write_scope_removed/2025-11-25/new_write`. The server retained an authenticating backend until its authentication timeout; clone cleanup waited on that backend’s `ProcSignalBarrier`. The transport cause is unconfirmed. | Resolve the cause or prove the observation obsolete. Preserve current-authorization and replay assertions and all existing deadlines.                                       |
-| NEW-10 | Investigate two-minute milestone fixture timeouts at the first milestone creation and at database cloning in `TestMilestoneAssociationRechecksEligibilityAndCredentialAfterItemWait/archived_item`. The clone failure occurred before domain assertions; the cause remains unconfirmed. The development guide retains the independently reproduced direct-address transport limitation.       | Resolve the cause or prove the observation obsolete. Preserve the deadline and archived-intake association assertions.                                                      |
-| NEW-11 | Investigate `TestPeriodicCleanupRemovesExpiredProofsAndRetainsActiveFlow` missing its ten-second polling deadline. The cleanup attempt result and observed row count were not retained in the original failure; the cause is unconfirmed.                                                                                                                                                     | Resolve the cause or prove the observation obsolete. Preserve worker lifetime, attempt and polling deadlines, expired-proof deletion, and active-flow retention assertions. |
-| NEW-12 | Investigate MCP budget risk under host contention. The action package completed all 320 top-level tests with no case failures, then exceeded its 20-minute deadline during template cleanup. Captures show elevated host load. The contribution of host contention to the recorded slowdowns remains unconfirmed.                                                                             | Establish and resolve the cumulative cost or resource contention. Preserve all acceptance cases, their deadlines, the package deadline, and coverage scope.                 |
-| NEW-13 | Investigate `tests/frontend/power-k-modal-lifecycle.test.mjs` exceeding its 15-second test deadline during frontend source coverage. The failing run did not retain its execution phase; the cause remains unconfirmed.                                                                                                                                                                       | Capture the failed phase under the full workload and resolve its cause. Preserve the deadline, initial search focus, Escape handling, and return of focus to the launcher.  |
-| NEW-14 | Investigate `tests/frontend/issue-source-version.test.mjs` exceeding its 15-second deadline during full frontend source coverage. The saved-source refresh case passes alone in about 3.4 seconds; the phase of the recorded failure is unknown.                                                                                                                                              | Capture the failed phase under the full workload and resolve its cause. Preserve the deadline, retained local edits, and submitted source-version assertions.               |
-
-## Deferred work and product follow-ups
-
-Teamspaces, production OAuth issuer selection, and sophisticated MCP permissions
-management remain deferred. Do not reactivate them as technical-debt cleanup.
-
-[GitHub issue #6](https://github.com/CaliLuke/vector/issues/6), “MCP: add discoverable
-management and client-setup UI,” is a separate product follow-up.
+Teamspaces, production OAuth issuer selection and sophisticated MCP permissions
+management remain deferred. Do not reactivate them as debt cleanup.
+[Issue #6](https://github.com/CaliLuke/vector/issues/6), MCP management and client
+setup UI, is a separate product follow-up.
 
 ## Working rules
 
-Each batch must name a catalog ID, an observable problem or missing proof, and
-its closure evidence. Do not start cleanup merely because it is adjacent to an
-edit. Do not increase baselines, suppress new findings, or exclude owned source.
-Dependency development and new product scope require separate authorization.
-Keep the checkout unchanged while publication hooks run.
-
-Remove resolved findings when behavior and affected checks prove their closure.
-A passing general gate does not replace missing domain evidence. Keep unconfirmed
-observations and upstream limitations explicitly labeled. Use Git history for
-completed work.
+Name an observable problem, its owner and closure evidence before starting a
+batch. Do not increase baselines, suppress new findings or exclude owned source
+to make a gate pass. Dependency development and new product scope require
+separate authorization. Keep the checkout unchanged during publication hooks.

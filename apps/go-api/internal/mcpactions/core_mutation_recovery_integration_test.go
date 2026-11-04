@@ -27,7 +27,7 @@ func TestMCPCoreMutationsReauthorizeAfterWaiting(t *testing.T) {
 			if tc.tool == "workitem" && tc.action == "create" {
 				changes = nil
 			}
-			runMutationAuthorizationWait(t, mutationWaitScenario{changes: changes, tool: tc.tool, schemaLock: true, fixture: coreFixture, snapshot: coreSnapshot, prepare: func(t *testing.T, f milestoneFixture, _ catalogueCall) map[string]any {
+			runMutationAuthorizationWait(t, mutationWaitScenario{reuseCredentials: true, changes: changes, tool: tc.tool, schemaLock: true, fixture: coreFixture, snapshot: coreSnapshot, prepare: func(t *testing.T, f milestoneFixture, _ catalogueCall) map[string]any {
 				return coreWriteInput(t, f, tc)
 			}})
 		})

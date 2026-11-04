@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 	"strings"
 
@@ -117,17 +116,7 @@ func (writer *projectStateReadsResponseWriter) Write(body []byte) (int, error) {
 			body = indented.Bytes()
 		}
 	}
-	if len(body) != inputLength {
-		written, err := writer.ResponseWriter.Write(body)
-		if err != nil {
-			return 0, err
-		}
-		if written != len(body) {
-			return 0, io.ErrShortWrite
-		}
-		return inputLength, nil
-	}
-	return writer.ResponseWriter.Write(body)
+	return writeReplacedBody(writer.ResponseWriter, body, inputLength)
 }
 
 func projectStateReadsCompatibilityMiddleware(next http.Handler) http.Handler {

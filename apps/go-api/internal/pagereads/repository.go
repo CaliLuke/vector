@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/recentvisits"
+
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
@@ -80,17 +82,8 @@ func NewRepositoryWithNativeTasks(database database, publisher Publisher, native
 }
 
 func (repository *Repository) admitRecentVisit(ctx context.Context, userID uuid.UUID, slug string, projectID, pageID uuid.UUID) error {
-	if repository.recentVisits != nil {
-		return repository.recentVisits.AdmitRecentVisit(ctx, uuid.New().String(), slug, "page", pageID.String(), userID.String(), projectID.String())
-	}
-	if repository.publisher == nil {
-		return nil
-	}
-	return repository.publisher.Task(ctx, "plane.bgtasks.recent_visited_task.recent_visited_task", []any{}, map[string]any{
-		"slug": slug, "entity_name": "page", "entity_identifier": pageID.String(), "user_id": userID.String(), "project_id": projectID.String(),
-	})
+	return recentvisits.Admit(ctx, repository.recentVisits, repository.publisher, recentvisits.Visit{Slug: slug, Entity: "page", EntityID: pageID.String(), UserID: userID.String(), ProjectID: projectID.String()})
 }
-
 func (repository *Repository) admitPageTransaction(ctx context.Context, newHTML, oldHTML any, pageID string) error {
 	if repository.nativeTasks != nil {
 		return repository.nativeTasks.AdmitPageTransaction(ctx, uuid.New().String(), newHTML, oldHTML, pageID)

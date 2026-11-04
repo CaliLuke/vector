@@ -93,7 +93,7 @@ func (r *Repository) WorkspaceRole(ctx context.Context, userID, slug string) (in
 func (r *Repository) ProjectAllowed(ctx context.Context, userID, slug, projectID string) (bool, error) {
 	var allowed bool
 	err := r.db.QueryRow(ctx, `SELECT EXISTS (
- SELECT 1 FROM project_members pm JOIN workspaces w ON w.id=pm.workspace_id
+ SELECT 1 FROM project_members pm JOIN projects p ON p.id=pm.project_id AND p.workspace_id=pm.workspace_id AND p.deleted_at IS NULL JOIN workspaces w ON w.id=pm.workspace_id
  WHERE pm.member_id=$1 AND w.slug=$2 AND pm.project_id=$3 AND pm.is_active=true AND pm.deleted_at IS NULL AND w.deleted_at IS NULL
  AND (pm.role IN (15,20) OR EXISTS (
    SELECT 1 FROM workspace_members wm WHERE wm.workspace_id=w.id AND wm.member_id=$1 AND wm.role=20 AND wm.is_active=true AND wm.deleted_at IS NULL

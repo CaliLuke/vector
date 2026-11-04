@@ -94,26 +94,17 @@ func workspaceAnalyticsProtocolError(err error) (int, map[string]any) {
 }
 
 func (s *workspaceAnalyticsService) actor(ctx context.Context, slug, project string) (workspaceAnalyticsActor, error) {
-	actor, ok := ctx.Value(workspaceAnalyticsActorKey{}).(workspaceAnalyticsActor)
-	if !ok {
-		return actor, s.error(http.StatusUnauthorized, map[string]any{"detail": unauthenticatedDetail})
-	}
-	allowed, err := s.repository.Authorized(ctx, actor.id, slug, project)
-	if err != nil {
-		return actor, s.internal()
-	}
-	if !allowed {
-		return actor, s.error(http.StatusForbidden, map[string]any{"error": forbiddenDetail})
-	}
-	return actor, nil
+	return s.authorizedActor(ctx, slug, project, s.repository.Authorized)
 }
-
 func (s *workspaceAnalyticsService) projectChartActor(ctx context.Context, slug, project string) (workspaceAnalyticsActor, error) {
+	return s.authorizedActor(ctx, slug, project, s.repository.AuthorizedProjectChart)
+}
+func (s *workspaceAnalyticsService) authorizedActor(ctx context.Context, slug, project string, authorize func(context.Context, uuid.UUID, string, string) (bool, error)) (workspaceAnalyticsActor, error) {
 	actor, ok := ctx.Value(workspaceAnalyticsActorKey{}).(workspaceAnalyticsActor)
 	if !ok {
 		return actor, s.error(http.StatusUnauthorized, map[string]any{"detail": unauthenticatedDetail})
 	}
-	allowed, err := s.repository.AuthorizedProjectChart(ctx, actor.id, slug, project)
+	allowed, err := authorize(ctx, actor.id, slug, project)
 	if err != nil {
 		return actor, s.internal()
 	}
@@ -122,7 +113,6 @@ func (s *workspaceAnalyticsService) projectChartActor(ctx context.Context, slug,
 	}
 	return actor, nil
 }
-
 func workspaceAnalyticsRaw(data json.RawMessage) (*api.WorkspaceAnalyticsRawJSON, io.ReadCloser, error) {
 	if !json.Valid(data) {
 		return nil, nil, fmt.Errorf("invalid analytics JSON")

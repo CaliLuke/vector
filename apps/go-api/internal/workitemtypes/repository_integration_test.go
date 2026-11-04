@@ -42,29 +42,18 @@ func newTypeFixture(t *testing.T) typeFixture {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) })
-	owner, member, outsider, workspace, project := uuid.New().String(), uuid.New().String(), uuid.New().String(), uuid.New().String(), uuid.New().String()
+	owner, member, outsider, workspace, project := typeOwner, typeMember, typeOutsider, typeWorkspace, typeProject
 	exec := func(sql string, args ...any) {
 		t.Helper()
 		if _, failure := db.Exec(ctx, sql, args...); failure != nil {
 			t.Fatal(failure)
 		}
 	}
-	for _, user := range []string{owner, member, outsider} {
-		exec(`INSERT INTO users(id,username,email,password,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,token,user_timezone,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,display_name,is_email_valid,is_password_reset_required) VALUES($1::uuid,$1::text,$1::text||'@example.test','!','','','',now(),now(),now(),'','',false,false,false,true,false,true,false,'','UTC','','','','',false,'Types',true,false)`, user)
-	}
-	exec(`INSERT INTO workspaces(id,name,owner_id,slug,timezone,background_color,created_at,updated_at) VALUES($1,'Types',$2,'types','UTC','',now(),now())`, workspace, owner)
-	for _, user := range []string{owner, member} {
-		role := 15
-		if user == owner {
-			role = 20
-		}
-		exec(`INSERT INTO workspace_members(id,workspace_id,member_id,role,created_at,updated_at,view_props,default_props,issue_props,is_active,getting_started_checklist,tips,explored_features) VALUES(gen_random_uuid(),$1,$2,$3,now(),now(),'{}','{}','{}',true,'{}','{}','{}')`, workspace, user, role)
-	}
+
 	addProject := func(id string) {
 		t.Helper()
 		exec(`INSERT INTO projects(id,name,description,network,workspace_id,identifier,module_view,cycle_view,issue_views_view,page_view,intake_view,is_time_tracking_enabled,is_issue_type_enabled,guest_view_all_features,archive_in,close_in,logo_props,timezone,created_at,updated_at) VALUES($1::uuid,$1::text,'',0,$2,left($1::text,12),false,false,false,true,false,false,false,false,0,0,'{}','UTC',now(),now())`, id, workspace)
 	}
-	addProject(project)
 	return typeFixture{ctx, db, owner, member, outsider, workspace, project, exec, addProject}
 }
 func TestWorkspaceTypeLifecycle(t *testing.T) {

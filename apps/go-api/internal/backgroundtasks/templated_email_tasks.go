@@ -322,29 +322,11 @@ func (store *templatedEmailStore) prepare(ctx context.Context, input templatedEm
 type emailUser struct{ email, firstName, displayName string }
 
 func (store *templatedEmailStore) userForEmail(ctx context.Context, id string) (emailUser, error) {
-	var user emailUser
-	err := store.pool.QueryRow(ctx, `SELECT email,COALESCE(first_name,''),COALESCE(display_name,'') FROM users WHERE id=$1`, id).Scan(&user.email, &user.firstName, &user.displayName)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return emailUser{}, errEmailTaskSourceRowMissing
-	}
-	if err != nil {
-		return emailUser{}, fmt.Errorf("load account email recipient: %w", err)
-	}
-	user.displayName = firstNonEmpty(user.firstName, user.displayName, user.email)
-	return user, nil
+	return scanEmailUser(store.pool.QueryRow(ctx, `SELECT email,COALESCE(first_name,''),COALESCE(display_name,'') FROM users WHERE id=$1`, id), "load account email recipient")
 }
 
 func (store *templatedEmailStore) userByEmail(ctx context.Context, email string) (emailUser, error) {
-	var user emailUser
-	err := store.pool.QueryRow(ctx, `SELECT email,COALESCE(first_name,''),COALESCE(display_name,'') FROM users WHERE email=$1`, email).Scan(&user.email, &user.firstName, &user.displayName)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return emailUser{}, errEmailTaskSourceRowMissing
-	}
-	if err != nil {
-		return emailUser{}, fmt.Errorf("load invitation email sender: %w", err)
-	}
-	user.displayName = firstNonEmpty(user.firstName, user.displayName, user.email)
-	return user, nil
+	return scanEmailUser(store.pool.QueryRow(ctx, `SELECT email,COALESCE(first_name,''),COALESCE(display_name,'') FROM users WHERE email=$1`, email), "load invitation email sender")
 }
 
 func (store *templatedEmailStore) saveInvitationMessage(ctx context.Context, table, id string, email *preparedEmail) (*preparedEmail, error) {
@@ -384,4 +366,17 @@ func decodeTemplatedEmailArguments(input templatedEmailTaskInput) ([]string, err
 		}
 	}
 	return args, nil
+}
+
+func scanEmailUser(row pgx.Row, diagnostic string) (emailUser, error) {
+	var user emailUser
+	err := row.Scan(&user.email, &user.firstName, &user.displayName)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return emailUser{}, errEmailTaskSourceRowMissing
+	}
+	if err != nil {
+		return emailUser{}, fmt.Errorf("%s: %w", diagnostic, err)
+	}
+	user.displayName = firstNonEmpty(user.firstName, user.displayName, user.email)
+	return user, nil
 }

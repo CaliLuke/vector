@@ -102,7 +102,7 @@ func coreNativeCommand(t *testing.T, f milestoneFixture, tc coreMutationCase) (p
 		cmd.Fields = nil
 	case "archive":
 		var state uuid.UUID
-		require.NoError(t, f.pool.QueryRow(t.Context(), `INSERT INTO states(id,workspace_id,project_id,name,description,color,slug,"group",sequence,"default",is_triage,created_at,updated_at) VALUES($1,$2,$3,'Completed','','#123456','completed','completed',0,false,false,now(),now()) RETURNING id`, uuid.New(), cmd.WorkspaceID, cmd.ProjectID).Scan(&state))
+		require.NoError(t, f.pool.QueryRow(t.Context(), `INSERT INTO states(id,workspace_id,project_id,name,description,color,slug,"group",sequence,"default",is_triage,created_at,updated_at) VALUES($1,$2,$3,$1::uuid::text,'','#123456','completed','completed',0,false,false,now(),now()) RETURNING id`, uuid.New(), cmd.WorkspaceID, cmd.ProjectID).Scan(&state))
 		_, err = f.pool.Exec(t.Context(), `UPDATE issues SET state_id=$2 WHERE id=$1`, cmd.ResourceID, state)
 		require.NoError(t, err)
 		cmd.Fields = map[string]any{"archive": true}
@@ -110,7 +110,7 @@ func coreNativeCommand(t *testing.T, f milestoneFixture, tc coreMutationCase) (p
 		cmd.Fields = map[string]any{"add_ids": []string{testsupport.LabelActor}}
 	case "manage_label":
 		label := uuid.NewString()
-		_, err = f.pool.Exec(t.Context(), `INSERT INTO labels(id,workspace_id,project_id,name,description,color,sort_order,created_at,updated_at) VALUES($1,$2,$3,'Selected','','#123456',0,now(),now())`, label, cmd.WorkspaceID, cmd.ProjectID)
+		_, err = f.pool.Exec(t.Context(), `INSERT INTO labels(id,workspace_id,project_id,name,description,color,sort_order,created_at,updated_at) VALUES($1,$2,$3,$1::uuid::text,'','#123456',0,now(),now())`, label, cmd.WorkspaceID, cmd.ProjectID)
 		require.NoError(t, err)
 		cmd.Fields = map[string]any{"add_ids": []string{label}}
 	}

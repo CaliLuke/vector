@@ -12,7 +12,7 @@ import (
 func TestMCPWorkLogWaitRechecksAuthorizationBeforeWriteAndReplay(t *testing.T) {
 	for _, action := range []string{"update", "delete"} {
 		t.Run(action, func(t *testing.T) {
-			runMutationAuthorizationWait(t, mutationWaitScenario{
+			runMutationAuthorizationWait(t, mutationWaitScenario{reuseCredentials: true,
 				tool: "work_log", fixture: newMilestoneFixture,
 				prepare: func(t *testing.T, f milestoneFixture, call catalogueCall) map[string]any {
 					item := f.item(t)

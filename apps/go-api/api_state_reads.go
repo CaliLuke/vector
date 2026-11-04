@@ -50,34 +50,12 @@ func NewAPIStateReads(repository apiStateRepository, keys activityReadsAPIKeys, 
 }
 
 func (s *apiStateReadsService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	principal, err := s.keys.Validate(ctx, key)
-	if err != nil {
-		if apiStateWriteMethod(ctx) {
-			if key == "" {
-				return ctx, apiStateWriteError(401, map[string]any{"detail": "Authentication credentials were not provided."})
-			}
-			if errors.Is(err, apikey.ErrInvalid) {
-				return ctx, apiStateWriteError(403, map[string]any{"detail": "Given API token is not valid"})
-			}
-			return ctx, apiStateWriteError(500, map[string]any{"detail": "Something went wrong please try again later"})
-		}
-		if key == "" {
-			return ctx, apiStateError(401, map[string]any{"detail": "Authentication credentials were not provided."})
-		}
-		if errors.Is(err, apikey.ErrInvalid) {
-			return ctx, apiStateError(403, map[string]any{"detail": "Given API token is not valid"})
-		}
-		return ctx, apiStateError(500, map[string]any{"detail": "Something went wrong please try again later"})
+	newError := apiStateError
+	if apiStateWriteMethod(ctx) {
+		newError = apiStateWriteError
 	}
-	if effects := apikey.EffectsFromContext(ctx); effects != nil {
-		effects.Authenticated = true
-	}
-	return context.WithValue(ctx, apiStatePrincipalKey{}, struct {
-		apikey.Principal
-		Key string
-	}{principal, key}), nil
+	return authenticateAPIRead(ctx, key, s.keys, apiStatePrincipalKey{}, newError)
 }
-
 func (s *apiStateReadsService) execute(ctx context.Context, operation string, payload any) (*api.APIStateReadsRawJSONResponseMetadata, io.ReadCloser, error) {
 	principal, ok := ctx.Value(apiStatePrincipalKey{}).(struct {
 		apikey.Principal
@@ -108,17 +86,7 @@ func apiStateError(status int, body map[string]any) error {
 }
 
 func mapAPIStateError(err error) error {
-	var response *apicontract.HTTPError
-	switch {
-	case errors.As(err, &response):
-		return apiStateError(response.Status, response.Body)
-	case errors.Is(err, store.ErrForbidden):
-		return apiStateError(403, map[string]any{"detail": "You do not have permission to perform this action."})
-	case errors.Is(err, store.ErrNotFound):
-		return apiStateError(404, map[string]any{"error": "The requested resource does not exist."})
-	default:
-		return apiStateError(500, map[string]any{"error": "Something went wrong please try again later"})
-	}
+	return mapAPIReadError(err, store.ErrForbidden, store.ErrNotFound, apiStateError)
 }
 
 func (s *apiStateReadsService) GetAPIV1WorkspacesBySlugProjectsByProjectIDStates(ctx context.Context, payload *api.GetAPIV1WorkspacesBySlugProjectsByProjectIDStatesPayload) (*api.APIStateReadsRawJSONResponseMetadata, io.ReadCloser, error) {

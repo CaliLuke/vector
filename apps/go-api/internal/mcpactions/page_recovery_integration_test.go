@@ -26,7 +26,7 @@ func TestPageMutationsPreserveAtomicRetry(t *testing.T) {
 func TestMCPPageMutationsReauthorizeAfterWaiting(t *testing.T) {
 	for _, tc := range pageMutationCases {
 		t.Run(tc.tool+"/"+tc.action, func(t *testing.T) {
-			runMutationAuthorizationWait(t, mutationWaitScenario{changes: mutationCredentialChanges(), tool: tc.tool, schemaLock: true, fixture: templateFixture, snapshot: pageSnapshot,
+			runMutationAuthorizationWait(t, mutationWaitScenario{reuseCredentials: true, changes: mutationCredentialChanges(), tool: tc.tool, schemaLock: true, fixture: templateFixture, snapshot: pageSnapshot,
 				prepare: func(t *testing.T, f milestoneFixture, _ catalogueCall) map[string]any {
 					return pageWriteInput(t, f, tc)
 				},

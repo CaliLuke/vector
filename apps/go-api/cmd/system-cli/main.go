@@ -6,16 +6,21 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"slices"
 	"sort"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/commandline"
+
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
-func main() {
+func main() { os.Exit(run(os.Stdout, os.Stderr)) }
+
+func run(stdout, stderr io.Writer) int {
 	var (
 		hostF = flag.String("host", "localhost", "Server host (valid values: localhost)")
 		addrF = flag.String("url", "", "URL to service host")
@@ -39,8 +44,7 @@ func main() {
 			case "localhost":
 				addr = "http://localhost:8080"
 			default:
-				fmt.Fprintf(os.Stderr, "invalid host argument: %q (valid hosts: localhost)\n", *hostF)
-				os.Exit(1)
+				return commandline.Diagnostic(stderr, 1, fmt.Sprintf("invalid host argument: %q (valid hosts: localhost)", *hostF))
 			}
 		}
 		timeout = *timeoutF
@@ -54,8 +58,7 @@ func main() {
 	{
 		u, err := url.Parse(addr)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "invalid URL %#v: %s\n", addr, err)
-			os.Exit(1)
+			return commandline.Diagnostic(stderr, 1, fmt.Sprintf("invalid URL %#v: %s", addr, err))
 		}
 		scheme = u.Scheme
 		host = u.Host
@@ -71,29 +74,29 @@ func main() {
 		case "http", "https":
 			endpoint, payload, err = doHTTP(scheme, host, timeout, debug)
 		default:
-			fmt.Fprintf(os.Stderr, "invalid scheme: %q (valid schemes: grpc|http)\n", scheme)
-			os.Exit(1)
+			return commandline.Diagnostic(stderr, 1, fmt.Sprintf("invalid scheme: %q (valid schemes: http|https)", scheme))
 		}
 	}
 	if err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			os.Exit(0)
+			return 0
 		}
-		fmt.Fprintln(os.Stderr, err.Error())
-		fmt.Fprintln(os.Stderr, "run '"+os.Args[0]+" --help' for detailed usage.")
-		os.Exit(1)
+		return commandline.Diagnostic(stderr, 1, err.Error()+"\nrun '"+os.Args[0]+" --help' for detailed usage.")
 	}
 
 	data, err := endpoint(context.Background(), payload)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(1)
+		return commandline.Diagnostic(stderr, 1, fmt.Sprint(err.Error()))
 	}
 
 	if data != nil {
-		m, _ := json.MarshalIndent(data, "", "    ")
-		fmt.Println(string(m))
+		encoder := json.NewEncoder(stdout)
+		encoder.SetIndent("", "    ")
+		if err := encoder.Encode(data); err != nil {
+			return commandline.Diagnostic(stderr, 1, fmt.Sprintf("write response: %v", err))
+		}
 	}
+	return 0
 }
 
 func usage() {

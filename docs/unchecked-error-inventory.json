@@ -1,20 +1,20 @@
 {
   "version": 1,
   "catalog_id": "ERR-02",
-  "audit_date": "2026-11-03",
+  "audit_date": "2026-11-04",
   "tool": "golangci-lint 2.15.0 (Go 1.27.3)",
   "configuration": "Repository apps/go-api/.golangci.yml in the same Git revision as this inventory; add linters.settings.errcheck.check-blank=true and select --enable-only errcheck. Existing integration tags, test inclusion, generated-source exclusions and timeout retained.",
   "config_sha256": "50339d0f8ed7faa84b429fe70809295206325867ceea67a2b2843b2db32c2633",
-  "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
+  "status": "Reviewed retained error invariants, not quality-gate allowances. Each occurrence has an explicit error-ownership reason; no deferred policy decisions remain.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 153,
+    "findings": 150,
     "also_in_ERR_01": 0,
-    "additional_ERR_02": 153,
+    "additional_ERR_02": 150,
     "test_file_findings": 0,
-    "non_test_file_findings": 153,
+    "non_test_file_findings": 150,
     "dispositions": {
-      "retained": 153,
+      "retained": 150,
       "deferred": 0
     }
   },
@@ -38,26 +38,6 @@
       "disposition": "retained",
       "reason": "Internal error body is a fixed map containing a string constant.",
       "evidence": "func authRedirectHTTPError(err error) error {"
-    },
-    {
-      "file": "apps/go-api/cmd/bootstrap/main.go",
-      "line": 147,
-      "column": 4,
-      "message": "Error return value of `runtime.Shutdown` is not checked",
-      "also_in_configured_audit": false,
-      "disposition": "retained",
-      "reason": "Shutdown follows durable metrics admission and uses an independent bounded context; admission/start errors remain primary. CLI shutdown-error reporting remains explicit operational debt.",
-      "evidence": "func install(ctx context.Context) error {"
-    },
-    {
-      "file": "apps/go-api/cmd/system-cli/main.go",
-      "line": 94,
-      "column": 6,
-      "message": "Error return value of `json.MarshalIndent` is not checked",
-      "also_in_configured_audit": false,
-      "disposition": "retained",
-      "reason": "Endpoint results are generated transport values decoded from JSON; no arbitrary caller values enter the CLI output path.",
-      "evidence": "func main() {"
     },
     {
       "file": "apps/go-api/cmd/system/account_authentication_adapters.go",
@@ -331,7 +311,7 @@
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
-      "line": 62,
+      "line": 63,
       "column": 6,
       "message": "Error return value of `writer.ResponseWriter.Write` is not checked",
       "also_in_configured_audit": false,
@@ -341,7 +321,7 @@
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
-      "line": 114,
+      "line": 115,
       "column": 6,
       "message": "Error return value of `response.Write` is not checked",
       "also_in_configured_audit": false,
@@ -351,7 +331,7 @@
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
-      "line": 164,
+      "line": 165,
       "column": 7,
       "message": "Error return value of `writer.ResponseWriter.Write` is not checked",
       "also_in_configured_audit": false,
@@ -361,7 +341,7 @@
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
-      "line": 191,
+      "line": 192,
       "column": 6,
       "message": "Error return value of `writer.ResponseWriter.Write` is not checked",
       "also_in_configured_audit": false,
@@ -371,7 +351,7 @@
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
-      "line": 342,
+      "line": 343,
       "column": 6,
       "message": "Error return value of `response.Write` is not checked",
       "also_in_configured_audit": false,
@@ -381,7 +361,7 @@
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
-      "line": 371,
+      "line": 372,
       "column": 7,
       "message": "Error return value of `writer.ResponseWriter.Write` is not checked",
       "also_in_configured_audit": false,
@@ -391,7 +371,7 @@
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
-      "line": 470,
+      "line": 471,
       "column": 5,
       "message": "Error return value of `response.Write` is not checked",
       "also_in_configured_audit": false,
@@ -601,7 +581,7 @@
     },
     {
       "file": "apps/go-api/instance_management.go",
-      "line": 443,
+      "line": 411,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false,
@@ -611,7 +591,7 @@
     },
     {
       "file": "apps/go-api/instance_management.go",
-      "line": 477,
+      "line": 445,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false,
@@ -621,7 +601,7 @@
     },
     {
       "file": "apps/go-api/instance_management.go",
-      "line": 665,
+      "line": 633,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false,
@@ -1228,16 +1208,6 @@
       "disposition": "retained",
       "reason": "Archive/success responses are string-only maps; the page-version payload contains the stored HTML string.",
       "evidence": "func (repository *Repository) updatePageDescription(ctx context.Context, db lifecycleDatabase, user, page uuid.UUID, state pageLifecycleState, input requestinput.Input) (int, json.RawMessage, error) {"
-    },
-    {
-      "file": "apps/go-api/internal/projectintakewrites/repository.go",
-      "line": 251,
-      "column": 45,
-      "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false,
-      "disposition": "retained",
-      "reason": "detail is reached after the scoped write/read SQL has accepted UUID columns; id comes from the database. Reworking this internal typed boundary is structural debt, not new input acceptance.",
-      "evidence": "func mustUUID(value string) uuid.UUID { id, _ := uuid.Parse(value); return id }"
     },
     {
       "file": "apps/go-api/internal/projectmembershipreads/invitations_create.go",

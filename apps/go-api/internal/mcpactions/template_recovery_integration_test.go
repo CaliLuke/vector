@@ -66,7 +66,7 @@ func TestMCPTemplateWritesReauthorizeAfterWaiting(t *testing.T) {
 				if action == "create" {
 					changes = nil // Full membership matrix once per workspace/project scope.
 				}
-				runMutationAuthorizationWait(t, mutationWaitScenario{
+				runMutationAuthorizationWait(t, mutationWaitScenario{reuseCredentials: true,
 					changes: changes,
 					tool:    "template", schemaLock: true, fixture: templateFixture, snapshot: templateStorageSnapshot,
 					prepare: func(t *testing.T, _ milestoneFixture, call catalogueCall) map[string]any {

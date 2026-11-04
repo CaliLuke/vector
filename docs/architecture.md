@@ -149,9 +149,6 @@ and a project administrator uses the leave action for their own membership.
 Workspace administrators can change their own project role when another project
 administrator remains.
 
-Invitation acceptance and post-login joins still have separate write boundaries;
-the debt catalog tracks their replacement.
-
 | Path          | Purpose                                       |
 | ------------- | --------------------------------------------- |
 | `apps/go-api` | Go API, workers, bootstrap, schema, and tests |

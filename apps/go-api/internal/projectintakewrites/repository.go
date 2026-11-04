@@ -48,7 +48,7 @@ func (r *Repository) Authorize(ctx context.Context, user, slug, project string) 
 	err := r.db.QueryRow(ctx, `SELECT EXISTS(
 		SELECT 1
 		FROM project_members pm
-		JOIN projects p ON p.id=pm.project_id
+		JOIN projects p ON p.id=pm.project_id AND p.workspace_id=pm.workspace_id
 		JOIN workspaces w ON w.id=pm.workspace_id
 		LEFT JOIN workspace_members wm ON wm.workspace_id=pm.workspace_id AND wm.member_id=pm.member_id AND wm.is_active
 		WHERE pm.member_id=$1 AND pm.project_id=$2 AND w.slug=$3
@@ -161,7 +161,7 @@ func (r *Repository) Create(ctx context.Context, user, slug, project string, fie
 
 func (r *Repository) Patch(ctx context.Context, user, slug, project, id string, fields map[string]any) (json.RawMessage, error) {
 	var exists bool
-	err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM intakes i JOIN projects p ON p.id=i.project_id JOIN workspaces w ON w.id=i.workspace_id WHERE i.id=$1 AND p.id=$2 AND w.slug=$3 AND i.deleted_at IS NULL AND p.deleted_at IS NULL AND w.deleted_at IS NULL)`, id, project, slug).Scan(&exists)
+	err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM intakes i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id JOIN workspaces w ON w.id=i.workspace_id WHERE i.id=$1 AND p.id=$2 AND w.slug=$3 AND i.deleted_at IS NULL AND p.deleted_at IS NULL AND w.deleted_at IS NULL)`, id, project, slug).Scan(&exists)
 	if err != nil {
 		return nil, err
 	}
@@ -205,11 +205,17 @@ func (r *Repository) Patch(ctx context.Context, user, slug, project, id string, 
 	if len(updates) > 0 {
 		args = append(args, user)
 		updates = append(updates, "updated_by_id=$"+fmt.Sprint(len(args)))
-		if _, err := r.db.Exec(ctx, "UPDATE intakes SET "+strings.Join(updates, ",")+",updated_at=clock_timestamp() WHERE id=$1", args...); err != nil {
+		args = append(args, project, slug)
+		scope := fmt.Sprintf(" AND project_id=$%d AND workspace_id=(SELECT p.workspace_id FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$%d AND w.slug=$%d AND p.deleted_at IS NULL AND w.deleted_at IS NULL) AND deleted_at IS NULL", len(args)-1, len(args)-1, len(args))
+		tag, err := r.db.Exec(ctx, "UPDATE intakes SET "+strings.Join(updates, ",")+",updated_at=clock_timestamp() WHERE id=$1"+scope, args...)
+		if err != nil {
 			if uniqueViolation(err) {
 				return nil, &HTTPError{400, map[string]any{"name": []string{"intake with this name already exists."}}}
 			}
 			return nil, err
+		}
+		if tag.RowsAffected() == 0 {
+			return nil, &HTTPError{404, map[string]any{"detail": "No Intake matches the given query."}}
 		}
 	}
 	return r.detail(ctx, slug, project, id)
@@ -217,7 +223,7 @@ func (r *Repository) Patch(ctx context.Context, user, slug, project, id string, 
 
 func (r *Repository) Delete(ctx context.Context, user, slug, project, id string) error {
 	var isDefault bool
-	err := r.db.QueryRow(ctx, `SELECT i.is_default FROM intakes i JOIN projects p ON p.id=i.project_id JOIN workspaces w ON w.id=i.workspace_id WHERE i.id=$1 AND p.id=$2 AND w.slug=$3 AND i.deleted_at IS NULL`, id, project, slug).Scan(&isDefault)
+	err := r.db.QueryRow(ctx, `SELECT i.is_default FROM intakes i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id JOIN workspaces w ON w.id=i.workspace_id WHERE i.id=$1 AND p.id=$2 AND w.slug=$3 AND i.deleted_at IS NULL AND p.deleted_at IS NULL AND w.deleted_at IS NULL`, id, project, slug).Scan(&isDefault)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return &HTTPError{404, map[string]any{"detail": "No Intake matches the given query."}}
 	}
@@ -227,12 +233,26 @@ func (r *Repository) Delete(ctx context.Context, user, slug, project, id string)
 	if isDefault {
 		return &HTTPError{400, map[string]any{"error": "You cannot delete the default intake"}}
 	}
-	_, err = r.db.Exec(ctx, `UPDATE intakes SET deleted_at=clock_timestamp(),updated_at=clock_timestamp(),updated_by_id=$2 WHERE id=$1`, id, user)
-	return err
+	tag, err := r.db.Exec(ctx, `UPDATE intakes i SET deleted_at=clock_timestamp(),updated_at=clock_timestamp(),updated_by_id=$2 FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE i.id=$1 AND i.project_id=p.id AND i.workspace_id=p.workspace_id AND p.id=$3 AND w.slug=$4 AND i.deleted_at IS NULL AND p.deleted_at IS NULL AND w.deleted_at IS NULL`, id, user, project, slug)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return &HTTPError{404, map[string]any{"detail": "No Intake matches the given query."}}
+	}
+	return nil
 }
 
 func (r *Repository) detail(ctx context.Context, slug, project, id string) (json.RawMessage, error) {
-	data, err := r.readers.IntakeDetail(ctx, uuid.Nil(), slug, mustUUID(project), mustUUID(id))
+	projectID, err := uuid.Parse(project)
+	if err != nil {
+		return nil, fmt.Errorf("invalid intake project: %w", err)
+	}
+	intakeID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid intake identity: %w", err)
+	}
+	data, err := r.readers.IntakeDetail(ctx, uuid.Nil(), slug, projectID, intakeID)
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +268,6 @@ func createdContainerResponse(data json.RawMessage) (json.RawMessage, error) {
 	return json.Marshal(fields)
 }
 
-func mustUUID(value string) uuid.UUID { id, _ := uuid.Parse(value); return id }
 func jsonField(fields map[string]any, name string) ([]byte, error) {
 	if value, ok := fields[name]; ok {
 		return json.Marshal(value)

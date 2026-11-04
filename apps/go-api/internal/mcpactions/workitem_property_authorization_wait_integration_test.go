@@ -12,7 +12,7 @@ func TestMCPPropertyWaitRechecksAuthorizationBeforeWriteAndReplay(t *testing.T) 
 			if action == "create" || action == "manage_type_properties" || action == "set_value" || action == "delete_value" {
 				changes = nil
 			}
-			runMutationAuthorizationWait(t, mutationWaitScenario{
+			runMutationAuthorizationWait(t, mutationWaitScenario{reuseCredentials: true,
 				changes:    changes,
 				schemaLock: true, tool: "workitem_property", action: action,
 				fixture: newMilestoneFixture, snapshot: propertyStorageSnapshot,

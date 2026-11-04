@@ -2,7 +2,6 @@ package systemapi
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 
@@ -33,25 +32,8 @@ func NewAPICycleReads(repository apiCycleRepository, keys activityReadsAPIKeys, 
 }
 
 func (s *apiCycleReadsService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	principal, err := s.keys.Validate(ctx, key)
-	if err != nil {
-		if key == "" {
-			return ctx, apiCycleError(401, map[string]any{"detail": "Authentication credentials were not provided."})
-		}
-		if errors.Is(err, apikey.ErrInvalid) {
-			return ctx, apiCycleError(403, map[string]any{"detail": "Given API token is not valid"})
-		}
-		return ctx, apiCycleError(500, map[string]any{"detail": "Something went wrong please try again later"})
-	}
-	if effects := apikey.EffectsFromContext(ctx); effects != nil {
-		effects.Authenticated = true
-	}
-	return context.WithValue(ctx, apiCyclePrincipalKey{}, struct {
-		apikey.Principal
-		Key string
-	}{principal, key}), nil
+	return authenticateAPIRead(ctx, key, s.keys, apiCyclePrincipalKey{}, apiCycleError)
 }
-
 func (s *apiCycleReadsService) execute(ctx context.Context, operation string, payload any) (*api.APICycleReadsRawJSONResponseMetadata, io.ReadCloser, error) {
 	principal, ok := ctx.Value(apiCyclePrincipalKey{}).(struct {
 		apikey.Principal
@@ -81,17 +63,7 @@ func apiCycleError(status int, body map[string]any) error {
 	return apicontract.ProjectError(body, result)
 }
 func mapAPICycleError(err error) error {
-	var response *apicontract.HTTPError
-	switch {
-	case errors.As(err, &response):
-		return apiCycleError(response.Status, response.Body)
-	case errors.Is(err, store.ErrForbidden):
-		return apiCycleError(403, map[string]any{"detail": "You do not have permission to perform this action."})
-	case errors.Is(err, store.ErrNotFound):
-		return apiCycleError(404, map[string]any{"error": "The requested resource does not exist."})
-	default:
-		return apiCycleError(500, map[string]any{"error": "Something went wrong please try again later"})
-	}
+	return mapAPIReadError(err, store.ErrForbidden, store.ErrNotFound, apiCycleError)
 }
 
 func (s *apiCycleReadsService) GetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedCycles(ctx context.Context, payload *api.GetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedCyclesPayload) (*api.APICycleReadsRawJSONResponseMetadata, io.ReadCloser, error) {

@@ -37,7 +37,7 @@ func (r *Repository) Authorize(ctx context.Context, actor, slug, projectID strin
 	var allowed bool
 	if err := r.db.QueryRow(ctx, `SELECT EXISTS (
 		SELECT 1 FROM project_members pm
-		JOIN projects p ON p.id=pm.project_id
+		JOIN projects p ON p.id=pm.project_id AND p.workspace_id=pm.workspace_id
 		JOIN workspaces w ON w.id=pm.workspace_id
 		WHERE pm.member_id=$1 AND pm.project_id=$2 AND w.slug=$3
 		AND pm.is_active AND pm.deleted_at IS NULL AND p.deleted_at IS NULL AND w.deleted_at IS NULL
@@ -54,7 +54,7 @@ func (r *Repository) Authorize(ctx context.Context, actor, slug, projectID strin
 func (r *Repository) Patch(ctx context.Context, actor, slug, projectID, memberID string, preferences map[string]any) (map[string]any, error) {
 	var currentRaw []byte
 	err := r.db.QueryRow(ctx, `SELECT pm.preferences FROM project_members pm
-		JOIN projects p ON p.id=pm.project_id JOIN workspaces w ON w.id=pm.workspace_id
+		JOIN projects p ON p.id=pm.project_id AND p.workspace_id=pm.workspace_id JOIN workspaces w ON w.id=pm.workspace_id
 		WHERE pm.project_id=$1 AND pm.member_id=$2 AND w.slug=$3
 		AND p.deleted_at IS NULL AND w.deleted_at IS NULL`, projectID, memberID, slug).Scan(&currentRaw)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -76,10 +76,15 @@ func (r *Repository) Patch(ctx context.Context, actor, slug, projectID, memberID
 	if err != nil {
 		return nil, err
 	}
-	_, err = r.db.Exec(ctx, `UPDATE project_members SET preferences=$1::jsonb,updated_at=clock_timestamp(),updated_by_id=$2
-		WHERE project_id=$3 AND member_id=$4 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$5)`, encoded, actor, projectID, memberID, slug)
+	tag, err := r.db.Exec(ctx, `UPDATE project_members pm SET preferences=$1::jsonb,updated_at=clock_timestamp(),updated_by_id=$2
+		FROM projects p JOIN workspaces w ON w.id=p.workspace_id
+		WHERE pm.project_id=p.id AND pm.workspace_id=p.workspace_id AND pm.project_id=$3 AND pm.member_id=$4 AND w.slug=$5
+		AND p.deleted_at IS NULL AND w.deleted_at IS NULL`, encoded, actor, projectID, memberID, slug)
 	if err != nil {
 		return nil, err
+	}
+	if tag.RowsAffected() == 0 {
+		return nil, &HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 	}
 	return map[string]any{"preferences": current}, nil
 }
@@ -87,7 +92,7 @@ func (r *Repository) Patch(ctx context.Context, actor, slug, projectID, memberID
 // Lookup preserves the source object's lookup before request-body evaluation.
 func (r *Repository) Lookup(ctx context.Context, slug, projectID, memberID string) error {
 	var present bool
-	err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM project_members pm JOIN projects p ON p.id=pm.project_id JOIN workspaces w ON w.id=pm.workspace_id WHERE pm.project_id=$1 AND pm.member_id=$2 AND w.slug=$3 AND p.deleted_at IS NULL AND w.deleted_at IS NULL)`, projectID, memberID, slug).Scan(&present)
+	err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM project_members pm JOIN projects p ON p.id=pm.project_id AND p.workspace_id=pm.workspace_id JOIN workspaces w ON w.id=pm.workspace_id WHERE pm.project_id=$1 AND pm.member_id=$2 AND w.slug=$3 AND p.deleted_at IS NULL AND w.deleted_at IS NULL)`, projectID, memberID, slug).Scan(&present)
 	if err != nil {
 		return err
 	}

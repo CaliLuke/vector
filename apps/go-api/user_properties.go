@@ -199,19 +199,10 @@ func (s *userPropertiesService) CycleGet(ctx context.Context, p *api.CycleGetPay
 	return userPropertiesResult(s.repo.GetCycle(ctx, id, p.Slug, x, y))
 }
 func (s *userPropertiesService) CyclePatch(ctx context.Context, p *api.CyclePatchPayload) (*api.UserProperties, error) {
-	id, x, y, e := s.scopedIdentity(ctx, p.Slug, p.ProjectID, p.CycleID)
-	if e != nil {
-		return nil, e
-	}
 	fields := userPropertyFilterFields(p.Filters, p.DisplayFilters, p.DisplayProperties, p.RichFilters)
-	if invalid := normalizeJSONFields(fields, "filters", "display_filters", "display_properties", "rich_filters", "preferences"); invalid != nil {
-		if lookupErr := s.repo.CheckScopedPatch(ctx, id, p.Slug, x, y, "cycle"); lookupErr != nil {
-			return nil, userPropertiesError(lookupErr)
-		}
-		return nil, userPropertiesInternalError()
-	}
-	return userPropertiesResult(s.repo.PatchCycle(ctx, id, p.Slug, x, y, fields))
+	return s.patchScoped(ctx, p.Slug, p.ProjectID, p.CycleID, "cycle", fields, s.repo.PatchCycle)
 }
+
 func (s *userPropertiesService) ModuleGet(ctx context.Context, p *api.ModuleGetPayload) (*api.UserProperties, error) {
 	id, x, y, e := s.scopedIdentity(ctx, p.Slug, p.ProjectID, p.ModuleID)
 	if e != nil {
@@ -220,20 +211,9 @@ func (s *userPropertiesService) ModuleGet(ctx context.Context, p *api.ModuleGetP
 	return userPropertiesResult(s.repo.GetModule(ctx, id, p.Slug, x, y))
 }
 func (s *userPropertiesService) ModulePatch(ctx context.Context, p *api.ModulePatchPayload) (*api.UserProperties, error) {
-	id, x, y, e := s.scopedIdentity(ctx, p.Slug, p.ProjectID, p.ModuleID)
-	if e != nil {
-		return nil, e
-	}
 	fields := userPropertyFilterFields(p.Filters, p.DisplayFilters, p.DisplayProperties, p.RichFilters)
-	if invalid := normalizeJSONFields(fields, "filters", "display_filters", "display_properties", "rich_filters", "preferences"); invalid != nil {
-		if lookupErr := s.repo.CheckScopedPatch(ctx, id, p.Slug, x, y, "module"); lookupErr != nil {
-			return nil, userPropertiesError(lookupErr)
-		}
-		return nil, userPropertiesInternalError()
-	}
-	return userPropertiesResult(s.repo.PatchModule(ctx, id, p.Slug, x, y, fields))
+	return s.patchScoped(ctx, p.Slug, p.ProjectID, p.ModuleID, "module", fields, s.repo.PatchModule)
 }
-
 func userPropertiesNotFoundError() error {
 	return &api.UserPropertiesNotFound{Message: "Not found."}
 }
@@ -247,4 +227,18 @@ func userPropertiesError(err error) error {
 		return userPropertiesNotFoundError()
 	}
 	return userPropertiesInternalError()
+}
+
+func (s *userPropertiesService) patchScoped(ctx context.Context, slug, projectID, entityID, kind string, fields map[string]json.RawMessage, write func(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID, map[string]json.RawMessage) (json.RawMessage, error)) (*api.UserProperties, error) {
+	user, project, entity, err := s.scopedIdentity(ctx, slug, projectID, entityID)
+	if err != nil {
+		return nil, err
+	}
+	if invalid := normalizeJSONFields(fields, "filters", "display_filters", "display_properties", "rich_filters", "preferences"); invalid != nil {
+		if err := s.repo.CheckScopedPatch(ctx, user, slug, project, entity, kind); err != nil {
+			return nil, userPropertiesError(err)
+		}
+		return nil, userPropertiesInternalError()
+	}
+	return userPropertiesResult(write(ctx, user, slug, project, entity, fields))
 }

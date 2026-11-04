@@ -77,7 +77,7 @@ func TestMCPCustomerIdentityWritesReauthorizeAfterWaiting(t *testing.T) {
 			if scenario.action == "create" || scenario.action == "manage_workitems" || scenario.action == "set_values" {
 				changes = nil
 			}
-			runMutationAuthorizationWait(t, mutationWaitScenario{
+			runMutationAuthorizationWait(t, mutationWaitScenario{reuseCredentials: true,
 				changes: changes,
 				tool:    scenario.tool, schemaLock: true, fixture: customerIdentityFixture, snapshot: customerStorageSnapshot,
 				prepare: func(t *testing.T, f milestoneFixture, call catalogueCall) map[string]any {

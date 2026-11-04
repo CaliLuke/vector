@@ -32,8 +32,8 @@ func TestWorkItemErrorKind(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			if got := workItemErrorKind(test.err); got != test.want {
-				t.Fatalf("workItemErrorKind(%T)=%q, want %q", test.err, got, test.want)
+			if got := operationErrorKind(test.err); got != test.want {
+				t.Fatalf("operationErrorKind(%T)=%q, want %q", test.err, got, test.want)
 			}
 		})
 	}

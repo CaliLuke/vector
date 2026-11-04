@@ -286,24 +286,8 @@ func (service *instanceManagementService) RootGet(ctx context.Context) (*api.Ins
 }
 
 func (service *instanceManagementService) RootPatch(ctx context.Context, _ *api.RootPatchPayload, bodyReader io.ReadCloser) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {
-	id, err := service.admin(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-	if invalidateErr := service.invalidate(ctx, "/api/instances/"); invalidateErr != nil {
-		return nil, nil, instanceManagementInternal()
-	}
-	fields, err := parseInstanceManagementBody(ctx, bodyReader)
-	if err != nil {
-		return nil, nil, instanceManagementInputError(err)
-	}
-	body, err := service.repository.PatchRoot(ctx, id, fields)
-	if err != nil {
-		return nil, nil, instanceManagementInternal()
-	}
-	return instanceManagementRaw(ctx, body, nil)
+	return service.writeInstance(ctx, bodyReader, service.repository.PatchRoot)
 }
-
 func (service *instanceManagementService) AdminsGet(ctx context.Context, _ *api.AdminsGetPayload) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {
 	if _, err := service.admin(ctx); err != nil {
 		return nil, nil, err
@@ -313,24 +297,8 @@ func (service *instanceManagementService) AdminsGet(ctx context.Context, _ *api.
 }
 
 func (service *instanceManagementService) AdminsPost(ctx context.Context, _ *api.AdminsPostPayload, bodyReader io.ReadCloser) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {
-	id, err := service.admin(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-	if invalidateErr := service.invalidate(ctx, "/api/instances/"); invalidateErr != nil {
-		return nil, nil, instanceManagementInternal()
-	}
-	fields, err := parseInstanceManagementBody(ctx, bodyReader)
-	if err != nil {
-		return nil, nil, instanceManagementInputError(err)
-	}
-	body, err := service.repository.CreateAdmin(ctx, id, fields)
-	if err != nil {
-		return nil, nil, instanceManagementInternal()
-	}
-	return instanceManagementRaw(ctx, body, nil)
+	return service.writeInstance(ctx, bodyReader, service.repository.CreateAdmin)
 }
-
 func (service *instanceManagementService) AdminsDeleteCollection(ctx context.Context, _ *api.AdminsDeleteCollectionPayload) error {
 	if _, err := service.admin(ctx); err != nil {
 		return err
@@ -675,4 +643,23 @@ func instanceManagementProtocolError(err error) (int, map[string]any) {
 		}
 	}
 	return http.StatusInternalServerError, map[string]any{"error": instanceManagementInternalMessage}
+}
+
+func (service *instanceManagementService) writeInstance(ctx context.Context, bodyReader io.ReadCloser, write func(context.Context, uuid.UUID, map[string]json.RawMessage) (json.RawMessage, error)) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {
+	id, err := service.admin(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	if invalidateErr := service.invalidate(ctx, "/api/instances/"); invalidateErr != nil {
+		return nil, nil, instanceManagementInternal()
+	}
+	fields, err := parseInstanceManagementBody(ctx, bodyReader)
+	if err != nil {
+		return nil, nil, instanceManagementInputError(err)
+	}
+	body, err := write(ctx, id, fields)
+	if err != nil {
+		return nil, nil, instanceManagementInternal()
+	}
+	return instanceManagementRaw(ctx, body, nil)
 }

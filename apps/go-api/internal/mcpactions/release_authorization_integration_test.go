@@ -44,7 +44,7 @@ func TestMCPReleaseMutationsReauthorizeAfterWaiting(t *testing.T) {
 			if tc.action == "create" && tc.tool == "release" {
 				changes = nil
 			}
-			runMutationAuthorizationWait(t, mutationWaitScenario{changes: changes, tool: tc.tool, schemaLock: true, fixture: templateFixture, snapshot: releaseSnapshot,
+			runMutationAuthorizationWait(t, mutationWaitScenario{reuseCredentials: true, changes: changes, tool: tc.tool, schemaLock: true, fixture: templateFixture, snapshot: releaseSnapshot,
 				prepare: func(t *testing.T, f milestoneFixture, call catalogueCall) map[string]any {
 					return releaseWriteInput(t, f, call, tc)
 				},

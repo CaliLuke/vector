@@ -18,7 +18,7 @@ func TestMCPEstimateWaitRechecksAuthorizationBeforeWriteAndReplay(t *testing.T) 
 			if action == "create" || action == "link" {
 				changes = nil
 			}
-			runMutationAuthorizationWait(t, mutationWaitScenario{
+			runMutationAuthorizationWait(t, mutationWaitScenario{reuseCredentials: true,
 				changes: changes,
 				tool:    "project_estimate", fixture: func(t *testing.T) milestoneFixture {
 					f := newMilestoneFixture(t)
@@ -39,7 +39,7 @@ func TestMCPEstimateWaitRechecksAuthorizationBeforeWriteAndReplay(t *testing.T) 
 					case "update", "delete":
 						milestoneObject(t, call("project_estimate", map[string]any{"action": "link", "estimate_id": id}))
 						if action == "update" {
-							input["name"] = "Authorized edit"
+							input["name"] = "Authorized edit " + uuid.NewString()
 						}
 					case "link":
 						input["estimate_id"] = id

@@ -2,7 +2,6 @@ package systemapi
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 
@@ -33,25 +32,8 @@ func NewAPILabelReads(repository apiLabelRepository, keys activityReadsAPIKeys, 
 }
 
 func (s *apiLabelReadsService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	principal, err := s.keys.Validate(ctx, key)
-	if err != nil {
-		if key == "" {
-			return ctx, apiLabelError(401, map[string]any{"detail": "Authentication credentials were not provided."})
-		}
-		if errors.Is(err, apikey.ErrInvalid) {
-			return ctx, apiLabelError(403, map[string]any{"detail": "Given API token is not valid"})
-		}
-		return ctx, apiLabelError(500, map[string]any{"detail": "Something went wrong please try again later"})
-	}
-	if effects := apikey.EffectsFromContext(ctx); effects != nil {
-		effects.Authenticated = true
-	}
-	return context.WithValue(ctx, apiLabelPrincipalKey{}, struct {
-		apikey.Principal
-		Key string
-	}{principal, key}), nil
+	return authenticateAPIRead(ctx, key, s.keys, apiLabelPrincipalKey{}, apiLabelError)
 }
-
 func (s *apiLabelReadsService) execute(ctx context.Context, operation string, payload any) (*api.APILabelReadsRawJSONResponseMetadata, io.ReadCloser, error) {
 	principal, ok := ctx.Value(apiLabelPrincipalKey{}).(struct {
 		apikey.Principal
@@ -81,17 +63,7 @@ func apiLabelError(status int, body map[string]any) error {
 	return apicontract.ProjectError(body, result)
 }
 func mapAPILabelError(err error) error {
-	var response *apicontract.HTTPError
-	switch {
-	case errors.As(err, &response):
-		return apiLabelError(response.Status, response.Body)
-	case errors.Is(err, store.ErrForbidden):
-		return apiLabelError(403, map[string]any{"detail": "You do not have permission to perform this action."})
-	case errors.Is(err, store.ErrNotFound):
-		return apiLabelError(404, map[string]any{"error": "The requested resource does not exist."})
-	default:
-		return apiLabelError(500, map[string]any{"error": "Something went wrong please try again later"})
-	}
+	return mapAPIReadError(err, store.ErrForbidden, store.ErrNotFound, apiLabelError)
 }
 
 func (s *apiLabelReadsService) GetAPIV1WorkspacesBySlugProjectsByProjectIDLabels(ctx context.Context, payload *api.GetAPIV1WorkspacesBySlugProjectsByProjectIDLabelsPayload) (*api.APILabelReadsRawJSONResponseMetadata, io.ReadCloser, error) {

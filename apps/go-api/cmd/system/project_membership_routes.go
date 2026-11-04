@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"net/http"
 	"strings"
 
@@ -135,17 +134,7 @@ func (writer *projectMembershipReadsResponseWriter) Write(body []byte) (int, err
 			body = indented.Bytes()
 		}
 	}
-	if len(body) != inputLength {
-		written, err := writer.ResponseWriter.Write(body)
-		if err != nil {
-			return 0, err
-		}
-		if written != len(body) {
-			return 0, io.ErrShortWrite
-		}
-		return inputLength, nil
-	}
-	return writer.ResponseWriter.Write(body)
+	return writeReplacedBody(writer.ResponseWriter, body, inputLength)
 }
 
 func projectMembershipReadsCompatibilityMiddleware(next http.Handler) http.Handler {

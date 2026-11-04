@@ -20,7 +20,6 @@ import (
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	store "github.com/CaliLuke/go-plane/internal/workitems"
 	api "github.com/CaliLuke/go-plane/work_item_core/gen/work_item_core"
-	"github.com/CaliLuke/loom/clue/log"
 	loomhttp "github.com/CaliLuke/loom/http"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
@@ -153,30 +152,7 @@ func workItemError(err error) error {
 }
 
 func workItemLogError(ctx context.Context, operation, stage string, err error) {
-	var httpError *apicontract.HTTPError
-	if errors.As(err, &httpError) && httpError.Status < 500 {
-		return
-	}
-	fields := []log.Fielder{log.KV{K: "msg", V: "Work-item operation failed"}, log.KV{K: "operation", V: operation}, log.KV{K: "stage", V: stage}, log.KV{K: "error_type", V: fmt.Sprintf("%T", err)}, log.KV{K: "error_kind", V: workItemErrorKind(err)}}
-	var pg *pgconn.PgError
-	if errors.As(err, &pg) {
-		fields = append(fields, log.KV{K: "sqlstate", V: pg.Code}, log.KV{K: "table", V: pg.TableName}, log.KV{K: "column", V: pg.ColumnName}, log.KV{K: "constraint", V: pg.ConstraintName})
-	}
-	log.Print(ctx, fields...)
-}
-
-func workItemErrorKind(err error) string {
-	switch {
-	case errors.Is(err, context.Canceled):
-		return "context_canceled"
-	case errors.Is(err, context.DeadlineExceeded):
-		return "deadline_exceeded"
-	}
-	var postgres *pgconn.PgError
-	if errors.As(err, &postgres) {
-		return "postgres"
-	}
-	return "other"
+	logOperationError(ctx, "Work-item operation failed", operation, stage, err)
 }
 
 func (s *workItemCoreService) APIKeyAuth(ctx context.Context, key string, scheme *security.APIKeyScheme) (context.Context, error) {

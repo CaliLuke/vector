@@ -150,43 +150,11 @@ func (service *LifecycleService) confirmPublicAsset(ctx context.Context, anchor,
 }
 
 func (service *LifecycleService) deletePublicAsset(ctx context.Context, anchor, rawAssetID string) error {
-	userID, err := assetUserID(ctx)
-	if err != nil {
-		return err
-	}
-	workspaceID, projectID, _, found, err := service.assets.repository.PublicProjectBoard(ctx, anchor, true)
-	if err != nil {
-		return err
-	}
-	if !found {
-		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Project is not published"}}
-	}
-	assetID, err := uuid.Parse(rawAssetID)
-	if err != nil {
-		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
-	}
-	return service.assets.repository.DeletePublicAsset(ctx, userID, workspaceID, projectID, assetID)
+	return service.mutatePublicAsset(ctx, anchor, rawAssetID, service.assets.repository.DeletePublicAsset)
 }
-
 func (service *LifecycleService) restorePublicAsset(ctx context.Context, anchor, rawAssetID string) error {
-	userID, err := assetUserID(ctx)
-	if err != nil {
-		return err
-	}
-	workspaceID, projectID, _, found, err := service.assets.repository.PublicProjectBoard(ctx, anchor, true)
-	if err != nil {
-		return err
-	}
-	if !found {
-		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Project is not published"}}
-	}
-	assetID, err := uuid.Parse(rawAssetID)
-	if err != nil {
-		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
-	}
-	return service.assets.repository.RestorePublicAsset(ctx, userID, workspaceID, projectID, assetID)
+	return service.mutatePublicAsset(ctx, anchor, rawAssetID, service.assets.repository.RestorePublicAsset)
 }
-
 func (service *LifecycleService) bulkAssociatePublicAssets(ctx context.Context, anchor, rawEntityID string, body io.ReadCloser) error {
 	userID, err := assetUserID(ctx)
 	if err != nil {
@@ -251,4 +219,23 @@ func (service *LifecycleService) bulkAssociatePublicAssets(ctx context.Context, 
 		return service.assets.repository.BulkAssociatePublicAssetComments(ctx, userID, workspaceID, projectID, commentID, matchedIDs)
 	}
 	return nil
+}
+
+func (service *LifecycleService) mutatePublicAsset(ctx context.Context, anchor, rawAssetID string, mutate func(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) error) error {
+	userID, err := assetUserID(ctx)
+	if err != nil {
+		return err
+	}
+	workspaceID, projectID, _, found, err := service.assets.repository.PublicProjectBoard(ctx, anchor, true)
+	if err != nil {
+		return err
+	}
+	if !found {
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Project is not published"}}
+	}
+	assetID, err := uuid.Parse(rawAssetID)
+	if err != nil {
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+	}
+	return mutate(ctx, userID, workspaceID, projectID, assetID)
 }

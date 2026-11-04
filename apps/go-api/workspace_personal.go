@@ -128,34 +128,26 @@ func (s *personalDashboardService) ActivityGraph(ctx context.Context, p *api.Act
 	return personalDashboardRaw(body)
 }
 func (s *personalDashboardService) Dashboard(ctx context.Context, p *api.DashboardPayload) (*api.PersonalDashboardRawJSON, io.ReadCloser, error) {
-	actor, err := s.actor(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-	month, err := s.month(p.Month)
-	if err != nil {
-		return nil, nil, err
-	}
-	body, err := s.repository.Dashboard(ctx, actor.id, p.Slug, month)
-	if err != nil {
-		return nil, nil, s.internal()
-	}
-	return personalDashboardRaw(body)
+	return s.monthlyRead(ctx, p.Slug, p.Month, s.repository.Dashboard)
 }
 func (s *personalDashboardService) IssuesCompletedGraph(ctx context.Context, p *api.IssuesCompletedGraphPayload) (*api.PersonalDashboardRawJSON, io.ReadCloser, error) {
-	actor, err := s.actor(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-	month, err := s.month(p.Month)
-	if err != nil {
-		return nil, nil, err
-	}
-	body, err := s.repository.CompletedGraph(ctx, actor.id, p.Slug, month)
-	if err != nil {
-		return nil, nil, s.internal()
-	}
-	return personalDashboardRaw(body)
+	return s.monthlyRead(ctx, p.Slug, p.Month, s.repository.CompletedGraph)
 }
 
 var _ api.Service = (*personalDashboardService)(nil)
+
+func (s *personalDashboardService) monthlyRead(ctx context.Context, slug string, selectedMonth *string, read func(context.Context, string, string, string) (json.RawMessage, error)) (*api.PersonalDashboardRawJSON, io.ReadCloser, error) {
+	actor, err := s.actor(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	month, err := s.month(selectedMonth)
+	if err != nil {
+		return nil, nil, err
+	}
+	body, err := read(ctx, actor.id, slug, month)
+	if err != nil {
+		return nil, nil, s.internal()
+	}
+	return personalDashboardRaw(body)
+}

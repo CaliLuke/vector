@@ -40,14 +40,7 @@ func (repository *Repository) APIProjects(ctx context.Context, userID uuid.UUID,
 	if err != nil {
 		return nil, err
 	}
-	query := apicontract.Query{Params: map[string]string{}, Present: map[string]bool{}}
-	if options.PerPage != nil {
-		query.Params["per_page"], query.Present["per_page"] = *options.PerPage, true
-	}
-	if options.Cursor != nil {
-		query.Params["cursor"], query.Present["cursor"] = *options.Cursor, true
-	}
-	limit, page, offset, err := apicontract.PageWindow(query)
+	limit, page, offset, err := options.pageWindow()
 	if err != nil {
 		return nil, err
 	}
@@ -66,14 +59,7 @@ func (repository *Repository) APIProjectList(ctx context.Context, userID uuid.UU
 	if err != nil {
 		return nil, err
 	}
-	query := apicontract.Query{Params: map[string]string{}, Present: map[string]bool{}}
-	if options.PerPage != nil {
-		query.Params["per_page"], query.Present["per_page"] = *options.PerPage, true
-	}
-	if options.Cursor != nil {
-		query.Params["cursor"], query.Present["cursor"] = *options.Cursor, true
-	}
-	limit, page, offset, err := apicontract.PageWindow(query)
+	limit, page, offset, err := options.pageWindow()
 	if err != nil {
 		return nil, err
 	}
@@ -376,4 +362,15 @@ func authorizedProjectBody(row pgx.Row) ([]byte, error) {
 		return nil, ErrNotFound
 	}
 	return body, nil
+}
+
+func (options APIProjectListOptions) pageWindow() (int, int, int, error) {
+	query := apicontract.Query{Params: map[string]string{}, Present: map[string]bool{}}
+	if options.PerPage != nil {
+		query.Params["per_page"], query.Present["per_page"] = *options.PerPage, true
+	}
+	if options.Cursor != nil {
+		query.Params["cursor"], query.Present["cursor"] = *options.Cursor, true
+	}
+	return apicontract.PageWindow(query)
 }

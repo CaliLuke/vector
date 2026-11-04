@@ -274,7 +274,7 @@ func (s *ticketCollaborationService) execute(ctx context.Context, operation stri
 	if err != nil {
 		var httpError *apicontract.HTTPError
 		if !errors.As(err, &httpError) {
-			fields := []log.Fielder{log.KV{K: "msg", V: "Ticket collaboration operation failed"}, log.KV{K: "operation", V: operation}, log.KV{K: "error_type", V: fmt.Sprintf("%T", err)}, log.KV{K: "error_kind", V: workItemErrorKind(err)}}
+			fields := []log.Fielder{log.KV{K: "msg", V: "Ticket collaboration operation failed"}, log.KV{K: "operation", V: operation}, log.KV{K: "error_type", V: fmt.Sprintf("%T", err)}, log.KV{K: "error_kind", V: operationErrorKind(err)}}
 			var pg *pgconn.PgError
 			if errors.As(err, &pg) {
 				fields = append(fields, log.KV{K: "sqlstate", V: pg.Code}, log.KV{K: "table", V: pg.TableName}, log.KV{K: "column", V: pg.ColumnName}, log.KV{K: "constraint", V: pg.ConstraintName})

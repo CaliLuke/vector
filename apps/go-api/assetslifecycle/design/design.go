@@ -4,7 +4,10 @@
 //go:generate go run ../../internal/assets/bindingsgen -output ../../internal/assets/service_bindings.go -protocol-output ../../cmd/system/assets_lifecycle_protocol_mounts.go
 package design
 
-import . "github.com/CaliLuke/loom/dsl"
+import (
+	"github.com/CaliLuke/go-plane/internal/apidesign"
+	. "github.com/CaliLuke/loom/dsl"
+)
 
 var ImportedEntityTypeEnum = Type("EntityTypeEnum", String, func() {
 	Meta("openapi:typename:canonical", "true")
@@ -837,51 +840,10 @@ var _ = Service("AssetsLifecycle", func() {
 				Header("contentType:Content-Type")
 				Header("location:Location")
 			})
-			Response("GetAPIAssetsV2StaticByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2StaticByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2StaticByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2StaticByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2StaticByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2StaticByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2StaticByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2StaticByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2StaticByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIAssetsV2StaticByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIAssetsV2StaticByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIAssetsV2StaticByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIAssetsV2StaticByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIAssetsV2UserAssets", func() {
@@ -915,51 +877,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIAssetsV2UserAssetsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIAssetsV2UserAssetsStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIAssetsV2UserAssetsStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIAssetsV2UserAssetsStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIAssetsV2UserAssetsStatus", 413, 429, 500)
 		})
 	})
 	Method("PatchAPIAssetsV2UserAssets", func() {
@@ -995,51 +916,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PatchAPIAssetsV2UserAssetsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PatchAPIAssetsV2UserAssetsStatus", 400, 401)
+			apidesign.JSONErrors("PatchAPIAssetsV2UserAssetsStatus", 403, 404)
+			apidesign.JSONErrors("PatchAPIAssetsV2UserAssetsStatus", 405, 409)
+			apidesign.JSONErrors("PatchAPIAssetsV2UserAssetsStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIAssetsV2UserAssets", func() {
@@ -1076,51 +956,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersFileassetuploadresponseResponse)
 			})
-			Response("PostAPIAssetsV2UserAssetsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIAssetsV2UserAssetsStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIAssetsV2UserAssetsStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIAssetsV2UserAssetsStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIAssetsV2UserAssetsStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIAssetsV2UserAssetsByAssetID", func() {
@@ -1159,51 +998,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIAssetsV2UserAssetsByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2UserAssetsByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIAssetsV2UserAssetsByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIAssetsV2UserAssetsByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIAssetsV2UserAssetsByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIAssetsV2UserAssetsByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("PatchAPIAssetsV2UserAssetsByAssetID", func() {
@@ -1244,51 +1042,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PatchAPIAssetsV2UserAssetsByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2UserAssetsByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PatchAPIAssetsV2UserAssetsByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("PatchAPIAssetsV2UserAssetsByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("PatchAPIAssetsV2UserAssetsByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("PatchAPIAssetsV2UserAssetsByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIAssetsV2UserAssetsByAssetID", func() {
@@ -1330,51 +1087,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersFileassetuploadresponseResponse)
 			})
-			Response("PostAPIAssetsV2UserAssetsByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2UserAssetsByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIAssetsV2UserAssetsByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIAssetsV2UserAssetsByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIAssetsV2UserAssetsByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIAssetsV2UserAssetsByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIAssetsV2WorkspacesBySlug", func() {
@@ -1411,51 +1127,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIAssetsV2WorkspacesBySlug", func() {
@@ -1497,51 +1172,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(200, func() {
 				ContentType("application/json")
 			})
-			Response("GetAPIAssetsV2WorkspacesBySlugStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugStatus", 413, 429, 500)
 		})
 	})
 	Method("PatchAPIAssetsV2WorkspacesBySlug", func() {
@@ -1580,51 +1214,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugStatus", 400, 401)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugStatus", 403, 404)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugStatus", 405, 409)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIAssetsV2WorkspacesBySlug", func() {
@@ -1664,51 +1257,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersFileassetuploadresponseResponse)
 			})
-			Response("PostAPIAssetsV2WorkspacesBySlugStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIAssetsV2WorkspacesBySlugCheckByAssetID", func() {
@@ -1750,51 +1302,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersFileassetexistsresponseResponse)
 			})
-			Response("GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIAssetsV2WorkspacesBySlugDownloadByAssetID", func() {
@@ -1842,51 +1353,10 @@ var _ = Service("AssetsLifecycle", func() {
 				Header("contentType:Content-Type")
 				Header("location:Location")
 			})
-			Response("GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetID", func() {
@@ -1930,51 +1400,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersFileassetduplicateresponseResponse)
 			})
-			Response("PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectID", func() {
@@ -2015,51 +1444,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectID", func() {
@@ -2105,51 +1493,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(200, func() {
 				ContentType("application/json")
 			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 413, 429, 500)
 		})
 	})
 	Method("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectID", func() {
@@ -2192,51 +1539,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 400, 401)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 403, 404)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 405, 409)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectID", func() {
@@ -2280,51 +1586,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersFileassetuploadresponseResponse)
 			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetID", func() {
@@ -2376,51 +1641,10 @@ var _ = Service("AssetsLifecycle", func() {
 				Header("contentType:Content-Type")
 				Header("location:Location")
 			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments", func() {
@@ -2465,51 +1689,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments", func() {
@@ -2559,51 +1742,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(200, func() {
 				ContentType("application/json")
 			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments", func() {
@@ -2651,51 +1793,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersIssueattachmentuploadresponseResponse)
 			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", func() {
@@ -2744,51 +1845,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", func() {
@@ -2844,51 +1904,10 @@ var _ = Service("AssetsLifecycle", func() {
 				Header("contentType:Content-Type")
 				Header("location:Location")
 			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", func() {
@@ -2939,51 +1958,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus", 400, 401)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus", 403, 404)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus", 405, 409)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", func() {
@@ -3060,51 +2038,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk", func() {
@@ -3149,51 +2086,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk", func() {
@@ -3245,51 +2141,10 @@ var _ = Service("AssetsLifecycle", func() {
 				Header("contentType:Content-Type")
 				Header("location:Location")
 			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk", func() {
@@ -3336,51 +2191,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 400, 401)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 403, 404)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 405, 409)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk", func() {
@@ -3428,51 +2242,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersFileassetuploadresponseResponse)
 			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIAssetsV2WorkspacesBySlugRestoreByAssetID", func() {
@@ -3513,51 +2286,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIAssetsV2WorkspacesBySlugByAssetID", func() {
@@ -3598,51 +2330,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIAssetsV2WorkspacesBySlugByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIAssetsV2WorkspacesBySlugByAssetID", func() {
@@ -3690,51 +2381,10 @@ var _ = Service("AssetsLifecycle", func() {
 				Header("contentType:Content-Type")
 				Header("location:Location")
 			})
-			Response("GetAPIAssetsV2WorkspacesBySlugByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIAssetsV2WorkspacesBySlugByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("PatchAPIAssetsV2WorkspacesBySlugByAssetID", func() {
@@ -3777,51 +2427,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIAssetsV2WorkspacesBySlugByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("PatchAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIAssetsV2WorkspacesBySlugByAssetID", func() {
@@ -3865,51 +2474,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersFileassetuploadresponseResponse)
 			})
-			Response("PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIPublicAssetsV2AnchorByAnchor", func() {
@@ -3946,51 +2514,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIPublicAssetsV2AnchorByAnchorStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIPublicAssetsV2AnchorByAnchorStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIPublicAssetsV2AnchorByAnchorStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIPublicAssetsV2AnchorByAnchorStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIPublicAssetsV2AnchorByAnchor", func() {
@@ -4033,51 +2560,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(200, func() {
 				ContentType("application/json")
 			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIPublicAssetsV2AnchorByAnchorStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIPublicAssetsV2AnchorByAnchorStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIPublicAssetsV2AnchorByAnchorStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIPublicAssetsV2AnchorByAnchorStatus", 413, 429, 500)
 		})
 	})
 	Method("PatchAPIPublicAssetsV2AnchorByAnchor", func() {
@@ -4116,51 +2602,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PatchAPIPublicAssetsV2AnchorByAnchorStatus", 400, 401)
+			apidesign.JSONErrors("PatchAPIPublicAssetsV2AnchorByAnchorStatus", 403, 404)
+			apidesign.JSONErrors("PatchAPIPublicAssetsV2AnchorByAnchorStatus", 405, 409)
+			apidesign.JSONErrors("PatchAPIPublicAssetsV2AnchorByAnchorStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIPublicAssetsV2AnchorByAnchor", func() {
@@ -4200,51 +2645,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersFileassetuploadresponseResponse)
 			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIPublicAssetsV2AnchorByAnchorRestoreByPk", func() {
@@ -4285,51 +2689,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulk", func() {
@@ -4372,51 +2735,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIPublicAssetsV2AnchorByAnchorByPk", func() {
@@ -4457,51 +2779,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIPublicAssetsV2AnchorByAnchorByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIPublicAssetsV2AnchorByAnchorByPkStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIPublicAssetsV2AnchorByAnchorByPkStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIPublicAssetsV2AnchorByAnchorByPkStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIPublicAssetsV2AnchorByAnchorByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIPublicAssetsV2AnchorByAnchorByPk", func() {
@@ -4550,51 +2831,10 @@ var _ = Service("AssetsLifecycle", func() {
 				Header("contentType:Content-Type")
 				Header("location:Location")
 			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIPublicAssetsV2AnchorByAnchorByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIPublicAssetsV2AnchorByAnchorByPkStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIPublicAssetsV2AnchorByAnchorByPkStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIPublicAssetsV2AnchorByAnchorByPkStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIPublicAssetsV2AnchorByAnchorByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("PatchAPIPublicAssetsV2AnchorByAnchorByPk", func() {
@@ -4637,51 +2877,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIPublicAssetsV2AnchorByAnchorByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PatchAPIPublicAssetsV2AnchorByAnchorByPkStatus", 400, 401)
+			apidesign.JSONErrors("PatchAPIPublicAssetsV2AnchorByAnchorByPkStatus", 403, 404)
+			apidesign.JSONErrors("PatchAPIPublicAssetsV2AnchorByAnchorByPkStatus", 405, 409)
+			apidesign.JSONErrors("PatchAPIPublicAssetsV2AnchorByAnchorByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIPublicAssetsV2AnchorByAnchorByPk", func() {
@@ -4725,51 +2924,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersFileassetuploadresponseResponse)
 			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIPublicAssetsV2AnchorByAnchorByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorByPkStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorByPkStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorByPkStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIPublicAssetsV2AnchorByAnchorByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIUsersFileAssets", func() {
@@ -4803,51 +2961,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIUsersFileAssetsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIUsersFileAssetsStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIUsersFileAssetsStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIUsersFileAssetsStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIUsersFileAssetsStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIUsersFileAssets", func() {
@@ -4883,51 +3000,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(200, func() {
 				ContentType("application/json")
 			})
-			Response("GetAPIUsersFileAssetsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIUsersFileAssetsStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIUsersFileAssetsStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIUsersFileAssetsStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIUsersFileAssetsStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIUsersFileAssets", func() {
@@ -4964,51 +3040,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedPlaneAppSerializersAssetFileassetserializerResponse)
 			})
-			Response("PostAPIUsersFileAssetsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIUsersFileAssetsStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIUsersFileAssetsStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIUsersFileAssetsStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIUsersFileAssetsStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIUsersFileAssetsByAssetKey", func() {
@@ -5045,51 +3080,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIUsersFileAssetsByAssetKeyStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsByAssetKeyStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsByAssetKeyStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsByAssetKeyStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsByAssetKeyStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsByAssetKeyStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsByAssetKeyStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsByAssetKeyStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIUsersFileAssetsByAssetKeyStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIUsersFileAssetsByAssetKeyStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIUsersFileAssetsByAssetKeyStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIUsersFileAssetsByAssetKeyStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIUsersFileAssetsByAssetKeyStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIUsersFileAssetsByAssetKey", func() {
@@ -5131,51 +3125,10 @@ var _ = Service("AssetsLifecycle", func() {
 					Untagged()
 				})
 			})
-			Response("GetAPIUsersFileAssetsByAssetKeyStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsByAssetKeyStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsByAssetKeyStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsByAssetKeyStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsByAssetKeyStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsByAssetKeyStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsByAssetKeyStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsByAssetKeyStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIUsersFileAssetsByAssetKeyStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIUsersFileAssetsByAssetKeyStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIUsersFileAssetsByAssetKeyStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIUsersFileAssetsByAssetKeyStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIUsersFileAssetsByAssetKeyStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIUsersFileAssetsByAssetKey", func() {
@@ -5215,51 +3168,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedPlaneAppSerializersAssetFileassetserializerResponse)
 			})
-			Response("PostAPIUsersFileAssetsByAssetKeyStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsByAssetKeyStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsByAssetKeyStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsByAssetKeyStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsByAssetKeyStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsByAssetKeyStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsByAssetKeyStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsByAssetKeyStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIUsersFileAssetsByAssetKeyStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIUsersFileAssetsByAssetKeyStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIUsersFileAssetsByAssetKeyStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIUsersFileAssetsByAssetKeyStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIUsersFileAssetsByAssetKeyStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIV1AssetsUserAssets", func() {
@@ -5309,51 +3221,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersFileassetuploadresponseResponse)
 			})
-			Response("PostAPIV1AssetsUserAssetsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIV1AssetsUserAssetsStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIV1AssetsUserAssetsStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIV1AssetsUserAssetsStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIV1AssetsUserAssetsStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIV1AssetsUserAssetsServer", func() {
@@ -5391,51 +3262,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersFileassetuploadresponseResponse)
 			})
-			Response("PostAPIV1AssetsUserAssetsServerStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsServerStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsServerStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsServerStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsServerStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsServerStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsServerStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsServerStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1AssetsUserAssetsServerStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIV1AssetsUserAssetsServerStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIV1AssetsUserAssetsServerStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIV1AssetsUserAssetsServerStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIV1AssetsUserAssetsServerStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIV1AssetsUserAssetsByAssetID", func() {
@@ -5475,51 +3305,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("Asset deleted successfully")
 			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIV1AssetsUserAssetsByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIV1AssetsUserAssetsByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIV1AssetsUserAssetsByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIV1AssetsUserAssetsByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("PatchAPIV1AssetsUserAssetsByAssetID", func() {
@@ -5561,51 +3350,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("Asset updated successfully")
 			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PatchAPIV1AssetsUserAssetsByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("PatchAPIV1AssetsUserAssetsByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("PatchAPIV1AssetsUserAssetsByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("PatchAPIV1AssetsUserAssetsByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIV1AssetsUserAssetsByAssetIDServer", func() {
@@ -5645,51 +3393,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("Asset deleted successfully")
 			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDServerStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDServerStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDServerStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDServerStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDServerStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDServerStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDServerStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDServerStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1AssetsUserAssetsByAssetIDServerStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIV1AssetsUserAssetsByAssetIDServerStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIV1AssetsUserAssetsByAssetIDServerStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIV1AssetsUserAssetsByAssetIDServerStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIV1AssetsUserAssetsByAssetIDServerStatus", 413, 429, 500)
 		})
 	})
 	Method("PatchAPIV1AssetsUserAssetsByAssetIDServer", func() {
@@ -5731,51 +3438,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("Asset updated successfully")
 			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDServerStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDServerStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDServerStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDServerStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDServerStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDServerStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDServerStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDServerStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1AssetsUserAssetsByAssetIDServerStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PatchAPIV1AssetsUserAssetsByAssetIDServerStatus", 400, 401)
+			apidesign.JSONErrors("PatchAPIV1AssetsUserAssetsByAssetIDServerStatus", 403, 404)
+			apidesign.JSONErrors("PatchAPIV1AssetsUserAssetsByAssetIDServerStatus", 405, 409)
+			apidesign.JSONErrors("PatchAPIV1AssetsUserAssetsByAssetIDServerStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIV1WorkspacesBySlugAssets", func() {
@@ -5824,51 +3490,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersFileassetuploadresponseResponse)
 			})
-			Response("PostAPIV1WorkspacesBySlugAssetsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugAssetsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugAssetsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugAssetsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugAssetsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugAssetsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugAssetsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugAssetsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugAssetsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIV1WorkspacesBySlugAssetsStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIV1WorkspacesBySlugAssetsStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIV1WorkspacesBySlugAssetsStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIV1WorkspacesBySlugAssetsStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIV1WorkspacesBySlugAssetsByAssetID", func() {
@@ -5923,51 +3548,10 @@ var _ = Service("AssetsLifecycle", func() {
 				Description("Presigned download URL generated successfully")
 				ContentType("application/json")
 			})
-			Response("GetAPIV1WorkspacesBySlugAssetsByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugAssetsByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugAssetsByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugAssetsByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugAssetsByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugAssetsByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugAssetsByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugAssetsByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugAssetsByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugAssetsByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugAssetsByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugAssetsByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugAssetsByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("PatchAPIV1WorkspacesBySlugAssetsByAssetID", func() {
@@ -6019,51 +3603,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("Asset updated successfully")
 			})
-			Response("PatchAPIV1WorkspacesBySlugAssetsByAssetIDStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugAssetsByAssetIDStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugAssetsByAssetIDStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugAssetsByAssetIDStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugAssetsByAssetIDStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugAssetsByAssetIDStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugAssetsByAssetIDStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugAssetsByAssetIDStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugAssetsByAssetIDStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PatchAPIV1WorkspacesBySlugAssetsByAssetIDStatus", 400, 401)
+			apidesign.JSONErrors("PatchAPIV1WorkspacesBySlugAssetsByAssetIDStatus", 403, 404)
+			apidesign.JSONErrors("PatchAPIV1WorkspacesBySlugAssetsByAssetIDStatus", 405, 409)
+			apidesign.JSONErrors("PatchAPIV1WorkspacesBySlugAssetsByAssetIDStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", func() {
@@ -6112,51 +3655,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(200, func() {
 				ContentType("application/json")
 			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", func() {
@@ -6208,51 +3710,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersIssueattachmentuploadresponseResponse)
 			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk", func() {
@@ -6305,51 +3766,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk", func() {
@@ -6409,51 +3829,10 @@ var _ = Service("AssetsLifecycle", func() {
 				Header("contentType:Content-Type")
 				Header("location:Location")
 			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk", func() {
@@ -6508,51 +3887,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 400, 401)
+			apidesign.JSONErrors("PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 403, 404)
+			apidesign.JSONErrors("PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 405, 409)
+			apidesign.JSONErrors("PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachments", func() {
@@ -6601,51 +3939,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(200, func() {
 				ContentType("application/json")
 			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachments", func() {
@@ -6697,51 +3994,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedRestFrameworkSerializersIssueattachmentuploadresponseResponse)
 			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk", func() {
@@ -6794,51 +4050,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk", func() {
@@ -6898,51 +4113,10 @@ var _ = Service("AssetsLifecycle", func() {
 				Header("contentType:Content-Type")
 				Header("location:Location")
 			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk", func() {
@@ -6997,51 +4171,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus", 400, 401)
+			apidesign.JSONErrors("PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus", 403, 404)
+			apidesign.JSONErrors("PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus", 405, 409)
+			apidesign.JSONErrors("PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKey", func() {
@@ -7082,51 +4215,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKey", func() {
@@ -7172,51 +4264,10 @@ var _ = Service("AssetsLifecycle", func() {
 					Untagged()
 				})
 			})
-			Response("GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKey", func() {
@@ -7260,51 +4311,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedPlaneAppSerializersAssetFileassetserializerResponse)
 			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestore", func() {
@@ -7345,51 +4355,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIWorkspacesBySlugFileAssets", func() {
@@ -7426,51 +4395,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIWorkspacesBySlugFileAssetsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugFileAssetsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugFileAssetsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugFileAssetsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugFileAssetsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugFileAssetsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugFileAssetsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugFileAssetsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugFileAssetsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIWorkspacesBySlugFileAssetsStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIWorkspacesBySlugFileAssetsStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIWorkspacesBySlugFileAssetsStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIWorkspacesBySlugFileAssetsStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIWorkspacesBySlugFileAssets", func() {
@@ -7509,51 +4437,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(200, func() {
 				ContentType("application/json")
 			})
-			Response("GetAPIWorkspacesBySlugFileAssetsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugFileAssetsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugFileAssetsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugFileAssetsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugFileAssetsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugFileAssetsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugFileAssetsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugFileAssetsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugFileAssetsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIWorkspacesBySlugFileAssetsStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIWorkspacesBySlugFileAssetsStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIWorkspacesBySlugFileAssetsStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIWorkspacesBySlugFileAssetsStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIWorkspacesBySlugFileAssets", func() {
@@ -7593,51 +4480,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedPlaneAppSerializersAssetFileassetserializerResponse)
 			})
-			Response("PostAPIWorkspacesBySlugFileAssetsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugFileAssetsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugFileAssetsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugFileAssetsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugFileAssetsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugFileAssetsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugFileAssetsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugFileAssetsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugFileAssetsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIWorkspacesBySlugFileAssetsStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIWorkspacesBySlugFileAssetsStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIWorkspacesBySlugFileAssetsStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIWorkspacesBySlugFileAssetsStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", func() {
@@ -7682,51 +4528,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 413, 429, 500)
 		})
 	})
 	Method("GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", func() {
@@ -7776,51 +4581,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(200, func() {
 				ContentType("application/json")
 			})
-			Response("GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 400, 401)
+			apidesign.JSONErrors("GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 403, 404)
+			apidesign.JSONErrors("GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 405, 409)
+			apidesign.JSONErrors("GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 413, 429, 500)
 		})
 	})
 	Method("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", func() {
@@ -7868,51 +4632,10 @@ var _ = Service("AssetsLifecycle", func() {
 				ContentType("application/json")
 				OpenAPIBody(ImportedPlaneAppSerializersIssueIssueattachmentserializerResponse)
 			})
-			Response("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 400, 401)
+			apidesign.JSONErrors("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 403, 404)
+			apidesign.JSONErrors("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 405, 409)
+			apidesign.JSONErrors("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus", 413, 429, 500)
 		})
 	})
 	Method("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk", func() {
@@ -7961,51 +4684,10 @@ var _ = Service("AssetsLifecycle", func() {
 			Response(204, func() {
 				Description("No response body")
 			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus400", 400, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus401", 401, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus403", 403, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus404", 404, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus405", 405, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus409", 409, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus413", 413, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus429", 429, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
-			Response("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus500", 500, func() {
-				Description("JSON error response.")
-				Meta("openapi:description:errorName", "false")
-				ContentType("application/json")
-			})
+			apidesign.JSONErrors("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 400, 401)
+			apidesign.JSONErrors("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 403, 404)
+			apidesign.JSONErrors("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 405, 409)
+			apidesign.JSONErrors("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus", 413, 429, 500)
 		})
 	})
 })

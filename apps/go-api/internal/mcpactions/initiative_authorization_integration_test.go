@@ -44,7 +44,7 @@ func TestMCPInitiativeWritesReauthorizeAfterWaiting(t *testing.T) {
 				changes = nil
 			}
 			runMutationAuthorizationWait(t, mutationWaitScenario{
-				changes: changes, tool: "initiative", schemaLock: true, fixture: initiativeFixture, snapshot: initiativeSnapshot,
+				reuseCredentials: true, changes: changes, tool: "initiative", schemaLock: true, fixture: initiativeFixture, snapshot: initiativeSnapshot,
 				prepare: func(t *testing.T, f milestoneFixture, call catalogueCall) map[string]any {
 					return initiativeWriteInput(t, f, call, action)
 				},
@@ -75,7 +75,7 @@ func TestMCPInitiativeReferencesReauthorizeAfterWaiting(t *testing.T) {
 					},
 				})
 			}
-			runMutationAuthorizationWait(t, mutationWaitScenario{changes: changes, tool: "initiative", schemaLock: true, fixture: initiativeFixture, snapshot: initiativeSnapshot,
+			runMutationAuthorizationWait(t, mutationWaitScenario{reuseCredentials: true, changes: changes, tool: "initiative", schemaLock: true, fixture: initiativeFixture, snapshot: initiativeSnapshot,
 				prepare: func(t *testing.T, f milestoneFixture, call catalogueCall) map[string]any {
 					input := initiativeWriteInput(t, f, call, tc.action)
 					if tc.name == "lead" {

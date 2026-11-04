@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -136,7 +137,7 @@ func install(ctx context.Context) error {
 	}
 	// Start the durable runtime only after Install has migrated the application
 	// schema and registered the instance. Its periodic jobs query those tables.
-	admitMetrics := func(ctx context.Context) error {
+	admitMetrics := func(ctx context.Context) (resultErr error) {
 		runtime, err := backgroundtasks.NewRuntime(ctx, databaseURL)
 		if err != nil {
 			return fmt.Errorf("configure durable task runtime: %w", err)
@@ -144,7 +145,7 @@ func install(ctx context.Context) error {
 		defer func() {
 			shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
-			_ = runtime.Shutdown(shutdownCtx)
+			resultErr = errors.Join(resultErr, runtime.Shutdown(shutdownCtx))
 		}()
 		if startErr := runtime.Start(ctx); startErr != nil {
 			return fmt.Errorf("start durable task runtime: %w", startErr)

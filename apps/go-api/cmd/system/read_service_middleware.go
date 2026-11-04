@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -477,4 +478,19 @@ func setNativeProtocolCompatibilityHeaders(headers http.Header, allow string) {
 	mergeVary(headers, "Cookie", "origin")
 	headers.Set("X-Content-Type-Options", "nosniff")
 	headers.Set("X-Frame-Options", "DENY")
+}
+
+// writeReplacedBody preserves the caller's consumed byte count after rendering.
+func writeReplacedBody(output io.Writer, body []byte, inputLength int) (int, error) {
+	if len(body) != inputLength {
+		written, err := output.Write(body)
+		if err != nil {
+			return 0, err
+		}
+		if written != len(body) {
+			return 0, io.ErrShortWrite
+		}
+		return inputLength, nil
+	}
+	return output.Write(body)
 }

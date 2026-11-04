@@ -97,7 +97,7 @@ func TestRelationMutationsPreserveAtomicRetry(t *testing.T) {
 func TestMCPRelationMutationsReauthorizeAfterWaiting(t *testing.T) {
 	for _, action := range relationMutationActions {
 		t.Run(action, func(t *testing.T) {
-			runMutationAuthorizationWait(t, mutationWaitScenario{changes: mutationCredentialChanges(), tool: "workitem_relation", schemaLock: true, fixture: templateFixture, snapshot: coreSnapshot, prepare: func(t *testing.T, f milestoneFixture, _ catalogueCall) map[string]any {
+			runMutationAuthorizationWait(t, mutationWaitScenario{reuseCredentials: true, changes: mutationCredentialChanges(), tool: "workitem_relation", schemaLock: true, fixture: templateFixture, snapshot: coreSnapshot, prepare: func(t *testing.T, f milestoneFixture, _ catalogueCall) map[string]any {
 				return relationWriteInput(t, f, action)
 			}})
 		})

@@ -9,6 +9,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+
 	activitystore "github.com/CaliLuke/go-plane/internal/activityreads"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
@@ -16,6 +18,28 @@ import (
 
 type apiV1ReadErrorFactory func(int, map[string]any) error
 type apiV1ReadErrorMapper func(error) error
+
+// Keep the service-specific context key and error factory at the generated
+// adapter boundary; token validation and authentication effects are shared.
+func authenticateAPIRead(ctx context.Context, key string, keys activityReadsAPIKeys, principalKey any, newError apiV1ReadErrorFactory) (context.Context, error) {
+	principal, err := keys.Validate(ctx, key)
+	if err != nil {
+		if key == "" {
+			return ctx, newError(401, map[string]any{"detail": "Authentication credentials were not provided."})
+		}
+		if errors.Is(err, apikey.ErrInvalid) {
+			return ctx, newError(403, map[string]any{"detail": "Given API token is not valid"})
+		}
+		return ctx, newError(500, map[string]any{"detail": "Something went wrong please try again later"})
+	}
+	if effects := apikey.EffectsFromContext(ctx); effects != nil {
+		effects.Authenticated = true
+	}
+	return context.WithValue(ctx, principalKey, struct {
+		apikey.Principal
+		Key string
+	}{principal, key}), nil
+}
 
 type apiV1ReadPipeline struct {
 	principal apikey.Principal
@@ -63,4 +87,18 @@ func (pipeline apiV1ReadPipeline) execute(ctx context.Context) (io.ReadCloser, e
 		return nil, pipeline.mapError(err)
 	}
 	return io.NopCloser(bytes.NewReader(data)), nil
+}
+
+func mapAPIReadError(err, forbidden, notFound error, newError apiV1ReadErrorFactory) error {
+	var response *apicontract.HTTPError
+	switch {
+	case errors.As(err, &response):
+		return newError(response.Status, response.Body)
+	case errors.Is(err, forbidden):
+		return newError(403, map[string]any{"detail": "You do not have permission to perform this action."})
+	case errors.Is(err, notFound):
+		return newError(404, map[string]any{"error": "The requested resource does not exist."})
+	default:
+		return newError(500, map[string]any{"error": "Something went wrong please try again later"})
+	}
 }

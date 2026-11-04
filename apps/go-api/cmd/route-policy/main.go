@@ -1,33 +1,45 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
+
+	"github.com/CaliLuke/go-plane/internal/commandline"
 
 	"github.com/CaliLuke/go-plane/internal/routing"
 )
 
 func main() {
+	os.Exit(run(os.Args[1:], os.Stderr))
+}
+
+func run(args []string, stderr io.Writer) int {
+	flags := flag.NewFlagSet("route-policy", flag.ContinueOnError)
+	flags.SetOutput(stderr)
 	var outputPath string
-	flag.StringVar(&outputPath, "output", "", "generated Caddy policy path")
-	flag.Parse()
+	flags.StringVar(&outputPath, "output", "", "generated Caddy policy path")
+	if err := flags.Parse(args); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return 0
+		}
+		return 2
+	}
 	if outputPath == "" {
-		fmt.Fprintln(os.Stderr, "output is required")
-		os.Exit(2)
+		return commandline.Diagnostic(stderr, 2, "output is required")
 	}
 	policy, err := routing.Load()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return commandline.Diagnostic(stderr, 1, fmt.Sprint(err))
 	}
 	output, err := routing.RenderCaddy(policy)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return commandline.Diagnostic(stderr, 1, fmt.Sprint(err))
 	}
 	if err := os.WriteFile(outputPath, output, 0o644); err != nil {
-		fmt.Fprintf(os.Stderr, "write Caddy policy: %v\n", err)
-		os.Exit(1)
+		return commandline.Diagnostic(stderr, 1, fmt.Sprintf("write Caddy policy: %v", err))
 	}
+	return 0
 }
