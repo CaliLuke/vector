@@ -5,6 +5,8 @@ package mcpactions_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/customers"
@@ -34,16 +36,18 @@ func customerStorageSnapshot(t *testing.T, f milestoneFixture) []byte {
 	return customerStorageSnapshotQuery(t, t.Context(), f.pool.QueryRow)
 }
 
-// Read through the changing transaction when a lock holder updates catalogue
-// references, so the expected state includes its legitimate uncommitted changes.
+// One statement captures all tables at the same database snapshot. Reading
+// through the lock holder also includes its legitimate uncommitted changes.
 func customerStorageSnapshotQuery(t *testing.T, ctx context.Context, query func(context.Context, string, ...any) pgx.Row) []byte {
 	t.Helper()
-	snapshot := map[string]string{}
-	for _, table := range []string{"customers", "customer_requests", "customer_work_items", "customer_properties", "customer_property_options", "customer_property_values", "customer_events", "customer_revisions", "mutation_receipts", "work_item_effects"} {
-		var rows string
-		require.NoError(t, query(ctx, `SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]')::text FROM `+pgx.Identifier{table}.Sanitize()+` t`).Scan(&rows))
-		snapshot[table] = rows
+	var fields []string
+	var arguments []any
+	for index, table := range []string{"customers", "customer_requests", "customer_work_items", "customer_properties", "customer_property_options", "customer_property_values", "customer_events", "customer_revisions", "mutation_receipts", "work_item_effects"} {
+		fields = append(fields, fmt.Sprintf(`$%d::text,(SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]')::text FROM %s t)`, index+1, pgx.Identifier{table}.Sanitize()))
+		arguments = append(arguments, table)
 	}
+	var snapshot map[string]string
+	require.NoError(t, query(ctx, "SELECT jsonb_build_object("+strings.Join(fields, ",")+")", arguments...).Scan(&snapshot))
 	raw, err := json.Marshal(snapshot)
 	require.NoError(t, err)
 	return raw

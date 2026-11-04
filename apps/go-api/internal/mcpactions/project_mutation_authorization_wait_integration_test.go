@@ -21,6 +21,7 @@ import (
 type mutationWaitChange struct {
 	name, mode, kind, code string
 	apply                  func(*testing.T, context.Context, pgx.Tx, map[string]any) []byte
+	restore                func(*testing.T, context.Context, milestoneFixture, map[string]any)
 }
 
 type mutationWaitScenario struct {
@@ -40,9 +41,9 @@ type mutationWaitScenario struct {
 // that boundary adds no separate permission rule.
 func mutationCredentialChanges() []mutationWaitChange {
 	return []mutationWaitChange{
-		{"personal token revoked", "personal token", "token", "unauthorized", nil},
-		{"OAuth token revoked", "OAuth", "token", "unauthorized", nil},
-		{"OAuth write scope removed", "OAuth", "scope", "forbidden", nil},
+		{name: "personal token revoked", mode: "personal token", kind: "token", code: "unauthorized"},
+		{name: "OAuth token revoked", mode: "OAuth", kind: "token", code: "unauthorized"},
+		{name: "OAuth write scope removed", mode: "OAuth", kind: "scope", code: "forbidden"},
 	}
 }
 
@@ -51,18 +52,20 @@ func runMutationAuthorizationWait(t *testing.T, scenario mutationWaitScenario) {
 	changes := scenario.changes
 	if changes == nil {
 		changes = append(mutationCredentialChanges(),
-			mutationWaitChange{"personal token membership revoked", "personal token", "membership", "forbidden", nil},
-			mutationWaitChange{"OAuth membership revoked", "OAuth", "membership", "forbidden", nil},
+			mutationWaitChange{name: "personal token membership revoked", mode: "personal token", kind: "membership", code: "forbidden"},
+			mutationWaitChange{name: "OAuth membership revoked", mode: "OAuth", kind: "membership", code: "forbidden"},
 		)
 	}
 	for _, change := range changes {
 		t.Run(change.name, func(t *testing.T) {
 			// A rejected new write leaves domain storage unchanged. Reuse that
-			// fixture and request for receipt replay, restoring only the credential
-			// rows changed by this case. Domain-changing races keep isolated fixtures.
+			// fixture and request for receipt replay after restoring the case's
+			// credential or explicitly reversible reference change. Other domain
+			// changes keep isolated fixtures.
 			var shared milestoneFixture
 			var input map[string]any
-			if change.apply == nil {
+			reusable := change.apply == nil || change.restore != nil
+			if reusable {
 				shared = scenario.fixture(t)
 			}
 			for _, replay := range []bool{false, true} {
@@ -72,7 +75,7 @@ func runMutationAuthorizationWait(t *testing.T, scenario mutationWaitScenario) {
 				}
 				if !t.Run(phase, func(t *testing.T) {
 					f := shared
-					if change.apply != nil {
+					if !reusable {
 						f = scenario.fixture(t)
 						input = nil
 					}
@@ -129,6 +132,13 @@ func exerciseMutationAuthorizationWait(t *testing.T, f milestoneFixture, scenari
 		return queryErr == nil && waiting
 	}, 10*time.Second, 10*time.Millisecond, "request never waited on the held scope lock")
 	if change.apply != nil {
+		if change.restore != nil {
+			t.Cleanup(func() {
+				restoreCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+				defer cancel()
+				change.restore(t, restoreCtx, f, input)
+			})
+		}
 		// Commit the simulated scope writer before releasing its lock.
 		if expected := change.apply(t, ctx, blocker, input); expected != nil {
 			before = expected

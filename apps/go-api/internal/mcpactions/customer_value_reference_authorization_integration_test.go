@@ -126,6 +126,11 @@ func runCustomerReferenceAuthorizationWait(t *testing.T, change customerValueRef
 	for _, mode := range []string{"personal token", "OAuth"} {
 		changes = append(changes, mutationWaitChange{
 			name: mode, mode: mode, code: "invalid_params",
+			restore: func(t *testing.T, ctx context.Context, f milestoneFixture, input map[string]any) {
+				changed, err := f.pool.Exec(ctx, change.restore, customerReferenceArguments(t, input))
+				require.NoError(t, err)
+				require.EqualValues(t, 1, changed.RowsAffected())
+			},
 			apply: func(t *testing.T, ctx context.Context, writer pgx.Tx, input map[string]any) []byte {
 				changed, err := writer.Exec(ctx, change.disable, customerReferenceArguments(t, input))
 				require.NoError(t, err)

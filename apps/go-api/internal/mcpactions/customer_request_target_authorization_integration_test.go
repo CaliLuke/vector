@@ -104,6 +104,9 @@ func runCustomerLinkTargetWait(t *testing.T, tool string, prepare func(*testing.
 		for _, mode := range []string{"personal token", "OAuth"} {
 			changes = append(changes, mutationWaitChange{
 				name: change.name + "/" + mode, mode: mode, code: change.code,
+				restore: func(t *testing.T, ctx context.Context, f milestoneFixture, input map[string]any) {
+					change.setActive(t, ctx, f, input, true)
+				},
 				apply: func(t *testing.T, ctx context.Context, writer pgx.Tx, input map[string]any) []byte {
 					changed, err := writer.Exec(ctx, change.disable, change.arguments(input)...)
 					require.NoError(t, err)
