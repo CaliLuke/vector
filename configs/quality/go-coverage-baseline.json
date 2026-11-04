@@ -150,12 +150,12 @@
       "percent": 35.51
     },
     "github.com/CaliLuke/go-plane/internal/backgroundtasks": {
-      "statements": 5735,
-      "percent": 66.69
+      "statements": 5848,
+      "percent": 70
     },
     "github.com/CaliLuke/go-plane/internal/bootstrap": {
-      "statements": 289,
-      "percent": 72.32
+      "statements": 287,
+      "percent": 77
     },
     "github.com/CaliLuke/go-plane/internal/clioutput": {
       "statements": 3,
@@ -222,8 +222,8 @@
       "percent": 93.72
     },
     "github.com/CaliLuke/go-plane/internal/initiatives": {
-      "statements": 315,
-      "percent": 73.97
+      "statements": 318,
+      "percent": 84
     },
     "github.com/CaliLuke/go-plane/internal/instanceadminsession": {
       "statements": 20,
@@ -274,8 +274,8 @@
       "percent": 90
     },
     "github.com/CaliLuke/go-plane/internal/mcpactions": {
-      "statements": 3559,
-      "percent": 85.05
+      "statements": 3567,
+      "percent": 89
     },
     "github.com/CaliLuke/go-plane/internal/mcpauth": {
       "statements": 141,
@@ -310,8 +310,8 @@
       "percent": 80.9
     },
     "github.com/CaliLuke/go-plane/internal/pagereads": {
-      "statements": 1571,
-      "percent": 63.48
+      "statements": 1534,
+      "percent": 75
     },
     "github.com/CaliLuke/go-plane/internal/personaldashboard": {
       "statements": 12,
@@ -363,11 +363,11 @@
     },
     "github.com/CaliLuke/go-plane/internal/ratelimit": {
       "statements": 52,
-      "percent": 100.0
+      "percent": 100
     },
     "github.com/CaliLuke/go-plane/internal/releases": {
-      "statements": 467,
-      "percent": 79.01
+      "statements": 471,
+      "percent": 85
     },
     "github.com/CaliLuke/go-plane/internal/requestinput": {
       "statements": 405,
@@ -450,12 +450,12 @@
       "percent": 86.7
     },
     "github.com/CaliLuke/go-plane/internal/workitemrelations": {
-      "statements": 331,
-      "percent": 75.23
+      "statements": 340,
+      "percent": 80
     },
     "github.com/CaliLuke/go-plane/internal/workitems": {
-      "statements": 7243,
-      "percent": 66.15
+      "statements": 7229,
+      "percent": 70
     },
     "github.com/CaliLuke/go-plane/internal/workitemsearch": {
       "statements": 86,

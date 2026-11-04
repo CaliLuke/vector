@@ -52,12 +52,43 @@ and membership changes retain immutable audit snapshots.
 Consolidated proof must cover private ancestor/collection visibility, guest scope,
 owner protection, whole-subtree moves, archive/restore, atomic name/body updates,
 current permissions on replay, every-writer revisions, durable body history and
-asset behavior, both authentication modes and both MCP revisions. Workspace page
+asset behavior, both authentication modes and protocol revision `2026-07-28`. Workspace page
 and collection data must prevent a lossy rollback to the older project-only model.
 
 The shared generated-server content batch passes all 23 actions under both
 authentication modes on protocol revision `2026-07-28`. It exercises workspace page CRUD,
 receipt replay, subtree filing/removal, collection candidate search, membership
 changes, item linking, archive/restore and transactional body/version admission.
-Private cross-actor and project-page scope cases, concurrency, worker delivery and
-asset behavior remain part of the complete acceptance proof.
+The acceptance evidence below covers the remaining privacy, recovery, revision,
+worker and asset boundaries.
+
+## Acceptance evidence
+
+The pinned page and collection handlers at `dc7cfd9f3c305891909e2372f0cc507291353801`
+and SDK 0.3.1 page, collection, membership and branch models were inspected.
+The handler exposes name/body replacement, tri-state archive, numeric page access,
+string collection/member access and whole-branch filing. Broader SDK editor fields
+are not additional MCP inputs.
+
+The [content batch](../apps/go-api/internal/mcpactions/content_batch_integration_test.go)
+covers every generated action with PAT and OAuth on revision `2026-07-28`.
+[Privacy and hierarchy](../apps/go-api/internal/mcpactions/page_privacy_integration_test.go)
+cover private ancestors, owner protections, collection access, atomic subtree moves
+and archive/restore. [Scope checks](../apps/go-api/internal/mcpactions/page_scope_integration_test.go)
+cover immutable workspace binding, project pages and restricted guests.
+[Recovery](../apps/go-api/internal/mcpactions/page_recovery_integration_test.go)
+covers all 15 mutation paths through cancellation, commit rejection, retry and
+replay, queued credential revocation, request conflicts and competing revisions.
+[Reference waits](../apps/go-api/internal/mcpactions/page_reference_wait_integration_test.go)
+and the [membership-row race](../apps/go-api/internal/mcpactions/collection_membership_wait_integration_test.go)
+verify fresh permissions after waiting. [Native writers](../apps/go-api/internal/mcpactions/page_native_revision_integration_test.go)
+cover insert/update/delete at each revision boundary.
+
+[Worker delivery](../apps/go-api/internal/mcpactions/page_worker_integration_test.go)
+checks body versions, copied-image component ownership and duplicate admission;
+removing an image log is scoped to its page and workspace. Existing
+[asset visibility](../apps/go-api/internal/assets/asset_parent_visibility_integration_test.go)
+and [collaboration replacement](../apps/go-api/internal/mcpactions/page_collaboration_integration_test.go)
+checks retain ownership and stale-editor protection. [Rollback checks](../apps/go-api/internal/bootstrap/page_rollback_integration_test.go)
+preserve workspace pages, collections, project-item links and retained audit,
+while empty storage can roll back and upgrade.

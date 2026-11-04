@@ -190,7 +190,7 @@ func (store *PostgresPageTransactionStore) TrackPageTransactions(ctx context.Con
 		}
 	}
 	if len(deletedIDs) > 0 {
-		if _, err := tx.Exec(ctx, `DELETE FROM page_logs WHERE "transaction"=ANY($1::uuid[])`, deletedIDs); err != nil {
+		if _, err := tx.Exec(ctx, `DELETE FROM page_logs WHERE "transaction"=ANY($1::uuid[]) AND page_id=$2 AND workspace_id=$3`, deletedIDs, pageID, workspaceID); err != nil {
 			return fmt.Errorf("delete removed page transaction logs: %w", err)
 		}
 	}

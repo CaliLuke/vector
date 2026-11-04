@@ -1,5 +1,6 @@
 BEGIN;
 SET LOCAL search_path = public, pg_catalog;
+DO $$ BEGIN IF EXISTS(SELECT 1 FROM work_item_relation_definitions) OR EXISTS(SELECT 1 FROM work_item_custom_relations) THEN RAISE EXCEPTION 'custom relation data must be migrated before rollback'; END IF; END $$;
 -- Fail atomically if newer data cannot fit the older one-relation-per-pair model.
 CREATE UNIQUE INDEX issue_relation_unique_issue_related_issue_when_deleted_at_null ON issue_relations(issue_id,related_issue_id) WHERE deleted_at IS NULL;
 DROP INDEX issue_relation_unique_kind_live;

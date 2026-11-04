@@ -123,7 +123,13 @@ func authorizeMutation(ctx context.Context, tx pgx.Tx, in Command) error {
 		}
 	}
 	if in.Revalidate != nil {
-		return in.Revalidate(ctx)
+		if err := in.Revalidate(ctx); err != nil {
+			return err
+		}
+	}
+	if in.Action == "create" && in.RelationType == "" {
+		_, _, err := customDefinitionScope(ctx, tx, in)
+		return err
 	}
 	return nil
 }

@@ -38,5 +38,5 @@ No dependency source is patched.
 
 Regression tests cover the generated MCP server under PAT and generic OAuth,
 protocol revision `2026-07-28`, pagination, mention output, current
-permissions, foreign relationships, and empty versus missing results. Local
-browser/proxy verification and the rest of the accepted catalogue remain open.
+permissions, foreign relationships, and empty versus missing results. The [core acceptance notes](mcp-core-acceptance.md) link mutation and worker
+evidence; the [parity tracker](mcp-parity.md) records browser/proxy verification.

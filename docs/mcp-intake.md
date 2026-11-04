@@ -19,5 +19,5 @@ Revision tokens use the underlying item identity and advance for both item and
 intake-association changes, including native writers. Creation and triage reuse
 the existing transactional effects path. Deletion keeps native soft deletion and
 cleanup behavior. The generated-server core workflow batch covers all five actions
-under both authentication modes on protocol revision `2026-07-28`. The [parity tracker](mcp-parity.md)
-records the remaining acceptance checks.
+under both authentication modes on protocol revision `2026-07-28`. The [core acceptance notes](mcp-core-acceptance.md)
+record the completed domain, authorization, recovery, native-revision and effect checks.

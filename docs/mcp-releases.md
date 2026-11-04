@@ -57,4 +57,37 @@ The shared generated-server content batch passes all 20 actions under both
 authentication modes on protocol revision `2026-07-28`. It exercises release/tag/label CRUD,
 receipt replay, latest-release selection, escaped changelog text, label assignment,
 item linking and remove-wins behavior, and preservation of linked work items.
-The broader permission, concurrency, worker-delivery and picker cases remain open.
+The additional acceptance evidence is recorded below.
+
+## Acceptance
+
+All twenty release, tag and label actions meet the pinned handler and
+`plane-sdk==0.3.1` contracts. The inspected handlers are `release.py`,
+`release_tag.py` and `release_label.py` at the revision pinned in the parity tracker;
+SDK projections come from `plane/models/releases.py`.
+
+[Field checks](../apps/go-api/internal/mcpactions/release_contract_integration_test.go)
+cover false versus omitted updates, latest-release selection, HTML authority and
+atomic rejection. [Visibility checks](../apps/go-api/internal/mcpactions/release_visibility_integration_test.go)
+exclude foreign and project-owned records and filter private/guest item counts.
+[Native picker checks](../apps/go-api/internal/mcpactions/release_picker_integration_test.go)
+require workspace releases to be selectable, preserve referenced releases, and
+reject retired choices.
+
+[Authorization checks](../apps/go-api/internal/mcpactions/release_authorization_integration_test.go)
+cover every mutation under both credentials, including revoked writes/replay,
+request conflicts and credential changes during waits.
+[Reference waits](../apps/go-api/internal/mcpactions/release_reference_wait_integration_test.go)
+and [label replay checks](../apps/go-api/internal/mcpactions/release_reference_replay_integration_test.go)
+require current lead, tag, label, project and item access before receipt replay.
+
+[Recovery checks](../apps/go-api/internal/mcpactions/release_recovery_integration_test.go)
+exercise cancelled waits, rejected commits, retry and competing revisions.
+[Native-writer checks](../apps/go-api/internal/mcpactions/release_native_revision_integration_test.go)
+cover all six revision-bearing storage boundaries.
+[Worker checks](../apps/go-api/internal/mcpactions/initiative_worker_integration_test.go)
+require immutable association history after rename/deletion and duplicate delivery.
+[Rollback checks](../apps/go-api/internal/bootstrap/release_rollback_integration_test.go)
+protect standalone tags/labels and retained audit, while allowing empty rollback.
+Existing content workflows, native picker preservation/concurrency and receipt
+timezone/opaque-description checks remain in force.

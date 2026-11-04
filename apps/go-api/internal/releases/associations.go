@@ -20,6 +20,11 @@ func authorize(ctx context.Context, tx pgx.Tx, in Command) error {
 	if err := workspaceScope(ctx, tx, in.Query, true); err != nil {
 		return err
 	}
+	if in.Action == "attach" || in.Action == "detach" {
+		if err := authorizeLabels(ctx, tx, in); err != nil {
+			return err
+		}
+	}
 	// These checks run before receipts so stale selection permissions cannot be
 	// used to replay a response containing a newly inaccessible reference.
 	if lead, ok := in.Fields["lead_id"].(string); ok {
@@ -88,17 +93,21 @@ func visibleItem(ctx context.Context, tx pgx.Tx, q Query, id uuid.UUID, lock boo
 	}
 	return project, err
 }
-func manageLabels(ctx context.Context, tx pgx.Tx, in Command) (bool, error) {
+func authorizeLabels(ctx context.Context, tx pgx.Tx, in Command) error {
 	for _, id := range in.Add {
 		var found uuid.UUID
 		err := tx.QueryRow(ctx, `SELECT id FROM release_labels WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL FOR SHARE`, id, in.WorkspaceID).Scan(&found)
 		if errors.Is(err, pgx.ErrNoRows) {
-			return false, projectmutations.ErrNotFound
+			return projectmutations.ErrNotFound
 		}
 		if err != nil {
-			return false, err
+			return err
 		}
 	}
+	return nil
+}
+
+func manageLabels(ctx context.Context, tx pgx.Tx, in Command) (bool, error) {
 	changed := false
 	for _, id := range in.Add {
 		sql := `INSERT INTO release_item_labels(release_id,label_id,workspace_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING`

@@ -40,16 +40,9 @@ func mutateEdges(ctx context.Context, tx pgx.Tx, in Command) (json.RawMessage, e
 	symmetric := false
 	if custom {
 		table = "work_item_custom_relations"
-		var outward, inward string
-		err := tx.QueryRow(ctx, `SELECT outward,inward FROM work_item_relation_definitions WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL AND is_active FOR SHARE`, in.DefinitionID, in.WorkspaceID).Scan(&outward, &inward)
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, projectmutations.ErrNotFound
-		}
+		outward, inward, err := customDefinitionScope(ctx, tx, in)
 		if err != nil {
 			return nil, err
-		}
-		if in.DefinitionLabel != outward && in.DefinitionLabel != inward {
-			return nil, projectmutations.ErrInvalid
 		}
 		label = in.DefinitionLabel
 		reverse = label != outward
@@ -107,6 +100,17 @@ func mutateEdges(ctx context.Context, tx pgx.Tx, in Command) (json.RawMessage, e
 		out = append(out, record)
 	}
 	return json.Marshal(out)
+}
+func customDefinitionScope(ctx context.Context, tx pgx.Tx, in Command) (string, string, error) {
+	var outward, inward string
+	err := tx.QueryRow(ctx, `SELECT outward,inward FROM work_item_relation_definitions WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL AND is_active FOR SHARE`, in.DefinitionID, in.WorkspaceID).Scan(&outward, &inward)
+	if errors.Is(err, pgx.ErrNoRows) {
+		err = projectmutations.ErrNotFound
+	}
+	if err == nil && in.DefinitionLabel != outward && in.DefinitionLabel != inward {
+		err = projectmutations.ErrInvalid
+	}
+	return outward, inward, err
 }
 func deleteEdges(ctx context.Context, tx pgx.Tx, in Command) (json.RawMessage, error) {
 	table := "work_item_custom_relations"

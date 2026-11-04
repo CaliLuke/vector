@@ -2,7 +2,7 @@
 
 MCP mutations support optional write receipts and revision checks. Ordinary Plane-compatible calls remain valid without either extension.
 
-`internal/mutationreceipts` provides the receipt transaction foundation. Archive and restore connect it to `project.archive` and `project.unarchive`, with generated optional extensions, project-row revision coverage, and sanitized mutation telemetry. The seven milestone actions also use the shared receipt boundary, with native association effects and revision guards. State create/update/delete also use this boundary, with all-writer revision triggers and atomic deletion outbox entries. Focused PostgreSQL and race tests cover these integrations. All catalogue mutations are wired. Receipt cleanup runs through the durable scheduler; local browser conflict checks passed. Full frontend and Go gates passed at `17d1afdb`; remaining resource acceptance and coverage work is recorded in the technical debt catalog.
+`internal/mutationreceipts` provides the receipt transaction foundation. Archive and restore connect it to `project.archive` and `project.unarchive`, with generated optional extensions, project-row revision coverage, and sanitized mutation telemetry. The seven milestone actions also use the shared receipt boundary, with native association effects and revision guards. State create/update/delete also use this boundary, with all-writer revision triggers and atomic deletion outbox entries. Focused PostgreSQL and race tests cover these integrations. All catalogue mutations are wired. Receipt cleanup runs through the durable scheduler; local browser conflict checks passed. Full frontend and Go gates passed at `17d1afdb`; subsequent resource acceptance is linked below, and unrelated coverage work remains in the technical debt catalog.
 
 ## Transaction boundary
 
@@ -52,7 +52,7 @@ Discovery filters fresh copies of generated action schemas using current OAuth s
 
 Mutation logs and spans contain the validated action, authenticated actor/client, selected workspace, safe outcome, duration, replay status, and committed project ID on success. They share request and trace correlation. They exclude credentials, argument/result bodies, receipt keys, revision inputs, and raw errors. An uncertain commit is recorded as `indeterminate`, without claiming a committed project ID.
 
-## Evidence and remaining integration
+## Acceptance evidence
 
 Real PostgreSQL tests cover every receipt key dimension, canonical input, large integer conflicts, duplicate commits and rollback recovery, cancellation while waiting, late authorization revocation, deleted-target replay, expiration, and atomic rollback of receipt/domain/outbox failures. A TCP fixture drops PostgreSQL's successful COMMIT response before the driver receives it, proving both keyed recovery and truthful unkeyed uncertainty. Bootstrap tests install the migration in a fresh database and repeat the complete migration sequence.
 
@@ -66,11 +66,11 @@ Generated-server archive tests exercise real PostgreSQL with PAT and OAuth on re
 
 [Native-writer contention tests](../apps/go-api/internal/mcpactions/workitem_property_native_contention_integration_test.go) hold native property and item edits open while MCP mutations queue. Native edits commit first; stale MCP revisions are rejected without creating receipts or overwriting retained values. These domain tests complement the generated-server authorization and response checks above.
 
-The receipt foundation alone does not establish resource parity. The [cleanup regression](../apps/go-api/internal/backgroundtasks/mutation_receipt_cleanup_integration_test.go) covers bounded deletion, future-cutoff protection, concurrent renewal, durable admission and timer registration against PostgreSQL. Local browser checks passed for work-item revision conflicts and page collaboration replacement. The [parity tracker](mcp-parity.md) records those checks and the six-domain receipt batch. Full gates passed at `17d1afdb`; the remaining coverage inventory and resource acceptance still require separate evidence.
+The receipt foundation alone does not establish resource parity. The [cleanup regression](../apps/go-api/internal/backgroundtasks/mutation_receipt_cleanup_integration_test.go) covers bounded deletion, future-cutoff protection, concurrent renewal, durable admission and timer registration against PostgreSQL. Local browser checks passed for work-item revision conflicts and page collaboration replacement. The [parity tracker](mcp-parity.md) records those checks and the six-domain receipt batch. Full gates passed at `17d1afdb`; the remaining coverage inventory is separate from the completed action-specific acceptance linked below.
 
-Page and collection writes support the same optional receipt/revision extensions. Workspace revisions include all native page, project-link, collection, membership and item-page-link writers. Page body changes enqueue native transaction/version work atomically. See [page and collection contracts](mcp-pages-collections.md). Content workflows and the six-domain receipt batch pass under both authentication modes on protocol revision `2026-07-28`; remaining acceptance is tracked in [MCP parity](mcp-parity.md).
+Page and collection writes support the same optional receipt/revision extensions. Workspace revisions include all native page, project-link, collection, membership and item-page-link writers. Page body changes enqueue native transaction/version work atomically. See [page and collection contracts](mcp-pages-collections.md). Content workflows and the six-domain receipt batch pass under both authentication modes on protocol revision `2026-07-28`; completed acceptance is recorded in [MCP parity](mcp-parity.md).
 
-Template, initiative and feature-setting mutations support optional receipt/revision extensions, current authorization before replay and transactional audit events. Initiative work-item link changes enqueue native association history. Catalogue workflows and receipt checks pass under both authentication modes on protocol revision `2026-07-28`; the parity tracker records remaining acceptance.
+Template, initiative and feature-setting mutations support optional receipt/revision extensions, current authorization before replay and transactional audit events. Initiative work-item link changes enqueue native association history. Catalogue workflows and receipt checks pass under both authentication modes on protocol revision `2026-07-28`; the parity tracker links their completed acceptance.
 
 Cycle and module delete receipts check current owner-or-project-administrator
 authority before replay. Active project members retain owner-based delete rights;
@@ -107,3 +107,9 @@ exercise retention, expiry, explicit revocation, and committed cascade retries.
 The [MCP workflow regression](../apps/go-api/internal/mcpactions/project_delete_workflow_integration_test.go)
 creates and deletes projects through protocol revision `2026-07-28`,
 runs the durable cascade, and checks receipt recovery and hidden-project reads.
+
+The [core acceptance notes](mcp-core-acceptance.md) complete work-item, comment,
+link, intake and relation mutation evidence. Initiative, release and page/collection
+acceptance also covers cancelled waits, rejected commits, native revisions and
+durable delivery at the owning boundaries. Shared receipt tests retain the
+network-level uncertain-commit proof; it is not duplicated for each domain.

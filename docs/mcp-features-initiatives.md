@@ -54,4 +54,33 @@ must refuse to lose initiative data.
 Proof must establish each field's native storage mapping, false-versus-omitted
 updates, feature disable/re-enable and replay behavior, all-writer revisions,
 reference ownership, private-target filtering, atomic link changes, durable history,
-and the pinned SDK projections under both authentication modes and MCP revisions.
+and the pinned SDK projections under both authentication modes on MCP revision `2026-07-28`.
+
+## Initiative acceptance
+
+The ten initiative actions meet the pinned handler and SDK contract. The reviewed
+sources are `plane_mcp/tools/initiative.py` at
+`dc7cfd9f3c305891909e2372f0cc507291353801` and `plane-sdk==0.3.1`'s
+`plane/models/initiatives.py`. Empty optional strings retain the pinned handler's
+omission behavior; the list returns all records, and association lists paginate.
+
+- [Field and atomicity checks](../apps/go-api/internal/mcpactions/initiative_contract_integration_test.go)
+  cover native field mapping, sanitized HTML, dates, states, omitted updates,
+  foreign references and mixed-target rejection without consuming retry identities.
+- [Visibility checks](../apps/go-api/internal/mcpactions/initiative_visibility_integration_test.go)
+  bind the workspace, hide revoked lead references, and filter private targets
+  before counting. [Authorization checks](../apps/go-api/internal/mcpactions/initiative_authorization_integration_test.go)
+  cover all six mutations, both credentials, new writes and replay, including
+  feature, lead, project-role and item-deletion changes during lock waits.
+- [Recovery checks](../apps/go-api/internal/mcpactions/initiative_recovery_integration_test.go)
+  cover cancelled waits, rejected commits, request conflicts and competing revisions.
+  [Native-writer checks](../apps/go-api/internal/mcpactions/initiative_native_revision_integration_test.go)
+  cover inserts, updates and deletes for records and both association tables.
+- [Worker checks](../apps/go-api/internal/mcpactions/initiative_worker_integration_test.go)
+  require committed history to survive rename/deletion and duplicate delivery.
+  [Migration checks](../apps/go-api/internal/bootstrap/initiative_rollback_integration_test.go)
+  reject loss of live records, tombstones and retained audit, and allow empty rollback/upgrade.
+
+Existing catalogue workflow, receipt/timezone and feature disable/re-enable tests
+remain in force. Credential-neutral domain checks run once; authorization checks
+use both credentials on MCP revision `2026-07-28`.

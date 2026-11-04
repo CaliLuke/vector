@@ -30,6 +30,19 @@ func (r *Repository) MutateWorkitem(ctx context.Context, cmd projectmutations.Co
 		return projectmutations.Result{}, projectmutations.ErrInvalid
 	}
 	resource := projectmutations.Resource{Name: "workitem", Table: "issues", RevisionTable: "issue_edit_revisions", RevisionColumn: "issue_id", SchemaLock: true}
+	resource.Authorize = func(ctx context.Context, tx pgx.Tx) error {
+		writer := *r
+		writer.db = tx
+		selections := fields
+		if cmd.Action == "manage_assignee" || cmd.Action == "manage_label" {
+			field := "labels"
+			if cmd.Action == "manage_assignee" {
+				field = "assignees"
+			}
+			selections = map[string]any{field: fields["add_ids"]}
+		}
+		return writer.lockWorkitemSelections(ctx, cmd, selections)
+	}
 	return projectmutations.Execute(ctx, db, resource, cmd, func(ctx context.Context, tx pgx.Tx) (json.RawMessage, error) {
 		writer := *r
 		writer.db, writer.transactionalEffects, writer.publisher = tx, true, projectmutations.Effects{Tx: tx}
@@ -53,8 +66,6 @@ func (r *Repository) MutateWorkitem(ctx context.Context, cmd projectmutations.Co
 			if err != nil {
 				return nil, err
 			}
-		} else if err = writer.lockWorkitemSelections(ctx, cmd, payload); err != nil {
-			return nil, err
 		}
 		raw, err := json.Marshal(payload)
 		if err != nil {
@@ -151,9 +162,6 @@ func (r *Repository) workitemSetChange(ctx context.Context, cmd projectmutations
 		table, column, field = "issue_assignees", "assignee_id", "assignees"
 	}
 	adding, removing := cmd.Fields["add_ids"].([]string), cmd.Fields["remove_ids"].([]string)
-	if err := r.lockWorkitemSelections(ctx, cmd, map[string]any{field: adding}); err != nil {
-		return nil, err
-	}
 	ids, err := r.filteredIDs(ctx, "SELECT "+column+"::text FROM "+table+" WHERE issue_id=$1 AND project_id=$2 AND workspace_id=$3 AND deleted_at IS NULL ORDER BY created_at,id", cmd.ResourceID, cmd.ProjectID, cmd.WorkspaceID)
 	if err != nil {
 		return nil, err

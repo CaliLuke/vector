@@ -60,23 +60,26 @@ func (r *Repository) MutateComment(ctx context.Context, cmd projectmutations.Com
 		if errors.Is(err, pgx.ErrNoRows) {
 			return projectmutations.ErrNotFound
 		}
-		return err
+		if err != nil {
+			return err
+		}
+		for _, member := range mentions.Users {
+			var id uuid.UUID
+			err := tx.QueryRow(ctx, `SELECT pm.member_id FROM project_members pm JOIN users u ON u.id=pm.member_id WHERE pm.project_id=$1 AND pm.workspace_id=$2 AND pm.member_id=$3 AND pm.is_active AND pm.deleted_at IS NULL AND pm.role IN(5,15,20) AND u.is_active FOR SHARE OF pm,u`, cmd.ProjectID, cmd.WorkspaceID, member).Scan(&id)
+			if errors.Is(err, pgx.ErrNoRows) {
+				return projectmutations.ErrInvalid
+			}
+			if err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 	return projectmutations.Execute(ctx, db, resource, cmd, func(ctx context.Context, tx pgx.Tx) (json.RawMessage, error) {
 		writer := *r
 		writer.db, writer.transactionalEffects = tx, true
 		writer.publisher = projectmutations.Effects{Tx: tx}
 		writer.notifyCollaboration = true
-		for _, member := range mentions.Users {
-			var id uuid.UUID
-			err := tx.QueryRow(ctx, `SELECT pm.member_id FROM project_members pm JOIN users u ON u.id=pm.member_id WHERE pm.project_id=$1 AND pm.workspace_id=$2 AND pm.member_id=$3 AND pm.is_active AND pm.deleted_at IS NULL AND pm.role IN(5,15,20) AND u.is_active FOR SHARE OF pm,u`, cmd.ProjectID, cmd.WorkspaceID, member).Scan(&id)
-			if errors.Is(err, pgx.ErrNoRows) {
-				return nil, projectmutations.ErrInvalid
-			}
-			if err != nil {
-				return nil, err
-			}
-		}
 		fields := maps.Clone(cmd.Fields)
 		if source != "" {
 			fields["comment_html"] = mentions.Render()

@@ -86,6 +86,11 @@ func collectionScope(ctx context.Context, tx pgx.Tx, q PageAPIQuery, id uuid.UUI
 	if row["deleted_at"] != nil && !deleted {
 		return nil, 0, projectmutations.ErrNotFound
 	}
+	if write {
+		if _, err = tx.Exec(ctx, `SELECT id FROM page_collection_members WHERE collection_id=$1 AND workspace_id=$2 AND member_id=$3 AND deleted_at IS NULL FOR SHARE`, id, q.WorkspaceID, q.ActorID); err != nil {
+			return nil, 0, err
+		}
+	}
 	var access *int
 	if row["owned_by_id"] == q.ActorID.String() {
 		value := 2
@@ -98,11 +103,6 @@ func collectionScope(ctx context.Context, tx pgx.Tx, q PageAPIQuery, id uuid.UUI
 	}
 	if access == nil || write && *access != 2 {
 		return nil, 0, projectmutations.ErrForbidden
-	}
-	if write {
-		if _, err = tx.Exec(ctx, `SELECT id FROM page_collection_members WHERE collection_id=$1 AND workspace_id=$2 AND member_id=$3 AND deleted_at IS NULL FOR SHARE`, id, q.WorkspaceID, q.ActorID); err != nil {
-			return nil, 0, err
-		}
 	}
 	return row, *access, nil
 }

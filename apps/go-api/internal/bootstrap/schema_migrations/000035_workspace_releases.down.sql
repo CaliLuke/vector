@@ -1,5 +1,10 @@
 BEGIN;
 SET LOCAL search_path = public, pg_catalog;
+-- Tags, labels and audit can outlive the workspace release that used them.
+DO $$ BEGIN IF EXISTS(SELECT 1 FROM release_tags) OR EXISTS(SELECT 1 FROM release_labels)
+ OR EXISTS(SELECT 1 FROM release_changelogs) OR EXISTS(SELECT 1 FROM release_events)
+ OR EXISTS(SELECT 1 FROM release_work_items) OR EXISTS(SELECT 1 FROM release_item_labels)
+ THEN RAISE EXCEPTION 'cannot discard workspace release data';END IF;END; $$;
 -- Refuse rollback if workspace releases cannot fit the original ownership rule.
 ALTER TABLE work_item_releases ALTER COLUMN project_id SET NOT NULL;
 DROP TRIGGER release_revision ON work_item_releases;
