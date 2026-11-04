@@ -67,7 +67,9 @@ export function relevantEnvironment(env) {
             key
           ) || ["PATH", "TZ", "LANG", "CI", "DEV", "LOG_LEVEL"].includes(key)
       )
-      .filter(([key]) => !["VECTOR_CHECK_SESSION"].includes(key))
+      // The resolved comparison base is tracked separately for stages that
+      // select changed files. It does not change complete test/build results.
+      .filter(([key]) => !["VECTOR_CHECK_SESSION", "VECTOR_CHECK_BASE"].includes(key))
       .toSorted(([a], [b]) => a.localeCompare(b))
   );
 }
@@ -76,7 +78,9 @@ export function stageInput(scope, name) {
   const goOnly =
     (name.startsWith("apps/go-api/") && !/\.(md|json|ya?ml)$/.test(name)) ||
     /^(configs\/quality\/go-|scripts\/quality\/go[.-]|\.quality\/go-)/.test(name);
-  if (scope === "frontend") return !goOnly;
+  // The engineering debt queue has no frontend consumer. Formatting still
+  // checks it through its all-files stage; retain other docs conservatively.
+  if (scope === "frontend") return !goOnly && name !== "docs/tech-debt-catalog.md";
   if (scope === "go")
     return (
       goOnly ||
@@ -111,6 +115,7 @@ export async function inputFingerprint(root, stage, identity) {
   // The source digest already covers the checked tree. A commit alone must not
   // invalidate unchanged stages, including frontend checks after a Go-only fix.
   delete scopedIdentity.head;
+  if (!stage.dependsOnChangedFiles) delete scopedIdentity.comparisonBase;
   if (stage.scope === "go") delete scopedIdentity.packageManager;
   if (stage.scope === "frontend") delete scopedIdentity.go;
   return createHash("sha256")

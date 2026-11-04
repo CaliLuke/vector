@@ -48,6 +48,11 @@ unchanged frontend builds or coverage. CI and `./check.sh --full --fresh` always
 execute every required stage. Outside Codex, reuse is off unless the shell sets
 `VECTOR_CHECK_SESSION` to an identifier for the current task.
 
+The comparison base invalidates changed-file selection, not complete test/build
+results. Updating the backend debt catalog still runs formatting but does not
+invalidate frontend execution. Other documentation remains an input until its
+consumers are reviewed.
+
 Manual checks and Husky use the same repository-local tool path. Committing a
 checked tree does not invalidate its results; source and configuration changes
 still invalidate the affected stages.

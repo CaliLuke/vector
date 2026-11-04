@@ -98,8 +98,13 @@ await test("a failing affected test prevents all expensive stages and never crea
 
 await test("a Go fix reruns its preflight while reusing the unchanged frontend result", async (t) => {
   const f = fixture(t);
+  f.write("docs/tech-debt-catalog.md", "Backend debt\n");
   await runStages({ ...f.options, identity: { ...f.options.identity, head: "before-fix" } });
   f.write("apps/go-api/internal/example/value.go", "package example\n// fixed\n");
+  const formatting = { id: "frontend-format", scope: "all", command: ["format"] };
+  const beforeDocumentation = await inputFingerprint(f.root, formatting, f.options.identity);
+  f.write("docs/tech-debt-catalog.md", "Backend debt retired\n");
+  assert.notEqual(beforeDocumentation, await inputFingerprint(f.root, formatting, f.options.identity));
   const result = await runStages({ ...f.options, identity: { ...f.options.identity, head: "after-fix" } });
   assert.deepEqual(f.calls, ["preflight", "build", "preflight"]);
   assert.deepEqual(
@@ -109,6 +114,40 @@ await test("a Go fix reruns its preflight while reusing the unchanged frontend r
   f.write("apps/web/src/value.ts", "export const value = 2;\n");
   await runStages(f.options);
   assert.equal(f.calls.at(-1), "build");
+  const beforeOtherDocumentation = await inputFingerprint(f.root, f.stages[1], f.options.identity);
+  f.write("docs/mcp.md", "Other documentation remains an input until reviewed\n");
+  assert.notEqual(beforeOtherDocumentation, await inputFingerprint(f.root, f.stages[1], f.options.identity));
+});
+
+await test("comparison base changes rerun selection without repeating full checks", async (t) => {
+  const f = fixture(t);
+  const selection = {
+    id: "affected-frontend-tests",
+    scope: "frontend",
+    command: ["selection"],
+    dependsOnChangedFiles: true,
+  };
+  assert.equal(stagePlan("typescript").find(({ id }) => id === selection.id).dependsOnChangedFiles, true);
+  const identity = (comparisonBase) => ({
+    ...f.options.identity,
+    comparisonBase,
+    environment: relevantEnvironment({ VECTOR_CHECK_BASE: comparisonBase, VITE_API_URL: "https://api.example.test" }),
+  });
+  const options = { ...f.options, stages: [...f.stages, selection] };
+  await runStages({ ...options, identity: identity("first-base") });
+  const result = await runStages({ ...options, identity: identity("second-base") });
+  assert.deepEqual(
+    result.map(({ state }) => state),
+    ["reused", "reused", "passed"]
+  );
+  assert.deepEqual(f.calls, ["preflight", "build", "selection", "selection"]);
+  assert.notEqual(
+    await inputFingerprint(f.root, f.stages[1], identity("first-base")),
+    await inputFingerprint(f.root, f.stages[1], {
+      ...identity("first-base"),
+      environment: { VITE_API_URL: "https://changed.example.test" },
+    })
+  );
 });
 
 await test("untracked sources, deleted sources, and lockfile changes invalidate affected results", async (t) => {

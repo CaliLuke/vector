@@ -179,6 +179,7 @@ export function stagePlan(scope) {
       {
         id: "affected-frontend-tests",
         scope: "frontend",
+        dependsOnChangedFiles: true,
         command: [process.execPath, "scripts/quality/full-check.mjs", "--affected-frontend"],
       }
     );
@@ -244,8 +245,17 @@ async function main(args) {
   const directory = path.join(root, ".quality/reports/stages", id);
   fs.mkdirSync(directory, { recursive: true });
   fs.writeFileSync(pointer, JSON.stringify({ directory }) + "\n", { mode: 0o600 });
+  // Child selection commands must use the same immutable revision as the receipt.
+  const comparisonBase = output("git", [
+    "rev-parse",
+    "--verify",
+    "--end-of-options",
+    `${process.env.VECTOR_CHECK_BASE || "HEAD"}^{commit}`,
+  ]);
+  process.env.VECTOR_CHECK_BASE = comparisonBase;
   const identity = {
     head: output("git", ["rev-parse", "HEAD"]),
+    comparisonBase,
     bun: process.versions.bun,
     platform: process.platform,
     architecture: process.arch,
