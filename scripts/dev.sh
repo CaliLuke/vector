@@ -28,8 +28,16 @@ for env_file in .env apps/go-api/.env apps/web/.env apps/admin/.env apps/space/.
 done
 
 if ! docker info >/dev/null 2>&1; then
-    if [[ "$(uname -s)" == "Darwin" ]] && command -v colima >/dev/null 2>&1; then
-        colima start
+    if [[ "$(uname -s)" == "Darwin" && ( "${DOCKER_HOST:-}" == "unix://${HOME}/.docker/run/docker.sock" || "${DOCKER_CONTEXT:-}" == "desktop-linux" ) ]]; then
+        open -a Docker
+        docker_start_deadline=$((SECONDS + 120))
+        until docker info >/dev/null 2>&1; do
+            if (( SECONDS >= docker_start_deadline )); then
+                echo "Docker Desktop did not become ready within 120 seconds. Finish its setup, then run bun run dev again." >&2
+                exit 1
+            fi
+            sleep 1
+        done
     else
         echo "Start Docker, then run bun run dev again." >&2
         exit 1

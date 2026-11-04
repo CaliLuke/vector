@@ -183,15 +183,21 @@ void test("file floors retain established coverage when aggregate package covera
 
 void test("coverage profiles larger than the process memory budget retain hits across repeated blocks", () => {
   fixture((directory) => {
-    write(directory, "go.mod", "module example.test/fixture\n\ngo 1.27.3\n");
+    // Keep the input larger than the memory cap without parsing millions of
+    // unnecessarily short, identical records. Import-path length does not
+    // change the streaming or repeated-block preservation contract.
+    const moduleName = `example.test/${"nested/".repeat(64)}fixture`;
+    write(directory, "go.mod", `module ${moduleName}\n\ngo 1.27.3\n`);
     write(directory, "p.go", "package fixture\nfunc F() int { return 1 }\n");
     const baseline = write(directory, "baseline.json", {
       version: 1,
-      packages: { "example.test/fixture": { statements: 1, percent: 100 } },
+      packages: { [moduleName]: { statements: 1, percent: 100 } },
     });
-    const profile = write(directory, "coverage.out", "mode: set\nexample.test/fixture/p.go:2.1,2.25 1 1\n");
-    const chunk = "example.test/fixture/p.go:2.1,2.25 1 0\n".repeat(4096);
-    for (let index = 0; index < 2048; index++) fs.appendFileSync(profile, chunk);
+    const profile = write(directory, "coverage.out", `mode: set\n${moduleName}/p.go:2.1,2.25 1 1\n`);
+    const chunk = `${moduleName}/p.go:2.1,2.25 1 0\n`.repeat(4096);
+    const profileBytes = 320 * 1024 * 1024;
+    for (let written = 0; written < profileBytes; written += chunk.length) fs.appendFileSync(profile, chunk);
+    assert.ok(fs.statSync(profile).size >= profileBytes);
     const checked = spawnSync(
       process.execPath,
       [

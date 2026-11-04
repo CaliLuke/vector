@@ -63,55 +63,36 @@ A full result still requires every configured stage; focused tests alone do not
 satisfy integration or coverage gates. Changing inputs during a run invalidates
 its result.
 
-## Colima test VM
+## Docker Desktop on macOS
 
-Use a dedicated test VM with SSH forwarding.
-Colima's direct VM address can lose TCP connection attempts under churn
-([Colima #1664](https://github.com/abiosoft/colima/issues/1664)).
-A transient native port collision can also leave an SSH-forwarded port unreachable
-([Colima #1660](https://github.com/abiosoft/colima/issues/1660)).
+Use Docker Desktop for the application stack and integration tests. Install it
+from Docker’s official distribution and finish its first-run setup. The local
+startup script opens Docker Desktop if its engine is stopped and waits up to
+two minutes for readiness.
 
-Reserve a guest publish range outside macOS's ephemeral client-port range.
-Check the macOS range with `sysctl net.inet.ip.portrange.first net.inet.ip.portrange.last`.
-The configuration below assumes that range starts at 49152.
-
-For one-time setup, create and stop the dedicated profile:
+Before the first run after switching from Colima, clear old shell overrides:
 
 ```sh
-colima start vector-mcp-tests --cpu 2 --memory 3 --disk 15 --port-forwarder ssh --activate=false
-colima stop --profile vector-mcp-tests
-```
-
-Merge this provision into `~/.colima/vector-mcp-tests/colima.yaml`. Keep any other provisions.
-The provision sets the guest range before Docker starts:
-
-```yaml
-provision:
-  - mode: after-boot
-    script: sudo sysctl -w 'net.ipv4.ip_local_port_range=20000 29999'
-```
-
-For subsequent runs, start the configured VM and run checks:
-
-```sh
-colima start --profile vector-mcp-tests --activate=false
-export DOCKER_HOST="unix://$HOME/.colima/vector-mcp-tests/docker.sock"
-export TESTCONTAINERS_HOST_OVERRIDE=127.0.0.1
-export LIVE_TEST_REDIS_BIND_HOST=127.0.0.1
+unset DOCKER_HOST DOCKER_CONTEXT TESTCONTAINERS_HOST_OVERRIDE LIVE_TEST_REDIS_BIND_HOST
 source scripts/dev-env.sh
-./check.sh --go --full
+docker info
+bun run dev
 ```
 
-Use those exports in the shell that runs Git hooks too.
-Keep native services out of ports 20000–29999 while this VM runs.
-Leave the default VM and Docker context unchanged.
-Before returning to the application's default stack, unset all three variables.
-After testing, stop the VM with `colima stop --profile vector-mcp-tests`.
+On macOS, `scripts/dev-env.sh` defaults to Docker Desktop’s user socket at
+`~/.docker/run/docker.sock` and loopback addresses for published test ports.
+Explicit `DOCKER_HOST` or `DOCKER_CONTEXT` selections remain supported; Linux CI
+keeps its existing engine. Source this script in the shell that runs Git hooks too.
+No dedicated Colima VM, SSH forwarding or reserved port range is required.
 
-After an upstream fix, recheck the direct-address reproduction before removing this test-VM requirement.
-Remove the range constraint only after forwarding recovers from transient port collisions.
+Docker engines have separate volumes. Move existing application data while the
+source stack is stopped, preserve volume names and ownership, and verify the
+restored database and object store before retiring the source volumes. Keep other
+projects’ containers and Docker context unchanged. Do not start an empty stack
+and treat it as a completed migration.
 
-For a Docker VM reached through its private address, set `LIVE_TEST_REDIS_BIND_HOST` to that address alongside `DOCKER_HOST`.
+For a remote Docker engine, set `TESTCONTAINERS_HOST_OVERRIDE` to its reachable
+address and `LIVE_TEST_REDIS_BIND_HOST` to a host address reachable from that engine.
 
 ## Recover a rejected type-level migration
 

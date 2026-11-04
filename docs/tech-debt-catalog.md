@@ -8,9 +8,9 @@ they are not a count of confirmed defects or independent refactors.
 
 **EXT-01 — Dependency limitations.** Keep the upstream reports and removal
 conditions in [dependency-refresh.md](dependency-refresh.md#dependency-limitations)
-and the [Colima test setup](development.md#colima-test-vm). The latest tagged
-Testcontainers release still lacks the pinned HostPort fix. Colima forwarding,
-Go overlay coverage, bodyclose, nilerr, errorlint and Lagotto limitations remain.
+and the [Docker Desktop setup](development.md#docker-desktop-on-macos). The latest tagged
+Testcontainers release still lacks the pinned HostPort fix. PostgreSQL cleanup,
+Go overlay coverage, bodyclose, nilerr and errorlint limitations remain.
 Dependency development is outside this repository's scope. A passing consumer
 run alone does not establish that a workaround can be removed.
 

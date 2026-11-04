@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
-# Use the existing Colima profile on macOS; preserve Docker configuration elsewhere.
-if [[ "$(uname -s)" == "Darwin" && -d "$HOME/.colima/default" ]]; then
-    export DOCKER_HOST="${DOCKER_HOST:-unix://${HOME}/.colima/default/docker.sock}"
-    export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
+# Use Docker Desktop on macOS; preserve explicitly selected engines and Linux CI.
+if [[ "$(uname -s)" == "Darwin" && -z "${DOCKER_HOST:-}" && -z "${DOCKER_CONTEXT:-}" ]]; then
+    export DOCKER_HOST="unix://${HOME}/.docker/run/docker.sock"
+fi
+if [[ "${DOCKER_HOST:-}" == "unix://${HOME}/.docker/run/docker.sock" || "${DOCKER_CONTEXT:-}" == "desktop-linux" ]]; then
+    # Desktop installs its CLI and credential helper here without admin access.
+    case ":$PATH:" in
+        *":${HOME}/.docker/bin:"*) ;;
+        *) export PATH="${HOME}/.docker/bin:$PATH" ;;
+    esac
+    export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE="${TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE:-/var/run/docker.sock}"
+    export TESTCONTAINERS_HOST_OVERRIDE="${TESTCONTAINERS_HOST_OVERRIDE:-127.0.0.1}"
+    export LIVE_TEST_REDIS_BIND_HOST="${LIVE_TEST_REDIS_BIND_HOST:-127.0.0.1}"
     # Keep the resource reaper enabled so interrupted tests cannot leak containers.
     # A caller may opt out only when its runner provides equivalent cleanup.
     export TESTCONTAINERS_RYUK_DISABLED="${TESTCONTAINERS_RYUK_DISABLED:-false}"

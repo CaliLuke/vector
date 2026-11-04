@@ -76,8 +76,10 @@ transport changes; do not edit generated transports manually.
 - **Router CommonJS warning:** Do not suppress the `replaceRouteChunk` circular-access warning or patch the dependency.
   After adopting a fix for [TanStack/router#8585](https://github.com/TanStack/router/issues/8585#issuecomment-6540692152),
   recheck both CommonJS and ESM imports plus CLI route generation.
-- **Multipart errors:** Keep `NextPart` errors separate from body-read errors until
-  [errorlint #49](https://codeberg.org/polyfloyd/go-errorlint/issues/49) correctly tracks reassigned errors at each comparison.
+- **Multipart errors:** Keep `NextPart` errors separate from body-read errors.
+  [errorlint #116](https://codeberg.org/polyfloyd/go-errorlint/issues/116) reproduces
+  the error-reassignment false positive on 1.9.0; the related #49 is closed.
+  Remove the variable-separation workaround when the pinned analyzer accepts that reproduction.
   Preserve direct `io.EOF` comparisons so wrapped EOF errors still report parse failures.
 - **Go coverage overlays:** Do not combine source overlays with `-coverpkg`.
   First require a toolchain fix for [golang/go#73802](https://github.com/golang/go/issues/73802) and a passing reproduction.
@@ -91,7 +93,24 @@ transport changes; do not edit generated transports manually.
   [nilerr #12 reproduction](https://github.com/gostaticanalysis/nilerr/issues/12#issuecomment-6543387375).
 - **Tooltip refs:** Use Floating UI's returned ref setters directly only after the pinned analyzer accepts the callback-member form in
   [oxc#23753](https://github.com/oxc-project/oxc/issues/23753#issuecomment-6510863595).
-- **Structural analysis:** Recheck [Lagotto #58](https://github.com/CaliLuke/lagotto/issues/58) before restoring automated structural analysis.
+
+Lagotto is an optional one-off structural audit tool. It is not a product dependency,
+required quality gate, or ongoing debt item.
+
+## Backend upstream check — 2026-11-04
+
+- Testcontainers: latest tag is still 0.44.0. HostPort PR #4055 is merged and
+  already included in our commit pin; no tagged replacement exists. Ryuk reuse
+  PR #3868 remains open, so the reconnection grace remains necessary.
+- PostgreSQL: 18.6 is still the latest stable 18.x release and is already in use.
+  The linked barrier discussion does not establish a released authentication-wait
+  cleanup fix; keep the cleanup observation open.
+- Go: 1.27.3 is current and already pinned. Issue #73802 remains open with a
+  reproduction on that version; there is no release to adopt for overlay coverage.
+- Analyzers: the repository already uses golangci-lint 2.15.0 with errorlint
+  1.9.0, nilerr 0.1.2 and bodyclose commit 857993a2939c. The bodyclose and nilerr
+  reports remain open with reproductions on these versions. The multipart
+  reassignment case still reproduces on errorlint 1.9.0 and is now tracked in #116.
 
 ## Validation
 

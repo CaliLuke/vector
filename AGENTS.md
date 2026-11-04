@@ -52,6 +52,10 @@ Before Docker or Go checks, run:
 source scripts/dev-env.sh
 ```
 
+Use Docker Desktop for local macOS containers and integration tests. Do not start
+Colima for this repository. Lagotto is for optional one-off audits only; do not add
+it to product dependencies or recurring quality gates.
+
 Keep dependency work within this repository unless explicitly authorized elsewhere.
 Do not publish private notes, credentials, customer data, or internal information from other projects.
 Do not send messages to third parties without authorization.
