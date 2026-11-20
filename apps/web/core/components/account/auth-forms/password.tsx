@@ -4,8 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { showAuthenticationError } from "@/helpers/authentication.helper";
-
 import { Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
@@ -20,10 +18,10 @@ import { CloseIcon } from "@plane/propel/icons";
 import { Input, AuthPasswordInput, AuthConfirmPasswordInput, Spinner } from "@plane/ui";
 import { getPasswordStrength } from "@plane/utils/auth";
 // components
+import { AuthBanner } from "@/components/account/auth-forms/auth-banner";
 import { ForgotPasswordPopover } from "@/components/account/auth-forms/forgot-password-popover";
-// constants
 // helpers
-import { EAuthModes, EAuthSteps } from "@/helpers/authentication.helper";
+import { authErrorHandler, EAuthModes, EAuthSteps, showAuthenticationError } from "@/helpers/authentication.helper";
 // services
 import { authService } from "@/services/auth.service";
 
@@ -36,12 +34,29 @@ type Props = {
   nextPath: string | undefined;
 };
 
+async function submitPasswordAuthentication(form: HTMLFormElement | null, mode: EAuthModes) {
+  if (mode === EAuthModes.SIGN_UP) {
+    await authService.submitForm(form);
+    return;
+  }
+  const destination = await authService.submitPasswordSignIn(form);
+  if (!destination) return;
+  const code = destination.searchParams.get("error_code");
+  if (code) return code;
+  window.location.replace(destination.href);
+}
+
+function signInErrorMessage(code: string | undefined, fallback: string) {
+  if (code) return authErrorHandler(code)?.message ?? fallback;
+}
+
 export const AuthPasswordForm = function AuthPasswordForm(props: Props) {
   const { email, isSMTPConfigured, handleAuthStep, handleEmailClear, mode, nextPath } = props;
   // plane imports
   const { t } = useTranslation();
   // ref
   const formRef = useRef<HTMLFormElement>(null);
+  const [signInError, setSignInError] = useState<string>();
   // states
   const form = useForm({
     defaultValues: { password: "", confirm_password: "" },
@@ -60,7 +75,8 @@ export const AuthPasswordForm = function AuthPasswordForm(props: Props) {
     },
     onSubmit: async () => {
       try {
-        await authService.submitForm(formRef.current);
+        setSignInError(undefined);
+        setSignInError(await submitPasswordAuthentication(formRef.current, mode));
       } catch (error) {
         showAuthenticationError(t);
         throw error;
@@ -123,11 +139,16 @@ export const AuthPasswordForm = function AuthPasswordForm(props: Props) {
         action={`${API_BASE_URL}/auth/${mode === EAuthModes.SIGN_IN ? "sign-in" : "sign-up"}/`}
         onSubmit={(event) => {
           event.preventDefault();
+          if (form.state.isSubmitting) return;
           void form.handleSubmit().catch(() => {
             // The failed authentication request is already reported.
           });
         }}
       >
+        <AuthBanner
+          message={signInErrorMessage(signInError, t("common.errors.default.message"))}
+          handleBannerData={setSignInError}
+        />
         <input type="hidden" name="csrfmiddlewaretoken" />
         <input type="hidden" value={email} name="email" />
         {nextPath && <input type="hidden" value={nextPath} name="next_path" />}

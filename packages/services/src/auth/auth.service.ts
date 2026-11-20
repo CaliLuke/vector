@@ -41,6 +41,31 @@ export class AuthService extends APIService {
 
   /** Submit a browser authentication form only after obtaining a fresh CSRF token. */
   async submitForm(form: HTMLFormElement | null): Promise<void> {
+    (await this.prepareForm(form)).submit();
+  }
+
+  /** Read the same-origin password sign-in outcome before navigating the document. */
+  async submitPasswordSignIn(form: HTMLFormElement | null): Promise<URL | undefined> {
+    const ready = await this.prepareForm(form);
+    const action = new URL(ready.action, window.location.href);
+    if (action.origin !== window.location.origin) {
+      ready.submit();
+      return;
+    }
+
+    const response = await fetch(action, {
+      method: "POST",
+      body: new FormData(ready),
+      mode: "same-origin",
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+    if (!ready.isConnected) return;
+    if (!response.ok || !response.redirected) throw new Error("Unexpected sign-in response");
+    return new URL(response.url);
+  }
+
+  private async prepareForm(form: HTMLFormElement | null): Promise<HTMLFormElement> {
     if (!form) throw new Error("Authentication form is unavailable");
     const { csrf_token } = await this.requestCSRFToken();
     if (!csrf_token) throw new Error("CSRF token not found");
@@ -48,7 +73,7 @@ export class AuthService extends APIService {
     const input = form.querySelector<HTMLInputElement>('input[name="csrfmiddlewaretoken"]');
     if (!input) throw new Error("CSRF field not found");
     input.value = csrf_token;
-    form.submit();
+    return form;
   }
 
   /**

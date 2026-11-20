@@ -9,6 +9,25 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// PasswordSignInOutcome distinguishes a normal credential rejection from session creation without logging user input.
+func PasswordSignInOutcome(ctx context.Context, rejectionCode int, reason string, sessionCreated bool) {
+	span := trace.SpanFromContext(ctx)
+	if rejectionCode != 0 {
+		span.SetAttributes(
+			attribute.String("auth.outcome", "rejected"),
+			attribute.Int("auth.rejection_code", rejectionCode),
+			attribute.String("auth.rejection_reason", reason),
+		)
+		log.Print(ctx, log.KV{K: "msg", V: "Password sign-in rejected"},
+			log.KV{K: "auth.outcome", V: "rejected"}, log.KV{K: "auth.rejection_code", V: rejectionCode},
+			log.KV{K: "auth.rejection_reason", V: reason})
+	} else if sessionCreated {
+		span.SetAttributes(attribute.String("auth.outcome", "session_created"))
+		log.Print(ctx, log.KV{K: "msg", V: "Password sign-in session created"},
+			log.KV{K: "auth.outcome", V: "session_created"})
+	}
+}
+
 // AuthRedirectFailure emits a fixed stage and error class without exposing form input or dependency errors.
 func AuthRedirectFailure(ctx context.Context, stage string, err error) {
 	class := "internal"

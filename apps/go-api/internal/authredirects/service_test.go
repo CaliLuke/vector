@@ -175,6 +175,26 @@ func TestEmailSignInLooksUpUserBeforeProviderConfiguration(t *testing.T) {
 	}
 }
 
+func TestEmailSignInDistinguishesRejectedPasswordFromSessionCreation(t *testing.T) {
+	accounts := &accountStub{configured: true, user: accountauthentication.User{
+		ID: "766b8a64-c552-4829-97f2-2a04f868bdd6", Active: true, Password: "encoded",
+	}}
+	service := newTestService(t, accounts, 3)
+	request := Request{BaseURL: "https://app.example.test", Email: "member@example.test", Password: "fixture", NextPath: "/"}
+
+	service.passwords = passwordStub{valid: false}
+	rejected := service.EmailSignIn(t.Context(), request, true)
+	if rejected.Status != http.StatusFound || rejected.RejectionCode != 5065 || rejected.Session != nil {
+		t.Fatal("expected a password rejection without a session")
+	}
+
+	service.passwords = passwordStub{valid: true}
+	accepted := service.EmailSignIn(t.Context(), request, true)
+	if accepted.Status != http.StatusFound || accepted.RejectionCode != 0 || accepted.Session == nil {
+		t.Fatal("expected a successful redirect with a session")
+	}
+}
+
 func TestEmailSignUpChecksExistingAccountBeforeProviderConfiguration(t *testing.T) {
 	accounts := &accountStub{configured: true, user: accountauthentication.User{Email: "member@example.test"}}
 	service := newTestService(t, accounts, 3)

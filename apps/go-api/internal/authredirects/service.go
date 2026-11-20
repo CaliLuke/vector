@@ -94,11 +94,13 @@ type Request struct {
 }
 
 type Result struct {
-	Status        int
-	Location      string
-	Body          map[string]any
-	Session       *browsersession.SessionRefresh
-	ExpireSession bool
+	Status          int
+	Location        string
+	Body            map[string]any
+	Session         *browsersession.SessionRefresh
+	ExpireSession   bool
+	RejectionCode   int
+	RejectionReason string
 }
 
 type Service struct {
@@ -145,7 +147,10 @@ func (service *Service) ConfigValue(ctx context.Context, key, fallback string) (
 
 // EmailSignIn implements the app and space email sign-in flow. The caller
 // selects app=true for app-only post-login invitation processing and routing.
-func (service *Service) EmailSignIn(ctx context.Context, request Request, app bool) Result {
+func (service *Service) EmailSignIn(ctx context.Context, request Request, app bool) (result Result) {
+	defer func() {
+		telemetry.PasswordSignInOutcome(ctx, result.RejectionCode, result.RejectionReason, result.Session != nil)
+	}()
 	configured, err := service.accounts.InstanceConfigured(ctx)
 	if err != nil {
 		return loginFailure(ctx, "read_instance_status", err)
@@ -677,7 +682,10 @@ func (service *Service) failure(request Request, code int, message string, paylo
 	for name, value := range payload {
 		params = append(params, QueryParam{Name: name, Value: value})
 	}
-	return Result{Status: http.StatusFound, Location: SafeRedirectURL(request.BaseURL, request.NextPath, params, request.AllowedHosts)}
+	return Result{
+		Status: http.StatusFound, Location: SafeRedirectURL(request.BaseURL, request.NextPath, params, request.AllowedHosts),
+		RejectionCode: code, RejectionReason: message,
+	}
 }
 
 func (service *Service) requestNow(request Request) time.Time {
