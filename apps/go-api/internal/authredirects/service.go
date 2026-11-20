@@ -13,6 +13,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/authworkflow"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/emailvalidation"
+	"github.com/CaliLuke/go-plane/internal/telemetry"
 	"github.com/google/uuid"
 )
 
@@ -147,7 +148,7 @@ func (service *Service) ConfigValue(ctx context.Context, key, fallback string) (
 func (service *Service) EmailSignIn(ctx context.Context, request Request, app bool) Result {
 	configured, err := service.accounts.InstanceConfigured(ctx)
 	if err != nil {
-		return Result{Status: http.StatusInternalServerError}
+		return loginFailure(ctx, "read_instance_status", err)
 	}
 	if !configured {
 		return service.failure(request, 5000, "INSTANCE_NOT_CONFIGURED", nil)
@@ -164,18 +165,18 @@ func (service *Service) EmailSignIn(ctx context.Context, request Request, app bo
 		return service.failure(request, 5060, "USER_DOES_NOT_EXIST", map[string]string{"email": email})
 	}
 	if err != nil {
-		return Result{Status: http.StatusInternalServerError}
+		return loginFailure(ctx, "lookup_account", err)
 	}
 	enabled, err := service.accounts.ConfigValue(ctx, "ENABLE_EMAIL_PASSWORD", "")
 	if err != nil {
-		return Result{Status: http.StatusInternalServerError}
+		return loginFailure(ctx, "read_password_provider", err)
 	}
 	if enabled == "0" {
 		return service.failure(request, 5056, "EMAIL_PASSWORD_AUTHENTICATION_DISABLED", nil)
 	}
 	valid, err := service.passwords.Verify(user.Password, request.Password)
 	if err != nil {
-		return Result{Status: http.StatusInternalServerError}
+		return loginFailure(ctx, "verify_password", err)
 	}
 	if !valid {
 		return service.failure(request, 5065, "AUTHENTICATION_FAILED_SIGN_IN", map[string]string{"email": email})
@@ -590,16 +591,16 @@ func (service *Service) completeLogin(ctx context.Context, request Request, user
 	}
 	_, err := service.accounts.UpdateLoginMetadata(ctx, accountauthentication.LoginMetadata{UserID: user.ID, At: now, IP: request.ClientIP, UserAgent: request.UserAgent, Medium: medium, ActivationOrigin: baseOrigin})
 	if err != nil {
-		return Result{Status: http.StatusInternalServerError}
+		return loginFailure(ctx, "update_login_metadata", err)
 	}
 	if app && service.workflow != nil {
 		if runErr := service.workflow.Run(ctx, user.ID, user.Email); runErr != nil {
-			return Result{Status: http.StatusInternalServerError}
+			return loginFailure(ctx, "post_login_workflow", runErr)
 		}
 	}
 	if medium == "magic-code" {
 		if ensureProfileErr := service.accounts.EnsureProfile(ctx, user.ID); ensureProfileErr != nil {
-			return Result{Status: http.StatusInternalServerError}
+			return loginFailure(ctx, "ensure_profile", ensureProfileErr)
 		}
 	}
 	device := map[string]string{"user_agent": request.UserAgent, "ip_address": request.ClientIP, "domain": request.BaseURL}
@@ -607,19 +608,19 @@ func (service *Service) completeLogin(ctx context.Context, request Request, user
 		UserID: user.ID, PasswordHash: user.Password, DeviceInfo: device,
 	}, service.sessionAge(request), now)
 	if err != nil {
-		return Result{Status: http.StatusInternalServerError}
+		return loginFailure(ctx, "create_session", err)
 	}
 	path := request.NextPath
 	if path == "" || autoset {
 		path, err = service.redirectionPath(ctx, user.ID)
 		if err != nil {
-			return Result{Status: http.StatusInternalServerError}
+			return loginFailure(ctx, "resolve_redirect", err)
 		}
 	}
 	if autoset {
 		onboarded, _, _, _, profileErr := service.accounts.RedirectProfile(ctx, user.ID)
 		if profileErr != nil {
-			return Result{Status: http.StatusInternalServerError}
+			return loginFailure(ctx, "read_redirect_profile", profileErr)
 		}
 		if onboarded {
 			path = "/"
@@ -632,6 +633,11 @@ func (service *Service) completeLogin(ctx context.Context, request Request, user
 		location = SafeRedirectURL(request.BaseURL, path, nil, request.AllowedHosts)
 	}
 	return Result{Status: http.StatusFound, Location: location, Session: &refresh}
+}
+
+func loginFailure(ctx context.Context, stage string, err error) Result {
+	telemetry.AuthRedirectFailure(ctx, stage, err)
+	return Result{Status: http.StatusInternalServerError}
 }
 
 func (service *Service) loginEligibility(request Request, user accountauthentication.User) *Result {

@@ -10,8 +10,6 @@ package authredirects
 import (
 	"context"
 	"io"
-
-	loom "github.com/CaliLuke/loom/pkg"
 )
 
 // Service is the AuthRedirects service interface.
@@ -95,8 +93,8 @@ const ServiceName = "AuthRedirects"
 var MethodNames = [12]string{"EmailSignIn", "EmailSignUp", "SpaceEmailSignIn", "SpaceEmailSignUp", "SignOut", "SpaceSignOut", "MagicSignIn", "MagicSignUp", "SpaceMagicSignIn", "SpaceMagicSignUp", "ResetPassword", "SpaceResetPassword"}
 
 type AuthRedirectError struct {
-	Name string         `json:"-"`
-	Body loom.JSONValue `json:"body"`
+	Name string `json:"-"`
+	Body string `json:"body"`
 }
 
 // AuthRedirectResponse is the result type of the AuthRedirects service

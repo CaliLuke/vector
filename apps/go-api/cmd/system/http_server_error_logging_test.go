@@ -19,14 +19,18 @@ func TestHTTPServerErrorLoggingClassifiesStatusWithoutQueryOrBody(t *testing.T) 
 	tests := []struct {
 		name       string
 		status     int
+		method     string
 		cancel     bool
+		wantMsg    string
+		wantLevel  string
 		wantClass  string
 		wantRecord bool
 	}{
-		{name: "server error", status: http.StatusInternalServerError, wantClass: "http_server_error", wantRecord: true},
-		{name: "canceled request", status: http.StatusInternalServerError, cancel: true, wantClass: "context_canceled", wantRecord: true},
-		{name: "client error", status: http.StatusBadRequest},
-		{name: "success", status: http.StatusOK},
+		{name: "server error", status: http.StatusInternalServerError, method: http.MethodGet, wantMsg: "HTTP server error response", wantLevel: "error", wantClass: "http_server_error", wantRecord: true},
+		{name: "canceled read", status: http.StatusInternalServerError, method: http.MethodGet, cancel: true, wantMsg: "HTTP read canceled", wantLevel: "info", wantClass: "context_canceled", wantRecord: true},
+		{name: "canceled write", status: http.StatusInternalServerError, method: http.MethodPost, cancel: true, wantMsg: "HTTP server error response", wantLevel: "error", wantClass: "context_canceled", wantRecord: true},
+		{name: "client error", status: http.StatusBadRequest, method: http.MethodGet},
+		{name: "success", status: http.StatusOK, method: http.MethodGet},
 	}
 
 	for _, test := range tests {
@@ -46,7 +50,7 @@ func TestHTTPServerErrorLoggingClassifiesStatusWithoutQueryOrBody(t *testing.T) 
 			}))
 			handler := log.HTTP(ctx, log.WithDisableRequestID(), log.WithDisableRequestLogging())(serverErrorLogger)
 			wrapped := platform.RequestIDMiddleware(handler)
-			request := httptest.NewRequest(http.MethodGet, "/api/example/?token=do-not-log", nil).WithContext(requestContext)
+			request := httptest.NewRequest(test.method, "/api/example/?token=do-not-log", nil).WithContext(requestContext)
 			response := httptest.NewRecorder()
 			wrapped.ServeHTTP(response, request)
 
@@ -62,8 +66,9 @@ func TestHTTPServerErrorLoggingClassifiesStatusWithoutQueryOrBody(t *testing.T) 
 				t.Fatalf("decode log record: %v; log=%s", err, logged)
 			}
 			for field, want := range map[string]any{
-				"msg":         "HTTP server error response",
-				"http.method": http.MethodGet,
+				"msg":         test.wantMsg,
+				"level":       test.wantLevel,
+				"http.method": test.method,
 				"http.path":   "/api/example/",
 				"http.status": float64(test.status),
 				"error.class": test.wantClass,

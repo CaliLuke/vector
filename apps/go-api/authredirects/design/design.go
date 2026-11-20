@@ -20,7 +20,7 @@ var redirect = Type("AuthRedirectResponse", func() {
 
 var authError = Type("AuthRedirectError", func() {
 	ErrorName("name", String, func() { Meta("struct:tag:json", "-") })
-	Attribute("body", Any)
+	Attribute("body", String)
 	Required("name", "body")
 })
 

@@ -2,7 +2,6 @@ package systemapi
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"html"
 	"io"
@@ -16,8 +15,8 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	core "github.com/CaliLuke/go-plane/internal/authredirects"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
+	"github.com/CaliLuke/go-plane/internal/telemetry"
 	loomhttp "github.com/CaliLuke/loom/http"
-	loom "github.com/CaliLuke/loom/pkg"
 )
 
 const authRedirectContentType = "text/html; charset=utf-8"
@@ -84,7 +83,8 @@ func (s *authRedirectsService) SpaceResetPassword(ctx context.Context, payload *
 func (s *authRedirectsService) execute(ctx context.Context, body io.ReadCloser, space bool, run func(core.Request) core.Result) (*api.AuthRedirectResponse, io.ReadCloser, error) {
 	request, err := s.request(ctx, body, space)
 	if err != nil {
-		return nil, nil, authRedirectHTTPError(err)
+		telemetry.AuthRedirectFailure(ctx, "prepare_request", err)
+		return nil, nil, authRedirectHTTPError()
 	}
 	result := run(request)
 	if result.Session != nil {
@@ -94,7 +94,7 @@ func (s *authRedirectsService) execute(ctx context.Context, body io.ReadCloser, 
 		browsersession.ExpireResponseSession(ctx)
 	}
 	if result.Status != 302 {
-		return nil, nil, authRedirectHTTPError(errors.New("authentication redirect failed"))
+		return nil, nil, authRedirectHTTPError()
 	}
 	return &api.AuthRedirectResponse{Location: result.Location, ContentType: authRedirectContentType}, io.NopCloser(strings.NewReader(nativeRedirectBody(result.Location))), nil
 }
@@ -192,10 +192,11 @@ func authRedirectSessionUser(session *browsersession.SessionRefresh) string {
 	return userID
 }
 
-func authRedirectHTTPError(err error) error {
-	body, _ := json.Marshal(map[string]string{"detail": "Something went wrong please try again later"})
-	_ = err
-	return &api.AuthRedirectError{Name: "status_500", Body: loom.JSONValue(body)}
+func authRedirectHTTPError() error {
+	return &api.AuthRedirectError{
+		Name: "status_500",
+		Body: `<!DOCTYPE html><html lang="en"><meta charset="utf-8"><title>Authentication unavailable</title><h1>Authentication unavailable</h1><p>Something went wrong. Please go back and try again.</p></html>`,
+	}
 }
 
 func nativeRedirectBody(location string) string {

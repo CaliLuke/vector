@@ -26,13 +26,16 @@ func logHTTPServerErrors(next http.Handler) http.Handler {
 			span.SetAttributes(attribute.String("app.http.error_class", errorClass))
 		}
 		fields := []log.Fielder{
-			log.KV{K: "msg", V: "HTTP server error response"},
 			log.KV{K: "http.method", V: request.Method},
 			log.KV{K: "http.path", V: request.URL.Path},
 			log.KV{K: "http.status", V: status},
 			log.KV{K: "error.class", V: errorClass},
 		}
-		log.Error(request.Context(), nil, fields...)
+		if errorClass == "context_canceled" && (request.Method == http.MethodGet || request.Method == http.MethodHead) {
+			log.Print(request.Context(), append(fields, log.KV{K: "msg", V: "HTTP read canceled"})...)
+			return
+		}
+		log.Error(request.Context(), nil, append(fields, log.KV{K: "msg", V: "HTTP server error response"})...)
 	})
 }
 

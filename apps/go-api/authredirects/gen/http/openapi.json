@@ -395,7 +395,9 @@
         "description": "Internal Server Error response.",
         "content": {
           "text/html": {
-            "schema": {}
+            "schema": {
+              "type": "string"
+            }
           }
         }
       },
