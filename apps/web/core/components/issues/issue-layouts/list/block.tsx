@@ -190,7 +190,6 @@ export const IssueBlock = function IssueBlock(props: IssueBlockProps) {
       >
         <IssueBlockHeading
           issue={issue}
-          issueId={issueId}
           workspaceSlug={workspaceSlug}
           projectId={projectId}
           displayProperties={displayProperties}
@@ -231,7 +230,6 @@ export const IssueBlock = function IssueBlock(props: IssueBlockProps) {
 
 type IssueBlockHeadingProps = {
   issue: TIssue;
-  issueId: string;
   workspaceSlug: string | undefined;
   projectId: string | undefined;
   displayProperties: IIssueDisplayProperties | undefined;
@@ -428,20 +426,21 @@ function IssueBlockIdentifier({
   nextSequenceId,
   issue,
   workspaceSlug,
-  issueId,
 }: Pick<
   IssueBlockHeadingProps,
-  "displayProperties" | "projectIdentifier" | "nextSequenceId" | "issue" | "workspaceSlug" | "issueId"
+  "displayProperties" | "projectIdentifier" | "nextSequenceId" | "issue" | "workspaceSlug"
 >) {
   if (!displayProperties || (!displayProperties.key && !displayProperties.issue_type)) return null;
   const minWidth = displayProperties.key ? calculateIdentifierWidth(projectIdentifier.length, nextSequenceId ?? 1) : 0;
   return (
     <div className="flex-shrink-0" style={{ minWidth: `${minWidth}px` }}>
-      {issue.project_id && (
+      {issue.project_id && !issue.tempId && (
         <IssueIdentifier
           workspaceSlug={workspaceSlug}
-          issueId={issueId}
           projectId={issue.project_id}
+          projectIdentifier={projectIdentifier}
+          issueSequenceId={issue.sequence_id}
+          issueTypeId={issue.type_id}
           size="xs"
           variant="tertiary"
           displayProperties={displayProperties}
