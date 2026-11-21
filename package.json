@@ -206,6 +206,7 @@
     "fix:lint": "turbo run fix:lint",
     "check": "./check.sh",
     "check:lint": "bash scripts/quality/lint.sh",
+    "check:observability": "bun scripts/quality/observability-lint.mjs",
     "check:format": "turbo run check:format",
     "check:types": "turbo run check:types",
     "test:hydration": "bun tests/frontend/hydration-console.mjs",

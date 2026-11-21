@@ -93,3 +93,52 @@ If the commit fails due to lint errors, fix them before committing.
 
 - [.oxlintrc.json](../.oxlintrc.json) - OxLint configuration
 - [package.json](../package.json) - Available scripts
+
+## Observability audit
+
+Run this opt-in source audit from the repository root after installing the pinned Bun dependencies.
+
+```bash
+source scripts/dev-env.sh
+bun run check:observability
+bun run check:observability --format json apps/web/core/queries apps/go-api/project_member_preferences.go
+bun run check:observability --check apps/go-api/project_member_preferences.go
+```
+
+The default command prints review candidates and exits 0 after a successful scan.
+Use `--check` to exit 1 when the selected files contain any findings. A parser or tool failure exits 2.
+There is no findings baseline. The audit runs independently of the normal lint and CI gates.
+
+| Rule                             | What to review                                                                                                                           |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `unreported-ui-failure`          | A catch displays an error toast or sets error state without a recognized diagnostic in that branch.                                      |
+| `local-only-ui-failure`          | A handled UI failure has a console or local Query report. Vector's browser log exporter is for local development.                        |
+| `swallowed-detached-rejection`   | A promise explicitly detached with `void` has an empty rejection handler. Check that the operation reports failures before this handler. |
+| `unclassified-server-failure`    | An error branch converts a checked Go error into a generic 5xx without a recognized operation-level diagnostic.                          |
+| `weak-server-failure-diagnostic` | A Go error branch logs or traces before a generic 5xx but the event does not refer to the checked error.                                 |
+
+The frontend rules use Oxlint's syntax tree for the web, admin, and public space apps
+and shared browser packages. They inspect local `catch` blocks and inline Promise
+rejection callbacks. They skip ordinary form submission and Query cache maintenance
+for the detached-promise rule, plus the existing one-way project-access diagnostic POST
+whose rejection would otherwise produce a second diagnostic about the exporter itself.
+The Go rules use the standard Go parser for the API and its domain packages. They inspect
+explicit error guards, 5xx statuses, and simple same-file response constructors. They
+skip explicit cancellation branches and leave expected 4xx responses out of scope.
+
+Treat results as review candidates. The audit does not follow calls across files, infer
+coverage from a Query hook or middleware, or prove telemetry delivery. The Go HTTP
+middleware already records generic server error responses, so Go findings call for a
+closer look at the operation, stage, and cause classification. Check that any existing
+span or shared logger covers the same failure before adding another signal. When adding
+telemetry, use stable operation identifiers, a safe error class, and an approved request
+ID where available. Keep credentials, user content, and raw response details out of
+diagnostic payloads. See [Vector's telemetry configuration](self-hosting.md#logs-traces-and-metrics).
+
+Run the rule fixtures with the pinned Bun and Go tools.
+
+```bash
+source scripts/dev-env.sh
+bun test scripts/quality/observability/frontend.test.mjs
+go test scripts/quality/observability/scan-go.go scripts/quality/observability/scan-go_test.go
+```

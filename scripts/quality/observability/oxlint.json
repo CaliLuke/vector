@@ -1,0 +1,12 @@
+{
+  "plugins": [],
+  "categories": {
+    "correctness": "off"
+  },
+  "jsPlugins": ["./frontend.mjs"],
+  "rules": {
+    "vector-observability/unreported-ui-failure": "warn",
+    "vector-observability/local-only-ui-failure": "warn",
+    "vector-observability/swallowed-detached-rejection": "warn"
+  }
+}
