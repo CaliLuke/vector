@@ -50,7 +50,7 @@ export class AuthService extends APIService {
     const action = new URL(ready.action, window.location.href);
     if (action.origin !== window.location.origin) {
       ready.submit();
-      return;
+      return undefined;
     }
 
     const response = await fetch(action, {
@@ -60,7 +60,7 @@ export class AuthService extends APIService {
       credentials: "same-origin",
       cache: "no-store",
     });
-    if (!ready.isConnected) return;
+    if (!ready.isConnected) return undefined;
     if (!response.ok || !response.redirected) throw new Error("Unexpected sign-in response");
     return new URL(response.url);
   }

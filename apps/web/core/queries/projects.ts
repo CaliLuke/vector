@@ -11,6 +11,7 @@ import { EUserPermissions, EUserWorkspaceRoles } from "@plane/types";
 import { effectiveProjectRole } from "@/helpers/permission-policy";
 import { getIdentitySessionGeneration } from "@/queries/identity";
 import { captureProjectAccessScope, projectRolesRevision } from "@/queries/project-access-scope";
+import { ProjectAccessReadError, projectAccessReadRetry } from "@/queries/project-access-diagnostics";
 import { capturePermissionChanges } from "@/queries/permission-mutations";
 import { captureWorkspaceFavoritesRefresh } from "@/queries/favorites";
 import { invalidateProjectLabelCatalogues } from "@/queries/labels";
@@ -156,7 +157,7 @@ export function projectDetailOptions(client: QueryClient, scope: TProjectCatalog
   return queryOptions({
     queryKey: key,
     staleTime: 20_000,
-    retry: false,
+    ...projectAccessReadRetry("project_detail"),
     enabled: canRead && enabled,
     queryFn:
       canRead && workspaceSlug && projectId
@@ -164,10 +165,13 @@ export function projectDetailOptions(client: QueryClient, scope: TProjectCatalog
             const captured = captureProjectCatalogueScope(client, scope);
             const query = exactQuery(client, key);
             const isCurrent = () => captured.isVerified() && exactQuery(client, key) === query;
-            if (!isCurrent()) throw new Error("Project access changed before loading.");
+            if (!isCurrent())
+              throw new ProjectAccessReadError("scope_changed", "Project access changed before loading.");
             const project = await projectService.getProject(workspaceSlug, projectId, signal);
-            if (project.id !== scope.projectId || !isCurrent())
-              throw new Error("Project access changed while loading.");
+            if (!isCurrent())
+              throw new ProjectAccessReadError("scope_changed", "Project access changed while loading.");
+            if (project?.id !== projectId)
+              throw new ProjectAccessReadError("response_mismatch", "The server returned a different project.");
             return project;
           }
         : skipToken,
@@ -183,7 +187,7 @@ export function projectAccessProbeOptions(client: QueryClient, scope: TProjectCa
   return queryOptions({
     queryKey,
     staleTime: 20_000,
-    retry: false,
+    ...projectAccessReadRetry("project_probe"),
     enabled: canProbe && enabled,
     queryFn:
       canProbe && workspaceSlug && projectId
@@ -202,10 +206,13 @@ export function projectAccessProbeOptions(client: QueryClient, scope: TProjectCa
             });
             const query = exactQuery(queryClient, queryKey);
             const isCurrent = () => access.isVerified() && exactQuery(queryClient, queryKey) === query;
-            if (!isCurrent()) throw new Error("Project access changed before its access check.");
+            if (!isCurrent())
+              throw new ProjectAccessReadError("scope_changed", "Project access changed before its access check.");
             const project = await projectService.getProject(workspaceSlug, projectId, signal);
-            if (project.id !== projectId || !isCurrent())
-              throw new Error("Project access changed during its access check.");
+            if (!isCurrent())
+              throw new ProjectAccessReadError("scope_changed", "Project access changed during its access check.");
+            if (project?.id !== projectId)
+              throw new ProjectAccessReadError("response_mismatch", "The server returned a different project.");
             return true;
           }
         : skipToken,

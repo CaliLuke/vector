@@ -37,17 +37,18 @@ type Props = {
 async function submitPasswordAuthentication(form: HTMLFormElement | null, mode: EAuthModes) {
   if (mode === EAuthModes.SIGN_UP) {
     await authService.submitForm(form);
-    return;
+    return undefined;
   }
   const destination = await authService.submitPasswordSignIn(form);
-  if (!destination) return;
+  if (!destination) return undefined;
   const code = destination.searchParams.get("error_code");
   if (code) return code;
   window.location.replace(destination.href);
+  return undefined;
 }
 
 function signInErrorMessage(code: string | undefined, fallback: string) {
-  if (code) return authErrorHandler(code)?.message ?? fallback;
+  return code ? (authErrorHandler(code)?.message ?? fallback) : undefined;
 }
 
 export const AuthPasswordForm = function AuthPasswordForm(props: Props) {

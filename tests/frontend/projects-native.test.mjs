@@ -9,10 +9,13 @@ import { webRequire } from "./helpers/react.mjs";
 registerWebModuleHooks();
 
 const { QueryClient, MutationObserver } = webRequire("@tanstack/react-query");
+const { AxiosError } = webRequire("axios");
 const { EUserProjectRoles, EUserWorkspaceRoles } = webRequire("@plane/types");
 const { identityKeys } = await import("../../apps/web/core/queries/identity.ts");
 const { projectDetailOptions, projectKeys, projectMutationOptions } =
   await import("../../apps/web/core/queries/projects.ts");
+const { ProjectAccessReadError, projectAccessReadRetry } =
+  await import("../../apps/web/core/queries/project-access-diagnostics.ts");
 const { ProjectService } = await import("../../apps/web/core/services/project/project.service.ts");
 
 const permission = {
@@ -49,6 +52,69 @@ function scope() {
 function project(overrides = {}) {
   return { id: "project-1", workspace: "workspace-1", identifier: "VEC", name: "Vector", ...overrides };
 }
+
+await test("the first project read recovers from a transient browser network failure", async (t) => {
+  const client = await createClient(t);
+  let calls = 0;
+  t.mock.method(ProjectService.prototype, "get", async () => {
+    if (++calls === 1) throw new AxiosError("Network Error", "ERR_NETWORK");
+    return { data: project() };
+  });
+
+  const options = projectDetailOptions(client, scope());
+  assert.deepEqual(await client.fetchQuery({ ...options, retryDelay: 0 }), project());
+  assert.equal(calls, 2);
+});
+
+await test("an HTTP access denial is returned without retrying the project request", async (t) => {
+  const client = await createClient(t);
+  const forbidden = { status: 403, data: {} };
+  const get = t.mock.method(ProjectService.prototype, "get", async () => {
+    throw { response: forbidden };
+  });
+
+  await assert.rejects(client.fetchQuery(projectDetailOptions(client, scope())), (error) => error === forbidden);
+  assert.equal(get.mock.callCount(), 1);
+  assert.equal(client.getQueryData(projectKeys.detail(scope())), undefined);
+});
+
+await test("access telemetry reports only safe failure fields and ignores normal cancellations", async (t) => {
+  const originalWindow = globalThis.window;
+  const sent = [];
+  globalThis.window = {
+    fetch: async (url, request) =>
+      sent.push({ url, credentials: request.credentials, event: JSON.parse(request.body) }),
+  };
+  t.after(() => {
+    globalThis.window = originalWindow;
+  });
+  const policy = projectAccessReadRetry("project_detail");
+  const requestId = "f4382efe-a999-4396-8664-5cba5aad55ac";
+  const gatewayError = { status: 503, headers: { "x-request-id": requestId }, data: { secret: "hidden" } };
+
+  assert.equal(policy.retry(0, gatewayError), false);
+  assert.equal(policy.retry(0, new AxiosError("network", "ERR_NETWORK")), true);
+  assert.equal(policy.retry(1, new AxiosError("network", "ERR_NETWORK")), false);
+  assert.equal(policy.retry(0, new AxiosError("canceled", "ERR_CANCELED")), false);
+  assert.equal(policy.retry(0, { status: 403 }), false);
+  assert.equal(policy.retry(0, new ProjectAccessReadError("scope_changed", "private details")), false);
+  assert.equal(policy.retry(0, { status: 500, headers: { "x-request-id": "private details" } }), false);
+  assert.equal(policy.retry(0, new Error("private details")), false);
+  assert.equal(projectAccessReadRetry("project_roles").retry(0, { status: 403 }), false);
+  assert.equal(sent.length, 7);
+  assert.deepEqual(sent[0], {
+    url: "/api/diagnostics/project-access/",
+    credentials: "omit",
+    event: { stage: "project_detail", reason: "http", http_status: 503, request_id: requestId, will_retry: false },
+  });
+  assert.equal(sent[1].event.will_retry, true);
+  assert.equal(sent[2].event.will_retry, false);
+  assert.equal(sent[3].event.reason, "scope_changed");
+  assert.equal(sent[4].event.request_id, undefined);
+  assert.equal(sent[5].event.reason, "unexpected");
+  assert.equal(sent[6].event.stage, "project_roles");
+  assert.doesNotMatch(JSON.stringify(sent), /private details|hidden/);
+});
 
 await test("a detail read rejects a response after its captured role query is replaced", async (t) => {
   const client = await createClient(t);

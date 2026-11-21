@@ -207,6 +207,28 @@ await test("404 stays unavailable even when the project role is cached", async (
   assert.match(fixture.environment.container.textContent, /invalid_project/);
 });
 
+await test("the first project visit recovers from a network failure before rendering the access error", async (t) => {
+  mockPermissionServices(t, { roles: async () => ({ "project-1": 15 }) });
+  const retried = Promise.withResolvers();
+  let detailReads = 0;
+  setHarness({
+    fetchProjectDetails: async () => {
+      if (++detailReads === 1)
+        throw Object.assign(new Error("Network Error"), { isAxiosError: true, code: "ERR_NETWORK" });
+      retried.resolve();
+      return { id: "project-1" };
+    },
+  });
+
+  const { environment } = await renderProject(t);
+  assert.equal(environment.container.querySelector("main"), null);
+  assert.doesNotMatch(environment.container.textContent, /Unable to load project access/);
+  await act(async () => retried.promise);
+  await settleQuery();
+  assert.equal(detailReads, 2);
+  assert.equal(environment.container.querySelector("main")?.textContent, "Project content");
+});
+
 await test("project detail 5xx hides content and Retry reloads the read", async (t) => {
   mockPermissionServices(t, { roles: async () => ({ "project-1": 15 }) });
   let detailReads = 0;

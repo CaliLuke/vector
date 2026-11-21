@@ -50,7 +50,7 @@ export class ProjectService extends APIService {
   async getProject(workspaceSlug: string, projectId: string, signal?: AbortSignal): Promise<TProject> {
     return this.responseData(
       this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/`, { signal }),
-      "response"
+      "response-or-error"
     );
   }
 

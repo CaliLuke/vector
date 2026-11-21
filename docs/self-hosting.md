@@ -81,6 +81,15 @@ roll out the API workload; changing a ConfigMap alone does not update a running 
 
 ### Check configuration and delivery
 
+If the browser displays “Unable to load project access,” look for
+`Browser project access read failed` in the API logs or trace events. The
+`browser.access.stage` and `browser.access.reason` fields identify the failed
+read and distinguish a network failure, HTTP error, or client-side access check.
+When present, `browser.access.request_id` identifies the original API request.
+`browser.access.will_retry` distinguishes a transient attempt from an error
+that needs attention. The browser sends this diagnostic through the same-origin
+API without cookies, URLs, account data, or response content.
+
 In `/god-mode/general/`, the Telemetry section reports these independent settings:
 
 | Entry            | Required configuration                                                                               |

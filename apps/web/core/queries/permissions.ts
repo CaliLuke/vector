@@ -8,6 +8,7 @@ import { queryOptions, skipToken } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import type { IWorkspaceMemberMe } from "@plane/types";
 import { captureIdentityScope, isIdentityScopeVerified } from "@/queries/identity";
+import { ProjectAccessReadError, projectAccessReadRetry } from "@/queries/project-access-diagnostics";
 import { WorkspaceService } from "@/services/workspace.service";
 import { isWorkspaceRole } from "@/helpers/permission-policy";
 
@@ -38,16 +39,16 @@ export function workspaceMembershipOptions(userId: string | undefined, slug: str
             const query = client.getQueryCache().find({ queryKey, exact: true });
             const isCurrent = () =>
               isIdentityScopeVerified(client, identity) && exactQueryCurrent(client, queryKey, query);
-            if (!isCurrent()) throw new Error("The account session changed.");
+            if (!isCurrent()) throw new ProjectAccessReadError("scope_changed", "The account session changed.");
             const data = await service.workspaceMemberMe(slug, signal);
-            if (!isCurrent()) throw new Error("The account session changed.");
+            if (!isCurrent()) throw new ProjectAccessReadError("scope_changed", "The account session changed.");
             return data;
           }
         : skipToken,
     staleTime: 30_000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    retry: false,
+    ...projectAccessReadRetry("workspace_membership"),
   });
 }
 
@@ -79,15 +80,17 @@ export function workspaceProjectRolesOptions(
                 membership.updated_at === membershipUpdatedAt
               );
             };
-            if (!isCurrent()) throw new Error("The workspace permission scope changed.");
+            if (!isCurrent())
+              throw new ProjectAccessReadError("scope_changed", "The workspace permission scope changed.");
             const data = await service.getWorkspaceUserProjectsRole(slug, signal);
-            if (!isCurrent()) throw new Error("The workspace permission scope changed.");
+            if (!isCurrent())
+              throw new ProjectAccessReadError("scope_changed", "The workspace permission scope changed.");
             return data;
           }
         : skipToken,
     staleTime: 30_000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    retry: false,
+    ...projectAccessReadRetry("project_roles"),
   });
 }
