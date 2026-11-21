@@ -164,6 +164,7 @@ await test("access probe never exposes project details when current roles omit t
   await settleQuery();
 
   assert.equal(getProject.mock.callCount(), 1);
+  assert.equal(ProjectService.prototype.getProjectUserProperties.mock.callCount(), 0);
   assert.equal(fixture.environment.container.querySelector("main"), null);
   assert.doesNotMatch(fixture.environment.container.textContent, /Private project details/);
   assert.equal(
@@ -235,7 +236,7 @@ await test("project detail 5xx hides content and Retry reloads the read", async 
   setHarness({
     fetchProjectDetails: async () => {
       detailReads += 1;
-      if (detailReads === 1) throw statusError(503);
+      if (detailReads === 1) throw statusError(500);
       return { id: "project-1" };
     },
   });
@@ -254,7 +255,7 @@ await test("accepted join with a failed role refresh retries reads without repea
     roles: async () => {
       roleReads += 1;
       if (roleReads === 1) return {};
-      if (roleReads === 2) throw statusError(503);
+      if (roleReads === 2) throw statusError(500);
       return { "project-1": 15 };
     },
   });
@@ -314,7 +315,7 @@ await test("membership query errors hide project content and retry the membershi
   mockPermissionServices(t, {
     membership: async () => {
       membershipReads += 1;
-      if (membershipReads === 1) throw statusError(503);
+      if (membershipReads === 1) throw statusError(500);
       return activeMember;
     },
     roles: async () => ({ "project-1": 15 }),
@@ -333,7 +334,7 @@ await test("project role query errors hide content and retry the role read", asy
   mockPermissionServices(t, {
     roles: async () => {
       roleReads += 1;
-      if (roleReads === 1) throw statusError(503);
+      if (roleReads === 1) throw statusError(500);
       return { "project-1": 15 };
     },
   });

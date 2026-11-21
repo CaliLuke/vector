@@ -175,6 +175,29 @@ await test("retrying an unfinished creation reuses its issue and completed durab
     [["original"], ["original"]]
   );
 });
+await test("project creation shows a known server validation error and preserves the draft", async (t) => {
+  const env = await setup(t);
+  const { CreateProjectForm } = await import("../../apps/web/core/components/projects/create/root.tsx");
+  const { ProjectService } = await import("../../apps/web/core/services/project/project.service.ts");
+  t.mock.method(ProjectService.prototype, "createProject", async () => {
+    throw { status: 400, data: { identifier: ["PROJECT_IDENTIFIER_ALREADY_EXIST"] } };
+  });
+  await env.render(
+    React.createElement(CreateProjectForm, {
+      workspaceSlug: "workspace",
+      onClose: () => {},
+      handleNextStep: () => assert.fail("invalid project advanced"),
+      updateCoverImageStatus: async () => assert.fail("invalid project finalized a cover"),
+    })
+  );
+  await change(document.querySelector('[name="name"]'), "drum-meoh");
+  await submit(document);
+  await act(async () => waitForSubmitCompletion(formObserver.getForms(formSources.project).at(-1)));
+  assert.equal(document.querySelector('[name="name"]').value, "drum-meoh");
+  assert.equal(document.querySelector('[name="identifier"]').value, "DRUMMEOH");
+  assert.equal(document.querySelector('[role="alert"]').textContent, "project_identifier_already_taken");
+});
+
 await test("project creation retries cover finalization without creating another project", async (t) => {
   const env = await setup(t);
   const { CreateProjectForm } = await import("../../apps/web/core/components/projects/create/root.tsx");

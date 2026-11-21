@@ -200,7 +200,7 @@ function useProjectEntities(
   // Fetch the full project-preferences response into its native account/scope Query cache.
   const projectPropertiesQuery = useProjectUserProperties(workspaceSlug, projectId, {
     canAccess: canAccessProject,
-    fetchEnabled: canLoadProject,
+    fetchEnabled: canAccessProject,
   });
   useProjectCycles(canLoadProject ? workspaceSlug : undefined, canLoadProject ? projectId : undefined);
   useProjectModules(canLoadProject ? workspaceSlug : undefined, canLoadProject ? projectId : undefined);

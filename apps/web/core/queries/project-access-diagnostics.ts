@@ -1,6 +1,13 @@
 import { isAxiosError } from "axios";
 
-type AccessRead = "workspace_membership" | "project_roles" | "project_detail" | "project_probe";
+type AccessRead =
+  | "identity"
+  | "workspace_membership"
+  | "project_roles"
+  | "project_catalogue"
+  | "project_detail"
+  | "project_probe"
+  | "project_preferences";
 type AccessFailure = "scope_changed" | "response_mismatch";
 
 export class ProjectAccessReadError extends Error {
@@ -36,12 +43,15 @@ function readRequestId(headers: unknown) {
   return undefined;
 }
 
+const retryableStatuses = new Set([502, 503, 504]);
+
 export function projectAccessReadRetry(stage: AccessRead) {
   return {
-    retryDelay: 500,
+    retryDelay: (attempt: number) => 500 * 2 ** attempt,
     retry(failureCount: number, error: unknown) {
       const failure = accessFailure(error);
-      const willRetry = failureCount === 0 && failure.reason === "network";
+      const transient = failure.reason === "network" || retryableStatuses.has(failure.http_status ?? 0);
+      const willRetry = failureCount < 3 && transient;
       const projectRead = stage === "project_detail" || stage === "project_probe";
       const expectedDenial =
         failure.http_status === 401 || (projectRead && [403, 404, 409].includes(failure.http_status ?? 0));

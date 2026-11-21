@@ -120,10 +120,10 @@ function projectOptions<TData>(
   const { workspaceSlug } = scope;
   const key = projectKeys.workspace(scope, kind);
   const canRead = scopeReady(scope, false);
-  return queryOptions({
+  return queryOptions<TData, Error, TData, typeof key>({
     queryKey: key,
     staleTime: 20_000,
-    retry: false,
+    ...projectAccessReadRetry("project_catalogue"),
     enabled: canRead && enabled,
     queryFn:
       canRead && workspaceSlug

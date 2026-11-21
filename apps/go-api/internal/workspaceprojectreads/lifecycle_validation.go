@@ -3,11 +3,17 @@ package workspaceprojectreads
 import (
 	"context"
 	"regexp"
+	"strings"
 
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
-var forbiddenProjectCharacters = regexp.MustCompile(`^.*[&+,:;$^}{*=?@#|'<>.()%!-].*$`)
+var forbiddenProjectCharacters = regexp.MustCompile(`[&+,:;$^}{*=?@#|'<>.()%!]`)
+
+func invalidProjectNameField(key, value string) bool {
+	return forbiddenProjectCharacters.MatchString(value) || (key == "identifier" && strings.ContainsRune(value, '-'))
+}
+
 var projectBooleanFields = []string{"module_view", "cycle_view", "issue_views_view", "page_view", "intake_view", "guest_view_all_features", "is_issue_type_enabled", "is_time_tracking_enabled"}
 
 func (r *LifecycleRepository) validateProjectFields(ctx context.Context, workspace, project string, input requestinput.Input, app, replace, create bool) (map[string]any, error) {

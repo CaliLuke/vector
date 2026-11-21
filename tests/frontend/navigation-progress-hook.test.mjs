@@ -5,18 +5,13 @@ import test from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React, act } from "./helpers/react.mjs";
 
-registerWebTestModules({}, (specifier, context, nextResolve) => {
-  if (specifier === "@plane/hooks") {
-    return nextResolve(new URL("../../packages/hooks/src/index.ts", import.meta.url).href, context);
-  }
-  return nextResolve(specifier, context);
-});
+registerWebTestModules({});
 
 await test("navigation progress configures once, starts after a zero-delay timer, and completes on idle or unmount", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
 
-  const { useNavigationProgress } = await import("@plane/hooks");
+  const { useNavigationProgress } = await import("../../packages/hooks/src/use-navigation-progress.ts");
   t.mock.timers.enable({ apis: ["setTimeout"] });
   const calls = [];
   let started = false;

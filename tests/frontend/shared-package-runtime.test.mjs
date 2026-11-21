@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { createRequire } from "./helpers/module-hooks.mjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
@@ -12,13 +15,25 @@ const coverageOptions = process.env.VECTOR_FRONTEND_COVERAGE
   ? ["--import", fileURLToPath(new URL("./helpers/coverage-preload.mjs", import.meta.url))]
   : [];
 
+async function runLoggerFixture(program, logLevel) {
+  const directory = await mkdtemp(join(tmpdir(), "vector-logger-fixture-"));
+  try {
+    // The coverage loader needs a real module filename for its source map.
+    const entry = join(directory, "entry.mjs");
+    await writeFile(entry, program);
+    return await run(process.execPath, [...coverageOptions, entry], {
+      env: { ...process.env, LOG_LEVEL: logLevel },
+    });
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+}
+
 void test("shared logging emits structured levels and timestamps and honors LOG_LEVEL", async () => {
   const program = `import {logger} from ${JSON.stringify(loggerURL)};
 logger.info('hidden informational message');
 logger.error('visible error', {operation:'fixture'});`;
-  const result = await run(process.execPath, [...coverageOptions, "--input-type=module", "-e", program], {
-    env: { ...process.env, LOG_LEVEL: "error" },
-  });
+  const result = await runLoggerFixture(program, "error");
   const rows = result.stdout
     .trim()
     .split("\n")
@@ -36,9 +51,7 @@ const app=express(); app.use(loggerMiddleware); app.get('/fixture', (_req,res)=>
 const server=app.listen(0,'127.0.0.1'); await new Promise(resolve=>server.once('listening',resolve));
 try { const response=await fetch('http://127.0.0.1:'+server.address().port+'/fixture'); await response.text(); }
 finally { await new Promise((resolve,reject)=>server.close(error=>error?reject(error):resolve())); }`;
-  const result = await run(process.execPath, [...coverageOptions, "--input-type=module", "-e", program], {
-    env: { ...process.env, LOG_LEVEL: "" },
-  });
+  const result = await runLoggerFixture(program, "");
   const rows = result.stdout
     .trim()
     .split("\n")

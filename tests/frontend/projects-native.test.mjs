@@ -57,13 +57,14 @@ await test("the first project read recovers from a transient browser network fai
   const client = await createClient(t);
   let calls = 0;
   t.mock.method(ProjectService.prototype, "get", async () => {
-    if (++calls === 1) throw new AxiosError("Network Error", "ERR_NETWORK");
+    if (++calls <= 2) throw new AxiosError("Network Error", "ERR_NETWORK");
+    if (calls === 3) throw { response: { status: 503 } };
     return { data: project() };
   });
 
   const options = projectDetailOptions(client, scope());
   assert.deepEqual(await client.fetchQuery({ ...options, retryDelay: 0 }), project());
-  assert.equal(calls, 2);
+  assert.equal(calls, 4);
 });
 
 await test("an HTTP access denial is returned without retrying the project request", async (t) => {
@@ -92,9 +93,9 @@ await test("access telemetry reports only safe failure fields and ignores normal
   const requestId = "f4382efe-a999-4396-8664-5cba5aad55ac";
   const gatewayError = { status: 503, headers: { "x-request-id": requestId }, data: { secret: "hidden" } };
 
-  assert.equal(policy.retry(0, gatewayError), false);
+  assert.equal(policy.retry(0, gatewayError), true);
   assert.equal(policy.retry(0, new AxiosError("network", "ERR_NETWORK")), true);
-  assert.equal(policy.retry(1, new AxiosError("network", "ERR_NETWORK")), false);
+  assert.equal(policy.retry(3, new AxiosError("network", "ERR_NETWORK")), false);
   assert.equal(policy.retry(0, new AxiosError("canceled", "ERR_CANCELED")), false);
   assert.equal(policy.retry(0, { status: 403 }), false);
   assert.equal(policy.retry(0, new ProjectAccessReadError("scope_changed", "private details")), false);
@@ -105,7 +106,7 @@ await test("access telemetry reports only safe failure fields and ignores normal
   assert.deepEqual(sent[0], {
     url: "/api/diagnostics/project-access/",
     credentials: "omit",
-    event: { stage: "project_detail", reason: "http", http_status: 503, request_id: requestId, will_retry: false },
+    event: { stage: "project_detail", reason: "http", http_status: 503, request_id: requestId, will_retry: true },
   });
   assert.equal(sent[1].event.will_retry, true);
   assert.equal(sent[2].event.will_retry, false);

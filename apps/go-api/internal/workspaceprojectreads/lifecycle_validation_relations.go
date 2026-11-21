@@ -100,7 +100,7 @@ func (r *LifecycleRepository) validateProjectNames(ctx context.Context, workspac
 			continue
 		}
 		upper := strings.ToUpper(key)
-		if forbiddenProjectCharacters.MatchString(value) {
+		if invalidProjectNameField(key, value) {
 			v.failures[key] = []string{"PROJECT_" + upper + "_CANNOT_CONTAIN_SPECIAL_CHARACTERS"}
 			continue
 		}
@@ -117,7 +117,7 @@ func (r *LifecycleRepository) validateProjectNames(ctx context.Context, workspac
 
 func (v *projectFieldValidation) apiNames() error {
 	for _, key := range []string{"name", "identifier"} {
-		if value, ok := v.values[key].(string); ok && forbiddenProjectCharacters.MatchString(value) {
+		if value, ok := v.values[key].(string); ok && invalidProjectNameField(key, value) {
 			label := "Project name"
 			if key == "identifier" {
 				label = "Project identifier"

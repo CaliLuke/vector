@@ -25,7 +25,7 @@ type projectAccessDiagnostic struct {
 
 func (event projectAccessDiagnostic) valid() bool {
 	switch event.Stage {
-	case "workspace_membership", "project_roles", "project_detail", "project_probe":
+	case "identity", "workspace_membership", "project_roles", "project_catalogue", "project_detail", "project_probe", "project_preferences":
 	default:
 		return false
 	}
