@@ -5,7 +5,7 @@
     ".": {
       "entry": [
         "scripts/quality/*.mjs",
-        "scripts/quality/observability/frontend.mjs",
+        "scripts/quality/observability/*.mjs",
         "tests/**/*.test.mjs",
         "tests/frontend/helpers/*.mjs"
       ],
