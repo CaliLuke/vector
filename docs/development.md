@@ -103,3 +103,38 @@ address and `LIVE_TEST_REDIS_BIND_HOST` to a host address reachable from that en
 ## Recover a rejected type-level migration
 
 For migration 46 failures, use the [journal recovery procedure](self-hosting.md#recover-a-rejected-type-level-migration).
+
+## Reproduce transient UI states
+
+Run a focused browser replay before the full quality gate. Build the workspace
+exports once using `bun run build`, then run the replay.
+
+```bash
+bun run test:browser:status-filter
+```
+
+Set `PLANE_CHROME_PATH` if Chrome or Chromium is outside the usual install paths.
+The replay bundles the current selector source with the built workspace packages.
+It opens a fresh local Chromium profile against synthetic data. It holds a preferences response, delivers a
+status rename first, then releases preferences. The JSON output lists the
+response order and the selector's DOM state after React commits and mutations.
+Rebuild `@plane/utils` after changes to its filter configuration with
+`bun run --filter=@plane/utils build`.
+It fails if an intermediate commit replaces known labels or disables the control,
+even if the final DOM recovers. The replay needs no account or deployment.
+
+Add one repeatable scenario per behavior. Start with cold and warm navigation,
+then cover rapid filter edits, back/forward, mutations arriving out of order, and
+a project switch with a request still in flight. Use explicit response gates so
+the same schedule can be replayed against the current commit and a candidate.
+For the full work-item route, seed two projects with distinct statuses and rows
+and record loading, visible row IDs, and request IDs on each transition. Assert
+that the latest filter wins, a refresh cannot manufacture an empty result, and a
+late response from another project cannot update the current screen. Include an
+explicit loading state when query scope or access changes.
+
+Use request IDs to connect real API calls to SigNoz. For browser-only transitions,
+the local timeline has the evidence even when every HTTP response succeeds.
+Keep recordings limited to synthetic data. When a replay fails, add the smallest
+test that can enforce the same invariant before batching changes for the full
+quality run.

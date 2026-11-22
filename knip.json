@@ -15,7 +15,7 @@
       "postcss": true
     },
     "apps/web": {
-      "entry": ["routes.ts", "public/sw.js", "tests/**/*.test.mjs"],
+      "entry": ["routes.ts", "public/sw.js", "tests/**/*.test.mjs", "tests/browser/*.tsx"],
       "postcss": true
     },
     "packages/propel": {

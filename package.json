@@ -209,6 +209,7 @@
     "check:observability": "bun scripts/quality/observability-lint.mjs",
     "check:format": "turbo run check:format",
     "check:types": "turbo run check:types",
+    "test:browser:status-filter": "bun tests/frontend/browser/status-filter.mjs",
     "test:hydration": "bun tests/frontend/hydration-console.mjs",
     "test:setup": "bash tests/setup/test-setup.sh",
     "prepare": "husky",

@@ -106,7 +106,11 @@ export function useProjectStates(
   const intakeQuery = useQuery({ ...projectIntakeStateOptions(client, scope), enabled: includeIntake && enabled });
   const mutation = useMutation(projectStateMutationOptions(client, scope));
   const access = stateReadAccess(account, permissions, canReadProjectStates(scope.projectRole));
-  const states = useMemo(() => (access.canRead ? currentStateRows(query) : undefined), [access.canRead, query]);
+  const { data: catalogueRows, isSuccess: catalogueReady } = query;
+  const states = useMemo(
+    () => (access.canRead ? currentStateRows({ data: catalogueRows, isSuccess: catalogueReady }) : undefined),
+    [access.canRead, catalogueRows, catalogueReady]
+  );
   const byId = useMemo(() => stateRowsById(states), [states]);
   const groups = useMemo(() => groupedStateRows(states), [states]);
   const projection = useMemo(() => projectStateProjection(client, scope, query, byId), [byId, client, query, scope]);

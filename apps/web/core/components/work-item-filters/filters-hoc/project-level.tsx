@@ -15,7 +15,6 @@ import { useProjectCycles } from "@/hooks/use-cycles";
 import { useProjectLabels } from "@/hooks/use-labels";
 import { useProjectModules } from "@/hooks/use-modules";
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
-import { useProjectStates } from "@/hooks/use-project-states";
 import { useProjectView, useProjectViewMutations } from "@/hooks/use-project-views";
 import { useProjectPermissions } from "@/hooks/use-permissions";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -68,7 +67,6 @@ export const ProjectLevelWorkItemFiltersHOC = function ProjectLevelWorkItemFilte
   const cycleCatalogue = useProjectCycles(workspaceSlug, projectId);
   const { labelIds: projectLabelIds } = useProjectLabels(workspaceSlug, projectId);
   const moduleCatalogue = useProjectModules(workspaceSlug, projectId);
-  const { getProjectStateIds } = useProjectStates(workspaceSlug, projectId);
   // derived values
   const hasProjectMemberLevelPermissions = canProject([EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER]);
   const projectDetails = projectRows?.find((project) => project.id === projectId);
@@ -127,7 +125,6 @@ export const ProjectLevelWorkItemFiltersHOC = function ProjectLevelWorkItemFilte
           undefined
         }
         moduleIds={moduleCatalogue.modules?.map((row) => row.id)}
-        stateIds={getProjectStateIds(projectId)}
         saveViewOptions={saveViewOptions}
         updateViewOptions={updateViewOptions}
       >
