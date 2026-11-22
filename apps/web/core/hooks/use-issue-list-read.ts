@@ -229,8 +229,8 @@ export function useIssueListRead(
     [scopes.projectScope.accountId, workspaceSlug, projectId]
   );
   const projectPropertiesQuery = client.getQueryCache().find({ queryKey: projectPropertiesKey, exact: true });
-  const isReadCurrent = useCallback(() => {
-    if (!request || !workspaceSlug || !committed()) return false;
+  const isPresentationCurrent = useCallback(() => {
+    if (!request || !workspaceSlug) return false;
     if (request.family !== "project" && request.family !== "epic")
       return routeReadCurrent(request, { globalViewId, userId, projectId, cycleId, moduleId, viewId }) ?? false;
     return (
@@ -243,7 +243,6 @@ export function useIssueListRead(
     );
   }, [
     request,
-    committed,
     workspaceSlug,
     globalViewId,
     userId,
@@ -259,7 +258,7 @@ export function useIssueListRead(
   ]);
   return useMemo(() => {
     if (!enabled || !request || !scope || !identity) return undefined;
-    const scopedRequest: IssueListRequest = { ...request, isReadCurrent };
-    return { scope, request: scopedRequest, pagination, catalogueRevision };
-  }, [catalogueRevision, enabled, identity, isReadCurrent, pagination, request, scope]);
+    const scopedRequest: IssueListRequest = { ...request, isReadCurrent: () => committed() && isPresentationCurrent() };
+    return { scope, request: scopedRequest, pagination, catalogueRevision, isPresentationCurrent };
+  }, [catalogueRevision, committed, enabled, identity, isPresentationCurrent, pagination, request, scope]);
 }

@@ -46,6 +46,7 @@ interface Props {
   readState: {
     isPending: boolean;
     isError: boolean;
+    isUpdatingResults?: boolean;
     issueCount: number;
     retry: () => Promise<unknown>;
   };
@@ -84,5 +85,19 @@ export function IssueLayoutHOC(props: Props) {
     return <IssueLayoutEmptyState storeType={storeType} />;
   }
 
-  return <LayoutErrorBoundary key={layout}>{props.children}</LayoutErrorBoundary>;
+  const updating = readState.isUpdatingResults;
+  return (
+    <LayoutErrorBoundary key={layout}>
+      <div className="relative size-full" aria-busy={updating}>
+        {updating && (
+          <output className="pointer-events-none absolute top-2 right-2 z-10 rounded border border-subtle bg-surface-1 px-2 py-1 text-12 text-secondary">
+            {t("updating")}
+          </output>
+        )}
+        <div className="size-full" inert={updating}>
+          {props.children}
+        </div>
+      </div>
+    </LayoutErrorBoundary>
+  );
 }

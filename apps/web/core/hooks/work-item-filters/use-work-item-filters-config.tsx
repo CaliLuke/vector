@@ -25,7 +25,7 @@ import {
   UserCirclePropertyIcon,
   PriorityPropertyIcon,
 } from "@plane/propel/icons";
-import type { IUserLite, TFilterConfig, IIssueLabel, TWorkItemFilterProperty } from "@plane/types";
+import type { IUserLite, TFilterConfig, TWorkItemFilterProperty } from "@plane/types";
 import { Avatar } from "@plane/ui";
 import {
   getAssigneeFilterConfig,
@@ -46,10 +46,10 @@ import {
 } from "@plane/utils/work-item-filters";
 import { getFileURL } from "@plane/utils/file";
 // store hooks
-import { useWorkspaceCycles } from "@/hooks/use-cycles";
-import { useWorkspaceLabels } from "@/hooks/use-labels";
+import { useProjectCycles } from "@/hooks/use-cycles";
+import { useProjectLabels, useWorkspaceLabels } from "@/hooks/use-labels";
 import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
-import { useWorkspaceModules } from "@/hooks/use-modules";
+import { useProjectModules } from "@/hooks/use-modules";
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import { useProjectStates } from "@/hooks/use-project-states";
 // plane web imports
@@ -57,10 +57,8 @@ import { useFiltersOperatorConfigs } from "@/hooks/rich-filters/use-filters-oper
 
 export type TWorkItemFiltersEntityProps = {
   workspaceSlug: string;
-  cycleIds?: string[];
-  labelIds?: string[];
+  workspaceId?: string;
   memberIds?: string[];
-  moduleIds?: string[];
   projectId?: string;
   projectIds?: string[];
 };
@@ -85,8 +83,8 @@ export type TWorkItemFiltersConfig = {
 function filterCatalogError(
   filtersToShow: ReadonlySet<TWorkItemFilterProperty>,
   projectCatalogue: ReturnType<typeof useWorkspaceProjectDetails>,
-  cycleRead: ReturnType<typeof useWorkspaceCycles>,
-  moduleRead: ReturnType<typeof useWorkspaceModules>,
+  cycleRead: ReturnType<typeof useProjectCycles>,
+  moduleRead: ReturnType<typeof useProjectModules>,
   typeFilter: ReturnType<typeof useTypeFilterConfig>,
   propertyFilters: ReturnType<typeof usePropertyFilterConfigs>
 ) {
@@ -113,20 +111,30 @@ function areFilterCatalogsInitialized(
   );
 }
 
-export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps): TWorkItemFiltersConfig => {
-  const { allowedFilters, cycleIds, labelIds, memberIds, moduleIds, projectId, projectIds, workspaceSlug } = props;
-  // store hooks
-  const projectCatalogue = useWorkspaceProjectDetails(workspaceSlug);
-  const projectRows = projectCatalogue.projects;
-  const cycleRead = useWorkspaceCycles(workspaceSlug);
-  const cycleCatalogue = cycleRead.cycles;
-  const { getLabelById } = useWorkspaceLabels(workspaceSlug);
-  const moduleRead = useWorkspaceModules(workspaceSlug);
-  const moduleCatalogue = moduleRead.modules;
-  const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
-  // derived values
-  const operatorConfigs = useFiltersOperatorConfigs({ workspaceSlug });
-  const filtersToShow = useMemo(() => new Set(allowedFilters), [allowedFilters]);
+function useFilterChoiceCatalogues(
+  workspaceSlug: string,
+  projectId: string | undefined,
+  workspaceId: string | undefined,
+  filtersToShow: ReadonlySet<TWorkItemFilterProperty>
+) {
+  const cycleRead = useProjectCycles(workspaceSlug, projectId);
+  const moduleRead = useProjectModules(workspaceSlug, projectId);
+  const projectLabelRead = useProjectLabels(workspaceSlug, projectId);
+  const workspaceLabelRead = useWorkspaceLabels(projectId ? undefined : workspaceSlug);
+  const labelRead = projectId ? projectLabelRead : workspaceLabelRead;
+  const workItemLabels = useMemo(
+    () =>
+      projectId
+        ? labelRead.labels
+        : workspaceId
+          ? labelRead.labels?.filter((label) => label.workspace_id === workspaceId)
+          : undefined,
+    [labelRead.labels, projectId, workspaceId]
+  );
+  const cycles = cycleRead.cycles;
+  const modules = moduleRead.modules;
+  const labelCatalogError = filtersToShow.has("label_id") && labelRead.isError;
+
   const needsProjectStates = Boolean(projectId) && filtersToShow.has("state_id");
   const stateRead = useProjectStates(workspaceSlug, projectId, false, needsProjectStates);
   const workItemStates = stateRead.states;
@@ -134,6 +142,43 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
     needsProjectStates && (stateRead.accessError || stateRead.accessDenied || stateRead.isError);
   const stateCatalogPending =
     needsProjectStates && !stateCatalogError && (stateRead.accessPending || stateRead.isPending);
+  return {
+    cycleRead,
+    moduleRead,
+    labelRead,
+    stateRead,
+    workItemLabels,
+    workItemStates,
+    cycles,
+    modules,
+    labelCatalogError,
+    stateCatalogError,
+    stateCatalogPending,
+  };
+}
+
+export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps): TWorkItemFiltersConfig => {
+  const { allowedFilters, memberIds, projectId, projectIds, workspaceId, workspaceSlug } = props;
+  // store hooks
+  const projectCatalogue = useWorkspaceProjectDetails(workspaceSlug);
+  const projectRows = projectCatalogue.projects;
+  const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
+  // derived values
+  const operatorConfigs = useFiltersOperatorConfigs({ workspaceSlug });
+  const filtersToShow = useMemo(() => new Set(allowedFilters), [allowedFilters]);
+  const {
+    cycleRead,
+    moduleRead,
+    labelRead,
+    stateRead,
+    workItemLabels,
+    workItemStates,
+    cycles,
+    modules,
+    labelCatalogError,
+    stateCatalogError,
+    stateCatalogPending,
+  } = useFilterChoiceCatalogues(workspaceSlug, projectId, workspaceId, filtersToShow);
   const typeFilter = useTypeFilterConfig(workspaceSlug, projectId, filtersToShow.has("type_id"));
   const propertyFilters = usePropertyFilterConfigs(workspaceSlug, projectId, props.propertyFiltersSupported ?? false);
   const propertyKeys = useMemo(
@@ -153,24 +198,6 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
           })
         : undefined,
     [memberIds, membersById]
-  );
-  const workItemLabels: IIssueLabel[] | undefined = useMemo(
-    () =>
-      labelIds
-        ? labelIds.flatMap((labelId) => {
-            const label = getLabelById(labelId);
-            return label ? [label] : [];
-          })
-        : undefined,
-    [labelIds, getLabelById]
-  );
-  const cycles = useMemo(
-    () => (cycleIds ? cycleIds.flatMap((id) => cycleCatalogue?.filter((row) => row.id === id) ?? []) : []),
-    [cycleIds, cycleCatalogue]
-  );
-  const modules = useMemo(
-    () => (moduleIds ? moduleIds.flatMap((id) => moduleCatalogue?.filter((row) => row.id === id) ?? []) : []),
-    [moduleIds, moduleCatalogue]
   );
   const projects = useMemo(
     () =>
@@ -384,17 +411,19 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
     areAllConfigsInitialized: areFilterCatalogsInitialized(
       areAllConfigsInitialized && !stateCatalogPending,
       filtersToShow,
-      cycleRead.isPending,
-      moduleRead.isPending
+      Boolean(projectId) && cycleRead.isPending,
+      Boolean(projectId) && moduleRead.isPending
     ),
     catalogError:
       stateCatalogError ||
+      labelCatalogError ||
       filterCatalogError(filtersToShow, projectCatalogue, cycleRead, moduleRead, typeFilter, propertyFilters),
     retryCatalogs: async () => {
       await Promise.all([
         projectCatalogue.isError || projectCatalogue.accessDenied ? projectCatalogue.retryAccess() : undefined,
         filtersToShow.has("cycle_id") ? cycleRead.retry() : undefined,
         filtersToShow.has("module_id") ? moduleRead.retry() : undefined,
+        labelCatalogError ? labelRead.refetch() : undefined,
         stateCatalogError && !stateRead.accessDenied
           ? stateRead.accessError
             ? stateRead.retryAccess()

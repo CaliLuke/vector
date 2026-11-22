@@ -608,3 +608,18 @@ Workspace pages share the native pages table and body-history workflows. Collect
 Native templates own reusable JSON definitions, top-level merge updates and workspace/project governance. Feature settings map existing project switches to their canonical columns and own workspace switches. Initiatives enforce their workspace switch, current target visibility, atomic associations and durable item history. Their contracts are recorded in [templates](mcp-templates.md) and [features/initiatives](mcp-features-initiatives.md).
 
 Customers, requests, property definitions/options and values share a workspace catalogue in `internal/customers`. Atomic upserts preserve external identity; request associations remain customer-bound. Current workspace features, membership and reference visibility govern reads and receipt replay. Item links enqueue native activity. The catalogue workflow and receipt batches cover these operations. The [customer contracts](mcp-customers.md) and [parity tracker](mcp-parity.md) record compatibility decisions and remaining acceptance checks.
+
+## Work-item filter transitions
+
+Project filter choices use the scoped status, label, cycle, and module
+catalogues. Selection fields built from available rows derive their choices
+synchronously. A choice that still needs a network read keeps its own loading
+and stale-response guards.
+
+The work-item query key includes the filter expression. The visible list has a
+separate identity that includes the verified account, access revision, project
+or view, grouping, and pagination. An uncached filter change can keep the last
+accepted rows visible as a read-only snapshot with an updating indicator. The
+new request owns its own result and pagination. Changes of project, identity,
+permissions, or layout discard the snapshot. The cold-load and error states
+remain visible for their respective outcomes.

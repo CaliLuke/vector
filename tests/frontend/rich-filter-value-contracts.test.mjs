@@ -41,8 +41,8 @@ void test("single and multi select options retain typed icon data and selection 
   const single = getSingleSelectConfig(transforms, { isOperatorEnabled: true }, icons);
   const multi = getMultiSelectConfig(transforms, { isOperatorEnabled: true, singleValueOperator: "in" }, icons);
   const expected = [{ id: "one", label: "First", value: false, icon: "icon:red" }];
-  assert.deepEqual(single.getOptions(), expected);
-  assert.deepEqual(multi.getOptions(), expected);
+  assert.deepEqual(single.getOptions, expected);
+  assert.deepEqual(multi.getOptions, expected);
 });
 
 void test("selection factories never invoke an icon renderer without its required data transform", () => {
@@ -61,5 +61,5 @@ void test("selection factories never invoke an icon renderer without its require
       },
     }
   );
-  assert.deepEqual(config.getOptions(), [{ id: "one", label: "one", value: "one", icon: undefined }]);
+  assert.deepEqual(config.getOptions, [{ id: "one", label: "one", value: "one", icon: undefined }]);
 });

@@ -6,14 +6,8 @@
 
 // plane imports
 import { STATE_GROUPS } from "@plane/constants";
-import type {
-  IState,
-  TFilterProperty,
-  TMultiSelectFilterFieldConfig,
-  TStateGroups,
-  TSupportedOperators,
-} from "@plane/types";
-import { COLLECTION_OPERATOR, EQUALITY_OPERATOR, FILTER_FIELD_TYPE } from "@plane/types";
+import type { IState, TFilterProperty, TStateGroups, TSupportedOperators } from "@plane/types";
+import { COLLECTION_OPERATOR, EQUALITY_OPERATOR } from "@plane/types";
 // local imports
 import type { IFilterIconConfig, TCreateFilterConfig, TCreateFilterConfigParams } from "../../../rich-filters";
 import { createFilterConfig, getMultiSelectConfig, createOperatorConfigEntry } from "../../../rich-filters";
@@ -87,21 +81,23 @@ export type TCreateStateFilterParams = TCreateFilterConfigParams &
  * @param params - The filter params
  * @returns The state multi select config
  */
-const getStateMultiSelectConfig = (
-  params: TCreateStateFilterParams,
-  singleValueOperator: TSupportedOperators
-): TMultiSelectFilterFieldConfig<string> => ({
-  ...params,
-  type: FILTER_FIELD_TYPE.MULTI_SELECT,
-  isOperatorEnabled: params.allowedOperators.has(COLLECTION_OPERATOR.IN),
-  singleValueOperator,
-  getOptions: params.states.map((state) => ({
-    id: state.id,
-    label: state.name,
-    value: state.id,
-    icon: params.getOptionIcon?.(state),
-  })),
-});
+export const getStateMultiSelectConfig = (params: TCreateStateFilterParams, singleValueOperator: TSupportedOperators) =>
+  getMultiSelectConfig<IState, string, IState>(
+    {
+      items: params.states,
+      getId: (state) => state.id,
+      getLabel: (state) => state.name,
+      getValue: (state) => state.id,
+      getIconData: (state) => state,
+    },
+    {
+      singleValueOperator,
+      ...params,
+    },
+    {
+      ...params,
+    }
+  );
 
 /**
  * Get the state filter config

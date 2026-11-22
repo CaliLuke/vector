@@ -63,7 +63,7 @@ export const getSingleSelectConfig = <
   createFilterFieldConfig<typeof FILTER_FIELD_TYPE.SINGLE_SELECT, TValue>({
     type: FILTER_FIELD_TYPE.SINGLE_SELECT,
     ...config,
-    getOptions: () => getSelectionOptions(transforms, iconConfig),
+    getOptions: getSelectionOptions(transforms, iconConfig),
   });
 
 /**
@@ -94,7 +94,7 @@ export const getMultiSelectConfig = <
     type: FILTER_FIELD_TYPE.MULTI_SELECT,
     ...config,
     operatorLabel: config?.operatorLabel,
-    getOptions: () => getSelectionOptions(transforms, iconConfig),
+    getOptions: getSelectionOptions(transforms, iconConfig),
   });
 
 // ------------ Date filters ------------

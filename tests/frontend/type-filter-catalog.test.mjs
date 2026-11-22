@@ -133,7 +133,7 @@ await test("type filters keep paused identities, show missing IDs, and support e
   assert.match(f.env.container.textContent, /Unavailable \(missing\)/);
   const config = f.config;
   assert.deepEqual(
-    (await config.supportedOperatorConfigsMap.get("in").getOptions()).map((x) => x.value),
+    config.supportedOperatorConfigsMap.get("in").getOptions.map((x) => x.value),
     ["paused", "unimported"]
   );
   assert.deepEqual(

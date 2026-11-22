@@ -20,7 +20,8 @@ registerHooks({
   },
 });
 const { QueryClient, QueryClientProvider } = webRequire("@tanstack/react-query");
-const { seedIssueQueryScope } = await import("./helpers/issue-query-fixtures.mjs");
+const { projectIssueScope, seedIssueQueryScope } = await import("./helpers/issue-query-fixtures.mjs");
+const { IssueService } = await fromRoot("apps/web/core/services/issue/index.ts");
 const { WorkspaceService } = await fromRoot("apps/web/core/services/workspace.service.ts");
 const { issueListGroupOptions, issueListKeys } = await import("../../apps/web/core/queries/issue-lists.ts");
 const { captureIssueListMutationOwner, currentIssueListMutationOwner } =
@@ -117,4 +118,85 @@ await test("workspace group observers preserve undefined key slots for native ca
   });
   assert.equal(requestSignal.aborted, true, "native prefix cancellation reaches the page request");
   page.resolve(response);
+});
+
+function FilterTransitionProbe({ read }) {
+  const state = useIssueListQuery(read);
+  const status = state.isUpdatingResults ? "updating" : state.isPending ? "loading" : "ready";
+  return React.createElement("output", { "data-state": status }, Object.keys(state.issuesById).join(","));
+}
+
+await test("filter transitions retain only a settled view in the same verified scope", async (t) => {
+  const env = await createReactDomTestEnvironment();
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: Infinity, staleTime: Infinity } },
+  });
+  t.after(() => env.unmount(() => client.clear()));
+  const project = projectIssueScope();
+  const { rolesKey } = seedIssueQueryScope(client, { ...project, projectRoles: { p1: 20, p2: 20 } });
+  const makeRead = (filter, projectId = "p1", isReadCurrent = () => true) => ({
+    scope: { ...project, projectId },
+    pagination: { canGroup: true, perPageCount: 1, groupedBy: "state_id" },
+    request: {
+      family: "project",
+      input: {
+        workspaceSlug: "acme",
+        projectId,
+        richFilters: { state_id__in: filter },
+        displayFilters: { layout: ContractEnums.EIssueLayoutTypes.LIST, group_by: "state", sub_group_by: null },
+      },
+      isReadCurrent,
+    },
+    isPresentationCurrent: () => true,
+  });
+  const original = makeRead("first", "p1", () => false);
+  client.setQueryData(issueListKeys.list(original), { generation: "original", response });
+  const requests = [];
+  t.mock.method(IssueService.prototype, "getIssues", async (_workspace, projectId, _params, { signal }) => {
+    const pending = Promise.withResolvers();
+    requests.push({ projectId, signal, pending });
+    return pending.promise;
+  });
+  const render = (read) =>
+    env.render(
+      React.createElement(QueryClientProvider, { client }, React.createElement(FilterTransitionProbe, { read }))
+    );
+  const view = () => [
+    env.container.querySelector("output").dataset.state,
+    env.container.querySelector("output").textContent,
+  ];
+
+  await render(original);
+  assert.deepEqual(view(), ["ready", "i1"], "cached rows can render before the new transport owner commits");
+  await render(makeRead("second"));
+  assert.deepEqual(view(), ["updating", "i1"]);
+  await render(makeRead("third"));
+  assert.deepEqual(view(), ["updating", "i1"]);
+  assert.equal(requests[0].signal.aborted, true);
+  await act(async () => {
+    requests[0].pending.resolve({
+      ...response,
+      results: { "state-1": { results: [{ ...row, id: "superseded" }], total_results: 1 } },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  });
+  assert.deepEqual(view(), ["updating", "i1"]);
+  await act(async () => {
+    requests[1].pending.resolve({
+      ...response,
+      results: { "state-1": { results: [{ ...row, id: "latest" }], total_results: 1 } },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  });
+  assert.deepEqual(view(), ["ready", "latest"]);
+
+  await render(makeRead("fourth"));
+  assert.deepEqual(view(), ["updating", "latest"]);
+  client.removeQueries({ queryKey: rolesKey, exact: true });
+  client.setQueryData(rolesKey, { p1: 20, p2: 20 });
+  await render(makeRead("fourth"));
+  assert.deepEqual(view(), ["loading", ""], "replaced permission owners cannot retain earlier rows");
+  await render(makeRead("fourth", "p2"));
+  assert.deepEqual(view(), ["loading", ""], "a project switch starts with its own presentation");
+  assert.equal(requests.at(-1).projectId, "p2");
 });

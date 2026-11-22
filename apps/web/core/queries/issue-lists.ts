@@ -56,6 +56,8 @@ export type IssueListRead = {
   request: IssueListRequest;
   pagination: IssuePaginationOptions;
   catalogueRevision?: string;
+  /** Synchronous authority for display. Transport still requires the committed request identity. */
+  isPresentationCurrent?: () => boolean;
 };
 export type IssueListReadData = Readonly<{ generation: string; response: TIssuesResponse }>;
 /** A response can contain flat groups and nested subgroups alongside one another. */
@@ -74,6 +76,18 @@ export const issueListKeys = {
       catalogueRevision,
     ] as const,
 };
+
+/** Prior results are displayable only across filter changes within the same view and shape. */
+export function issueListPresentationKey({ scope, request, pagination, catalogueRevision }: IssueListRead) {
+  return hashKey([
+    parentScopeKey(scope),
+    request.family,
+    requestOwner(request),
+    request.input.displayFilters,
+    pagination,
+    catalogueRevision,
+  ]);
+}
 
 function requestOwner(request: IssueListRequest) {
   switch (request.family) {

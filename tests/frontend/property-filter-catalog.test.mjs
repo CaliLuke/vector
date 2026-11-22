@@ -81,7 +81,7 @@ await test("property config selects typed controls and preserves inclusion with 
   });
   assert.equal(selection.supportedOperatorConfigsMap.get("in").singleValueOperator, "in");
   const formula = propertyFilterConfig({ ...base, kind: "Formula", result_kind: "Boolean", operators: ["exact"] });
-  assert.equal(formula.supportedOperatorConfigsMap.get("exact").getOptions()[1].value, false);
+  assert.equal(formula.supportedOperatorConfigsMap.get("exact").getOptions[1].value, false);
 });
 
 await test("switching between selected values and presence checks never sends the previous operand", () => {

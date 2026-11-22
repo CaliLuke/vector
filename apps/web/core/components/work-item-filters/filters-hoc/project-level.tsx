@@ -11,9 +11,6 @@ import { EIssuesStoreType, EUserProjectRoles } from "@plane/types";
 // components
 import { CreateUpdateProjectViewModal } from "@/components/views/modal";
 // hooks
-import { useProjectCycles } from "@/hooks/use-cycles";
-import { useProjectLabels } from "@/hooks/use-labels";
-import { useProjectModules } from "@/hooks/use-modules";
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import { useProjectView, useProjectViewMutations } from "@/hooks/use-project-views";
 import { useProjectPermissions } from "@/hooks/use-permissions";
@@ -63,10 +60,13 @@ export const ProjectLevelWorkItemFiltersHOC = function ProjectLevelWorkItemFilte
   const captureActionScope = useWorkspaceViewActionScope(workspaceSlug, true, entityId);
   const workspaceRoster = useWorkspaceMemberRoster(workspaceSlug);
   const projectRoster = useProjectMemberRoster(workspaceSlug, projectId);
+  const memberIds = useMemo(
+    () =>
+      projectRosterMemberIds(projectRoster.memberships, workspaceRoster.membersById, currentUser?.id, false) ??
+      undefined,
+    [currentUser?.id, projectRoster.memberships, workspaceRoster.membersById]
+  );
   const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
-  const cycleCatalogue = useProjectCycles(workspaceSlug, projectId);
-  const { labelIds: projectLabelIds } = useProjectLabels(workspaceSlug, projectId);
-  const moduleCatalogue = useProjectModules(workspaceSlug, projectId);
   // derived values
   const hasProjectMemberLevelPermissions = canProject([EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER]);
   const projectDetails = projectRows?.find((project) => project.id === projectId);
@@ -118,13 +118,7 @@ export const ProjectLevelWorkItemFiltersHOC = function ProjectLevelWorkItemFilte
       <WorkItemFiltersHOC
         {...props}
         workspaceSlug={workspaceSlug}
-        cycleIds={cycleCatalogue.cycles?.map((row) => row.id)}
-        labelIds={projectLabelIds}
-        memberIds={
-          projectRosterMemberIds(projectRoster.memberships, workspaceRoster.membersById, currentUser?.id, false) ??
-          undefined
-        }
-        moduleIds={moduleCatalogue.modules?.map((row) => row.id)}
+        memberIds={memberIds}
         saveViewOptions={saveViewOptions}
         updateViewOptions={updateViewOptions}
       >

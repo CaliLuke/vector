@@ -127,7 +127,9 @@ Add one repeatable scenario per behavior. Start with cold and warm navigation,
 then cover rapid filter edits, back/forward, mutations arriving out of order, and
 a project switch with a request still in flight. Use explicit response gates so
 the same schedule can be replayed against the current commit and a candidate.
-For the full work-item route, seed two projects with distinct statuses and rows
+The shared work-item query regression already checks a rapid pair of filter edits,
+a superseded reply, replaced permissions, and a project switch. For a full-route
+browser replay, seed two projects with distinct statuses and rows
 and record loading, visible row IDs, and request IDs on each transition. Assert
 that the latest filter wins, a refresh cannot manufacture an empty result, and a
 late response from another project cannot update the current screen. Include an
