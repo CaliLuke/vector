@@ -28,15 +28,15 @@ function browserActionReporters(program) {
 
 function name(node) {
   if (node?.type === "Identifier") return node.name;
-  if (node?.type === "Literal") return node.value;
+  return node?.type === "Literal" ? node.value : undefined;
 }
 
 function member(node) {
-  if (node?.type === "MemberExpression") return name(node.property);
+  return node?.type === "MemberExpression" ? name(node.property) : undefined;
 }
 
 function property(node, key) {
-  if (node?.type !== "ObjectExpression") return;
+  if (node?.type !== "ObjectExpression") return undefined;
   return node.properties.find(
     (entry) => entry.type === "Property" && (!entry.computed || entry.key.type === "Literal") && name(entry.key) === key
   )?.value;
@@ -93,11 +93,10 @@ function signal(call, reporters) {
   const { callee, arguments: args } = call;
   if (projectAccessPost(call) || (reporters.has(name(callee)) && browserActions.has(name(args[0]))))
     return "production";
-  if (
+  const local =
     name(callee) === "reportLocalQueryError" ||
-    (name(callee.object) === "console" && ["warn", "error"].includes(member(callee)))
-  )
-    return "local";
+    (name(callee.object) === "console" && ["warn", "error"].includes(member(callee)));
+  return local ? "local" : undefined;
 }
 
 function signalOnPath(feedback, body, keys, reporters) {

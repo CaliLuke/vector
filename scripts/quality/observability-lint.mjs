@@ -145,7 +145,8 @@ function main() {
     print(
       `Observability audit found ${findings.length} candidates across ${files.frontend} frontend and ${files.backend} Go input files.`
     );
-    for (const [rule, count] of Object.entries(counts).toSorted()) print(`  ${count} ${rule}`);
+    for (const [rule, count] of Object.entries(counts).toSorted(([left], [right]) => left.localeCompare(right)))
+      print(`  ${count} ${rule}`);
   }
   if (values.check && findings.length > 0) process.exitCode = 1;
 }
