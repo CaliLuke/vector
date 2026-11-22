@@ -199,4 +199,6 @@ await test("filter transitions retain only a settled view in the same verified s
   await render(makeRead("fourth", "p2"));
   assert.deepEqual(view(), ["loading", ""], "a project switch starts with its own presentation");
   assert.equal(requests.at(-1).projectId, "p2");
+  await render(undefined);
+  assert.deepEqual(view(), ["loading", ""], "a disabled read has no earlier presentation");
 });

@@ -324,3 +324,56 @@ await test("same-project preference failure hides cached issue rows and exposes 
   assert.equal(typeof latest.retry, "function", "the list surface can expose Retry");
   assert.equal(reads, 0, "the failed preference scope is rejected before transport");
 });
+
+await test("verified project preferences authorize display during the render before the transport commits", async (t) => {
+  const fixture = await createPermissionUiFixture(t, {
+    path: "/acme/projects/p1/issues/",
+    userId: "alice",
+    workspaceRole: EUserWorkspaceRoles.MEMBER,
+    projectRoles: { p1: EUserPermissions.MEMBER },
+  });
+  const { projectUserPropertiesKeys } = await fromRoot("apps/web/core/queries/project-user-properties.ts");
+  const propertiesKey = projectUserPropertiesKeys.detail({
+    accountId: "alice",
+    workspaceSlug: "acme",
+    projectId: "p1",
+  });
+  fixture.client.setQueryData(propertiesKey, { rich_filters: {} });
+  const input = {
+    workspaceSlug: "acme",
+    projectId: "p1",
+    richFilters: { state_id__in: "backlog,todo" },
+    displayFilters: { layout: "list" },
+  };
+  const context = {
+    workspaceSlug: "acme",
+    projectId: "p1",
+    requestInput: input,
+    isPending: false,
+    isError: false,
+  };
+  const pagination = { canGroup: false, perPageCount: 20 };
+  const renders = [];
+  let last;
+  function Probe({ enabled }) {
+    const read = useIssueListRead(EIssuesStoreType.PROJECT, pagination, enabled);
+    const canDisplay = read?.isPresentationCurrent();
+    const canFetch = read?.request.isReadCurrent();
+    React.useLayoutEffect(() => {
+      last = read;
+      renders.push({ canDisplay, canFetch });
+    }, [read, canDisplay, canFetch]);
+    return null;
+  }
+  const render = (value, enabled = true) =>
+    fixture.render(
+      React.createElement(ProjectIssuePreferencesContext.Provider, { value }, React.createElement(Probe, { enabled }))
+    );
+  await render(context);
+  assert.deepEqual(renders[0], { canDisplay: true, canFetch: false });
+  assert.equal(last.request.isReadCurrent(), true);
+  await render({ ...context, isPending: true });
+  assert.equal(last.isPresentationCurrent(), false);
+  await render(context, false);
+  assert.equal(last, undefined);
+});

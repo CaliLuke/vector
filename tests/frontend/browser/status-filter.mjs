@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { CdpSession } from "../helpers/cdp-session.mjs";
 import { closeTarget, openTarget, withChromium } from "../helpers/chromium.mjs";
 
-const entry = fileURLToPath(new URL("../../../apps/web/tests/browser/status-filter.tsx", import.meta.url));
+const entry = fileURLToPath(new URL("../../../apps/web/tests/browser/status-filter.spec.tsx", import.meta.url));
 const bundle = await Bun.build({
   entrypoints: [entry],
   target: "browser",

@@ -42,3 +42,25 @@ await test("an authorized empty discovery group renders without suppressing erro
   assert.equal(env.container.querySelector("h2"), null);
   assert.ok(env.container.querySelector('[role="alert"]'));
 });
+
+await test("an updating list keeps its rows mounted and temporarily blocks row interactions", async (t) => {
+  const env = await createReactDomTestEnvironment();
+  t.after(() => env.unmount());
+  const row = React.createElement("button", { type: "button" }, "Work item");
+  const readState = { isPending: false, isError: false, issueCount: 1, retry: async () => {} };
+  const render = (isUpdatingResults) =>
+    env.render(
+      React.createElement(IssueLayoutHOC, { layout: "list", readState: { ...readState, isUpdatingResults } }, row)
+    );
+
+  await render(false);
+  const original = env.container.querySelector("button");
+  await render(true);
+  assert.equal(env.container.querySelector("button"), original);
+  assert.ok(original.closest("[inert]"));
+  assert.ok(original.closest('[aria-busy="true"]')?.querySelector("output"));
+  assert.equal(env.container.querySelector('[aria-label="Loading work items"]'), null);
+  await render(false);
+  assert.equal(env.container.querySelector("button"), original);
+  assert.equal(original.closest("[inert]"), null);
+});
