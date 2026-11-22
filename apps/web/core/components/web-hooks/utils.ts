@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
-// helpers
 import type { IWebhook, IWorkspace } from "@plane/types";
 import { renderFormattedPayloadDate } from "@plane/utils/datetime";
-// types
+import { csvDownload } from "@plane/utils/file";
+import { reportBrowserActionFailure } from "@/helpers/browser-diagnostics";
 
 const csvValue = (value: string | boolean | null | undefined): string => (value == null ? "" : String(value));
 
@@ -29,3 +29,13 @@ export const getCurrentHookAsCSV = (
   issue_comment: csvValue(webhook?.issue_comment),
   workspace: csvValue(currentWorkspace?.name),
 });
+
+export function downloadWebhookSecretCSV(workspace: IWorkspace | null, webhook: IWebhook, secret: string) {
+  try {
+    csvDownload(getCurrentHookAsCSV(workspace, webhook, secret), `webhook-secret-key-${Date.now()}`);
+    return true;
+  } catch {
+    reportBrowserActionFailure("webhook_secret_csv_download");
+    return false;
+  }
+}

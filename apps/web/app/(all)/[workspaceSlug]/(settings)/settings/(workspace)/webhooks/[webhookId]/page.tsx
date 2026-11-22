@@ -10,7 +10,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { EUserPermissions } from "@plane/constants";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IWebhook } from "@plane/types";
-import { csvDownload } from "@plane/utils/file";
 import { LogoSpinner } from "@/components/common/logo-spinner";
 import { PageHead } from "@/components/core/page-title";
 import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
@@ -24,7 +23,7 @@ import {
 } from "@/queries/webhooks";
 import { useCurrentWorkspace } from "@/hooks/use-workspaces";
 import { useWorkspacePermissions } from "@/hooks/use-permissions";
-import { getCurrentHookAsCSV } from "@/components/web-hooks/utils";
+import { downloadWebhookSecretCSV } from "@/components/web-hooks/utils";
 import { WebhooksWorkspaceSettingsHeader } from "../header";
 
 function WebhookDetailsPage(): React.JSX.Element | null {
@@ -134,14 +133,7 @@ function WebhookDetailsPageContent({
         )
           return;
         setRevealedSecret({ scope: secretScope, value: secret });
-        try {
-          csvDownload(
-            getCurrentHookAsCSV(currentWorkspace ?? null, webhook, secret),
-            `webhook-secret-key-${Date.now()}`
-          );
-        } catch {
-          downloaded = false;
-        }
+        downloaded = downloadWebhookSecretCSV(currentWorkspace ?? null, webhook, secret);
       },
     });
     if (

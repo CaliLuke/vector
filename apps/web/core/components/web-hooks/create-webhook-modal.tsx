@@ -12,12 +12,11 @@ import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IWorkspace } from "@plane/types";
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
-import { csvDownload } from "@plane/utils/file";
 import useKeypress from "@/hooks/use-keypress";
 import { createWebhookMutationOptions, webhookKeys, type IWebhookRecord } from "@/queries/webhooks";
 import { WebhookForm } from "./form";
 import { GeneratedHookDetails } from "./generated-hook-details";
-import { getCurrentHookAsCSV } from "./utils";
+import { downloadWebhookSecretCSV } from "./utils";
 
 type Props = {
   currentWorkspace: IWorkspace | null;
@@ -75,12 +74,7 @@ export function CreateWebhookModal({ isOpen, onClose, currentWorkspace }: Props)
 
           setSecretKey(secret ? { scope: submittedScope, value: secret } : null);
           if (!secret) return;
-          try {
-            csvDownload(
-              getCurrentHookAsCSV(currentWorkspace, createdWebhook, secret),
-              `webhook-secret-key-${Date.now()}`
-            );
-          } catch {
+          if (!downloadWebhookSecretCSV(currentWorkspace, createdWebhook, secret)) {
             setToast({
               type: TOAST_TYPE.ERROR,
               title: "Webhook created",

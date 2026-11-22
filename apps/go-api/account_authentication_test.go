@@ -21,6 +21,8 @@ import (
 
 type accountAuthenticationTestRepo struct {
 	configured          bool
+	configurationErr    error
+	mailConfigErr       error
 	config              map[string]string
 	user                store.User
 	userErr             error
@@ -30,9 +32,12 @@ type accountAuthenticationTestRepo struct {
 }
 
 func (r *accountAuthenticationTestRepo) InstanceConfigured(context.Context) (bool, error) {
-	return r.configured, nil
+	return r.configured, r.configurationErr
 }
 func (r *accountAuthenticationTestRepo) ConfigValue(_ context.Context, key, fallback string) (string, error) {
+	if key == "EMAIL_HOST" && r.mailConfigErr != nil {
+		return "", r.mailConfigErr
+	}
 	if v, ok := r.config[key]; ok {
 		return v, nil
 	}
@@ -63,6 +68,7 @@ func (r *accountAuthenticationTestRepo) UserJSON(context.Context, string) (json.
 type accountAuthenticationTestThrottle struct {
 	allowed bool
 	calls   int
+	err     error
 }
 
 type accountAuthenticationTestCache struct{ paths []string }
@@ -74,18 +80,19 @@ func (c *accountAuthenticationTestCache) Invalidate(_ context.Context, path, _ s
 
 func (t *accountAuthenticationTestThrottle) AllowWithWait(context.Context, string) (bool, time.Duration, error) {
 	t.calls++
-	return t.allowed, time.Minute, nil
+	return t.allowed, time.Minute, t.err
 }
 
 type accountAuthenticationTestTasks struct {
 	calls []string
 	args  [][]any
+	err   error
 }
 
 func (t *accountAuthenticationTestTasks) Task(_ context.Context, name string, args []any, _ map[string]any) error {
 	t.calls = append(t.calls, name)
 	t.args = append(t.args, args)
-	return nil
+	return t.err
 }
 
 type accountAuthenticationTestMagic struct {
@@ -101,10 +108,13 @@ func (m accountAuthenticationTestMagic) Issue(context.Context, string) (string, 
 	return m.key, m.code, m.err
 }
 
-type accountAuthenticationTestResetTokens struct{ uid, token string }
+type accountAuthenticationTestResetTokens struct {
+	uid, token string
+	err        error
+}
 
 func (m accountAuthenticationTestResetTokens) Issue(context.Context, store.User) (string, string, error) {
-	return m.uid, m.token, nil
+	return m.uid, m.token, m.err
 }
 
 type accountAuthenticationTestSessionReader struct{}

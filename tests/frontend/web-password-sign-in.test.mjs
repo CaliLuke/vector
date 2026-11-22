@@ -61,7 +61,11 @@ void test("the password sign-in transport submits CSRF and returns the redirect 
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const service = new AuthService("http://localhost/");
-  t.mock.method(service, "requestCSRFToken", async () => ({ csrf_token: "fixture-csrf" }));
+  t.mock.method(service, "get", async (path, options) => {
+    assert.equal(path, "/auth/get-csrf-token/");
+    assert.equal(options.validateStatus, null);
+    return { data: { csrf_token: "fixture-csrf" } };
+  });
   t.mock.method(globalThis, "fetch", async (action, options) => {
     assert.equal(action.href, "http://localhost/auth/sign-in/");
     assert.equal(options.method, "POST");
@@ -84,5 +88,83 @@ void test("the password sign-in transport submits CSRF and returns the redirect 
   `;
   const destination = await service.submitPasswordSignIn(environment.container.querySelector("form"));
   assert.equal(destination.searchParams.get("next_path"), "/vector");
+  assert.equal(window.location.href, "http://localhost/");
+});
+
+void test("cross-origin password sign-in uses the original form submission with fresh CSRF", async (t) => {
+  const { AuthService } = await import("../../packages/services/dist/index.js");
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const service = new AuthService("http://localhost/");
+  t.mock.method(service, "requestCSRFToken", async () => ({ csrf_token: "fixture-csrf" }));
+  const fetch = t.mock.method(globalThis, "fetch", async () => assert.fail("used fetch for a cross-origin form"));
+  environment.container.innerHTML = `
+    <form action="https://auth.example.test/sign-in/" method="post">
+      <input name="csrfmiddlewaretoken">
+    </form>
+  `;
+  const form = environment.container.querySelector("form");
+  const submit = t.mock.method(form, "submit", () => {
+    assert.equal(form.elements.namedItem("csrfmiddlewaretoken").value, "fixture-csrf");
+    assert.equal(form.action, "https://auth.example.test/sign-in/");
+  });
+
+  assert.equal(await service.submitPasswordSignIn(form), undefined);
+  assert.equal(submit.mock.callCount(), 1);
+  assert.equal(fetch.mock.callCount(), 0);
+});
+
+void test("password sign-in requires a connected form and a fresh CSRF field", async (t) => {
+  const { AuthService } = await import("../../packages/services/dist/index.js");
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const service = new AuthService("http://localhost/");
+  let csrf = { csrf_token: "fixture-csrf" };
+  t.mock.method(service, "requestCSRFToken", async () => csrf);
+  const fetch = t.mock.method(globalThis, "fetch", async () => assert.fail("posted an invalid form"));
+  environment.container.innerHTML = '<form action="/auth/sign-in/"></form>';
+  const form = environment.container.querySelector("form");
+
+  await assert.rejects(service.submitPasswordSignIn(null), /Authentication form is unavailable/);
+  await assert.rejects(service.submitPasswordSignIn(form), /CSRF field not found/);
+  csrf = {};
+  await assert.rejects(service.submitPasswordSignIn(form), /CSRF token not found/);
+  csrf = { csrf_token: "fixture-csrf" };
+  form.remove();
+  await assert.rejects(service.submitPasswordSignIn(form), /Authentication form was closed/);
+  assert.equal(fetch.mock.callCount(), 0);
+});
+
+void test("password sign-in rejects non-redirect responses and ignores results after the form closes", async (t) => {
+  const { AuthService } = await import("../../packages/services/dist/index.js");
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const service = new AuthService("http://localhost/");
+  t.mock.method(service, "requestCSRFToken", async () => ({ csrf_token: "fixture-csrf" }));
+  const originalFormData = globalThis.FormData;
+  globalThis.FormData = window.FormData;
+  t.after(() => {
+    globalThis.FormData = originalFormData;
+  });
+  environment.container.innerHTML = '<form action="/auth/sign-in/"><input name="csrfmiddlewaretoken"></form>';
+  const form = environment.container.querySelector("form");
+  const started = Promise.withResolvers();
+  const pending = Promise.withResolvers();
+  let fetchResponse = { ok: true, redirected: false };
+  const fetch = t.mock.method(globalThis, "fetch", async () => fetchResponse);
+
+  await assert.rejects(service.submitPasswordSignIn(form), /Unexpected sign-in response/);
+  fetchResponse = { ok: false, redirected: true };
+  await assert.rejects(service.submitPasswordSignIn(form), /Unexpected sign-in response/);
+
+  fetch.mock.mockImplementation(async () => {
+    started.resolve();
+    return pending.promise;
+  });
+  const result = service.submitPasswordSignIn(form);
+  await started.promise;
+  form.remove();
+  pending.resolve({ ok: true, redirected: true, url: "http://localhost/?next_path=%2Fvector" });
+  assert.equal(await result, undefined);
   assert.equal(window.location.href, "http://localhost/");
 });

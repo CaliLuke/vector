@@ -26,6 +26,7 @@ const state = {
   regenerateResponse: null,
   regeneratePending: null,
   downloads: [],
+  downloadError: null,
   toasts: [],
   createPromise: Promise.resolve(),
 };
@@ -86,7 +87,11 @@ registerHooks({
       "@plane/i18n": "export const useTranslation=()=>({t:(key)=>key});",
       "@plane/propel/toast":
         "export const TOAST_TYPE={SUCCESS:'success',ERROR:'error'}; export const setToast=(toast)=>globalThis.webhookQueryTest.toasts.push(toast);",
-      "@plane/utils/file": "export const csvDownload=(data)=>globalThis.webhookQueryTest.downloads.push(data);",
+      "@plane/utils/file": `export const csvDownload=(data)=>{
+        const state=globalThis.webhookQueryTest;
+        state.downloads.push(data);
+        if(state.downloadError) throw state.downloadError;
+      };`,
       "@plane/utils/datetime": "export const renderFormattedPayloadDate=(value)=>value;",
       "@plane/ui": `const React=globalThis.webhookQueryReact; export const EModalPosition={TOP:'top'}; export const EModalWidth={XXL:'xxl'}; export const ModalCore=({children})=>children; export const AlertModalCore=props=>React.createElement('button',{id:'delete-webhook',disabled:props.isSubmitting,onClick:props.handleSubmit},'Delete webhook');`,
     };
@@ -294,6 +299,54 @@ await test("update and regenerate mutations for one webhook run in a shared nati
     record("hook", "https://final.example.test")
   );
   state.regeneratePending = null;
+});
+
+await test("a failed post-create download reports only its action and retains the accepted webhook and secret", async (t) => {
+  const fixture = await createQueryRouterFixture(t, "/acme/settings/webhooks/");
+  const { environment, client } = fixture;
+  const listKey = query.webhookKeys.list("acme");
+  const originalURL = "https://private-webhook.example.test";
+  const webhook = record("private-webhook-id", originalURL);
+  client.setQueryData(listKey, []);
+  state.created = [];
+  state.downloads = [];
+  state.toasts = [];
+  state.createResponse = { ...webhook, secret_key: "one-time-secret" };
+  state.downloadError = new Error("private browser error");
+  t.after(() => {
+    state.downloadError = null;
+    state.createResponse = null;
+  });
+  const diagnostics = [];
+  window.fetch = (path, options) => {
+    diagnostics.push({ path, ...options, body: JSON.parse(options.body) });
+    throw new Error("diagnostic connection refused");
+  };
+  const { CreateWebhookModal } = await import("../../apps/web/core/components/web-hooks/create-webhook-modal.tsx");
+  await fixture.render(React.createElement(CreateWebhookModal, { isOpen: true, currentWorkspace: null, onClose() {} }));
+  await act(async () => {
+    environment.container.querySelector("button").click();
+    await state.createPromise;
+  });
+
+  assert.equal(state.created.length, 1);
+  assert.equal(state.downloads.length, 1);
+  assert.equal(state.downloads[0].secret_key, "one-time-secret");
+  assert.deepEqual(client.getQueryData(listKey), [webhook]);
+  assert.equal(environment.container.querySelector("output").textContent, "one-time-secret");
+  assert.ok(state.toasts.some((toast) => /Copy the secret/.test(toast.message)));
+  assert.deepEqual(diagnostics, [
+    {
+      path: "/api/diagnostics/browser-action/",
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: { action: "webhook_secret_csv_download" },
+      credentials: "omit",
+      mode: "same-origin",
+      referrerPolicy: "no-referrer",
+      keepalive: true,
+    },
+  ]);
 });
 
 await test("late create after modal unmount cannot reveal a secret while its Query remains cached", async (t) => {

@@ -11,9 +11,14 @@ registerWebModuleHooks();
 const { QueryClient, MutationObserver } = webRequire("@tanstack/react-query");
 const { AxiosError } = webRequire("axios");
 const { EUserProjectRoles, EUserWorkspaceRoles } = webRequire("@plane/types");
-const { identityKeys } = await import("../../apps/web/core/queries/identity.ts");
-const { projectDetailOptions, projectKeys, projectMutationOptions } =
-  await import("../../apps/web/core/queries/projects.ts");
+const { identityKeys, advanceIdentitySession } = await import("../../apps/web/core/queries/identity.ts");
+const {
+  projectAccessProbeOptions,
+  projectDetailOptions,
+  projectKeys,
+  projectMutationOptions,
+  workspaceProjectsOptions,
+} = await import("../../apps/web/core/queries/projects.ts");
 const { ProjectAccessReadError, projectAccessReadRetry } =
   await import("../../apps/web/core/queries/project-access-diagnostics.ts");
 const { ProjectService } = await import("../../apps/web/core/services/project/project.service.ts");
@@ -142,6 +147,72 @@ await test("a detail read rejects a response after its captured role query is re
 
   await assert.rejects(pending, /access changed while loading/);
   assert.equal(client.getQueryData(projectKeys.detail(scope())), undefined);
+});
+
+await test("catalogue reads reject stale identity before and during the request", async (t) => {
+  const client = await createClient(t);
+  const catalogueScope = {
+    ...scope(),
+    projectId: undefined,
+    projectMembershipRole: undefined,
+    projectRole: undefined,
+  };
+  const started = Promise.withResolvers();
+  const response = Promise.withResolvers();
+  const read = t.mock.method(ProjectService.prototype, "getProjectsLite", (_slug, signal) => {
+    assert.ok(signal instanceof AbortSignal);
+    started.resolve();
+    return response.promise;
+  });
+  const stale = workspaceProjectsOptions(client, { ...catalogueScope, sessionGeneration: 1 });
+  await assert.rejects(client.fetchQuery(stale), { reason: "scope_changed" });
+  assert.equal(read.mock.callCount(), 0);
+
+  const options = workspaceProjectsOptions(client, catalogueScope);
+  const pending = client.fetchQuery(options);
+  await started.promise;
+  advanceIdentitySession(client);
+  response.resolve([project()]);
+
+  await assert.rejects(pending, { reason: "scope_changed" });
+  assert.equal(read.mock.callCount(), 1);
+  assert.equal(client.getQueryData(options.queryKey), undefined);
+});
+
+await test("detail and access probe stop before transport when their session has changed", async (t) => {
+  const client = await createClient(t);
+  advanceIdentitySession(client);
+  const read = t.mock.method(ProjectService.prototype, "getProject", async () => project());
+  const staleProbeScope = {
+    ...scope(),
+    projectId: "not-in-role-map",
+    projectRole: undefined,
+    projectMembershipRole: undefined,
+  };
+
+  await assert.rejects(client.fetchQuery(projectDetailOptions(client, scope())), { reason: "scope_changed" });
+  await assert.rejects(client.fetchQuery(projectAccessProbeOptions(client, staleProbeScope)), {
+    reason: "scope_changed",
+  });
+  assert.equal(read.mock.callCount(), 0);
+});
+
+await test("detail and access probe reject a different project without caching its response", async (t) => {
+  const client = await createClient(t);
+  const read = t.mock.method(ProjectService.prototype, "getProject", async () => project({ id: "different" }));
+  const detail = projectDetailOptions(client, scope());
+  const probe = projectAccessProbeOptions(client, {
+    ...scope(),
+    projectId: "not-in-role-map",
+    projectRole: undefined,
+    projectMembershipRole: undefined,
+  });
+
+  await assert.rejects(client.fetchQuery(detail), { reason: "response_mismatch" });
+  await assert.rejects(client.fetchQuery(probe), { reason: "response_mismatch" });
+  assert.equal(read.mock.callCount(), 2);
+  assert.equal(client.getQueryData(detail.queryKey), undefined);
+  assert.equal(client.getQueryData(probe.queryKey), undefined);
 });
 
 await test("an accepted update does not replace a newer detail query owner", async (t) => {

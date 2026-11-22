@@ -131,9 +131,11 @@ function projectOptions<TData>(
             const captured = captureProjectCatalogueScope(client, scope);
             const query = exactQuery(client, key);
             const isCurrent = () => captured.isVerified() && exactQuery(client, key) === query;
-            if (!isCurrent()) throw new Error("Workspace project access changed before loading.");
+            if (!isCurrent())
+              throw new ProjectAccessReadError("scope_changed", "Workspace project access changed before loading.");
             const projects = await fetch(workspaceSlug, signal);
-            if (!isCurrent()) throw new Error("Workspace project access changed while loading.");
+            if (!isCurrent())
+              throw new ProjectAccessReadError("scope_changed", "Workspace project access changed while loading.");
             return projects;
           }
         : skipToken,

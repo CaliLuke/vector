@@ -174,6 +174,31 @@ async function assertLateAcceptedPatchKeepsReplacement(t, replaceQuery) {
   assert.deepEqual(client.getQueryData(projectUserPropertiesKeys.detail(scope)), replacement);
 }
 
+await test("preference reads reject a stale identity before and during the request", async (t) => {
+  const client = createClient();
+  t.after(() => client.clear());
+  const started = Promise.withResolvers();
+  const pendingResponse = Promise.withResolvers();
+  const read = t.mock.method(ProjectService.prototype, "getProjectUserProperties", () => {
+    started.resolve();
+    return pendingResponse.promise;
+  });
+  const options = projectUserPropertiesOptions(client, scope, { canAccess: true, fetchEnabled: true });
+
+  client.setQueryData(identityKeys.currentUser(), { id: "previous-user" });
+  await assert.rejects(client.fetchQuery(options), { reason: "scope_changed" });
+  assert.equal(read.mock.callCount(), 0);
+
+  client.setQueryData(identityKeys.currentUser(), { id: scope.accountId });
+  const pending = client.fetchQuery(options);
+  await started.promise;
+  advanceIdentitySession(client);
+  pendingResponse.resolve(response());
+  await assert.rejects(pending, { reason: "scope_changed" });
+  assert.equal(read.mock.callCount(), 1);
+  assert.equal(client.getQueryData(options.queryKey), undefined);
+});
+
 await test("project user properties key and request require the complete caller scope", async (t) => {
   const client = createClient();
   t.after(() => client.clear());
@@ -604,6 +629,10 @@ await test("accepted patch stays successful when its follow-up query refresh fai
   seed(client);
   const ui = await renderProbe(t, client);
   const saved = response({ sort_order: 90 });
+  const diagnostics = [];
+  window.fetch = async (path, options) => {
+    diagnostics.push({ path, body: JSON.parse(options.body) });
+  };
   t.mock.method(ProjectService.prototype, "updateProjectUserProperties", async () => saved);
   t.mock.method(ProjectService.prototype, "getProjectUserProperties", async () => {
     throw new Error("refresh failed");
@@ -618,6 +647,12 @@ await test("accepted patch stays successful when its follow-up query refresh fai
   assert.equal(mutationResult.sort_order, 90);
   assert.equal(client.getQueryData(projectUserPropertiesKeys.detail(scope)).sort_order, 90);
   assert.equal(client.getQueryState(projectUserPropertiesKeys.detail(scope)).status, "error");
+  assert.deepEqual(diagnostics, [
+    {
+      path: "/api/diagnostics/project-access/",
+      body: { stage: "project_preferences", reason: "unexpected", will_retry: false },
+    },
+  ]);
 });
 
 await test("disabling project preferences hides cached fields without discarding them", async (t) => {

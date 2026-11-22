@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { React, createPermissionUiFixture, registerPermissionUiStubs } from "./helpers/permission-ui-fixture.mjs";
+import { React, act, createPermissionUiFixture, registerPermissionUiStubs } from "./helpers/permission-ui-fixture.mjs";
 
 globalThis.workspaceDropdownPermissionTest = { React };
 const reactBinding = "const React=globalThis.workspaceDropdownPermissionTest.React;";
@@ -63,4 +63,57 @@ await test("native workspace admin role exposes both settings links despite stal
   );
 
   assert.equal(settingsLinks.length, 2);
+});
+
+await test("modified workspace clicks preserve the link default without starting an in-tab transition", async (t) => {
+  const fixture = await createPermissionUiFixture(t, {
+    path: "/acme/settings/projects/p1/members/",
+    workspaceRole: EUserWorkspaceRoles.ADMIN,
+  });
+  const destination = {
+    ...activeWorkspace,
+    id: "workspace-beta",
+    slug: "beta",
+    name: "Beta",
+    logo_url: "https://assets.example.test/beta.png",
+  };
+  const navigated = [];
+  const prevented = [];
+  let clicks = 0;
+  await fixture.render(
+    React.createElement(SidebarDropdownItem, {
+      workspace: destination,
+      activeWorkspace,
+      handleItemClick: () => clicks++,
+      handleWorkspaceNavigation: (workspace) => navigated.push(workspace.slug),
+      handleClose() {},
+    })
+  );
+  const link = fixture.environment.container.querySelector('a[href="/beta/"]');
+  assert.ok(link);
+  assert.equal(link.querySelector("img").src, destination.logo_url);
+  await act(async () => {
+    for (const modifier of ["metaKey", "ctrlKey", "shiftKey", "altKey"]) {
+      const click = new MouseEvent("click", { bubbles: true, cancelable: true, [modifier]: true });
+      // Suppress jsdom's unimplemented link navigation after observing TanStack's handler.
+      window.addEventListener(
+        "click",
+        (event) => {
+          prevented.push(event.defaultPrevented);
+          event.preventDefault();
+        },
+        { once: true }
+      );
+      link.dispatchEvent(click);
+    }
+  });
+  assert.deepEqual(prevented, [false, false, false, false]);
+  assert.deepEqual(navigated, []);
+  assert.equal(clicks, 4);
+  assert.equal(fixture.router.state.location.pathname, "/acme/settings/projects/p1/members/");
+
+  await act(async () => link.click());
+  assert.deepEqual(navigated, ["beta"]);
+  assert.equal(clicks, 5);
+  assert.equal(fixture.router.state.location.pathname, "/beta/");
 });

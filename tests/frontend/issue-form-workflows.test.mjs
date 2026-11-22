@@ -175,27 +175,68 @@ await test("retrying an unfinished creation reuses its issue and completed durab
     [["original"], ["original"]]
   );
 });
-await test("project creation shows a known server validation error and preserves the draft", async (t) => {
+async function renderRejectedProjectForm(t, createProject) {
   const env = await setup(t);
   const { CreateProjectForm } = await import("../../apps/web/core/components/projects/create/root.tsx");
   const { ProjectService } = await import("../../apps/web/core/services/project/project.service.ts");
-  t.mock.method(ProjectService.prototype, "createProject", async () => {
-    throw { status: 400, data: { identifier: ["PROJECT_IDENTIFIER_ALREADY_EXIST"] } };
-  });
+  const create = t.mock.method(ProjectService.prototype, "createProject", createProject);
   await env.render(
     React.createElement(CreateProjectForm, {
       workspaceSlug: "workspace",
-      onClose: () => {},
+      onClose() {},
       handleNextStep: () => assert.fail("invalid project advanced"),
       updateCoverImageStatus: async () => assert.fail("invalid project finalized a cover"),
     })
   );
+  return create;
+}
+
+await test("project creation shows a known server validation error and preserves the draft", async (t) => {
+  await renderRejectedProjectForm(t, async () => {
+    throw { status: 400, data: { identifier: ["PROJECT_IDENTIFIER_ALREADY_EXIST"] } };
+  });
   await change(document.querySelector('[name="name"]'), "drum-meoh");
   await submit(document);
   await act(async () => waitForSubmitCompletion(formObserver.getForms(formSources.project).at(-1)));
   assert.equal(document.querySelector('[name="name"]').value, "drum-meoh");
   assert.equal(document.querySelector('[name="identifier"]').value, "DRUMMEOH");
   assert.equal(document.querySelector('[role="alert"]').textContent, "project_identifier_already_taken");
+});
+
+await test("project creation rejects invalid fields before submitting", async (t) => {
+  const create = await renderRejectedProjectForm(t, async () => {
+    assert.fail("invalid project sent to the server");
+  });
+  const name = document.querySelector('[name="name"]');
+  await change(name, " ");
+  await submit(document);
+  assert.match(document.body.textContent, /name_is_required/);
+  assert.match(document.body.textContent, /project_id_is_required/);
+
+  await change(name, "x".repeat(256));
+  await change(document.querySelector('[name="identifier"]'), "projectthatistoolong");
+  await submit(document);
+  assert.match(document.body.textContent, /title_should_be_less_than_255_characters/);
+  assert.match(document.body.textContent, /project_id_max_char/);
+  assert.equal(create.mock.callCount(), 0);
+});
+
+await test("project creation shows a generic error for unknown or incomplete validation responses", async (t) => {
+  const failures = [{ status: 409, data: { name: "PROJECT_PRIVATE_INTERNAL_ERROR" } }, { status: 400 }];
+  const create = await renderRejectedProjectForm(t, async () => {
+    throw failures.shift();
+  });
+  const name = document.querySelector('[name="name"]');
+  await change(name, "Vector Roadmap");
+  const submitAndCheck = async (count) => {
+    await submit(document);
+    await act(async () => waitForSubmitCompletion(formObserver.getForms(formSources.project).at(-1)));
+    assert.equal(create.mock.callCount(), count);
+    assert.match(document.querySelector('[role="alert"]').textContent, /Could not finish setting up the project/);
+    assert.equal(name.value, "Vector Roadmap");
+  };
+  await submitAndCheck(1);
+  await submitAndCheck(2);
 });
 
 await test("project creation retries cover finalization without creating another project", async (t) => {
