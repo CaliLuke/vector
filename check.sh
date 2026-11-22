@@ -5,6 +5,14 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
+# A Git hook can export the caller's linked-worktree directory and index.
+# Test fixtures also invoke Git in their own checkouts, so drop repo-local
+# selectors before any subprocess inherits them.
+vector_git_env="$(git rev-parse --local-env-vars)" || exit 1
+while IFS= read -r vector_git_variable; do
+  unset "$vector_git_variable"
+done <<< "$vector_git_env"
+
 # Manual checks and Husky must resolve tools from the same PATH so a successful
 # manual stage remains reusable by publication hooks. Git also prepends its
 # internal executable directory when invoking hooks. Preserve all other entries.
