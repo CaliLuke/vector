@@ -6,7 +6,7 @@ import { React, act, createPermissionUiFixture, settleQuery } from "./helpers/pe
 const { EUserWorkspaceRoles } = await import("../../packages/types/dist/index.mjs");
 const { IssueLabelService } = await import("../../apps/web/core/services/issue/issue_label.service.ts");
 const { labelKeys } = await import("../../apps/web/core/queries/labels.ts");
-const { useProjectLabels } = await import("../../apps/web/core/hooks/use-labels.ts");
+const { useProjectLabels, useWorkspaceLabels } = await import("../../apps/web/core/hooks/use-labels.ts");
 
 const scope = {
   accountId: "alice",
@@ -74,4 +74,28 @@ await test("native label tree rendering and refetch preserve canonical records a
     warnings.some((warning) => /Cannot update a component.*while rendering/.test(warning)),
     false
   );
+});
+
+function WorkspaceLabels({ workspaceId }) {
+  const { getWorkspaceLabels } = useWorkspaceLabels("workspace");
+  return React.createElement(LabelRows, { labels: getWorkspaceLabels(workspaceId) ?? [] });
+}
+
+await test("the workspace label catalogue keeps workspace labels separate from project labels", async (t) => {
+  t.mock.method(IssueLabelService.prototype, "getWorkspaceIssueLabels", async () => [
+    parent,
+    { id: "workspace-label", workspace_id: "w1", name: "Workspace label", sort_order: 1 },
+    { id: "other-label", workspace_id: "w2", name: "Other workspace", sort_order: 2 },
+  ]);
+  const view = await createPermissionUiFixture(t, {
+    path: "/workspace/",
+    workspaceSlug: "workspace",
+    workspaceRole: EUserWorkspaceRoles.MEMBER,
+    projectRoles: { project: 20 },
+  });
+  await view.render(React.createElement(WorkspaceLabels, { workspaceId: "w1" }));
+  await settleQuery();
+  assert.equal(view.environment.container.textContent, "Workspace label");
+  await view.render(React.createElement(WorkspaceLabels, { workspaceId: "w2" }));
+  assert.equal(view.environment.container.textContent, "Other workspace");
 });

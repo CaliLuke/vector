@@ -355,8 +355,8 @@ await test("verified project preferences authorize display during the render bef
   const pagination = { canGroup: false, perPageCount: 20 };
   const renders = [];
   let last;
-  function Probe({ enabled }) {
-    const read = useIssueListRead(EIssuesStoreType.PROJECT, pagination, enabled);
+  function Probe({ enabled, storeType }) {
+    const read = useIssueListRead(storeType, pagination, enabled);
     const canDisplay = read?.isPresentationCurrent();
     const canFetch = read?.request.isReadCurrent();
     React.useLayoutEffect(() => {
@@ -365,15 +365,23 @@ await test("verified project preferences authorize display during the render bef
     }, [read, canDisplay, canFetch]);
     return null;
   }
-  const render = (value, enabled = true) =>
+  const render = (value, enabled = true, storeType = EIssuesStoreType.PROJECT) =>
     fixture.render(
-      React.createElement(ProjectIssuePreferencesContext.Provider, { value }, React.createElement(Probe, { enabled }))
+      React.createElement(
+        ProjectIssuePreferencesContext.Provider,
+        { value },
+        React.createElement(Probe, { enabled, storeType })
+      )
     );
   await render(context);
   assert.deepEqual(renders[0], { canDisplay: true, canFetch: false });
   assert.equal(last.request.isReadCurrent(), true);
   await render({ ...context, isPending: true });
   assert.equal(last.isPresentationCurrent(), false);
+  await render({ ...context, requestInput: { ...input, projectId: "another-project" } });
+  assert.equal(last, undefined, "preferences from another project cannot create a display or transport owner");
   await render(context, false);
   assert.equal(last, undefined);
+  await render(context, true, EIssuesStoreType.PROJECT_VIEW);
+  assert.equal(last, undefined, "a saved view needs its own verified preferences");
 });
