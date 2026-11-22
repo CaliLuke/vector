@@ -155,9 +155,10 @@ await test("an accepted preference save updates only its captured project cache 
   await settleQuery();
 });
 
-await test("active project wrapper loads native preferences only after project access and details are ready", async (t) => {
+await test("the project wrapper loads preferences alongside details after verifying project access", async (t) => {
   const detailsStarted = Promise.withResolvers();
   const detailsResponse = Promise.withResolvers();
+  const preferencesStarted = Promise.withResolvers();
   setHarness({
     fetchProjectDetails: () => {
       detailsStarted.resolve();
@@ -175,6 +176,7 @@ await test("active project wrapper loads native preferences only after project a
     reads++;
     assert.equal(slug, scope.workspaceSlug);
     assert.equal(projectId, scope.projectId);
+    preferencesStarted.resolve();
     return initialProperties;
   });
 
@@ -185,8 +187,8 @@ await test("active project wrapper loads native preferences only after project a
       React.createElement("main", null, "Project content")
     )
   );
-  await detailsStarted.promise;
-  assert.equal(reads, 0);
+  await Promise.all([detailsStarted.promise, preferencesStarted.promise]);
+  assert.equal(reads, 1);
   assert.equal(fixture.environment.container.querySelector("main"), null);
   await act(async () => {
     detailsResponse.resolve({ id: scope.projectId });

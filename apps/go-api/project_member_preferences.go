@@ -90,16 +90,23 @@ func (s *projectMemberPreferencesService) AuthorizeSessionResourceProtocol(ctx c
 		return 0, nil
 	}
 	if err := s.repository.Authorize(ctx, principal.userID, resource.Slug, resource.ProjectID); err != nil {
-		return preferenceProtocolError(preferenceErrorFromRepository(err))
+		return preferenceProtocolError(preferenceErrorFromRepository(ctx, "authorize", err))
 	}
 	return 0, nil
 }
 
-func preferenceErrorFromRepository(err error) error {
+const projectPreferencesFailure = "Project member preferences operation failed"
+const projectPreferencesPatch = "project_member_preferences.patch"
+
+func preferenceErrorFromRepository(ctx context.Context, stage string, err error) error {
 	var response *store.HTTPError
 	if errors.As(err, &response) {
+		if response.Status >= http.StatusInternalServerError {
+			logOperationError(ctx, projectPreferencesFailure, projectPreferencesPatch, stage, err)
+		}
 		return preferenceError(response.Status, response.Body)
 	}
+	logOperationError(ctx, projectPreferencesFailure, projectPreferencesPatch, stage, err)
 	return preferenceError(500, map[string]any{"detail": "Something went wrong please try again later"})
 }
 
@@ -138,10 +145,10 @@ func (s *projectMemberPreferencesService) Patch(ctx context.Context, payload *ap
 		return nil, preferenceError(400, map[string]any{"error": "Invalid timezone"})
 	}
 	if err := s.repository.Authorize(ctx, identity.userID, payload.Slug, payload.ProjectID); err != nil {
-		return nil, preferenceErrorFromRepository(err)
+		return nil, preferenceErrorFromRepository(ctx, "authorize", err)
 	}
 	if err := s.repository.Lookup(ctx, payload.Slug, payload.ProjectID, payload.MemberID); err != nil {
-		return nil, preferenceErrorFromRepository(err)
+		return nil, preferenceErrorFromRepository(ctx, "lookup_member", err)
 	}
 	contentType := requestContentType(ctx)
 	parsed, err := requestinput.Parse(body, contentType)
@@ -157,14 +164,11 @@ func (s *projectMemberPreferencesService) Patch(ctx context.Context, payload *ap
 	}
 	result, err := s.repository.Patch(ctx, identity.userID, payload.Slug, payload.ProjectID, payload.MemberID, values)
 	if err != nil {
-		var httpError *store.HTTPError
-		if errors.As(err, &httpError) {
-			return nil, preferenceError(httpError.Status, httpError.Body)
-		}
-		return nil, preferenceError(500, map[string]any{"detail": "Something went wrong please try again later"})
+		return nil, preferenceErrorFromRepository(ctx, "patch", err)
 	}
 	encoded, err := json.Marshal(result["preferences"])
 	if err != nil {
+		logOperationError(ctx, projectPreferencesFailure, projectPreferencesPatch, "encode_response", err)
 		return nil, preferenceError(500, map[string]any{"detail": "Something went wrong please try again later"})
 	}
 	return &api.Preferences{Preferences: json.RawMessage(encoded)}, nil

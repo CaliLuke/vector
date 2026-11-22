@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"strconv"
 
 	"uuid"
@@ -19,6 +18,9 @@ import (
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
 )
+
+const workspaceSearchFailure = "Workspace search operation failed"
+const workspaceSearchEntity = "workspace_search.entity"
 
 type workspaceSearchSessions interface {
 	Validate(context.Context, string) (browsersession.Principal, error)
@@ -73,19 +75,21 @@ func (s *workspaceSearchService) AuthorizeSessionResourceProtocol(ctx context.Co
 	}
 	allowed, err := s.repository.WorkspaceAllowed(ctx, actor.id, resource.Slug)
 	if err != nil {
+		logOperationError(ctx, workspaceSearchFailure, workspaceSearchEntity, "authorize", err)
 		return 500, map[string]any{"detail": "Something went wrong please try again later"}
 	}
 	if !allowed {
 		return 403, map[string]any{"detail": "You do not have permission to perform this action."}
 	}
-	return workspaceSearchTimezoneError(actor.timezone)
+	return workspaceSearchTimezoneError(ctx, actor.timezone)
 }
 
-func workspaceSearchTimezoneError(timezone string) (int, map[string]any) {
+func workspaceSearchTimezoneError(ctx context.Context, timezone string) (int, map[string]any) {
 	if err := browsersession.ValidateUserTimezone(timezone); err != nil {
 		if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 			return 400, map[string]any{"error": "The required key does not exist."}
 		}
+		logOperationError(ctx, workspaceSearchFailure, workspaceSearchEntity, "validate_timezone", err)
 		return 500, map[string]any{"detail": "Something went wrong please try again later"}
 	}
 	return 0, nil
@@ -98,12 +102,13 @@ func (s *workspaceSearchService) actor(ctx context.Context, slug string, workspa
 	if workspacePermission {
 		allowed, err := s.repository.WorkspaceAllowed(ctx, actor.id, slug)
 		if err != nil {
+			logOperationError(ctx, workspaceSearchFailure, workspaceSearchEntity, "authorize", err)
 			return actor, s.internal()
 		}
 		if !allowed {
 			return actor, s.error(403, map[string]any{"detail": "You do not have permission to perform this action."})
 		}
-		if status, body := workspaceSearchTimezoneError(actor.timezone); status != 0 {
+		if status, body := workspaceSearchTimezoneError(ctx, actor.timezone); status != 0 {
 			return actor, s.error(status, body)
 		}
 	}
@@ -123,9 +128,10 @@ func (s *workspaceSearchService) GlobalSearch(ctx context.Context, p *api.Global
 	}
 	body, err := s.repository.Global(ctx, actor.id, p.Slug, value(p.Search, ""), value(p.Entities, ""), projectID, workspaceSearch)
 	if err != nil {
+		logOperationError(ctx, workspaceSearchFailure, "workspace_search.global", "query", err)
 		return nil, nil, s.internal()
 	}
-	return workspaceSearchRaw(body)
+	return workspaceSearchRaw(ctx, "workspace_search.global", body)
 }
 func (s *workspaceSearchService) EntitySearch(ctx context.Context, p *api.EntitySearchPayload) (*api.WorkspaceSearchRawJSON, io.ReadCloser, error) {
 	actor, err := s.actor(ctx, p.Slug, true)
@@ -148,10 +154,10 @@ func (s *workspaceSearchService) EntitySearch(ctx context.Context, p *api.Entity
 	}
 	body, err := s.repository.Entity(ctx, actor.id, p.Slug, value(p.Query, ""), value(p.QueryType, "user_mention"), projectID, count)
 	if err != nil {
-		slog.ErrorContext(ctx, "workspace search entity query failed", "error", err)
+		logOperationError(ctx, workspaceSearchFailure, workspaceSearchEntity, "query", err)
 		return nil, nil, s.internal()
 	}
-	return workspaceSearchRaw(body)
+	return workspaceSearchRaw(ctx, workspaceSearchEntity, body)
 }
 func (s *workspaceSearchService) error(status int, body any) error {
 	encoded, err := json.Marshal(body)
@@ -177,9 +183,11 @@ func workspaceSearchProtocolError(err error) (int, map[string]any) {
 	}
 	return protocolErrorResponse(failure.Name, failure.Body)
 }
-func workspaceSearchRaw(body json.RawMessage) (*api.WorkspaceSearchRawJSON, io.ReadCloser, error) {
+func workspaceSearchRaw(ctx context.Context, operation string, body json.RawMessage) (*api.WorkspaceSearchRawJSON, io.ReadCloser, error) {
 	if !json.Valid(body) {
-		return nil, nil, fmt.Errorf("invalid workspace search JSON")
+		err := errors.New("invalid workspace search JSON")
+		logOperationError(ctx, workspaceSearchFailure, operation, "validate_response", err)
+		return nil, nil, err
 	}
 	return &api.WorkspaceSearchRawJSON{ContentType: "application/json"}, io.NopCloser(bytes.NewReader(body)), nil
 }

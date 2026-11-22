@@ -31,23 +31,17 @@ if (process.platform === "win32") {
   process.exit(2);
 }
 
-const child = spawn(command[0], command.slice(1), {
-  detached: true,
-  stdio: "inherit",
-  env: {
-    ...process.env,
-  },
-});
+let child;
 let failureCode = 0;
 let monitoring = false;
 let sampleFailures = 0;
 let peakKiB = 0;
 let forceTimer;
 let finished = false;
-let trackedPids = new Set(child.pid ? [child.pid] : []);
-let trackedGroups = new Set(child.pid ? [child.pid] : []);
+let trackedPids = new Set();
+let trackedGroups = new Set();
 let ungroupedPids = [];
-let trackedRows = child.pid ? [{ pid: child.pid, group: child.pid }] : [];
+let trackedRows = [];
 function signalProcess(target, signal) {
   try {
     process.kill(target, signal);
@@ -200,14 +194,27 @@ async function checkMemory() {
     monitoring = false;
   }
 }
+// The detached process can start immediately, so install cleanup before spawning it.
+process.once("SIGINT", () => stop(130, "interrupted"));
+process.once("SIGTERM", () => stop(143, "terminated"));
+process.once("exit", () => signalGroup("SIGKILL"));
+child = spawn(command[0], command.slice(1), {
+  detached: true,
+  stdio: "inherit",
+  env: {
+    ...process.env,
+  },
+});
+if (child.pid) {
+  trackedPids.add(child.pid);
+  trackedGroups.add(child.pid);
+  trackedRows = [{ pid: child.pid, group: child.pid }];
+}
 const monitor = setInterval(() => {
   void checkMemory();
 }, 100);
 const deadline = setTimeout(() => stop(124, `deadline exceeded ${seconds}s`), seconds * 1000);
 void checkMemory();
-process.once("SIGINT", () => stop(130, "interrupted"));
-process.once("SIGTERM", () => stop(143, "terminated"));
-process.once("exit", () => signalGroup("SIGKILL"));
 child.once("error", (error) => {
   process.stderr.write(`[bounded] ${error.message}\n`);
   failureCode = 127;

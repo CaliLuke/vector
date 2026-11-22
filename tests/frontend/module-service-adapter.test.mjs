@@ -108,7 +108,7 @@ function createServiceTransport(t) {
 for (const variant of ["module", "link"]) {
   void test(`${variant} service preserves module-link routes, payloads and error bodies`, async (t) => {
     const { requests, responses } = createServiceTransport(t);
-    const { ModuleService, ModuleLinkService } = await import("@plane/services");
+    const { ModuleService, ModuleLinkService } = await import("../../packages/services/src/index.ts");
     const service =
       variant === "module"
         ? new ModuleService("http://localhost:8000")

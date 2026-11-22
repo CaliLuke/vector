@@ -90,6 +90,18 @@ When present, `browser.access.request_id` identifies the original API request.
 that needs attention. The browser sends this diagnostic through the same-origin
 API without cookies, URLs, account data, or response content.
 
+When a browser-side webhook secret CSV or theme export fails, look for
+`Browser action failed` and filter by `browser.action.name`. The diagnostic
+only reports an allowlisted action name. It contains no secret, theme data,
+account ID, or browser URL. A webhook can already have been created or its key
+regenerated when the subsequent local download fails.
+
+For internal failures in password reset, project member preferences, or workspace
+search, filter Vector API logs by `operation` and look at `stage` and `error_kind`.
+Those fields identify the failed step and can be joined to the outer HTTP error
+using the request or trace ID. Logs omit input values, reset tokens, user identifiers,
+search terms, and raw error text from those operations.
+
 In `/god-mode/general/`, the Telemetry section reports these independent settings:
 
 | Entry            | Required configuration                                                                               |

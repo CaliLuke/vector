@@ -11,6 +11,26 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+func TestProjectNameAllowsHyphenInBrowserAndAPI(t *testing.T) {
+	for _, app := range []bool{true, false} {
+		db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: []pgx.Row{
+			projectLifecycleBoolRow(false), projectLifecycleBoolRow(false),
+		}}}
+		repo, err := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
+		if err != nil {
+			t.Fatal(err)
+		}
+		fields := map[string]any{"name": "drum-meoh", "identifier": "DRUMMEOH"}
+		got, err := repo.validateProjectFields(context.Background(), "workspace", "", requestinput.Input{Fields: fields}, app, false, true)
+		if err != nil || got["name"] != fields["name"] || got["identifier"] != fields["identifier"] {
+			t.Fatalf("app=%v got %v, %v", app, got, err)
+		}
+	}
+	if !invalidProjectNameField("identifier", "DRUM-MEOH") {
+		t.Fatal("project identifier accepted a hyphen")
+	}
+}
+
 func TestProjectFieldFailuresPrecedeRelationshipScopeFailures(t *testing.T) {
 	db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: []pgx.Row{
 		projectLifecycleBoolRow(true), // The state exists, but field failures prevent scope validation.

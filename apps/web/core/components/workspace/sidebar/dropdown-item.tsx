@@ -46,8 +46,9 @@ function SidebarDropdownItem(props: TProps) {
         <Link
           to="/$workspaceSlug/"
           params={{ workspaceSlug: workspace.slug }}
-          onClick={() => {
-            handleWorkspaceNavigation(workspace);
+          onClick={(event) => {
+            if (!isActiveWorkspace && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey)
+              handleWorkspaceNavigation(workspace);
             handleItemClick();
           }}
           className="block w-full"

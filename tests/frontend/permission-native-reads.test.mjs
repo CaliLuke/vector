@@ -171,6 +171,48 @@ await test("membership reads reject a same-account late result after session gen
   assert.equal(client.getQueryData(options.queryKey), undefined);
 });
 
+await test("membership cannot load for an account other than the current identity", async (t) => {
+  const client = new QueryClient();
+  seedAccount(client);
+  t.after(() => client.clear());
+  const read = t.mock.method(workspaceService, "workspaceMemberMe", async () => {
+    assert.fail("stale account triggered a workspace membership read");
+  });
+  const options = permissions.workspaceMembershipOptions("prior-account", "acme");
+
+  await assert.rejects(client.fetchQuery(options), { reason: "scope_changed" });
+  assert.equal(read.mock.callCount(), 0);
+  assert.equal(client.getQueryData(options.queryKey), undefined);
+});
+
+await test("project role reads require the matching membership revision before and after the request", async (t) => {
+  const client = new QueryClient();
+  seedAccount(client);
+  t.after(() => client.clear());
+  const role = EUserWorkspaceRoles.ADMIN;
+  const membershipKey = permissions.permissionKeys.workspaceMembership("permission-user", "acme");
+  const options = permissions.workspaceProjectRolesOptions("permission-user", "acme", role, "revision-1");
+  const started = Promise.withResolvers();
+  const response = Promise.withResolvers();
+  const read = t.mock.method(workspaceService, "getWorkspaceUserProjectsRole", () => {
+    started.resolve();
+    return response.promise;
+  });
+
+  client.setQueryData(membershipKey, workspaceMembership(role, "revision-2"));
+  await assert.rejects(client.fetchQuery(options), { reason: "scope_changed" });
+  assert.equal(read.mock.callCount(), 0);
+
+  client.setQueryData(membershipKey, workspaceMembership(role, "revision-1"));
+  const pending = client.fetchQuery(options);
+  await started.promise;
+  client.setQueryData(membershipKey, workspaceMembership(role, "revision-2"));
+  response.resolve({ "project-a": EUserProjectRoles.ADMIN });
+  await assert.rejects(pending, { reason: "scope_changed" });
+  assert.equal(read.mock.callCount(), 1);
+  assert.equal(client.getQueryData(options.queryKey), undefined);
+});
+
 await test("inactive null-role membership succeeds as denial and skips project-role reads", async (t) => {
   await assertMembershipDenied(
     t,

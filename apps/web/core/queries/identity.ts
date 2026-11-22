@@ -9,6 +9,7 @@ import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import type { IUser } from "@plane/types";
 import userService from "@/services/user.service";
+import { projectAccessReadRetry } from "./project-access-diagnostics";
 
 export const identityKeys = {
   currentUser: () => ["identity", "current-user"] as const,
@@ -43,7 +44,7 @@ export function currentUserOptions() {
     staleTime: 5 * 60_000,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    retry: false,
+    ...projectAccessReadRetry("identity"),
   });
 }
 

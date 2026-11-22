@@ -40,11 +40,14 @@ export class ProjectService extends APIService {
   }
 
   async getProjectsLite(workspaceSlug: string, signal?: AbortSignal): Promise<TPartialProject[]> {
-    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/projects/`, { signal }));
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/projects/`, { signal }), "response-or-error");
   }
 
   async getProjects(workspaceSlug: string, signal?: AbortSignal): Promise<TProject[]> {
-    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/projects/details/`, { signal }));
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/projects/details/`, { signal }),
+      "response-or-error"
+    );
   }
 
   async getProject(workspaceSlug: string, projectId: string, signal?: AbortSignal): Promise<TProject> {
@@ -83,7 +86,7 @@ export class ProjectService extends APIService {
   ): Promise<IProjectUserPropertiesResponse> {
     return this.responseData(
       this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-properties/`, { signal }),
-      "data-or-error"
+      "response-or-error"
     );
   }
 

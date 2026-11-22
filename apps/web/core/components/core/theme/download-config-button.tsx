@@ -9,6 +9,7 @@ import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import type { IUserTheme } from "@plane/types";
+import { reportBrowserActionFailure } from "@/helpers/browser-diagnostics";
 
 type Props = {
   value: IUserTheme;
@@ -31,22 +32,25 @@ export const CustomThemeDownloadConfigButton = function CustomThemeDownloadConfi
       };
 
       const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.href = url;
-      link.download = `vector-theme-${Date.now()}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      const url = URL.createObjectURL(blob);
+      try {
+        link.href = url;
+        link.download = `vector-theme-${Date.now()}.json`;
+        document.body.appendChild(link);
+        link.click();
+      } finally {
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
 
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: t("success"),
         message: "Theme configuration downloaded successfully.",
       });
-    } catch (error) {
-      console.error("Failed to download config:", error);
+    } catch {
+      reportBrowserActionFailure("theme_config_download");
       setToast({
         type: TOAST_TYPE.ERROR,
         title: t("error"),

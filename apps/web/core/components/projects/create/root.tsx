@@ -26,6 +26,27 @@ import { useProjectMutations } from "@/hooks/use-projects";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 import { getProjectFormValues } from "./utils";
 
+const projectValidationMessages = [
+  ["PROJECT_NAME_ALREADY_EXIST", "project_name_already_taken"],
+  ["PROJECT_NAME_CANNOT_CONTAIN_SPECIAL_CHARACTERS", "project_name_cannot_contain_special_characters"],
+  ["PROJECT_IDENTIFIER_ALREADY_EXIST", "project_identifier_already_taken"],
+  ["PROJECT_IDENTIFIER_CANNOT_CONTAIN_SPECIAL_CHARACTERS", "project_id_allowed_char"],
+] as const;
+
+function projectValidationMessage(error: unknown) {
+  if (!error || typeof error !== "object" || !("status" in error) || (error.status !== 400 && error.status !== 409))
+    return undefined;
+  const data = "data" in error ? error.data : undefined;
+  if (!data || typeof data !== "object") return undefined;
+  for (const field of ["name", "identifier"] as const) {
+    const value: unknown = Reflect.get(data, field);
+    const code: unknown = Array.isArray(value) ? value[0] : value;
+    const message = projectValidationMessages.find(([errorCode]) => errorCode === code)?.[1];
+    if (message) return message;
+  }
+  return undefined;
+}
+
 type Props = {
   setToFavorite?: boolean;
   workspaceSlug: string;
@@ -149,10 +170,13 @@ export function CreateProjectForm({
         onSubmit={(event) => {
           event.preventDefault();
           form.setErrorMap({ onSubmit: undefined });
-          void form.handleSubmit().catch(() => {
+          void form.handleSubmit().catch((error: unknown) => {
+            const message = projectValidationMessage(error);
             form.setErrorMap({
               onSubmit: {
-                form: "Could not finish setting up the project. Your progress is saved; please try again.",
+                form: message
+                  ? t(message)
+                  : "Could not finish setting up the project. Your progress is saved; please try again.",
                 fields: {},
               },
             });

@@ -84,8 +84,7 @@ export const useTabPreferences = (workspaceSlug: string, projectId: string): TTa
    * Hide a tab (moves to overflow menu with "Show" option)
    */
   const handleHideTab = (tabKey: string) => {
-    void updatePreferences({ navigationAction: { type: "hide-tab", tabKey } }).catch((error) => {
-      console.error("Error hiding tab:", error);
+    void updatePreferences({ navigationAction: { type: "hide-tab", tabKey } }).catch(() => {
       setToast({
         type: TOAST_TYPE.ERROR,
         title: "Error!",
@@ -98,8 +97,7 @@ export const useTabPreferences = (workspaceSlug: string, projectId: string): TTa
    * Show a previously hidden tab (returns to visible pool)
    */
   const handleShowTab = (tabKey: string) => {
-    void updatePreferences({ navigationAction: { type: "show-tab", tabKey } }).catch((error) => {
-      console.error("Error showing tab:", error);
+    void updatePreferences({ navigationAction: { type: "show-tab", tabKey } }).catch(() => {
       setToast({
         type: TOAST_TYPE.ERROR,
         title: "Error!",

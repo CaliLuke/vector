@@ -46,6 +46,8 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 	core := mountCoreHTTPRoutes(systemEndpoints, pending, mux)
 	//loom:vet ignore route-outside-design -- private browser diagnostics transport, not an application API operation
 	loomhttp.MountHandler(mux, http.MethodPost, projectAccessDiagnosticsPath, newProjectAccessDiagnosticsHandler())
+	//loom:vet ignore route-outside-design -- private browser diagnostics transport, not an application API operation
+	loomhttp.MountHandler(mux, http.MethodPost, browserActionDiagnosticsPath, newBrowserActionDiagnosticsHandler())
 	readServicesCORSPolicy := core.corsPolicy
 	var routes httpRouteMiddleware
 	mountStickyRoutes(ctx, stickyEndpoints, authenticate, pending, mux, readServicesCORSPolicy)

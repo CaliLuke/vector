@@ -211,8 +211,10 @@ func (s *accountAuthenticationService) forgotPassword(ctx context.Context, conte
 	if err := s.allow(ctx); err != nil {
 		return nil, nil, err
 	}
+	const operation, message = "account_authentication.forgot_password", "Password reset operation failed"
 	configured, err := s.repository.InstanceConfigured(ctx)
 	if err != nil {
+		logOperationError(ctx, message, operation, "read_instance_configuration", err)
 		return nil, nil, s.internal()
 	}
 	if !configured {
@@ -224,12 +226,14 @@ func (s *accountAuthenticationService) forgotPassword(ctx context.Context, conte
 	}
 	email := emailvalidation.Normalize(authenticationString(input.Fields["email"]))
 	if valid, validationErr := s.validAccountEmail(ctx, email); validationErr != nil {
+		logOperationError(ctx, message, operation, "validate_email", validationErr)
 		return nil, nil, s.internal()
 	} else if !valid {
 		return nil, nil, s.failure(400, authAuthenticationBody(5005, "INVALID_EMAIL", nil))
 	}
 	mailHost, err := s.repository.ConfigValue(ctx, "EMAIL_HOST", "")
 	if err != nil {
+		logOperationError(ctx, message, operation, "read_mail_configuration", err)
 		return nil, nil, s.internal()
 	}
 	if mailHost == "" {
@@ -240,10 +244,12 @@ func (s *accountAuthenticationService) forgotPassword(ctx context.Context, conte
 		return nil, nil, s.failure(400, authAuthenticationBody(5060, "USER_DOES_NOT_EXIST", nil))
 	}
 	if err != nil {
+		logOperationError(ctx, message, operation, "lookup_account", err)
 		return nil, nil, s.internal()
 	}
 	uid, token, err := s.resetTokens.Issue(ctx, user)
 	if err != nil {
+		logOperationError(ctx, message, operation, "issue_reset_token", err)
 		return nil, nil, s.internal()
 	}
 	base := s.appBaseURL
@@ -251,6 +257,7 @@ func (s *accountAuthenticationService) forgotPassword(ctx context.Context, conte
 		base = s.spaceBaseURL
 	}
 	if err := s.tasks.Task(ctx, "plane.bgtasks.forgot_password_task.forgot_password", []any{user.FirstName, user.Email, uid, token, base}, nil); err != nil {
+		logOperationError(ctx, message, operation, "admit_reset_delivery", err)
 		return nil, nil, s.internal()
 	}
 	return accountAuthenticationRaw(map[string]any{"message": "Check your email to reset your password"})
@@ -409,6 +416,7 @@ func (s *accountAuthenticationService) allow(ctx context.Context) error {
 	meta, _ := loomhttp.RequestMetadataFromContext(ctx)
 	allowed, wait, err := s.throttle.AllowWithWait(ctx, meta.ClientAddr)
 	if err != nil {
+		logOperationError(ctx, "Account authentication throttle failed", "account_authentication.throttle", "check_rate_limit", err)
 		return s.internal()
 	}
 	if !allowed {

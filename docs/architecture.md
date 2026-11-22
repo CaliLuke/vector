@@ -255,6 +255,10 @@ explicitly. Joined-project selectors combine native membership with native proje
 Join and leave actions use native mutations. Accepted writes reconcile captured queries only while their account,
 session, and query identities still match; joining waits for canonical roles instead of inferring access. Project
 metadata comes from separate native catalogue and detail queries and never grants permission.
+Once roles are verified, the project route loads metadata and preferences in parallel. The route only mounts
+project content after its own detail check. The identity, permission, catalogue, detail, and preferences reads
+share bounded recovery for transport and gateway failures. The retry policy excludes permission denials,
+invalid responses, canceled requests, and writes. The API receives privacy-limited browser diagnostics by stage.
 
 New scoped reads and writes require a successfully verified current-user query. An accepted
 work-item receipt can still reconcile after a transient verification failure when its account,

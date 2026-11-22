@@ -14,6 +14,7 @@ import {
   isIdentityScopeVerified,
 } from "@/queries/identity";
 import { ProjectService } from "@/services/project";
+import { ProjectAccessReadError, projectAccessReadRetry } from "./project-access-diagnostics";
 
 const service = new ProjectService();
 
@@ -81,7 +82,7 @@ export function projectUserPropertiesOptions(
     queryKey,
     staleTime: 30_000,
     refetchOnMount: true,
-    retry: false,
+    ...projectAccessReadRetry("project_preferences"),
     enabled: canRunQuery && access.fetchEnabled,
     queryFn:
       access.canAccess && accountId && workspaceSlug && projectId
@@ -90,9 +91,14 @@ export function projectUserPropertiesOptions(
             const query = findExactQuery(client, queryKey);
             const isCurrent = () =>
               isVerifiedIdentity(client, accountId, identity) && findExactQuery(client, queryKey) === query;
-            if (!isCurrent()) throw new Error("The project preferences scope changed before loading.");
+            if (!isCurrent())
+              throw new ProjectAccessReadError(
+                "scope_changed",
+                "The project preferences scope changed before loading."
+              );
             const properties = await service.getProjectUserProperties(workspaceSlug, projectId, signal);
-            if (!isCurrent()) throw new Error("The project preferences scope changed while loading.");
+            if (!isCurrent())
+              throw new ProjectAccessReadError("scope_changed", "The project preferences scope changed while loading.");
             return properties;
           }
         : skipToken,
