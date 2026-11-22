@@ -77,6 +77,29 @@ await test("manual and Git hook entry points use the same tool path", (t) => {
   assert.equal(run(`${root}/node_modules/.bin:${gitPath}:${toolPath}`), manual);
 });
 
+await test("the quality entry point isolates Git environment from a hook's repository", (t) => {
+  const f = fixture(t);
+  const caller = fixture(t);
+  f.write("check.sh", fs.readFileSync(new URL("../../check.sh", import.meta.url)));
+  f.write(
+    "fixture-bin/bun",
+    '#!/bin/sh\ntest -z "${GIT_DIR+x}${GIT_WORK_TREE+x}${GIT_INDEX_FILE+x}" || exit 7\ngit rev-parse --show-toplevel\n'
+  );
+  fs.chmodSync(path.join(f.root, "fixture-bin/bun"), 0o755);
+  const actual = execFileSync("bash", ["check.sh", "--status"], {
+    cwd: f.root,
+    env: {
+      ...process.env,
+      PATH: `${f.root}/fixture-bin:${process.env.PATH}`,
+      GIT_DIR: path.join(caller.root, ".git"),
+      GIT_WORK_TREE: caller.root,
+      GIT_INDEX_FILE: path.join(caller.root, ".git/index"),
+    },
+    encoding: "utf8",
+  }).trim();
+  assert.equal(actual, fs.realpathSync(f.root));
+});
+
 await test("a failing affected test prevents all expensive stages and never creates a success receipt", async (t) => {
   const f = fixture(t);
   await assert.rejects(

@@ -25,6 +25,12 @@ Knip's workspace-specific `ws` and `@types/ws` ignores track
 built-in, so Knip misses its package and type references. Remove the ignores when
 Knip recognizes those references under Bun.
 
+## Git hook environment
+
+`check.sh` clears Git's checkout-local environment after entering the repository root.
+Linked-worktree hooks can export their Git directory and index. Test fixtures use
+separate repositories and need Git to discover each fixture from its own directory.
+
 ## Cancel checks
 
 Cancel through the launching terminal with Ctrl+C, or signal the invocation's process group.
