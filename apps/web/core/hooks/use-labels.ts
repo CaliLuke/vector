@@ -121,8 +121,6 @@ export function useWorkspaceLabels(workspaceSlug: string | undefined) {
       projectId ? labels?.filter((label) => label.project_id === projectId).map((label) => label.id) : undefined,
     getWorkspaceLabels: (workspaceId: string | undefined) =>
       workspaceId ? labels?.filter((label) => label.workspace_id === workspaceId) : undefined,
-    getWorkspaceLabelIds: (workspaceId: string | undefined) =>
-      workspaceId ? labels?.filter((label) => label.workspace_id === workspaceId).map((label) => label.id) : undefined,
   };
 }
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { hashKey, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import type { IssuePaginationOptions } from "@plane/types";
@@ -229,20 +229,30 @@ export function useIssueListRead(
     [scopes.projectScope.accountId, workspaceSlug, projectId]
   );
   const projectPropertiesQuery = client.getQueryCache().find({ queryKey: projectPropertiesKey, exact: true });
-  const isPresentationCurrent = useCallback(() => {
-    if (!request || !workspaceSlug) return false;
-    if (request.family !== "project" && request.family !== "epic")
-      return routeReadCurrent(request, { globalViewId, userId, projectId, cycleId, moduleId, viewId }) ?? false;
-    return (
-      workspaceSlug === request.input.workspaceSlug &&
-      projectId === request.input.projectId &&
-      projectPropertiesQuery?.state.status === "success" &&
-      client.getQueryCache().find({ queryKey: projectPropertiesKey, exact: true }) === projectPropertiesQuery &&
-      !preferences.projectPreferences?.isPending &&
-      !preferences.projectPreferences?.isError
-    );
+  return useMemo(() => {
+    if (!enabled || !request || !scope || !identity || !workspaceSlug) return undefined;
+    const isPresentationCurrent = () => {
+      if (request.family !== "project" && request.family !== "epic")
+        return routeReadCurrent(request, { globalViewId, userId, projectId, cycleId, moduleId, viewId }) ?? false;
+      return (
+        workspaceSlug === request.input.workspaceSlug &&
+        projectId === request.input.projectId &&
+        projectPropertiesQuery?.state.status === "success" &&
+        client.getQueryCache().find({ queryKey: projectPropertiesKey, exact: true }) === projectPropertiesQuery &&
+        !preferences.projectPreferences?.isPending &&
+        !preferences.projectPreferences?.isError
+      );
+    };
+    const scopedRequest: IssueListRequest = { ...request, isReadCurrent: () => committed() && isPresentationCurrent() };
+    return { scope, request: scopedRequest, pagination, catalogueRevision, isPresentationCurrent };
   }, [
+    catalogueRevision,
+    committed,
+    enabled,
+    identity,
+    pagination,
     request,
+    scope,
     workspaceSlug,
     globalViewId,
     userId,
@@ -256,9 +266,4 @@ export function useIssueListRead(
     preferences.projectPreferences?.isPending,
     preferences.projectPreferences?.isError,
   ]);
-  return useMemo(() => {
-    if (!enabled || !request || !scope || !identity) return undefined;
-    const scopedRequest: IssueListRequest = { ...request, isReadCurrent: () => committed() && isPresentationCurrent() };
-    return { scope, request: scopedRequest, pagination, catalogueRevision, isPresentationCurrent };
-  }, [catalogueRevision, committed, enabled, identity, isPresentationCurrent, pagination, request, scope]);
 }
