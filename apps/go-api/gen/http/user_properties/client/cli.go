@@ -9,6 +9,7 @@ package client
 
 import (
 	"fmt"
+	"unicode/utf8"
 
 	userproperties "github.com/CaliLuke/go-plane/gen/user_properties"
 	loomhttpcli "github.com/CaliLuke/loom/http/cli"
@@ -35,6 +36,68 @@ type CLIProjectPatchRequestBody struct {
 	RichFilters       loom.Nullable[loom.JSONValue] `form:"rich_filters,omitempty" json:"rich_filters,omitzero" xml:"rich_filters,omitempty"`
 	Preferences       loom.Nullable[loom.JSONValue] `form:"preferences,omitempty" json:"preferences,omitzero" xml:"preferences,omitempty"`
 	SortOrder         loom.Nullable[float64]        `form:"sort_order,omitempty" json:"sort_order,omitzero" xml:"sort_order,omitempty"`
+	// Merge object members of filters, display_filters, display_properties, and
+	// preferences atomically. Pages, navigation, and calendar also merge by
+	// member. The last committed update wins for a shared member. Rich filters and
+	// sort order are replaced when supplied.
+	Merge loom.Optional[bool] `form:"merge,omitempty" json:"merge,omitzero" xml:"merge,omitempty"`
+	// Hide or show one tab after applying the other fields. The last committed
+	// action wins for that tab.
+	NavigationAction loom.Optional[CLIProjectNavigationActionRequestBody] `form:"navigation_action,omitempty" json:"navigation_action,omitzero" xml:"navigation_action,omitempty"`
+}
+
+// ValidateCLIProjectPatchRequestBody runs the validations defined on
+// CLIProjectPatchRequestBody
+func ValidateCLIProjectPatchRequestBody(body *CLIProjectPatchRequestBody, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if actual, ok := body.NavigationAction.Value(); ok {
+		if err2 := ValidateCLIProjectNavigationActionRequestBody(&actual, validationPath+".navigation_action"); err2 != nil {
+			err = loom.MergeErrors(err, err2)
+		}
+	}
+	return
+}
+
+// CLIProjectNavigationActionRequestBody is the type of the "user_properties"
+// service "project_patch" endpoint HTTP request body.
+type CLIProjectNavigationActionRequestBody struct {
+	Type   *string `form:"type,omitempty" json:"type,omitzero" xml:"type,omitempty"`
+	TabKey *string `form:"tab_key,omitempty" json:"tab_key,omitzero" xml:"tab_key,omitempty"`
+}
+
+// ValidateCLIProjectNavigationActionRequestBody runs the validations defined
+// on CLIProjectNavigationActionRequestBody
+func ValidateCLIProjectNavigationActionRequestBody(body *CLIProjectNavigationActionRequestBody, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Type == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("type", validationPath))
+	}
+	if body.TabKey == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("tab_key", validationPath))
+	}
+	if body.Type != nil {
+		if !(*body.Type == "hide-tab" || *body.Type == "show-tab") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".type", *body.Type, []any{"hide-tab", "show-tab"}))
+		}
+	}
+	if body.TabKey != nil {
+		if utf8.RuneCountInString(*body.TabKey) < 1 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".tab_key", utf8.RuneCountInString(*body.TabKey), 1, true))
+		}
+	}
+	return
 }
 
 // CLICyclePatchRequestBody is the type of the "user_properties" service
@@ -53,6 +116,21 @@ type CLIModulePatchRequestBody struct {
 	DisplayFilters    loom.Nullable[loom.JSONValue] `form:"display_filters,omitempty" json:"display_filters,omitzero" xml:"display_filters,omitempty"`
 	DisplayProperties loom.Nullable[loom.JSONValue] `form:"display_properties,omitempty" json:"display_properties,omitzero" xml:"display_properties,omitempty"`
 	RichFilters       loom.Nullable[loom.JSONValue] `form:"rich_filters,omitempty" json:"rich_filters,omitzero" xml:"rich_filters,omitempty"`
+}
+
+// unmarshalCLIProjectNavigationActionRequestBodyToUserpropertiesProjectNavigationAction
+// builds a value of type *userproperties.ProjectNavigationAction from a value
+// of type *CLIProjectNavigationActionRequestBody.
+func unmarshalCLIProjectNavigationActionRequestBodyToUserpropertiesProjectNavigationAction(v *CLIProjectNavigationActionRequestBody) *userproperties.ProjectNavigationAction {
+	if v == nil {
+		return nil
+	}
+	res := &userproperties.ProjectNavigationAction{
+		Type:   *v.Type,
+		TabKey: *v.TabKey,
+	}
+
+	return res
 }
 
 // BuildWorkspaceGetPayload builds the payload for the user_properties
@@ -147,7 +225,11 @@ func BuildProjectPatchPayload(userPropertiesProjectPatchBody string, userPropert
 	{
 		err = loomhttpcli.UnmarshalNonNullableJSON([]byte(userPropertiesProjectPatchBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %w, \nexample of valid JSON:\n%s", err, "'{\n      \"display_filters\": \"Animi est iure.\",\n      \"display_properties\": \"Similique illo voluptates iusto est quia.\",\n      \"filters\": \"Dolores dolores fugit incidunt voluptatem aut et.\",\n      \"preferences\": \"Maxime ut laborum aut ea temporibus.\",\n      \"rich_filters\": \"Et consequatur cupiditate minima.\",\n      \"sort_order\": 0.06777809129508289\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %w, \nexample of valid JSON:\n%s", err, "'{\n      \"display_filters\": \"Animi est iure.\",\n      \"display_properties\": \"Similique illo voluptates iusto est quia.\",\n      \"filters\": \"Dolores dolores fugit incidunt voluptatem aut et.\",\n      \"merge\": true,\n      \"navigation_action\": {\n         \"tab_key\": \"hib\",\n         \"type\": \"show-tab\"\n      },\n      \"preferences\": \"Maxime ut laborum aut ea temporibus.\",\n      \"rich_filters\": \"Et consequatur cupiditate minima.\",\n      \"sort_order\": 0.06777809129508289\n   }'")
+		}
+		err = ValidateCLIProjectPatchRequestBody(&body)
+		if err != nil {
+			return nil, err
 		}
 	}
 	var slug string
@@ -175,6 +257,16 @@ func BuildProjectPatchPayload(userPropertiesProjectPatchBody string, userPropert
 	v.RichFilters = body.RichFilters
 	v.Preferences = body.Preferences
 	v.SortOrder = body.SortOrder
+	if actual, ok := body.Merge.Value(); ok {
+		vMergeValue := actual
+
+		v.Merge = &vMergeValue
+	}
+	if actual, ok := body.NavigationAction.Value(); ok {
+		vNavigationActionValue := unmarshalCLIProjectNavigationActionRequestBodyToUserpropertiesProjectNavigationAction(&actual)
+
+		v.NavigationAction = vNavigationActionValue
+	}
 	v.Slug = slug
 	v.ProjectID = projectID
 	v.SessionID = sessionID

@@ -71,8 +71,11 @@ func run(ctx context.Context, args []string) error {
 		fmt.Println("Application bucket is ready.")
 		return nil
 	}
+	if len(args) == 2 && args[0] == "replay-work-item-effect" {
+		return replayWorkItemEffect(ctx, args[1])
+	}
 	if len(args) < 2 || args[0] != "instance" {
-		return fmt.Errorf("usage: bootstrap install | bootstrap schema | bootstrap bucket | bootstrap instance register <machine-signature> | bootstrap instance configure")
+		return fmt.Errorf("usage: bootstrap install | bootstrap schema | bootstrap bucket | bootstrap replay-work-item-effect <effect-id> | bootstrap instance register <machine-signature> | bootstrap instance configure")
 	}
 	databaseURL := os.Getenv("DATABASE_URL")
 	if err := bootstrap.ValidateDatabaseURL(databaseURL); err != nil {
@@ -117,6 +120,31 @@ func run(ctx context.Context, args []string) error {
 	default:
 		return fmt.Errorf("unknown instance command %q", args[1])
 	}
+}
+
+func replayWorkItemEffect(ctx context.Context, effectID string) error {
+	id, err := uuid.Parse(effectID)
+	if err != nil {
+		return errors.New("effect ID must be a UUID")
+	}
+	databaseURL := os.Getenv("DATABASE_URL")
+	if validationErr := bootstrap.ValidateDatabaseURL(databaseURL); validationErr != nil {
+		return validationErr
+	}
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	requeued, err := backgroundtasks.ReplayQuarantinedWorkItemEffect(ctx, pool, id)
+	if err != nil {
+		return fmt.Errorf("requeue quarantined work item effect: %w", err)
+	}
+	if !requeued {
+		return errors.New("no quarantined work item effect with that ID")
+	}
+	fmt.Println("Work item effect requeued.")
+	return nil
 }
 
 func install(ctx context.Context) error {

@@ -24,7 +24,7 @@ import (
 type notificationActionRepository interface {
 	notificationsRepository
 	Set(context.Context, store.Principal, string, string, string, any) (map[string]any, error)
-	MarkAllRead(context.Context, store.Principal, string, bool, bool, string) error
+	MarkAllRead(context.Context, store.Principal, string, store.Selection) error
 }
 
 type notificationActionsService struct {
@@ -117,13 +117,11 @@ func (s *notificationActionsService) MarkAllRead(ctx context.Context, payload *a
 	if input.Kind != "" {
 		return nil, notificationActionBodyError(400, map[string]any{"detail": "Expected a JSON object."})
 	}
-	snoozed := requestinput.Nonempty(input.Fields["snoozed"])
-	archived := requestinput.Nonempty(input.Fields["archived"])
-	kind := "all"
-	if value, ok := input.Fields["type"].(string); ok {
-		kind = value
+	selection, err := store.ParseBulkSelection(input.Fields)
+	if err != nil {
+		return nil, notificationActionError(err)
 	}
-	if err := s.actions.MarkAllRead(ctx, p, payload.Slug, snoozed, archived, kind); err != nil {
+	if err := s.actions.MarkAllRead(ctx, p, payload.Slug, selection); err != nil {
 		return nil, notificationActionError(err)
 	}
 	return &api.NotificationActionMessage{Message: "Successful"}, nil

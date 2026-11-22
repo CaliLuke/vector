@@ -42,6 +42,12 @@ var userPropertiesInternal = Type("UserPropertiesInternal", func() {
 	Required("error")
 })
 
+var projectNavigationAction = Type("ProjectNavigationAction", func() {
+	Attribute("type", String, func() { Enum("hide-tab", "show-tab") })
+	Attribute("tab_key", String, func() { MinLength(1) })
+	Required("type", "tab_key")
+})
+
 func userPropertiesSessionPayload() {
 	APIKey("plane_session_cookie", "session_id", String)
 }
@@ -137,6 +143,8 @@ var _ = Service("user_properties", func() {
 			Attribute("rich_filters", Any, func() { Nullable() })
 			Attribute("preferences", Any, func() { Nullable() })
 			Attribute("sort_order", Float64, func() { Nullable() })
+			Attribute("merge", Boolean, "Merge object members of filters, display_filters, display_properties, and preferences atomically. Pages, navigation, and calendar also merge by member. The last committed update wins for a shared member. Rich filters and sort order are replaced when supplied.")
+			Attribute("navigation_action", projectNavigationAction, "Hide or show one tab after applying the other fields. The last committed action wins for that tab.")
 			Required("project_id")
 		})
 		Result(userProperties)

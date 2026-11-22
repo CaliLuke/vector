@@ -204,7 +204,7 @@ func (r *remainingNotificationMiddlewareRepository) Set(context.Context, notific
 	r.dispatches++
 	return map[string]any{}, nil
 }
-func (r *remainingNotificationMiddlewareRepository) MarkAllRead(context.Context, notificationstore.Principal, string, bool, bool, string) error {
+func (r *remainingNotificationMiddlewareRepository) MarkAllRead(context.Context, notificationstore.Principal, string, notificationstore.Selection) error {
 	r.dispatches++
 	return nil
 }

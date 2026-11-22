@@ -28,6 +28,99 @@ const (
 	otherUserID    = "00000000-0000-4000-8000-000000000107"
 )
 
+func TestProjectPatchMergesConcurrentClientIntents(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	pool := propertyTestDB(t, ctx)
+	repository, err := NewRepository(pool)
+	require.NoError(t, err)
+	user := uuid.MustParse(userID)
+	project := uuid.MustParse(projectID)
+	_, err = repository.GetProject(ctx, user, "demo", project)
+	require.NoError(t, err)
+
+	firstTx, err := pool.Begin(ctx)
+	require.NoError(t, err)
+	defer testsupport.Rollback(t, firstTx, context.WithoutCancel(ctx))
+	first, err := NewRepository(firstTx)
+	require.NoError(t, err)
+	_, err = first.PatchProject(ctx, user, "demo", project, ProjectPatch{
+		Merge: true,
+		Fields: map[string]json.RawMessage{
+			"preferences":        json.RawMessage(`{"pages":{"block_display":false},"navigation":{"default_tab":"pages"}}`),
+			"display_filters":    json.RawMessage(`{"calendar":{"layout":"week"},"order_by":"updated_at"}`),
+			"display_properties": json.RawMessage(`{"key":false}`),
+			"rich_filters":       json.RawMessage(`{"and":[{"priority":"high"}],"or":[]}`),
+		},
+		NavigationAction: &NavigationAction{Hide: true, TabKey: "modules"},
+	})
+	require.NoError(t, err)
+
+	secondConnection, err := pool.Acquire(ctx)
+	require.NoError(t, err)
+	defer secondConnection.Release()
+	second, err := NewRepository(secondConnection)
+	require.NoError(t, err)
+	type outcome struct {
+		response json.RawMessage
+		err      error
+	}
+	result := make(chan outcome, 1)
+	pid := secondConnection.Conn().PgConn().PID()
+	go func() {
+		response, patchErr := second.PatchProject(ctx, user, "demo", project, ProjectPatch{
+			Merge: true,
+			Fields: map[string]json.RawMessage{
+				"preferences":        json.RawMessage(`{"navigation":{"default_tab":"cycles"}}`),
+				"display_filters":    json.RawMessage(`{"calendar":{"show_weekends":true}}`),
+				"display_properties": json.RawMessage(`{"labels":false}`),
+				"rich_filters":       json.RawMessage(`{"and":[]}`),
+			},
+			NavigationAction: &NavigationAction{Hide: true, TabKey: "pages"},
+		})
+		result <- outcome{response, patchErr}
+	}()
+	// Confirm the second UPDATE started before the first committed and was
+	// waiting on that row. It must merge into the post-lock row version.
+	blocked := false
+	for deadline := time.Now().Add(5 * time.Second); time.Now().Before(deadline); {
+		err = pool.QueryRow(ctx, "SELECT cardinality(pg_blocking_pids($1::integer)) > 0", pid).Scan(&blocked)
+		if err != nil || blocked {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	commitErr := firstTx.Commit(ctx)
+	saved := <-result
+	require.NoError(t, err)
+	require.True(t, blocked)
+	require.NoError(t, commitErr)
+	require.NoError(t, saved.err)
+
+	properties := propertyFields(t, saved.response)
+	require.Equal(t, map[string]any{
+		"pages":      map[string]any{"block_display": false},
+		"navigation": map[string]any{"default_tab": "cycles", "hide_in_more_menu": []any{"modules", "pages"}},
+	}, properties["preferences"])
+	display := properties["display_filters"].(map[string]any)
+	require.Equal(t, map[string]any{"layout": "week", "show_weekends": true}, display["calendar"])
+	require.Equal(t, "updated_at", display["order_by"])
+	require.Equal(t, "list", display["layout"])
+	require.Subset(t, properties["display_properties"], map[string]any{"key": false, "labels": false, "assignee": true})
+	require.Equal(t, map[string]any{"and": []any{}}, properties["rich_filters"])
+
+	for _, action := range []NavigationAction{{Hide: true, TabKey: "pages"}, {TabKey: "modules"}} {
+		_, err = repository.PatchProject(ctx, user, "demo", project, ProjectPatch{NavigationAction: &action})
+		require.NoError(t, err)
+	}
+	body, err := repository.GetProject(ctx, user, "demo", project)
+	require.NoError(t, err)
+	require.Equal(t, map[string]any{
+		"pages":      map[string]any{"block_display": false},
+		"navigation": map[string]any{"default_tab": "cycles", "hide_in_more_menu": []any{"pages"}},
+	}, propertyFields(t, body)["preferences"])
+}
+
 func TestRepositoryFirstAccessAndRepeatUseNativeDefaultsForEveryKind(t *testing.T) {
 	ctx := context.Background()
 	pool := propertyTestDB(t, ctx)
@@ -121,10 +214,10 @@ func TestRepositoryPatchesOnlyProvidedFieldsAndIsolatesUsers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = repository.PatchProject(ctx, user, "demo", project, map[string]json.RawMessage{
+	_, err = repository.PatchProject(ctx, user, "demo", project, ProjectPatch{Fields: map[string]json.RawMessage{
 		"filters":     json.RawMessage(`{"priority":["high"]}`),
 		"preferences": json.RawMessage(`{"pages":{"block_display":false}}`),
-	})
+	}})
 	if err != nil {
 		t.Fatalf("patch project: %v", err)
 	}

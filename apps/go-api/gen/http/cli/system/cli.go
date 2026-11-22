@@ -10624,7 +10624,7 @@ func userPropertiesProjectPatchUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "user-properties project-patch --body '{\n      \"display_filters\": \"Animi est iure.\",\n      \"display_properties\": \"Similique illo voluptates iusto est quia.\",\n      \"filters\": \"Dolores dolores fugit incidunt voluptatem aut et.\",\n      \"preferences\": \"Maxime ut laborum aut ea temporibus.\",\n      \"rich_filters\": \"Et consequatur cupiditate minima.\",\n      \"sort_order\": 0.06777809129508289\n   }' --slug \"Occaecati veritatis aut.\" --project-id \"8e296c2b-7472-4eb8-8e13-d6967e7fc234\" --session-id \"Tempora commodi magnam autem mollitia quia.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "user-properties project-patch --body '{\n      \"display_filters\": \"Animi est iure.\",\n      \"display_properties\": \"Similique illo voluptates iusto est quia.\",\n      \"filters\": \"Dolores dolores fugit incidunt voluptatem aut et.\",\n      \"merge\": true,\n      \"navigation_action\": {\n         \"tab_key\": \"hib\",\n         \"type\": \"show-tab\"\n      },\n      \"preferences\": \"Maxime ut laborum aut ea temporibus.\",\n      \"rich_filters\": \"Et consequatur cupiditate minima.\",\n      \"sort_order\": 0.06777809129508289\n   }' --slug \"Ullam consectetur.\" --project-id \"a49109d5-d207-45c2-a9fd-2cd165bff57d\" --session-id \"Quia porro necessitatibus.\"")
 }
 func userPropertiesCycleGetUsage() {
 	// Header with flags

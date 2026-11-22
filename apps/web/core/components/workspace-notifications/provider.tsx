@@ -33,7 +33,9 @@ function useNotificationState(workspaceSlug: string) {
   const { data: unreadNotificationsCount = emptyNotificationCounts } = useQuery(
     notificationCountOptions(workspaceSlug)
   );
-  const markAllRead = useMutation(markAllNotificationsReadOptions(client, workspaceSlug, filters));
+  const markAllRead = useMutation(
+    markAllNotificationsReadOptions(client, workspaceSlug, currentNotificationTab, filters)
+  );
   const notifications = new Map(list.data?.pages.flatMap((page) => page.results ?? []).map((item) => [item.id, item]));
   const notificationIds = [...notifications.values()]
     .filter((item) => {

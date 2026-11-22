@@ -8,6 +8,8 @@
 package client
 
 import (
+	"unicode/utf8"
+
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
@@ -1103,6 +1105,25 @@ func ValidateModulePatchUnauthenticatedResponseBody(body *ModulePatchUnauthentic
 	}
 	if body.Detail == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("detail", validationPath))
+	}
+	return
+}
+
+// ValidateProjectNavigationActionRequestBody runs the validations defined on
+// ProjectNavigationActionRequestBody
+func ValidateProjectNavigationActionRequestBody(body *ProjectNavigationActionRequestBody, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if !(body.Type == "hide-tab" || body.Type == "show-tab") {
+		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".type", body.Type, []any{"hide-tab", "show-tab"}))
+	}
+	if utf8.RuneCountInString(body.TabKey) < 1 {
+		err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".tab_key", utf8.RuneCountInString(body.TabKey), 1, true))
 	}
 	return
 }

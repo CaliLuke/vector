@@ -182,6 +182,6 @@ func (runtime *Runtime) configureWorkItemEffects(assetWorkflows runtimeAssetWork
 	if err != nil {
 		return err
 	}
-	runtime.workItemEffects = &workItemEffectWorker{store: effectStore}
+	runtime.workItemEffects = &workItemEffectWorker{store: effectStore, startTelemetry: effectStore.startTelemetry}
 	return nil
 }

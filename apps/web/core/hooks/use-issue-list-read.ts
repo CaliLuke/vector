@@ -15,7 +15,7 @@ import { useWorkspaceIssuePreferences } from "@/providers/workspace-issue-prefer
 import { useOptionalParentIssuePreferences } from "@/providers/parent-issue-preferences";
 import { useOptionalProjectViewIssuePreferences } from "@/providers/project-view-issue-preferences";
 import { useCommittedScope } from "@/hooks/use-committed-scope";
-import { projectUserPropertiesKeys } from "@/queries/project-user-properties";
+import { projectPreferencesDataAvailable, projectUserPropertiesKeys } from "@/queries/project-user-properties";
 import type { IssueListRead, IssueListRequest } from "@/queries/issue-lists";
 import { parentScopeKey } from "@/queries/cycle-module-scope";
 import type { TProjectIssueRequestInput } from "@/helpers/issue-list/request";
@@ -237,7 +237,7 @@ export function useIssueListRead(
       return (
         workspaceSlug === request.input.workspaceSlug &&
         projectId === request.input.projectId &&
-        projectPropertiesQuery?.state.status === "success" &&
+        projectPreferencesDataAvailable(projectPropertiesQuery?.state) &&
         client.getQueryCache().find({ queryKey: projectPropertiesKey, exact: true }) === projectPropertiesQuery &&
         !preferences.projectPreferences?.isPending &&
         !preferences.projectPreferences?.isError

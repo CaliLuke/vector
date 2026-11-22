@@ -1229,3 +1229,18 @@ func DecodeModulePatchResponse(decoder func(*http.Response) loomhttp.Decoder, re
 		})
 	}
 }
+
+// marshalUserpropertiesProjectNavigationActionToProjectNavigationActionRequestBody
+// builds a value of type *ProjectNavigationActionRequestBody from a value of
+// type *userproperties.ProjectNavigationAction.
+func marshalUserpropertiesProjectNavigationActionToProjectNavigationActionRequestBody(v *userproperties.ProjectNavigationAction) *ProjectNavigationActionRequestBody {
+	if v == nil {
+		return nil
+	}
+	res := &ProjectNavigationActionRequestBody{
+		Type:   v.Type,
+		TabKey: v.TabKey,
+	}
+
+	return res
+}

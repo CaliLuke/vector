@@ -124,12 +124,10 @@ export function WorkspaceSpreadsheetRoot(props: Props) {
           <IssueLayoutHOC
             layout={EIssueLayoutTypes.SPREADSHEET}
             readState={{
-              isPending: readState.isPending,
-              isError: readState.isError,
+              ...readState,
               retry: async () => {
                 await Promise.all([readState.retry(), estimateOrder.retry()]);
               },
-              issueCount: readState.issueCount,
             }}
           >
             <SpreadsheetView

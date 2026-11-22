@@ -83,7 +83,7 @@ INSERT INTO issue_labels (issue_id, label_id) VALUES
 		ActorID: "00000000-0000-4000-8000-000000000004",
 		Params:  map[string]string{"group_by": "labels__id", "sub_group_by": "priority"},
 	}
-	grouped, err := repository.groupedPageWithVisibleRowCounts(ctx, query, []any{visibleIssue}, visibleIssues, 10, 0, true)
+	grouped, err := repository.groupedPageWithVisibleRowCounts(ctx, query, []any{visibleIssue}, visibleIssues, 10, 0)
 	if err != nil {
 		t.Fatal(err)
 	}

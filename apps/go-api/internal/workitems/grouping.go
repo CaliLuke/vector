@@ -115,14 +115,9 @@ func (r *Repository) groupUniverse(ctx context.Context, q Request, field string,
 	return out, nil
 }
 
-func (r *Repository) groupedPage(ctx context.Context, q Request, results []any, rows []map[string]any, limit, page int) (Result, error) {
-	return r.groupedPageWithVisibleRowCounts(ctx, q, results, rows, limit, page, false)
-}
-
-// groupedPageWithVisibleRowCounts keeps the established grouping, ordering and
-// pagination behavior while allowing a source contract to count every row in
-// its already-filtered queryset.
-func (r *Repository) groupedPageWithVisibleRowCounts(ctx context.Context, q Request, results []any, rows []map[string]any, limit, page int, countEveryVisibleRow bool) (Result, error) {
+// groupedPageWithVisibleRowCounts keeps the public feedback grouping contract,
+// which counts every row in its already-filtered queryset.
+func (r *Repository) groupedPageWithVisibleRowCounts(ctx context.Context, q Request, results []any, rows []map[string]any, limit, page int) (Result, error) {
 	group, subgroup := q.Params["group_by"], q.Params["sub_group_by"]
 	var groups, subgroups []any
 	universeRows := rows
@@ -143,30 +138,11 @@ func (r *Repository) groupedPageWithVisibleRowCounts(ctx context.Context, q Requ
 			return Result{}, err
 		}
 	}
-	values := []map[string]any{}
-	ids := []string{}
-	for _, row := range rows {
-		ids = append(ids, row["id"].(string))
-	}
-	counts := map[string]bool{}
-	if countEveryVisibleRow {
-		for _, row := range rows {
-			counts[row["id"].(string)] = true
-		}
-	} else {
-		countRows, err := r.rows(ctx, `SELECT jsonb_build_object('id',i.id,'counts',i.archived_at IS NULL AND NOT i.is_draft AND (NOT EXISTS(SELECT 1 FROM intake_issues t WHERE t.issue_id=i.id) OR EXISTS(SELECT 1 FROM intake_issues t WHERE t.issue_id=i.id AND t.status IN (-1,1,2)))) FROM issues i WHERE i.id=ANY($1::uuid[])`, ids)
-		if err != nil {
-			return Result{}, err
-		}
-		for _, row := range countRows {
-			counts[row["id"].(string)], _ = row["counts"].(bool)
-		}
-	}
+	values := make([]map[string]any, 0, len(results))
 	groupCounts, subCounts := map[string]int{}, map[string]int{}
 	total := 0
 	for _, value := range results {
 		row := value.(map[string]any)
-		row["_count_for_pages"] = counts[row["id"].(string)]
 		values = append(values, row)
 		gvalues := issuequery.GroupValues(row, group)
 		svalues := []string{""}
@@ -174,16 +150,10 @@ func (r *Repository) groupedPageWithVisibleRowCounts(ctx context.Context, q Requ
 			svalues = issuequery.GroupValues(row, subgroup)
 		}
 		total += len(gvalues) * len(svalues)
-		increment := 0
-		if counts[row["id"].(string)] {
-			increment = 1
-		}
 		for _, g := range gvalues {
-			// Preserve a present group with a zero filtered count. Django emits
-			// total_results=1 for it but still uses zero for page counts.
-			groupCounts[g] += increment
+			groupCounts[g]++
 			for _, s := range svalues {
-				subCounts[g+":::"+s] += increment
+				subCounts[g+":::"+s]++
 			}
 		}
 	}
@@ -199,6 +169,10 @@ func (r *Repository) groupedPageWithVisibleRowCounts(ctx context.Context, q Requ
 			}
 		}
 	}
+	return r.groupedEnvelope(group, subgroup, limit, page, total, count, maximum, next, grouped), nil
+}
+
+func (r *Repository) groupedEnvelope(group, subgroup string, limit, page, total, count, maximum int, next bool, grouped any) Result {
 	envelope := apicontract.Envelope([]any{}, total, limit, page)
 	envelope["results"] = grouped
 	if r.parentGrouping != nil {
@@ -211,5 +185,5 @@ func (r *Repository) groupedPageWithVisibleRowCounts(ctx context.Context, q Requ
 	envelope["count"] = count
 	envelope["total_pages"] = int(math.Ceil(float64(maximum) / float64(limit)))
 	envelope["next_page_results"] = next
-	return Result{200, envelope}, nil
+	return Result{200, envelope}
 }

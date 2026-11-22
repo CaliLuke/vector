@@ -178,7 +178,8 @@ export class WorkspaceService extends APIService {
           params,
         },
         config
-      )
+      ),
+      "response-or-error"
     );
   }
 

@@ -19,7 +19,7 @@ type userPropertiesRepositoryStub struct {
 	projectAuthorized     bool
 	err                   error
 	body                  json.RawMessage
-	patched               map[string]json.RawMessage
+	projectPatch          store.ProjectPatch
 	projectAuthorizations int
 }
 
@@ -39,8 +39,8 @@ func (r *userPropertiesRepositoryStub) PatchWorkspace(context.Context, uuid.UUID
 func (r *userPropertiesRepositoryStub) GetProject(context.Context, uuid.UUID, string, uuid.UUID) (json.RawMessage, error) {
 	return r.body, r.err
 }
-func (r *userPropertiesRepositoryStub) PatchProject(_ context.Context, _ uuid.UUID, _ string, _ uuid.UUID, values map[string]json.RawMessage) (json.RawMessage, error) {
-	r.patched = values
+func (r *userPropertiesRepositoryStub) PatchProject(_ context.Context, _ uuid.UUID, _ string, _ uuid.UUID, patch store.ProjectPatch) (json.RawMessage, error) {
+	r.projectPatch = patch
 	return r.body, r.err
 }
 func (r *userPropertiesRepositoryStub) GetCycle(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) (json.RawMessage, error) {
@@ -92,17 +92,25 @@ func TestUserPropertiesProjectPatchPassesAllWritableFields(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	merge := true
 	result, err := service.ProjectPatch(ctx, &api.ProjectPatchPayload{
 		Slug:        "demo",
 		ProjectID:   "00000000-0000-4000-8000-000000000002",
 		Preferences: loom.NullableValue(loom.JSONValue(`{"pages":{"block_display":false}}`)),
 		SortOrder:   loom.NullableValue(7.5),
+		Merge:       &merge,
+		NavigationAction: &api.ProjectNavigationAction{
+			Type: "hide-tab", TabKey: "modules",
+		},
 	})
 	if err != nil || result == nil {
 		t.Fatalf("patch result=%v err=%v", result, err)
 	}
-	if string(repo.patched["sort_order"]) != "7.5" || string(repo.patched["preferences"]) != `{"pages":{"block_display":false}}` {
-		t.Fatalf("patched fields=%v", repo.patched)
+	if fields := repo.projectPatch.Fields; string(fields["sort_order"]) != "7.5" || string(fields["preferences"]) != `{"pages":{"block_display":false}}` {
+		t.Fatalf("patched fields=%v", fields)
+	}
+	if action := repo.projectPatch.NavigationAction; !repo.projectPatch.Merge || action == nil || !action.Hide || action.TabKey != "modules" {
+		t.Fatalf("unexpected project patch=%+v", repo.projectPatch)
 	}
 }
 

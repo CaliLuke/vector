@@ -63,7 +63,17 @@ paths:
                 - $ref: '#/components/parameters/PathSlug'
                 - $ref: '#/components/parameters/PathPk'
             requestBody:
-                $ref: '#/components/requestBodies/PostAPIWorkspacesBySlugUsersNotificationsMarkAllReadRequestBody'
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/NotificationRequest'
+                    application/x-www-form-urlencoded:
+                        schema:
+                            $ref: '#/components/schemas/NotificationRequest'
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/NotificationRequest'
             responses:
                 "200":
                     $ref: '#/components/responses/NotificationStatus200Response'
@@ -331,7 +341,17 @@ paths:
             parameters:
                 - $ref: '#/components/parameters/PathSlug'
             requestBody:
-                $ref: '#/components/requestBodies/PostAPIWorkspacesBySlugUsersNotificationsMarkAllReadRequestBody'
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/NotificationSelectionInput'
+                    application/x-www-form-urlencoded:
+                        schema:
+                            $ref: '#/components/schemas/NotificationSelectionInput'
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/NotificationSelectionInput'
             responses:
                 "200":
                     description: OK response.
@@ -631,6 +651,22 @@ components:
                 - sender
                 - title
                 - workspace
+        NotificationSelectionInput:
+            type: object
+            properties:
+                archived:
+                    type: boolean
+                mentioned:
+                    type: boolean
+                    description: Select the Mentions tab when true.
+                read:
+                    type: boolean
+                    description: Select by read state. The action only changes unread notifications.
+                snoozed:
+                    type: boolean
+                type:
+                    type: string
+                    description: Comma-separated assigned, subscribed, or created filters. Use all for an unfiltered view.
         NotificationSnoozeUpdateInput:
             type: object
             properties:
@@ -649,19 +685,6 @@ components:
             required: true
             schema:
                 type: string
-    requestBodies:
-        PostAPIWorkspacesBySlugUsersNotificationsMarkAllReadRequestBody:
-            required: true
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/components/schemas/NotificationRequest'
-                application/x-www-form-urlencoded:
-                    schema:
-                        $ref: '#/components/schemas/NotificationRequest'
-                multipart/form-data:
-                    schema:
-                        $ref: '#/components/schemas/NotificationRequest'
     responses:
         BadRequestError:
             description: Bad Request response.

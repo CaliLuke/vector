@@ -20,6 +20,7 @@ import type { ProjectCatalogueScope } from "@/queries/catalogue-scope";
 import type { ParentCatalogueScope } from "@/queries/cycle-module-scope";
 import { issueListKeys } from "@/queries/issue-lists";
 import { getCurrentUserId, getIdentitySessionGeneration } from "@/queries/identity";
+import { isAuthorizationError } from "@/queries/authorization-errors";
 import type { IssueListReadData } from "@/queries/issue-lists";
 
 export type IssueListMutationOwner = Readonly<{
@@ -146,6 +147,7 @@ function replaceIssueInResponse(response: TIssuesResponse, receipt: TIssue): TIs
 
 function reconcileIssueReceipt(client: QueryClient, captured: CapturedIssueListMutationOwner, receipt: TIssue) {
   for (const query of captured.queries) {
+    if (isAuthorizationError(query.state.error)) continue;
     if (client.getQueryCache().find({ queryKey: query.queryKey, exact: true }) !== query) continue;
     if (query.queryKey.length === 7) {
       const current = client.getQueryData<IssueListReadData>(query.queryKey);
@@ -153,6 +155,14 @@ function reconcileIssueReceipt(client: QueryClient, captured: CapturedIssueListM
         client.setQueryData<IssueListReadData>(query.queryKey, {
           ...current,
           response: replaceIssueInResponse(current.response, receipt),
+          ...(current.pagesByGroup && {
+            pagesByGroup: Object.fromEntries(
+              Object.entries(current.pagesByGroup).map(([group, data]) => [
+                group,
+                { ...data, pages: data.pages.map((page) => replaceIssueInResponse(page, receipt)) },
+              ])
+            ),
+          }),
         });
       continue;
     }
@@ -185,10 +195,17 @@ export async function refreshCapturedIssueLists(
     await client.cancelQueries({ predicate: (query) => queriesToRefresh.has(query) });
     if (captured.isAuthorizedCurrent()) {
       if (receipt) reconcileIssueReceipt(client, captured, receipt);
+      // The list read rebuilds each accepted page depth. Refetching its old child
+      // queries in parallel would race that replacement and repeat page requests.
       await client.invalidateQueries({
         predicate: (query) => queriesToRefresh.has(query),
-        refetchType: captured.access.isVerified() ? "active" : "none",
+        refetchType: "none",
       });
+      if (captured.isAuthorizedCurrent())
+        await client.refetchQueries({
+          predicate: (query) => queriesToRefresh.has(query) && query.queryKey.length === 7,
+          type: "active",
+        });
     }
   } catch (error) {
     console.error("Could not refresh the work item list after an accepted write", error);

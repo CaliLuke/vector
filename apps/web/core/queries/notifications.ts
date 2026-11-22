@@ -44,7 +44,7 @@ export function notificationCountOptions(workspaceSlug: string) {
   });
 }
 
-function notificationFilterParams(filters: TNotificationFilter) {
+function notificationFilterParams(tab: TNotificationTab, filters: TNotificationFilter) {
   return {
     type:
       Object.entries(filters.type)
@@ -52,13 +52,14 @@ function notificationFilterParams(filters: TNotificationFilter) {
         .map(([key]) => key)
         .join(",") || undefined,
     snoozed: filters.snoozed,
+    mentioned: tab === ENotificationTab.MENTIONS || undefined,
     archived: filters.archived,
     read: filters.read ? false : undefined,
   };
 }
 
 export function notificationListOptions(workspaceSlug: string, tab: TNotificationTab, filters: TNotificationFilter) {
-  const params = { ...notificationFilterParams(filters), mentioned: tab === ENotificationTab.MENTIONS || undefined };
+  const params = notificationFilterParams(tab, filters);
   return infiniteQueryOptions({
     queryKey: [...notificationKeys.lists(workspaceSlug), params],
     queryFn: ({ pageParam, signal }) =>
@@ -154,11 +155,12 @@ export function notificationMutationOptions(client: QueryClient, workspaceSlug: 
 export function markAllNotificationsReadOptions(
   client: QueryClient,
   workspaceSlug: string,
+  tab: TNotificationTab,
   filters: TNotificationFilter
 ) {
   return mutationOptions({
     mutationKey: notificationKeys.mutations(workspaceSlug),
-    mutationFn: () => service.markAllNotificationsAsRead(workspaceSlug, notificationFilterParams(filters)),
+    mutationFn: () => service.markAllNotificationsAsRead(workspaceSlug, notificationFilterParams(tab, filters)),
     onSuccess: async () => {
       await client.cancelQueries({ queryKey: notificationKeys.workspace(workspaceSlug) });
       await client.invalidateQueries({ queryKey: notificationKeys.workspace(workspaceSlug) });

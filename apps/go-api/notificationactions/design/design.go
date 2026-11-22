@@ -173,6 +173,14 @@ var NotificationMarkAllReadInput = Type("NotificationMarkAllReadInput", func() {
 	Attribute("type", Any)
 })
 
+var NotificationSelectionInput = Type("NotificationSelectionInput", func() {
+	Attribute("archived", Boolean)
+	Attribute("snoozed", Boolean)
+	Attribute("mentioned", Boolean, "Select the Mentions tab when true.")
+	Attribute("read", Boolean, "Select by read state. The action only changes unread notifications.")
+	Attribute("type", String, "Comma-separated assigned, subscribed, or created filters. Use all for an unfiltered view.")
+})
+
 var NotificationSnoozeUpdateInput = Type("NotificationSnoozeUpdateInput", func() {
 	Attribute("snoozed_till", Any)
 })
@@ -495,7 +503,7 @@ var _ = Service("NotificationActions", func() {
 			POST("/api/workspaces/{slug}/users/notifications/mark-all-read/")
 			Param("slug")
 			SkipRequestBodyEncodeDecode()
-			OpenAPIRequestBodyTypes(NotificationRequest, []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"}, true)
+			OpenAPIRequestBodyTypes(NotificationSelectionInput, []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"}, true)
 			Response(200, func() { ContentType("application/json"); OpenAPIBody(NotificationActionMessage) })
 		})
 	})

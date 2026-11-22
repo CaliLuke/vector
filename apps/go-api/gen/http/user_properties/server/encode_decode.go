@@ -483,6 +483,10 @@ func DecodeProjectPatchRequest(mux loomhttp.Muxer, decoder func(*http.Request) l
 			}
 			return payload, loom.DecodePayloadError(loomhttp.SafeDecodePayloadMessage(err))
 		}
+		err = ValidateProjectPatchRequestBody(&body)
+		if err != nil {
+			return payload, err
+		}
 
 		var (
 			slug      string
@@ -1194,4 +1198,19 @@ func EncodeModulePatchError(encoder func(context.Context, http.ResponseWriter) l
 			return encodeError(ctx, w, v)
 		}
 	}
+}
+
+// unmarshalProjectNavigationActionRequestBodyToUserpropertiesProjectNavigationAction
+// builds a value of type *userproperties.ProjectNavigationAction from a value
+// of type *ProjectNavigationActionRequestBody.
+func unmarshalProjectNavigationActionRequestBodyToUserpropertiesProjectNavigationAction(v *ProjectNavigationActionRequestBody) *userproperties.ProjectNavigationAction {
+	if v == nil {
+		return nil
+	}
+	res := &userproperties.ProjectNavigationAction{
+		Type:   *v.Type,
+		TabKey: *v.TabKey,
+	}
+
+	return res
 }

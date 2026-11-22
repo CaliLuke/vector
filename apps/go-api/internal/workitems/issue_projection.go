@@ -164,10 +164,10 @@ func (r *Repository) readIssue(ctx context.Context, q Request) (Result, error) {
 	if err = r.guestIssue(ctx, q, row, project); err != nil {
 		return Result{}, err
 	}
-	if err = r.recentVisit(ctx, q, "issue", q.IssueID); err != nil {
-		return Result{}, err
-	}
 	body, err := r.detail(ctx, row, q, true, false)
+	if err == nil {
+		r.recordRecentVisit(ctx, q, "issue", q.IssueID)
+	}
 	return Result{200, body}, err
 }
 
@@ -195,8 +195,10 @@ func jsonOrder(keys []string, children map[string][]byte) []byte {
 	return []byte(order.String())
 }
 
+const liveIssueModuleConditions = " AND m.deleted_at IS NULL AND md.deleted_at IS NULL AND md.archived_at IS NULL"
+
 func issueAnnotationsSQL(actor string, activeAssignees bool) string {
-	return issueAnnotationsSQLWithModuleConditions(actor, activeAssignees, " AND m.deleted_at IS NULL AND md.deleted_at IS NULL AND md.archived_at IS NULL")
+	return issueAnnotationsSQLWithModuleConditions(actor, activeAssignees, liveIssueModuleConditions)
 }
 
 // issueCollectionAnnotationsSQL keeps archived modules in public issue
@@ -220,8 +222,8 @@ func issueAnnotationsSQLWithVisibility(actor string, activeAssignees bool, modul
 	}
 	return strings.NewReplacer("$2", actor, "$assigneeFilter", assigneeFilter, "$moduleConditions", moduleConditions, "$visibleParent", parentSQL, "$visibleChild", childSQL).Replace(`jsonb_build_object(
  'parent_id',$visibleParent,
- 'cycle_id',(SELECT cycle_issue.cycle_id FROM cycle_issues cycle_issue JOIN cycles cycle ON cycle.id=cycle_issue.cycle_id AND cycle.deleted_at IS NULL AND cycle.project_id=i.project_id AND cycle.workspace_id=i.workspace_id WHERE cycle_issue.issue_id=i.id AND cycle_issue.deleted_at IS NULL ORDER BY cycle_issue.created_at DESC LIMIT 1),
- 'module_ids',COALESCE((SELECT jsonb_agg(DISTINCT m.module_id) FROM module_issues m JOIN modules md ON md.id=m.module_id WHERE m.issue_id=i.id$moduleConditions),'[]'::jsonb),
+ 'cycle_id',` + issueCycleSQL("i") + `,
+ 'module_ids',COALESCE((SELECT jsonb_agg(DISTINCT m.module_id) ` + issueModuleJoinSQL("i") + `$moduleConditions),'[]'::jsonb),
  'label_ids',COALESCE((SELECT jsonb_agg(DISTINCT issue_label.label_id) FROM issue_labels issue_label WHERE ` + issuequery.LiveIssueLabelPredicate("i", "issue_label") + `),'[]'::jsonb),
  'assignee_ids',COALESCE((SELECT jsonb_agg(DISTINCT a.assignee_id) FROM issue_assignees a WHERE a.issue_id=i.id AND a.deleted_at IS NULL$assigneeFilter),'[]'::jsonb),
  'sub_issues_count',(SELECT COUNT(*) FROM issues child WHERE child.parent_id=i.id AND $visibleChild AND child.deleted_at IS NULL AND child.archived_at IS NULL AND NOT child.is_draft AND NOT EXISTS(SELECT 1 FROM states s WHERE s.id=child.state_id AND s."group"='triage') AND NOT EXISTS(SELECT 1 FROM projects p WHERE p.id=child.project_id AND p.archived_at IS NOT NULL)),
@@ -230,4 +232,12 @@ func issueAnnotationsSQLWithVisibility(actor string, activeAssignees bool, modul
  'is_subscribed',EXISTS(SELECT 1 FROM issue_subscribers s WHERE s.issue_id=i.id AND s.project_id=i.project_id AND s.workspace_id=i.workspace_id AND s.subscriber_id=$2 AND s.deleted_at IS NULL),
  'is_intake',EXISTS(SELECT 1 FROM intake_issues t WHERE t.issue_id=i.id AND t.status IN (-2,0) AND t.project_id=i.project_id AND t.workspace_id=i.workspace_id AND t.deleted_at IS NULL)
  )`)
+}
+
+func issueCycleSQL(issue string) string {
+	return strings.ReplaceAll(`(SELECT cycle_issue.cycle_id FROM cycle_issues cycle_issue JOIN cycles cycle ON cycle.id=cycle_issue.cycle_id AND cycle.deleted_at IS NULL AND cycle.project_id=i.project_id AND cycle.workspace_id=i.workspace_id WHERE cycle_issue.issue_id=i.id AND cycle_issue.deleted_at IS NULL ORDER BY cycle_issue.created_at DESC LIMIT 1)`, "i.", issue+".")
+}
+
+func issueModuleJoinSQL(issue string) string {
+	return `FROM module_issues m JOIN modules md ON md.id=m.module_id WHERE m.issue_id=` + issue + `.id`
 }

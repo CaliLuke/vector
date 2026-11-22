@@ -98,7 +98,8 @@ function TabProbe() {
     React.createElement("output", { "data-testid": "preferences" }, JSON.stringify(preferences.tabPreferences)),
     React.createElement("button", { onClick: () => preferences.handleHideTab("cycles") }, "Hide cycles"),
     React.createElement("button", { onClick: () => preferences.handleToggleDefaultTab("pages") }, "Default pages"),
-    React.createElement("button", { onClick: () => preferences.handleHideTab("pages") }, "Hide pages")
+    React.createElement("button", { onClick: () => preferences.handleHideTab("pages") }, "Hide pages"),
+    React.createElement("button", { onClick: () => preferences.handleToggleDefaultTab("cycles") }, "Default cycles")
   );
 }
 
@@ -239,9 +240,9 @@ await test("tab preferences observe cache and pending patches without fetching p
     });
     await settleQuery();
   });
-  assert.deepEqual(writePayload.preferences, {
-    pages: { block_display: true },
-    navigation: { default_tab: "cycles", hide_in_more_menu: ["modules", "cycles"] },
+  assert.deepEqual(writePayload, {
+    merge: true,
+    navigation_action: { type: "hide-tab", tab_key: "cycles" },
   });
   assert.equal(reads, 0);
 });
@@ -331,9 +332,9 @@ await test("a rejected hide intent cannot leak into a later accepted hide intent
     defaultTab: "cycles",
     hiddenTabs: ["modules", "pages"],
   });
-  assert.deepEqual(payloads[1].preferences.navigation, {
-    default_tab: "cycles",
-    hide_in_more_menu: ["modules", "pages"],
+  assert.deepEqual(payloads[1], {
+    merge: true,
+    navigation_action: { type: "hide-tab", tab_key: "pages" },
   });
 
   await act(async () => {
@@ -372,13 +373,13 @@ await test("a failed hide patch preserves an accepted default-tab change", async
     });
     await secondStarted.promise;
   });
-  assert.deepEqual(payloads[0].preferences, {
-    pages: { block_display: true },
-    navigation: { default_tab: "pages", hide_in_more_menu: ["modules"] },
+  assert.deepEqual(payloads[0], {
+    merge: true,
+    preferences: { navigation: { default_tab: "pages" } },
   });
-  assert.deepEqual(payloads[1].preferences, {
-    pages: { block_display: true },
-    navigation: { default_tab: "pages", hide_in_more_menu: ["modules", "cycles"] },
+  assert.deepEqual(payloads[1], {
+    merge: true,
+    navigation_action: { type: "hide-tab", tab_key: "cycles" },
   });
 
   await act(async () => {
@@ -405,11 +406,19 @@ await test("preference read failures expose retry and block tab writes until the
     writes++;
     return initialProperties;
   });
+  let save;
+  function PreferenceContent() {
+    const preferences = useProjectIssuePreferencesContext();
+    React.useEffect(() => {
+      save = preferences?.save;
+    }, [preferences]);
+    return React.createElement(TabProbe);
+  }
   await fixture.render(
     React.createElement(
       ProjectAuthWrapper,
       { workspaceSlug: scope.workspaceSlug, projectId: scope.projectId },
-      React.createElement(TabProbe)
+      React.createElement(PreferenceContent)
     )
   );
   await settleQuery();
@@ -427,6 +436,11 @@ await test("preference read failures expose retry and block tab writes until the
     await settleQuery();
   });
   assert.equal(writes, 0);
+  await assert.rejects(
+    save({ display_filters: { group_by: "priority" } }),
+    /Project preferences are not ready to update/
+  );
+  assert.equal(writes, 0);
 
   await act(async () => {
     findButton("Retry").click();
@@ -439,4 +453,72 @@ await test("preference read failures expose retry and block tab writes until the
     await settleQuery();
   });
   assert.equal(writes, 1);
+});
+
+await test("a transient preference refresh keeps project content and retries independently", async (t) => {
+  setHarness();
+  const fixture = await createQueryRouterFixture(t, "/acme/projects/project-1/issues/");
+  await seedScope(fixture.client, { workspaceRole: EUserWorkspaceRoles.MEMBER });
+  const get = t.mock.method(ProjectService.prototype, "getProjectUserProperties", async () => initialProperties);
+  await fixture.render(
+    React.createElement(
+      ProjectAuthWrapper,
+      { workspaceSlug: scope.workspaceSlug, projectId: scope.projectId },
+      React.createElement("main", null, "Project content")
+    )
+  );
+  await settleQuery();
+  const { container } = fixture.environment;
+  const prior = container.querySelector("main");
+  assert.ok(prior);
+  const key = projectUserPropertiesKeys.detail(scope);
+  await act(async () => {
+    await assert.rejects(
+      fixture.client.fetchQuery({
+        queryKey: key,
+        queryFn: async () => Promise.reject({ status: 503 }),
+        staleTime: 0,
+        retry: false,
+      }),
+      (error) => error.status === 503
+    );
+    await settleQuery();
+  });
+  assert.equal(container.querySelector("main"), prior);
+  assert.match(container.querySelector('[role="alert"]').textContent, /Unable to refresh project preferences/);
+  const beforeRetry = get.mock.callCount();
+  await act(async () => {
+    container.querySelector('[role="alert"] button').click();
+    await settleQuery();
+  });
+  assert.equal(get.mock.callCount(), beforeRetry + 1);
+  assert.equal(container.querySelector("main"), prior);
+  assert.equal(container.querySelector('[role="alert"]'), null);
+});
+
+await test("toggling the current default tab sends only the reset while keeping other navigation preferences", async (t) => {
+  const fixture = await createQueryRouterFixture(t, "/acme/projects/project-1/issues/");
+  await seedScope(fixture.client);
+  const update = t.mock.method(ProjectService.prototype, "updateProjectUserProperties", async () => ({
+    ...initialProperties,
+    preferences: {
+      ...initialProperties.preferences,
+      navigation: { ...initialProperties.preferences.navigation, default_tab: "work_items" },
+    },
+  }));
+  await fixture.render(React.createElement(TabProbe));
+  const { container } = fixture.environment;
+  const reset = [...container.querySelectorAll("button")].find((button) => button.textContent === "Default cycles");
+  await act(async () => {
+    reset.click();
+    await settleQuery();
+  });
+  assert.deepEqual(update.mock.calls[0].arguments[2], {
+    merge: true,
+    preferences: { navigation: { default_tab: "work_items" } },
+  });
+  assert.deepEqual(JSON.parse(container.querySelector('[data-testid="preferences"]').textContent), {
+    defaultTab: "work_items",
+    hiddenTabs: ["modules"],
+  });
 });

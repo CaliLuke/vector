@@ -47,6 +47,11 @@ interface Props {
     isPending: boolean;
     isError: boolean;
     isUpdatingResults?: boolean;
+    isRefreshError?: boolean;
+    isPageError?: boolean;
+    isFetching?: boolean;
+    retryFailedPages?: () => Promise<unknown>;
+    retryRefresh?: () => Promise<unknown>;
     issueCount: number;
     retry: () => Promise<unknown>;
   };
@@ -81,9 +86,13 @@ export function IssueLayoutHOC(props: Props) {
       </output>
     );
 
-  if (issueCount === 0 && layout !== EIssueLayoutTypes.CALENDAR && !props.allowEmptyGroups) {
-    return <IssueLayoutEmptyState storeType={storeType} />;
-  }
+  const empty = issueCount === 0 && layout !== EIssueLayoutTypes.CALENDAR && !props.allowEmptyGroups;
+  const retryUpdate = readState.isRefreshError
+    ? readState.retryRefresh
+    : readState.isPageError
+      ? readState.retryFailedPages
+      : undefined;
+  if (empty && !retryUpdate) return <IssueLayoutEmptyState storeType={storeType} />;
 
   const updating = readState.isUpdatingResults;
   return (
@@ -94,8 +103,19 @@ export function IssueLayoutHOC(props: Props) {
             {t("updating")}
           </output>
         )}
+        {retryUpdate && (
+          <div
+            role="alert"
+            className="absolute top-2 right-2 z-10 flex items-center gap-2 rounded border border-subtle bg-surface-1 p-2 text-12 text-secondary"
+          >
+            {t("something_went_wrong")}
+            <Button variant="secondary" size="sm" disabled={readState.isFetching} onClick={() => void retryUpdate()}>
+              {t("common.retry")}
+            </Button>
+          </div>
+        )}
         <div className="size-full" inert={updating}>
-          {props.children}
+          {empty ? <IssueLayoutEmptyState storeType={storeType} /> : props.children}
         </div>
       </div>
     </LayoutErrorBoundary>

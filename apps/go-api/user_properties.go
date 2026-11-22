@@ -28,7 +28,7 @@ type userPropertiesRepository interface {
 	GetWorkspace(context.Context, uuid.UUID, string) (json.RawMessage, error)
 	PatchWorkspace(context.Context, uuid.UUID, string, map[string]json.RawMessage) (json.RawMessage, error)
 	GetProject(context.Context, uuid.UUID, string, uuid.UUID) (json.RawMessage, error)
-	PatchProject(context.Context, uuid.UUID, string, uuid.UUID, map[string]json.RawMessage) (json.RawMessage, error)
+	PatchProject(context.Context, uuid.UUID, string, uuid.UUID, store.ProjectPatch) (json.RawMessage, error)
 	GetCycle(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) (json.RawMessage, error)
 	PatchCycle(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID, map[string]json.RawMessage) (json.RawMessage, error)
 	GetModule(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) (json.RawMessage, error)
@@ -189,7 +189,11 @@ func (s *userPropertiesService) ProjectPatch(ctx context.Context, p *api.Project
 		}
 		return nil, api.JSONFieldValidation(invalid)
 	}
-	return userPropertiesResult(s.repo.PatchProject(ctx, id, p.Slug, x, fields))
+	patch := store.ProjectPatch{Fields: fields, Merge: p.Merge != nil && *p.Merge}
+	if action := p.NavigationAction; action != nil {
+		patch.NavigationAction = &store.NavigationAction{Hide: action.Type == "hide-tab", TabKey: action.TabKey}
+	}
+	return userPropertiesResult(s.repo.PatchProject(ctx, id, p.Slug, x, patch))
 }
 func (s *userPropertiesService) CycleGet(ctx context.Context, p *api.CycleGetPayload) (*api.UserProperties, error) {
 	id, x, y, e := s.scopedIdentity(ctx, p.Slug, p.ProjectID, p.CycleID)

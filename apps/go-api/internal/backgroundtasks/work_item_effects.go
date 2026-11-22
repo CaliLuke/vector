@@ -1,15 +1,20 @@
 package backgroundtasks
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
 
 type effectActivityAdmission interface {
@@ -58,6 +63,7 @@ type PostgresWorkItemEffectStore struct {
 	emails        TemplatedEmailTaskAdmitter
 	pages         effectPageAdmission
 	events        EventTrackingTaskAdmitter
+	admissions    metric.Int64Counter
 }
 
 func NewPostgresWorkItemEffectStore(pool *pgxpool.Pool, activities effectActivityAdmission, versions effectVersionAdmission, deletions effectDeletionAdmission, webhooks effectWebhookAdmission, assetDeletes effectFileAssetDeleteAdmission, assetMetadata effectFileAssetMetadataAdmission, linkPreviews effectLinkPreviewAdmission, assetUploads effectFileAssetUpload, emails TemplatedEmailTaskAdmitter, events EventTrackingTaskAdmitter, pages ...effectPageAdmission) (*PostgresWorkItemEffectStore, error) {
@@ -96,7 +102,7 @@ func (s *PostgresWorkItemEffectStore) admitNext(ctx context.Context) (_ bool, re
 	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var id, kind string
 	var payload []byte
-	err = tx.QueryRow(ctx, `SELECT id::text,kind,payload FROM work_item_effects WHERE admitted_at IS NULL AND next_attempt_at<=clock_timestamp() ORDER BY next_attempt_at,created_at,id LIMIT 1 FOR UPDATE SKIP LOCKED`).Scan(&id, &kind, &payload)
+	err = tx.QueryRow(ctx, `SELECT id::text,kind,payload FROM work_item_effects WHERE admitted_at IS NULL AND quarantined_at IS NULL AND next_attempt_at<=clock_timestamp() ORDER BY next_attempt_at,created_at,id LIMIT 1 FOR UPDATE SKIP LOCKED`).Scan(&id, &kind, &payload)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return false, nil
 	}
@@ -107,24 +113,71 @@ func (s *PostgresWorkItemEffectStore) admitNext(ctx context.Context) (_ bool, re
 	admissionContext, cancel := context.WithTimeout(ctx, 10*time.Second)
 	admissionErr := s.admit(admissionContext, id, kind, payload)
 	cancel()
-	if admissionErr != nil {
-		// Retain the immutable identity/payload for reconciliation after an outage.
-		// Delay only this row so malformed data never starves unrelated effects.
-		_, err = tx.Exec(ctx, `UPDATE work_item_effects SET attempts=attempts+1,next_attempt_at=clock_timestamp()+interval '1 minute',last_error=$2 WHERE id=$1`, id, admissionErr.Error())
-	} else {
+	var outcome string
+	switch {
+	case admissionErr == nil:
+		outcome = "admitted"
 		_, err = tx.Exec(ctx, `UPDATE work_item_effects SET admitted_at=clock_timestamp(),attempts=attempts+1,payload='{}',last_error='' WHERE id=$1`, id)
+	case errors.Is(admissionErr, errInvalidWorkItemEffectPayload):
+		outcome = "quarantined"
+		// The infinite retry time also protects the row from older pollers during a rollout.
+		_, err = tx.Exec(ctx, `UPDATE work_item_effects SET quarantined_at=clock_timestamp(),attempts=attempts+1,next_attempt_at='infinity',last_error=$2 WHERE id=$1`, id, admissionErr.Error())
+	default:
+		outcome = "retry"
+		_, err = tx.Exec(ctx, `UPDATE work_item_effects SET attempts=attempts+1,next_attempt_at=clock_timestamp()+interval '1 minute',last_error=$2 WHERE id=$1`, id, admissionErr.Error())
 	}
 	if err != nil {
 		return false, err
 	}
-	return true, tx.Commit(ctx)
+	if err := tx.Commit(ctx); err != nil {
+		return false, err
+	}
+	kind = workItemEffectKind(kind)
+	if s.admissions != nil {
+		s.admissions.Add(ctx, 1, metric.WithAttributes(attribute.String("effect.kind", kind), attribute.String("effect.outcome", outcome)))
+	}
+	if outcome == "quarantined" {
+		slog.WarnContext(ctx, "Quarantined permanently invalid work item effect", "effect.kind", kind, "effect.outcome", outcome)
+	}
+	return true, nil
+}
+
+// ReplayQuarantinedWorkItemEffect requeues a single inspected effect, preserving
+// its admission identity and attempt count. The operator owns payload repair.
+func ReplayQuarantinedWorkItemEffect(ctx context.Context, pool *pgxpool.Pool, id uuid.UUID) (bool, error) {
+	tag, err := pool.Exec(ctx, `UPDATE work_item_effects SET quarantined_at=NULL,next_attempt_at=clock_timestamp() WHERE id=$1 AND admitted_at IS NULL AND quarantined_at IS NOT NULL`, id)
+	return tag.RowsAffected() == 1, err
+}
+
+var errInvalidWorkItemEffectPayload = errors.New("invalid work item effect payload")
+
+func decodeWorkItemEffect(raw []byte, target any) error {
+	raw = bytes.TrimSpace(raw)
+	if len(raw) == 0 || raw[0] != '{' {
+		return fmt.Errorf("%w: expected a JSON object", errInvalidWorkItemEffectPayload)
+	}
+	if err := json.Unmarshal(raw, target); err != nil {
+		return fmt.Errorf("%w: %w", errInvalidWorkItemEffectPayload, err)
+	}
+	return nil
+}
+
+func workItemEffectKind(kind string) string {
+	switch kind {
+	case "event_tracking", "email_task", "page_transaction", "page_version", "asset_storage_upload",
+		"link_preview", "webhook", "activity", "description_version", "soft_delete", "asset_storage_delete",
+		"asset_storage_metadata":
+		return kind
+	default:
+		return "unknown"
+	}
 }
 
 func (s *PostgresWorkItemEffectStore) admit(ctx context.Context, id, kind string, raw []byte) error {
 	switch kind {
 	case "event_tracking":
 		var payload EventTrackingInput
-		if err := json.Unmarshal(raw, &payload); err != nil {
+		if err := decodeWorkItemEffect(raw, &payload); err != nil {
 			return err
 		}
 		return s.events.AdmitEventTracking(ctx, id, payload)
@@ -133,14 +186,11 @@ func (s *PostgresWorkItemEffectStore) admit(ctx context.Context, id, kind string
 			Name string `json:"name"`
 			Args []any  `json:"args"`
 		}
-		if err := json.Unmarshal(raw, &payload); err != nil {
+		if err := decodeWorkItemEffect(raw, &payload); err != nil {
 			return err
 		}
 		return s.emails.AdmitTemplatedEmailTask(ctx, id, payload.Name, payload.Args)
 	case "page_transaction", "page_version":
-		if s.pages == nil {
-			return errors.New("page effect admission is not configured")
-		}
 		var payload struct {
 			PageID   string `json:"page_id"`
 			UserID   string `json:"user_id"`
@@ -148,8 +198,11 @@ func (s *PostgresWorkItemEffectStore) admit(ctx context.Context, id, kind string
 			OldHTML  any    `json:"old_description_html"`
 			Existing any    `json:"existing_instance"`
 		}
-		if err := json.Unmarshal(raw, &payload); err != nil {
+		if err := decodeWorkItemEffect(raw, &payload); err != nil {
 			return err
+		}
+		if s.pages == nil {
+			return errors.New("page effect admission is not configured")
 		}
 		if kind == "page_transaction" {
 			return s.pages.AdmitPageTransaction(ctx, id, payload.NewHTML, payload.OldHTML, payload.PageID)
@@ -159,14 +212,14 @@ func (s *PostgresWorkItemEffectStore) admit(ctx context.Context, id, kind string
 		var payload struct {
 			AssetID string `json:"asset_id"`
 		}
-		if err := json.Unmarshal(raw, &payload); err != nil {
+		if err := decodeWorkItemEffect(raw, &payload); err != nil {
 			return err
 		}
 		return s.assetUploads.CompleteAttachmentUpload(ctx, payload.AssetID)
 
 	case "link_preview":
 		var payload LinkPreviewInput
-		if err := json.Unmarshal(raw, &payload); err != nil {
+		if err := decodeWorkItemEffect(raw, &payload); err != nil {
 			return err
 		}
 		_, err := s.linkPreviews.AdmitWithID(ctx, id, payload)
@@ -175,7 +228,7 @@ func (s *PostgresWorkItemEffectStore) admit(ctx context.Context, id, kind string
 		return s.admitWebhookEffect(ctx, id, raw)
 	case "activity":
 		var payload map[string]any
-		if err := json.Unmarshal(raw, &payload); err != nil {
+		if err := decodeWorkItemEffect(raw, &payload); err != nil {
 			return err
 		}
 		return s.activities.AdmitIssueActivityTask(ctx, id, payload)
@@ -186,13 +239,13 @@ func (s *PostgresWorkItemEffectStore) admit(ctx context.Context, id, kind string
 			UserID     string `json:"user_id"`
 			IsCreating bool   `json:"is_creating"`
 		}
-		if err := json.Unmarshal(raw, &payload); err != nil {
+		if err := decodeWorkItemEffect(raw, &payload); err != nil {
 			return err
 		}
 		return s.versions.AdmitIssueDescriptionVersion(ctx, id, payload.Snapshot, payload.IssueID, payload.UserID, payload.IsCreating)
 	case "soft_delete":
 		var payload DeletionInput
-		if err := json.Unmarshal(raw, &payload); err != nil {
+		if err := decodeWorkItemEffect(raw, &payload); err != nil {
 			return err
 		}
 		payload.EventID = id
@@ -203,7 +256,7 @@ func (s *PostgresWorkItemEffectStore) admit(ctx context.Context, id, kind string
 			AssetID   string `json:"asset_id"`
 			ObjectKey string `json:"object_key"`
 		}
-		if err := json.Unmarshal(raw, &payload); err != nil {
+		if err := decodeWorkItemEffect(raw, &payload); err != nil {
 			return err
 		}
 		return s.assetDeletes.Admit(ctx, payload.AssetID, payload.ObjectKey, id)
@@ -211,12 +264,13 @@ func (s *PostgresWorkItemEffectStore) admit(ctx context.Context, id, kind string
 		var payload struct {
 			AssetID string `json:"asset_id"`
 		}
-		if err := json.Unmarshal(raw, &payload); err != nil {
+		if err := decodeWorkItemEffect(raw, &payload); err != nil {
 			return err
 		}
 		_, err := s.assetMetadata.Admit(ctx, payload.AssetID, id)
 		return err
 	default:
+		// A newer producer can add kinds during a rolling release.
 		return fmt.Errorf("unsupported work item effect %q", kind)
 	}
 }
@@ -227,7 +281,7 @@ func (s *PostgresWorkItemEffectStore) admitWebhookEffect(ctx context.Context, id
 		Args   []any          `json:"args"`
 		Kwargs map[string]any `json:"kwargs"`
 	}
-	if err := json.Unmarshal(raw, &payload); err != nil {
+	if err := decodeWorkItemEffect(raw, &payload); err != nil {
 		return err
 	}
 	return s.webhooks.AdmitWebhookTask(ctx, id, payload.Name, payload.Args, payload.Kwargs)

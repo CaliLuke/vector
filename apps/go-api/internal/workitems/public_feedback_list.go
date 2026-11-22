@@ -144,7 +144,7 @@ func (repository *Repository) PublicIssueList(ctx context.Context, scope PublicF
 		}
 		results = append(results, projected)
 	}
-	return repository.groupedPageWithVisibleRowCounts(ctx, q, results, rows, limit, page, true)
+	return repository.groupedPageWithVisibleRowCounts(ctx, q, results, rows, limit, page)
 }
 
 func publicIssueProjection(row map[string]any, subgroupOnlyModule bool) (map[string]any, error) {

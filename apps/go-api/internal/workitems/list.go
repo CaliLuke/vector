@@ -55,11 +55,15 @@ type issueListFilterPlan struct {
 type issueListPage struct {
 	rows               []map[string]any
 	total, limit, page int
-	inSQL              bool
 }
 
-func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs map[string]bool) (Result, error) {
+func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs map[string]bool) (result Result, resultErr error) {
 	shape := issueListShapeFor(q)
+	defer func() {
+		if resultErr == nil && !q.API && !shape.v2 && !shape.workspace && !shape.archive && !shape.details {
+			r.recordRecentVisit(ctx, q, "project", q.ProjectID)
+		}
+	}()
 	if err := r.authorizeIssueList(ctx, q, shape); err != nil {
 		return Result{}, err
 	}
@@ -79,14 +83,10 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 	if err != nil {
 		return Result{}, err
 	}
-	order, err := issueListOrder(q, shape, plan.options, &plan.args)
+	args = plan.args
+	order, err := issueListOrder(q, shape, plan.options, &args)
 	if err != nil {
 		return Result{}, err
-	}
-	if !q.API && !shape.v2 && !shape.workspace && !shape.archive && !shape.details {
-		if err = r.recentVisit(ctx, q, "project", q.ProjectID); err != nil {
-			return Result{}, err
-		}
 	}
 	if err = r.validateIssueListGrouping(q, shape, plan.options); err != nil {
 		return Result{}, err
@@ -96,29 +96,31 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 	}
 	from := ` FROM issues issue JOIN projects project ON project.id=issue.project_id JOIN workspaces workspace ON workspace.id=issue.workspace_id WHERE ` + strings.Join(plan.where, " AND ")
 	if q.API && q.ExpectedWorkspaceID != nil && q.Operation == "count" {
-		return r.countIssueResults(ctx, q, from, plan.args)
+		return r.countIssueResults(ctx, q, from, args)
 	}
-	page, err := r.readIssueListPage(ctx, q, shape, plan.options, from, order, plan.args)
+	if !q.API && !shape.v2 && !shape.byIDs && plan.options.GroupBy != "" {
+		return r.readGroupedListPage(ctx, q, shape, plan, from, order, args)
+	}
+	page, err := r.readIssueListPage(ctx, q, shape, from, order, args)
 	if err != nil {
 		return Result{}, err
 	}
-	if !q.API && (q.Params["include_properties"] == "true" || len(r.propertyGroups) > 0) {
-		if err = r.projectDiscoveryRows(ctx, page.rows); err != nil {
-			return Result{}, err
-		}
-	}
 	if shape.v2 {
+		if !q.API && q.Params["include_properties"] == "true" {
+			if err = r.projectDiscoveryRows(ctx, page.rows); err != nil {
+				return Result{}, err
+			}
+		}
 		return v2Envelope(q, page.rows, page.total, page.limit, page.page)
 	}
-	results := []any{}
-	for _, row := range page.rows {
-		value, err := r.projectIssueListRow(ctx, q, shape, row)
-		if err != nil {
-			return Result{}, err
-		}
-		results = append(results, value)
+	results, err := r.projectIssueListRows(ctx, q, shape, page.rows)
+	if err != nil {
+		return Result{}, err
 	}
-	return r.issueListResponse(ctx, q, shape, plan.options, page, results)
+	if shape.byIDs {
+		return Result{200, results}, nil
+	}
+	return Result{200, apicontract.Envelope(results, page.total, page.limit, page.page)}, nil
 }
 
 func issueListShapeFor(q Request) issueListShape {
@@ -130,6 +132,17 @@ func issueListShapeFor(q Request) issueListShape {
 	user := strings.Contains(op, "_user_issues_by_user_id")
 	workspace := q.ProjectID == ""
 	return issueListShape{archive: archive, v2: v2, byIDs: byIDs, details: details, user: user, workspace: workspace}
+}
+
+func (shape issueListShape) hasDetailProjection() bool {
+	return shape.details || shape.workspace && !shape.user
+}
+
+func (shape issueListShape) projectsStateGroup() bool {
+	if shape.hasDetailProjection() {
+		return shape.workspace && !shape.user
+	}
+	return !shape.byIDs || shape.user
 }
 
 func (r *Repository) authorizeIssueList(ctx context.Context, q Request, shape issueListShape) error {
@@ -255,8 +268,6 @@ func (r *Repository) issueListFilters(ctx context.Context, q Request, shape issu
 			if !errors.Is(err, issuequery.ErrInvalidComplexRange) {
 				return issueListFilterPlan{}, err
 			}
-			// Django constructs this invalid range lazily, then queues the visit
-			// before evaluating the queryset.
 			deferredFilterError = err
 		}
 	}
@@ -318,15 +329,14 @@ func (r *Repository) validateIssueListGrouping(q Request, shape issueListShape, 
 	return nil
 }
 
-func (r *Repository) readIssueListPage(ctx context.Context, q Request, shape issueListShape, options issuequery.Options, from, order string, args []any) (issueListPage, error) {
+func (r *Repository) readIssueListPage(ctx context.Context, q Request, shape issueListShape, from, order string, args []any) (issueListPage, error) {
 	var err error
 	if !q.API {
 		order += ",issue.created_at DESC"
 	}
-	sql := `SELECT ` + apicontract.IssueRowSQL("issue") + `||` + strings.ReplaceAll(issueAnnotationsSQL("$1", shape.v2), "i.", "issue.") + `||jsonb_build_object('state__group',(SELECT "group" FROM states s WHERE s.id=issue.state_id))` + from + ` ORDER BY ` + order
+	sql := `SELECT ` + issueListProjectionSQL(shape, !q.API) + from + ` ORDER BY ` + order
 	limit, page, offset, total := 0, 0, 0, 0
-	pageInSQL := shape.v2 || !shape.byIDs && (q.API || options.GroupBy == "")
-	if pageInSQL {
+	if !shape.byIDs {
 		if shape.v2 {
 			limit, page, err = v2Window(q)
 			offset = max(0, page) * limit
@@ -348,7 +358,37 @@ func (r *Repository) readIssueListPage(ctx context.Context, q Request, shape iss
 	if err != nil {
 		return issueListPage{}, err
 	}
-	return issueListPage{rows: rows, total: total, limit: limit, page: page, inSQL: pageInSQL}, nil
+	return issueListPage{rows: rows, total: total, limit: limit, page: page}, nil
+}
+
+func issueListProjectionSQL(shape issueListShape, browser bool) string {
+	projection := `(` + apicontract.IssueRowSQL("issue") + `||` + strings.ReplaceAll(issueAnnotationsSQL("$1", shape.v2), "i.", "issue.") + `||jsonb_build_object('state__group',(SELECT "group" FROM states s WHERE s.id=issue.state_id))`
+	if browser && shape.hasDetailProjection() {
+		projection += `||jsonb_build_object('module_ids', ARRAY(SELECT module_id FROM module_issues m WHERE m.issue_id=issue.id AND m.deleted_at IS NULL ORDER BY m.created_at DESC))`
+	}
+	return projection + ")"
+}
+
+func (r *Repository) projectIssueListRows(ctx context.Context, q Request, shape issueListShape, rows []map[string]any) ([]any, error) {
+	if !q.API && (q.Params["include_properties"] == "true" || len(r.propertyGroups) > 0) {
+		if err := r.projectDiscoveryRows(ctx, rows); err != nil {
+			return nil, err
+		}
+	}
+	if !q.API && shape.hasDetailProjection() {
+		if err := r.loadListDetailRelations(ctx, q, rows); err != nil {
+			return nil, err
+		}
+	}
+	results := make([]any, 0, len(rows))
+	for _, row := range rows {
+		value, err := r.projectIssueListRow(ctx, q, shape, row)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, value)
+	}
+	return results, nil
 }
 
 func (r *Repository) projectIssueListRow(ctx context.Context, q Request, shape issueListShape, row map[string]any) (map[string]any, error) {
@@ -368,29 +408,32 @@ func (r *Repository) projectIssueListRow(ctx context.Context, q Request, shape i
 		}
 	}
 	fields := compactFields
-	if shape.byIDs && q.Params["expand"] == "" && q.Params["fields"] == "" {
+	detail := shape.hasDetailProjection()
+	if detail {
+		row["label_ids"] = row["labels"]
+		row["assignee_ids"] = row["assignees"]
+	}
+	if !detail && shape.byIDs && q.Params["expand"] == "" && q.Params["fields"] == "" {
 		fields = append(append([]string{}, compactFields...), "deleted_at")
 	}
-	if !shape.byIDs && !shape.details || shape.user {
+	if shape.projectsStateGroup() {
 		fields = append(append([]string{}, compactFields...), "state__group")
 	}
 	value, projectionErr := projectFields(row, fields)
 	if projectionErr != nil {
 		return nil, projectionErr
 	}
-	if shape.byIDs && (q.Params["expand"] != "" || q.Params["fields"] != "") {
+	if !detail && shape.byIDs && (q.Params["expand"] != "" || q.Params["fields"] != "") {
 		value, err = r.expandedCompact(ctx, row, q, value)
 		if err != nil {
 			return nil, err
 		}
 	}
-	if shape.details || shape.workspace && !shape.user {
-		value, err = r.listDetailProjection(ctx, row, q)
-		if err != nil {
-			return nil, err
-		}
-		if shape.workspace && !shape.user {
-			value["state__group"] = row["state__group"]
+	if detail {
+		for _, field := range []string{"issue_relation", "issue_related"} {
+			if related, expanded := row[field]; expanded {
+				value[field] = related
+			}
 		}
 	}
 	if r.propertyDiscovery != nil && q.Params["include_properties"] == "true" {
@@ -400,29 +443,6 @@ func (r *Repository) projectIssueListRow(ctx context.Context, q Request, shape i
 	r.projectPropertyGroups(row, value)
 	r.projectParentGroup(row, value)
 	return value, nil
-}
-
-func (r *Repository) issueListResponse(ctx context.Context, q Request, shape issueListShape, options issuequery.Options, window issueListPage, results []any) (Result, error) {
-	total, limit, page, rows, pageInSQL := window.total, window.limit, window.page, window.rows, window.inSQL
-	var offset int
-	var err error
-	if shape.byIDs {
-		return Result{200, results}, nil
-	}
-	if pageInSQL {
-		return Result{200, apicontract.Envelope(results, total, limit, page)}, nil
-	}
-	limit, page, offset, err = apicontract.PageWindow(apicontract.Query{Params: q.Params, Present: q.Present})
-	if err != nil {
-		return Result{}, err
-	}
-	if !q.API && options.GroupBy != "" {
-		return r.groupedPage(ctx, q, results, rows, limit, page)
-	}
-	total = len(results)
-	end := min(total, offset+limit)
-	offset = min(offset, total)
-	return Result{200, apicontract.Envelope(results[offset:end], total, limit, page)}, nil
 }
 
 func apiIssueOrderSQL(raw string) string {
@@ -451,25 +471,16 @@ func apiIssueOrderSQL(raw string) string {
 func (r *Repository) expandedCompact(ctx context.Context, row map[string]any, q Request, value map[string]any) (map[string]any, error) {
 	return r.expandAppIssue(ctx, row, q, value)
 }
-func (r *Repository) listDetailProjection(ctx context.Context, row map[string]any, q Request) (map[string]any, error) {
-	value, projectionErr := projectFields(row, compactFields)
-	if projectionErr != nil {
-		return nil, projectionErr
+func (r *Repository) loadListDetailRelations(ctx context.Context, q Request, issues []map[string]any) error {
+	if len(issues) == 0 {
+		return nil
 	}
-	for _, rel := range []struct{ field, table, column string }{{"module_ids", "module_issues", "module_id"}, {"label_ids", "issue_labels", "label_id"}, {"assignee_ids", "issue_assignees", "assignee_id"}} {
-		query := `SELECT jsonb_build_object('id',` + rel.column + `) FROM ` + rel.table + ` WHERE issue_id=$1 AND deleted_at IS NULL ORDER BY created_at DESC`
-		if rel.field == "label_ids" {
-			query = `SELECT jsonb_build_object('id',label.label_id) FROM issue_labels label JOIN issues issue ON issue.id=label.issue_id WHERE issue.id=$1 AND ` + issuequery.LiveIssueLabelPredicate("issue", "label") + ` ORDER BY label.created_at DESC`
-		}
-		items, err := r.rows(ctx, query, row["id"])
-		if err != nil {
-			return nil, err
-		}
-		ids := []any{}
-		for _, item := range items {
-			ids = append(ids, item["id"])
-		}
-		value[rel.field] = ids
+	ids := make([]string, 0, len(issues))
+	byID := make(map[string]map[string]any, len(issues))
+	for _, issue := range issues {
+		id := stringValue(issue["id"])
+		ids = append(ids, id)
+		byID[id] = issue
 	}
 	for _, field := range []string{"issue_relation", "issue_related"} {
 		if !strings.Contains(","+q.Params["expand"]+",", ","+field+",") {
@@ -479,22 +490,25 @@ func (r *Repository) listDetailProjection(ctx context.Context, row map[string]an
 		if field == "issue_related" {
 			side, anchor = anchor, side
 		}
-		rows, err := r.rows(ctx, `SELECT to_jsonb(i)||jsonb_build_object('relation_type',rel.relation_type) FROM issue_relations rel JOIN issues i ON i.id=rel.`+side+` WHERE rel.`+anchor+`=$1 AND rel.deleted_at IS NULL ORDER BY rel.created_at DESC`, row["id"])
+		rows, err := r.rows(ctx, `SELECT to_jsonb(i)||jsonb_build_object('relation_type',rel.relation_type,'anchor',rel.`+anchor+`) FROM issue_relations rel JOIN issues i ON i.id=rel.`+side+` WHERE rel.`+anchor+`=ANY($1::uuid[]) AND rel.deleted_at IS NULL ORDER BY rel.created_at DESC`, ids)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		items := []any{}
-		for _, item := range rows {
-			projected, projectionErr := projectFields(item, strings.Fields("id project_id sequence_id name relation_type state_id priority created_by created_at updated_at updated_by"))
-			if projectionErr != nil {
-				return nil, projectionErr
+		for _, issue := range issues {
+			issue[field] = []any{}
+		}
+		for _, row := range rows {
+			projected, err := projectFields(row, strings.Fields("id project_id sequence_id name relation_type state_id priority created_by created_at updated_at updated_by"))
+			if err != nil {
+				return err
 			}
-			items = append(items, projected)
+			issue := byID[stringValue(row["anchor"])]
+			issue[field] = append(issue[field].([]any), projected)
 		}
-		value[field] = items
 	}
-	return value, nil
+	return nil
 }
+
 func (r *Repository) v2Page(q Request, rows []map[string]any) (Result, error) {
 	limit, page, err := v2Window(q)
 	if err != nil {

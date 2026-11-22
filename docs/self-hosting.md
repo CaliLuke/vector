@@ -110,6 +110,22 @@ In `/god-mode/general/`, the Telemetry section reports these independent setting
 | Usage metrics    | `OTLP_ENDPOINT` set, valid `OTLP_METRICS_PROTOCOL`, and the instance's usage-metrics setting enabled |
 | Analytics events | A separately configured `POSTHOG_HOST` and `POSTHOG_API_KEY`                                         |
 
+The durable work-item outbox uses the standard OTLP endpoint above for
+operational metrics, independent of the usage-metrics setting. It emits
+`vector.work_item_effect.admissions` with bounded `effect.kind` and
+`effect.outcome` values, and `vector.work_item_effect.oldest_pending_age` in
+seconds. Use increasing `retry` outcomes with rising pending age to identify an
+admission outage. A `quarantined` outcome means the worker could not decode the
+persisted payload and suspended automatic admission for that effect.
+
+An operator with database access can inspect the quarantined rows in
+`work_item_effects` by `quarantined_at` and check `last_error` locally. After
+correcting the payload or deploying a compatible worker, run
+`/go-bootstrap replay-work-item-effect <effect-id>` with the application's
+`DATABASE_URL`. This queues the same ID for admission and retains its attempt
+history. Check `admitted_at` and then the destination workflow's status to
+verify execution.
+
 The page reports configuration, not delivery health. Enabled means an exporter is configured;
 it does not confirm that the collector is reachable or accepting data. No destination configured
 means that exporter's endpoint is absent, even if an external collector is already forwarding stdout.

@@ -376,6 +376,14 @@ await test("verified project preferences authorize display during the render bef
   await render(context);
   assert.deepEqual(renders[0], { canDisplay: true, canFetch: false });
   assert.equal(last.request.isReadCurrent(), true);
+  const preferenceQuery = fixture.client.getQueryCache().find({ queryKey: propertiesKey, exact: true });
+  preferenceQuery.setState({ status: "error", error: { status: 503 } });
+  assert.equal(last.isPresentationCurrent(), true, "verified preferences survive a transient background refresh");
+  assert.equal(last.request.isReadCurrent(), true);
+  preferenceQuery.setState({ status: "error", error: { status: 403 } });
+  assert.equal(last.isPresentationCurrent(), false, "a definitive denial blocks display even with cached data");
+  assert.equal(last.request.isReadCurrent(), false);
+  fixture.client.setQueryData(propertiesKey, { rich_filters: {} });
   await render({ ...context, isPending: true });
   assert.equal(last.isPresentationCurrent(), false);
   await render({ ...context, requestInput: { ...input, projectId: "another-project" } });

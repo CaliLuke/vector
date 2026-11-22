@@ -161,16 +161,28 @@ func (r *Repository) createScoped(ctx context.Context, user uuid.UUID, slug stri
 	return result(b, err)
 }
 
-func (r *Repository) PatchProject(ctx context.Context, user uuid.UUID, slug string, id uuid.UUID, m map[string]json.RawMessage) (json.RawMessage, error) {
-	return r.patchScoped(ctx, user, slug, id, uuid.Nil(), m, "project")
+type ProjectPatch struct {
+	Fields           map[string]json.RawMessage
+	Merge            bool
+	NavigationAction *NavigationAction
+}
+
+type NavigationAction struct {
+	Hide   bool
+	TabKey string
+}
+
+func (r *Repository) PatchProject(ctx context.Context, user uuid.UUID, slug string, id uuid.UUID, patch ProjectPatch) (json.RawMessage, error) {
+	return r.patchScoped(ctx, user, slug, id, uuid.Nil(), patch.Fields, "project", patch)
 }
 func (r *Repository) PatchCycle(ctx context.Context, user uuid.UUID, slug string, project, cycle uuid.UUID, m map[string]json.RawMessage) (json.RawMessage, error) {
-	return r.patchScoped(ctx, user, slug, project, cycle, m, "cycle")
+	return r.patchScoped(ctx, user, slug, project, cycle, m, "cycle", ProjectPatch{})
 }
 func (r *Repository) PatchModule(ctx context.Context, user uuid.UUID, slug string, project, module uuid.UUID, m map[string]json.RawMessage) (json.RawMessage, error) {
-	return r.patchScoped(ctx, user, slug, project, module, m, "module")
+	return r.patchScoped(ctx, user, slug, project, module, m, "module", ProjectPatch{})
 }
-func (r *Repository) patchScoped(ctx context.Context, user uuid.UUID, slug string, project, object uuid.UUID, m map[string]json.RawMessage, kind string) (json.RawMessage, error) {
+
+func (r *Repository) patchScoped(ctx context.Context, user uuid.UUID, slug string, project, object uuid.UUID, m map[string]json.RawMessage, kind string, patch ProjectPatch) (json.RawMessage, error) {
 	table, body, join := "project_user_properties", projectJSON, ""
 	if kind == "cycle" {
 		table, body = "cycle_user_properties", cycleJSON
@@ -195,15 +207,66 @@ func (r *Repository) patchScoped(ctx context.Context, user uuid.UUID, slug strin
 	}
 	for _, field := range fields {
 		v := m[field.name]
-		sets = append(sets, fmt.Sprintf("%s=CASE WHEN $%d THEN $%d::%s ELSE p.%s END", field.name, next, next+1, field.cast, field.name))
+		base := "p." + field.name
+		update := fmt.Sprintf("$%d::%s", next+1, field.cast)
+		if patch.Merge {
+			update = projectFieldUpdate(field.name, base, update)
+		}
+		update = fmt.Sprintf("CASE WHEN $%d THEN %s ELSE %s END", next, update, base)
 		vals = append(vals, v != nil, v)
 		next += 2
+		if field.name == "preferences" && patch.NavigationAction != nil {
+			update = navigationActionUpdate(update, next, next+1)
+			vals = append(vals, patch.NavigationAction.Hide, patch.NavigationAction.TabKey)
+			next += 2
+		}
+		sets = append(sets, field.name+"="+update)
 	}
 	set := strings.Join(sets, ",")
 	q := `UPDATE ` + table + ` p SET ` + set + `,updated_at=NOW(),updated_by_id=$2 FROM workspaces w WHERE w.id=p.workspace_id AND w.slug=$1 AND p.user_id=$2 AND p.project_id=$3 AND p.deleted_at IS NULL` + join + ` RETURNING ` + body
 	var b []byte
 	err := r.db.QueryRow(ctx, q, vals...).Scan(&b)
 	return result(b, err)
+}
+
+func jsonObject(expression string) string {
+	return fmt.Sprintf("(CASE WHEN jsonb_typeof(%s)='object' THEN %s ELSE '{}'::jsonb END)", expression, expression)
+}
+
+// Evaluate every merge against the target row inside UPDATE. Concurrent
+// updates preserve disjoint members and resolve a shared member in commit order.
+func projectFieldUpdate(field, base, delta string) string {
+	var nestedMembers []string
+	switch field {
+	case "preferences":
+		nestedMembers = []string{"pages", "navigation"}
+	case "display_filters":
+		nestedMembers = []string{"calendar"}
+	case "filters", "display_properties":
+	default:
+		return delta
+	}
+	merged := jsonObject(base) + " || " + delta
+	for _, member := range nestedMembers {
+		path := fmt.Sprintf("'%s'", member)
+		from := base + "->" + path
+		change := delta + "->" + path
+		merged += fmt.Sprintf(" || (CASE WHEN jsonb_typeof(%s)='object' THEN jsonb_build_object(%s, %s || (%s)) ELSE '{}'::jsonb END)", change, path, jsonObject(from), change)
+	}
+	return fmt.Sprintf("(CASE WHEN jsonb_typeof(%s)='object' THEN %s ELSE %s END)", delta, merged, delta)
+}
+
+func navigationActionUpdate(preferences string, hideParameter, tabParameter int) string {
+	return fmt.Sprintf(`(
+		SELECT jsonb_set(document, '{navigation}', jsonb_set(navigation, '{hide_in_more_menu}',
+			CASE WHEN NOT $%[2]d::boolean THEN tabs - $%[3]d::text
+				WHEN tabs ? $%[3]d::text THEN tabs
+				ELSE tabs || jsonb_build_array($%[3]d::text) END))
+		FROM (SELECT %[1]s AS document) AS properties
+		CROSS JOIN LATERAL (SELECT %[4]s AS navigation) AS menu
+		CROSS JOIN LATERAL (SELECT CASE WHEN jsonb_typeof(navigation->'hide_in_more_menu')='array'
+			THEN navigation->'hide_in_more_menu' ELSE '[]'::jsonb END AS tabs) AS hidden
+	)`, jsonObject(preferences), hideParameter, tabParameter, jsonObject("document->'navigation'"))
 }
 
 // CheckScopedPatch looks up an existing property row without GET's creation side effect.

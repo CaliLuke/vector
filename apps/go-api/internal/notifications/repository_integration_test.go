@@ -119,7 +119,7 @@ func TestNotificationRepositoryPostgresScopeAndSelection(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := notificationTitles(t, result); !reflect.DeepEqual(got, []string{"future snooze", "newer", "older"}) {
+	if got := notificationTitles(t, result); !reflect.DeepEqual(got, []string{"newer", "older"}) {
 		t.Fatalf("default list=%v", got)
 	}
 	mentions, err := r.List(ctx, notificationPrincipal, "test", url.Values{"mentioned": {"false"}})

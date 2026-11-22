@@ -64,8 +64,7 @@ export const ProjectAuthWrapper = function ProjectAuthWrapper(props: IProjectAut
     canLoadProject,
     projectDetails.project
   );
-  const canWriteProjectPreferences =
-    hasPermissionToCurrentProject && projectPropertiesQuery.data !== undefined && !projectPropertiesQuery.isError;
+  const canWriteProjectPreferences = projectPropertiesQuery.data !== undefined;
   const { mutateAsync: patchProjectProperties } = usePatchProjectUserProperties(
     workspaceSlug,
     projectId,
@@ -96,14 +95,14 @@ export const ProjectAuthWrapper = function ProjectAuthWrapper(props: IProjectAut
           )
         : undefined,
       isPending: projectPropertiesQuery.isPending,
-      isError: projectPropertiesQuery.isError,
+      isError: projectPropertiesQuery.isBlockingError,
       refetch: projectPropertiesQuery.refetch,
       save: saveProjectPreferences,
     }),
     [
       projectId,
       projectPropertiesQuery.data,
-      projectPropertiesQuery.isError,
+      projectPropertiesQuery.isBlockingError,
       projectPropertiesQuery.isPending,
       projectPropertiesQuery.refetch,
       projectIdentifier,
@@ -175,7 +174,11 @@ export const ProjectAuthWrapper = function ProjectAuthWrapper(props: IProjectAut
     <>
       {projectPropertiesQuery.isError && (
         <div role="alert" className="flex items-center gap-3">
-          <p>Unable to load project preferences.</p>
+          <p>
+            {projectPropertiesQuery.isRefreshError
+              ? "Unable to refresh project preferences."
+              : "Unable to load project preferences."}
+          </p>
           <Button disabled={projectPropertiesQuery.isFetching} onClick={() => void projectPropertiesQuery.refetch()}>
             Retry
           </Button>

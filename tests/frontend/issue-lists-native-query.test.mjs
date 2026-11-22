@@ -16,7 +16,7 @@ const { IssueArchiveService } = await fromRoot("apps/web/core/services/issue/iss
 const { UserService } = await fromRoot("apps/web/core/services/user.service.ts");
 const { identityKeys } = await fromRoot("apps/web/core/queries/identity.ts");
 const { permissionKeys } = await fromRoot("apps/web/core/queries/permissions.ts");
-const { issueListGroupOptions, issueListKeys, issueListOptions } =
+const { issueListGroupOptions, issueListGroupPathKey, issueListKeys, issueListOptions } =
   await import("../../apps/web/core/queries/issue-lists.ts");
 const { currentIssueListMutationOwner, issueListMutation, patchIssueMutation } =
   await import("../../apps/web/core/queries/issue-list-mutations.ts");
@@ -679,4 +679,89 @@ await test("HTTP 204 PATCH is accepted and invalidates the list without inventin
 await test("an empty HTTP 200 PATCH is rejected rather than mistaken for the no-content contract", async (t) => {
   t.mock.method(IssueService.prototype, "patch", async () => ({ status: 200, data: "" }));
   await assert.rejects(new IssueService().patchIssue("acme", "p1", "i1", { name: "Title" }), /response was empty/);
+});
+
+await test("a saved project view rejects list results from outside its verified project", async (t) => {
+  const client = queryClient();
+  t.after(() => client.clear());
+  const { request } = read();
+  const listRead = read({
+    request: {
+      family: "project-view",
+      input: {
+        ...request.input,
+        accountId: scope.accountId,
+        viewId: "view-1",
+        isReadScopeCurrent: () => true,
+      },
+      isReadCurrent: () => true,
+    },
+  });
+  t.mock.method(IssueService.prototype, "getIssues", async () => response([issue("outside", "p2")]));
+  const options = issueListOptions(listRead);
+  await assert.rejects(client.fetchQuery(options), /did not match the authorized project scope/);
+  assert.equal(client.getQueryData(options.queryKey), undefined);
+});
+
+await test("accepted writes update prepared page data without clearing a cached access denial", async (t) => {
+  const client = queryClient();
+  t.after(() => client.clear());
+  const listRead = read({ pagination: { canGroup: false, perPageCount: 1 } });
+  const key = issueListKeys.list(listRead);
+  const group = {};
+  const groupKey = issueListGroupPathKey(group);
+  const first = response([issue("first")]);
+  const second = response([issue("second")]);
+  const ready = {
+    generation: "current",
+    response: first,
+    pagesByGroup: { [groupKey]: { pages: [first, second], pageParams: ["initial", "1:1:0"] } },
+  };
+  client.setQueryData(key, ready);
+  const childOptions = issueListGroupOptions(listRead, ready, group);
+  client.getQueryCache().build(client, childOptions);
+  await assert.rejects(
+    client.fetchInfiniteQuery({
+      ...childOptions,
+      staleTime: 0,
+      retry: false,
+      queryFn: () => Promise.reject({ status: 403 }),
+    }),
+    (error) => error.status === 403
+  );
+  const saved = { ...issue("second"), name: "Accepted title" };
+  t.mock.method(IssueService.prototype, "patchIssue", async () => saved);
+  const owner = currentIssueListMutationOwner(client, "acme", "p1", ContractEnums.EIssueServiceType.ISSUES, () => true);
+
+  await patchIssueMutation(client, owner, "second", { name: saved.name });
+
+  assert.equal(client.getQueryData(key).pagesByGroup[groupKey].pages[1].results[0].name, saved.name);
+  assert.equal(client.getQueryState(childOptions.queryKey).error.status, 403);
+});
+
+await test("an accepted write updates existing grouped rows and their healthy cached pages", async (t) => {
+  const client = queryClient();
+  t.after(() => client.clear());
+  const listRead = read();
+  const key = issueListKeys.list(listRead);
+  const saved = { ...issue("one"), name: "After update" };
+  const fullRead = {
+    generation: "accepted",
+    response: response({
+      flat: { results: [issue("one")], total_results: 1 },
+      nested: { results: { sub: { results: [issue("one")], total_results: 1 } }, total_results: 1 },
+    }),
+  };
+  client.setQueryData(key, fullRead);
+  const child = issueListGroupOptions(listRead, fullRead, { groupId: "flat" });
+  client.getQueryCache().build(client, child);
+  const owner = currentIssueListMutationOwner(client, "acme", "p1", ContractEnums.EIssueServiceType.ISSUES, () => true);
+  t.mock.method(IssueService.prototype, "patchIssue", async () => saved);
+
+  await patchIssueMutation(client, owner, "one", { name: saved.name });
+
+  const list = client.getQueryData(key).response.results;
+  assert.equal(list.flat.results[0].name, saved.name);
+  assert.equal(list.nested.results.sub.results[0].name, saved.name);
+  assert.equal(client.getQueryData(child.queryKey).pages[0].results.flat.results[0].name, saved.name);
 });

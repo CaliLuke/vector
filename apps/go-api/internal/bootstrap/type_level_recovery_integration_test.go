@@ -3,11 +3,15 @@
 package bootstrap_test
 
 import (
+	_ "embed"
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/bootstrap"
 	"github.com/stretchr/testify/require"
 )
+
+//go:embed schema_migrations/000050_work_item_effect_quarantine.down.sql
+var workItemEffectQuarantineDown string
 
 // The guarded journal reset matches the documented recovery procedure. A
 // successful migration must never be rewound through this recovery path.
@@ -18,6 +22,7 @@ const retryTypeLevelMigration = `UPDATE public.plane_schema_migrations SET versi
 func TestTypeLevelUpgradeFailurePreservesDataAndSupportsReviewedRetry(t *testing.T) {
 	f := newMilestoneSchemaFixture(t)
 	// Restore the older schema before rewinding its migration journal.
+	f.exec(t, workItemEffectQuarantineDown)
 	f.exec(t, accountEmailDown)
 	h := seedNumericHierarchy(t, f)
 	f.exec(t, validTypeLevelsDown)
@@ -46,6 +51,7 @@ func TestTypeLevelUpgradeFailurePreservesDataAndSupportsReviewedRetry(t *testing
 	require.Equal(t, reviewed.nativeRevision+1, after.nativeRevision)
 	require.Equal(t, reviewed.apiRevision+3, after.apiRevision)
 	// A lost journal acknowledgement can leave a completed migration dirty.
+	f.exec(t, workItemEffectQuarantineDown)
 	f.exec(t, accountEmailDown)
 	f.exec(t, `UPDATE public.plane_schema_migrations SET version=46,dirty=true`)
 	result, err = f.db.Exec(f.ctx, retryTypeLevelMigration)

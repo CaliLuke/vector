@@ -15,10 +15,12 @@ type workItemEffectStore interface {
 // The database outbox owns pending work across process loss. This lifecycle-owned
 // poller only admits it to existing durable workflows; no request owns its lifetime.
 type workItemEffectWorker struct {
-	store  workItemEffectStore
-	mu     sync.Mutex
-	cancel context.CancelFunc
-	done   chan struct{}
+	store             workItemEffectStore
+	startTelemetry    func(context.Context) (func(context.Context) error, error)
+	shutdownTelemetry func(context.Context) error
+	mu                sync.Mutex
+	cancel            context.CancelFunc
+	done              chan struct{}
 }
 
 func (w *workItemEffectWorker) Start(ctx context.Context) error {
@@ -26,6 +28,13 @@ func (w *workItemEffectWorker) Start(ctx context.Context) error {
 	defer w.mu.Unlock()
 	if w.cancel != nil || w.store == nil {
 		return errors.New("work item effect worker is unconfigured or already started")
+	}
+	if w.startTelemetry != nil {
+		shutdown, err := w.startTelemetry(ctx)
+		if err != nil {
+			slog.ErrorContext(ctx, "Work item effect telemetry setup failed", "error", err)
+		}
+		w.shutdownTelemetry = shutdown
 	}
 	ctx, w.cancel = context.WithCancel(ctx)
 	w.done = make(chan struct{})
@@ -67,6 +76,13 @@ func (w *workItemEffectWorker) Shutdown(ctx context.Context) error {
 	cancel()
 	select {
 	case <-done:
+		w.mu.Lock()
+		shutdown := w.shutdownTelemetry
+		w.shutdownTelemetry = nil
+		w.mu.Unlock()
+		if shutdown != nil {
+			return shutdown(ctx)
+		}
 		return nil
 	case <-ctx.Done():
 		return ctx.Err()

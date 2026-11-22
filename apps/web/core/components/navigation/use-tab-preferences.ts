@@ -37,7 +37,7 @@ export const useTabPreferences = (workspaceSlug: string, projectId: string): TTa
     canAccess,
     fetchEnabled: false,
   });
-  const canWrite = canAccess && propertiesQuery.data !== undefined && !propertiesQuery.isError;
+  const canWrite = propertiesQuery.data !== undefined;
   const { mutateAsync } = usePatchProjectUserProperties(workspaceSlug, projectId, canWrite);
   const navigationPreferences = propertiesQuery.data?.preferences?.navigation;
   const defaultTab = navigationPreferences?.default_tab || DEFAULT_TAB_KEY;

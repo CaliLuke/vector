@@ -63,7 +63,7 @@ func TestScopedPropertiesPatchMergesOnlyPresentFields(t *testing.T) {
 	r, constructorErr := NewRepository(d)
 	require.NoError(t, constructorErr)
 	id := uuid.MustParse("00000000-0000-4000-8000-000000000001")
-	got, err := r.PatchProject(context.Background(), uuid.Nil(), "demo", id, map[string]json.RawMessage{"filters": json.RawMessage(`{"state":"started"}`)})
+	got, err := r.PatchProject(context.Background(), uuid.Nil(), "demo", id, ProjectPatch{Fields: map[string]json.RawMessage{"filters": json.RawMessage(`{"state":"started"}`)}})
 	if err != nil || len(got) == 0 {
 		t.Fatalf("patch=%s err=%v", got, err)
 	}
@@ -109,10 +109,10 @@ func TestProjectPatchSupportsSortOrderAndPreferences(t *testing.T) {
 	d := &db{rows: []pgx.Row{jsonRow(`{"sort_order":7.5,"preferences":{"pages":{"block_display":false}}}`)}}
 	r, constructorErr := NewRepository(d)
 	require.NoError(t, constructorErr)
-	_, err := r.PatchProject(context.Background(), uuid.Nil(), "demo", uuid.Nil(), map[string]json.RawMessage{
+	_, err := r.PatchProject(context.Background(), uuid.Nil(), "demo", uuid.Nil(), ProjectPatch{Fields: map[string]json.RawMessage{
 		"sort_order":  json.RawMessage(`7.5`),
 		"preferences": json.RawMessage(`{"pages":{"block_display":false}}`),
-	})
+	}})
 	if err != nil {
 		t.Fatalf("patch project: %v", err)
 	}

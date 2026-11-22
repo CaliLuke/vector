@@ -127,64 +127,10 @@ func last(q url.Values, key, fallback string) string {
 	}
 	return v[len(v)-1]
 }
-func stateFilter(snoozed, archived bool) string {
-	result := "n.snoozed_till IS NOT NULL"
-	if !snoozed {
-		result = "(n.snoozed_till IS NULL OR n.snoozed_till>=CURRENT_TIMESTAMP)"
-	}
-	if archived {
-		return result + " AND n.archived_at IS NOT NULL"
-	}
-	return result + " AND n.archived_at IS NULL"
-}
-
-const assigned = `n.entity_identifier IN(SELECT ia.issue_id FROM issue_assignees ia WHERE ia.deleted_at IS NULL AND ia.workspace_id=n.workspace_id AND ia.assignee_id=$1)`
-const subscribed = `n.entity_identifier IN(SELECT s.issue_id FROM issue_subscribers s WHERE s.deleted_at IS NULL AND s.workspace_id=n.workspace_id AND s.subscriber_id=$1 AND NOT EXISTS(SELECT 1 FROM issues i WHERE i.deleted_at IS NULL AND i.id=s.issue_id AND i.created_by_id=$1) AND NOT EXISTS(SELECT 1 FROM issue_assignees ia WHERE ia.deleted_at IS NULL AND ia.id=s.issue_id AND ia.assignee_id=$1))`
-const created = `n.entity_identifier IN(SELECT i.id FROM issues i WHERE i.deleted_at IS NULL AND i.workspace_id=n.workspace_id AND i.created_by_id=$1)`
-
-func (r *Repository) isGuest(ctx context.Context, p Principal, slug string) (bool, error) {
-	var yes bool
-	err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM workspace_members wm JOIN workspaces w ON w.id=wm.workspace_id WHERE w.slug=$2 AND wm.member_id=$1 AND wm.deleted_at IS NULL AND wm.is_active AND wm.role<15)`, p.UserID, slug).Scan(&yes)
-	return yes, err
-}
 func (r *Repository) List(ctx context.Context, p Principal, slug string, q url.Values) (any, error) {
-	snoozed, archived := last(q, "snoozed", "false"), last(q, "archived", "false")
-	if (snoozed != "true" && snoozed != "false") || (archived != "true" && archived != "false") {
-		return nil, Failure(400, "error", "The required key does not exist.")
-	}
-	predicates := []string{scope, "n.entity_name='issue'", stateFilter(snoozed == "true", archived == "true")}
-	switch last(q, "read", "") {
-	case "true":
-		predicates = append(predicates, "n.read_at IS NOT NULL")
-	case "false":
-		predicates = append(predicates, "n.read_at IS NULL")
-	}
-	mentioned := "UPPER(n.sender) LIKE '%MENTIONED%'"
-	if last(q, "mentioned", "") == "" {
-		mentioned = "NOT (" + mentioned + ")"
-	}
-	predicates = append(predicates, mentioned)
-	types := strings.Split(last(q, "type", "all"), ",")
-	typePredicates := []string{}
-	if slices.Contains(types, "subscribed") {
-		typePredicates = append(typePredicates, subscribed)
-	}
-	if slices.Contains(types, "assigned") {
-		typePredicates = append(typePredicates, assigned)
-	}
-	if slices.Contains(types, "created") {
-		guest, err := r.isGuest(ctx, p, slug)
-		if err != nil {
-			return nil, err
-		}
-		if guest {
-			predicates = append(predicates, "FALSE")
-		} else {
-			typePredicates = append(typePredicates, created)
-		}
-	}
-	if len(typePredicates) > 0 {
-		predicates = append(predicates, "("+strings.Join(typePredicates, " OR ")+")")
+	selection, err := listSelection(q)
+	if err != nil {
+		return nil, err
 	}
 	page, err := parsePage(q)
 	if err != nil {
@@ -203,7 +149,7 @@ func (r *Repository) List(ctx context.Context, p Principal, slug string, q url.V
 		}
 		order = "n." + column + " " + direction + " NULLS LAST,n.created_at DESC"
 	}
-	where := strings.Join(predicates, " AND ")
+	where := selection.where()
 	args := []any{p.UserID, slug}
 	query := `SELECT ` + notificationJSON + ` || ` + annotationJSON + joins + ` WHERE ` + where + ` ORDER BY ` + order
 	var total int64

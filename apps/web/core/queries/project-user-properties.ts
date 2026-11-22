@@ -5,7 +5,7 @@
  */
 
 import { mutationOptions, queryOptions, skipToken } from "@tanstack/react-query";
-import type { QueryClient } from "@tanstack/react-query";
+import type { QueryClient, QueryStatus } from "@tanstack/react-query";
 import type { IProjectUserPropertiesResponse } from "@plane/types";
 import {
   captureIdentityScope,
@@ -14,7 +14,13 @@ import {
   isIdentityScopeVerified,
 } from "@/queries/identity";
 import { ProjectService } from "@/services/project";
-import { ProjectAccessReadError, projectAccessReadRetry } from "./project-access-diagnostics";
+import type { ProjectUserPropertiesFields } from "@/services/project";
+import {
+  ProjectAccessReadError,
+  isDefinitiveProjectAccessDenial,
+  isTransientProjectAccessError,
+  projectAccessReadRetry,
+} from "./project-access-diagnostics";
 
 const service = new ProjectService();
 
@@ -29,18 +35,8 @@ export type ProjectUserPropertiesQueryAccess = {
   fetchEnabled: boolean;
 };
 
-type ProjectPreferencesPatch = {
-  pages?: Partial<IProjectUserPropertiesResponse["preferences"]["pages"]>;
-  navigation?: Partial<IProjectUserPropertiesResponse["preferences"]["navigation"]>;
-};
-
-export type ProjectUserPropertiesPatch = {
-  preferences?: ProjectPreferencesPatch;
+export type ProjectUserPropertiesPatch = ProjectUserPropertiesFields & {
   navigationAction?: { type: "hide-tab" | "show-tab"; tabKey: string };
-  rich_filters?: IProjectUserPropertiesResponse["rich_filters"];
-  display_filters?: Partial<IProjectUserPropertiesResponse["display_filters"]>;
-  display_properties?: Partial<IProjectUserPropertiesResponse["display_properties"]>;
-  sort_order?: IProjectUserPropertiesResponse["sort_order"];
 };
 
 export const projectUserPropertiesKeys = {
@@ -52,6 +48,15 @@ export const projectUserPropertiesKeys = {
 
 function findExactQuery(client: QueryClient, queryKey: readonly unknown[]) {
   return client.getQueryCache().find({ queryKey, exact: true });
+}
+
+export function projectPreferencesDataAvailable(
+  state: { data: unknown; status: QueryStatus; error: unknown } | undefined
+) {
+  return (
+    state?.data !== undefined &&
+    (state.status === "success" || (state.status === "error" && isTransientProjectAccessError(state.error)))
+  );
 }
 
 function isCurrentIdentity(
@@ -96,7 +101,16 @@ export function projectUserPropertiesOptions(
                 "scope_changed",
                 "The project preferences scope changed before loading."
               );
-            const properties = await service.getProjectUserProperties(workspaceSlug, projectId, signal);
+            let properties: IProjectUserPropertiesResponse;
+            try {
+              properties = await service.getProjectUserProperties(workspaceSlug, projectId, signal);
+            } catch (error) {
+              // A subsequent transient retry must never resurrect data after a definitive denial.
+              if (query && isCurrent() && !signal.aborted && isDefinitiveProjectAccessDenial(error)) {
+                query.setState({ data: undefined });
+              }
+              throw error;
+            }
             if (!isCurrent())
               throw new ProjectAccessReadError("scope_changed", "The project preferences scope changed while loading.");
             return properties;
@@ -159,22 +173,6 @@ export function applyProjectUserPropertiesPatches(
   return result;
 }
 
-function payloadForPatch(
-  base: IProjectUserPropertiesResponse,
-  currentPatch: ProjectUserPropertiesPatch
-): Partial<IProjectUserPropertiesResponse> {
-  const composed = applyProjectUserPropertiesPatches(base, [currentPatch]);
-  return {
-    ...(currentPatch.preferences !== undefined || currentPatch.navigationAction !== undefined
-      ? { preferences: composed.preferences }
-      : {}),
-    ...(currentPatch.rich_filters !== undefined ? { rich_filters: composed.rich_filters } : {}),
-    ...(currentPatch.display_filters !== undefined ? { display_filters: composed.display_filters } : {}),
-    ...(currentPatch.display_properties !== undefined ? { display_properties: composed.display_properties } : {}),
-    ...(currentPatch.sort_order !== undefined ? { sort_order: composed.sort_order } : {}),
-  };
-}
-
 export function patchProjectUserPropertiesOptions(
   client: QueryClient,
   scope: ProjectUserPropertiesScope,
@@ -209,9 +207,16 @@ export function patchProjectUserPropertiesOptions(
         findExactQuery(client, queryKey) !== capturedQuery
       )
         throw new Error("The account or project preferences scope changed.");
-      const base = client.getQueryData<IProjectUserPropertiesResponse>(queryKey);
-      if (!base) throw new Error("Project preferences must load before they can be updated.");
-      return service.updateProjectUserProperties(workspaceSlug, projectId, payloadForPatch(base, patch));
+      if (!projectPreferencesDataAvailable(capturedQuery.state))
+        throw new Error("Project preferences must load before they can be updated.");
+      const { navigationAction, ...fields } = patch;
+      return service.updateProjectUserProperties(workspaceSlug, projectId, {
+        ...fields,
+        merge: true,
+        ...(navigationAction
+          ? { navigation_action: { type: navigationAction.type, tab_key: navigationAction.tabKey } }
+          : {}),
+      });
     },
     onSuccess: async (saved, _patch, captured) => {
       const isCurrent = () =>

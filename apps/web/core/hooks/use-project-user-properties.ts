@@ -12,6 +12,7 @@ import type { IProjectUserPropertiesResponse } from "@plane/types";
 import {
   applyProjectUserPropertiesPatches,
   patchProjectUserPropertiesOptions,
+  projectPreferencesDataAvailable,
   projectUserPropertiesKeys,
   projectUserPropertiesOptions,
 } from "../queries/project-user-properties";
@@ -20,7 +21,7 @@ import type {
   ProjectUserPropertiesQueryAccess,
   ProjectUserPropertiesScope,
 } from "@/queries/project-user-properties";
-import { useCurrentUserId } from "@/hooks/use-current-user";
+import { useCurrentUser, useCurrentUserId } from "@/hooks/use-current-user";
 import { useIdentityGeneration } from "@/hooks/use-identity-generation";
 
 type ProjectPropertiesMutation = Mutation<IProjectUserPropertiesResponse, DefaultError, ProjectUserPropertiesPatch>;
@@ -37,10 +38,12 @@ export function useProjectUserProperties(
   access: ProjectUserPropertiesQueryAccess
 ) {
   const client = useQueryClient();
-  const accountId = useCurrentUserId();
+  const identity = useCurrentUser();
+  const accountId = identity.data?.id;
   const generation = useIdentityGeneration(client);
   const scope: ProjectUserPropertiesScope = { accountId, workspaceSlug, projectId };
   const query = useQuery(projectUserPropertiesOptions(client, scope, access));
+  const canRead = access.canAccess && identity.isSuccess && projectPreferencesDataAvailable(query);
   const mutationKey = projectUserPropertiesKeys.patch(scope, generation);
   const pending = useMutationState<PendingPatch, ProjectPropertiesMutation>({
     filters: { mutationKey, exact: true, status: "pending" },
@@ -52,7 +55,7 @@ export function useProjectUserProperties(
   });
   const data = useMemo(
     () =>
-      access.canAccess && query.data
+      canRead && query.data
         ? applyProjectUserPropertiesPatches(
             query.data,
             sortBy(pending, [(mutation) => mutation.submittedAt, (mutation) => mutation.mutationId]).map(
@@ -60,10 +63,10 @@ export function useProjectUserProperties(
             )
           )
         : undefined,
-    [access.canAccess, pending, query.data]
+    [canRead, pending, query.data]
   );
 
-  return { ...query, data };
+  return { ...query, data, isBlockingError: query.isError && !canRead, isRefreshError: query.isError && canRead };
 }
 
 export function usePatchProjectUserProperties(

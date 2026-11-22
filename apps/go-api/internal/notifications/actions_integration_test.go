@@ -5,8 +5,11 @@ package notifications
 import (
 	"context"
 	"errors"
+	"net/url"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 type notificationDeletionFailure struct {
@@ -53,45 +56,62 @@ func TestNotificationActionPublicationFailurePreservesSave(t *testing.T) {
 	}
 }
 
-func TestNotificationMarkAllReadUsesSourceFilters(t *testing.T) {
+func TestNotificationMarkAllReadMatchesPersistedListSelection(t *testing.T) {
 	tx := notificationTestDB(t)
-	now := time.Now().UTC()
+	for i, title := range []string{
+		"assigned mention", "subscribed mention", "assigned inbox", "subscribed inbox",
+		"created subscription", "other entity", "future snooze", "past snooze", "archived",
+		"deleted", "other workspace", "other recipient", "unrelated", "already read",
+		"archived future snooze",
+	} {
+		insertNotification(t, tx, 21+i, title)
+	}
 	execNotificationSQL(t, tx, `
- INSERT INTO notifications(id,workspace_id,receiver_id,entity_identifier,title,snoozed_till,archived_at)
- VALUES
-  ($1,$2,$3,$4,'future snooze',$5,NULL),
-  ($6,$2,$3,$7,'no snooze',NULL,NULL),
-  ($8,$2,$3,$9,'past snooze',$10,NULL),
-  ($11,$2,$3,$12,'archived',NULL,$13)`,
-		notificationID(21), notificationID(1), notificationID(3), notificationID(101), now.Add(time.Hour),
-		notificationID(22), notificationID(102), notificationID(23), notificationID(103), now.Add(-time.Hour),
-		notificationID(24), notificationID(104), now)
-	execNotificationSQL(t, tx, `INSERT INTO issue_subscribers(issue_id,workspace_id,subscriber_id,deleted_at) VALUES($1,$2,$3,NULL),($4,$2,$3,NULL),($5,$2,$3,NULL),($6,$2,$3,NULL)`,
-		notificationID(101), notificationID(1), notificationID(3), notificationID(102), notificationID(103), notificationID(104))
+		UPDATE notifications SET sender='In-app mentioned' WHERE title IN ('assigned mention','subscribed mention');
+		UPDATE notifications SET entity_name='project' WHERE title='other entity';
+		UPDATE notifications SET snoozed_till='2099-01-01Z' WHERE title IN ('future snooze','archived future snooze');
+		UPDATE notifications SET snoozed_till='2000-01-01Z' WHERE title='past snooze';
+		UPDATE notifications SET archived_at=now() WHERE title IN ('archived','archived future snooze');
+		UPDATE notifications SET deleted_at=now() WHERE title='deleted';
+		UPDATE notifications SET workspace_id='00000000-0000-0000-0000-000000000002' WHERE title='other workspace';
+		UPDATE notifications SET receiver_id='00000000-0000-0000-0000-000000000099' WHERE title='other recipient';
+		INSERT INTO issue_subscribers(issue_id,workspace_id,subscriber_id)
+		SELECT entity_identifier,'00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000003'
+		FROM notifications WHERE title NOT IN ('assigned mention','assigned inbox','unrelated');
+		INSERT INTO issue_assignees(id,issue_id,workspace_id,assignee_id)
+		SELECT id,entity_identifier,workspace_id,receiver_id FROM notifications WHERE title LIKE 'assigned%';
+		INSERT INTO issues(id,workspace_id,created_by_id)
+		SELECT entity_identifier,workspace_id,receiver_id FROM notifications WHERE title='created subscription';
+	`)
 	repository, err := NewActionRepository(tx, notificationNoopPublisher{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if markAllReadErr := repository.MarkAllRead(t.Context(), notificationPrincipal, "test", false, false, "watching"); markAllReadErr != nil {
-		t.Fatal(markAllReadErr)
-	}
-	var read []int
-	rows, err := tx.Query(t.Context(), `SELECT CASE id WHEN $1 THEN 21 WHEN $2 THEN 22 WHEN $3 THEN 23 WHEN $4 THEN 24 END FROM notifications WHERE read_at IS NOT NULL ORDER BY id`, notificationID(21), notificationID(22), notificationID(23), notificationID(24))
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var id int
-		if err := rows.Scan(&id); err != nil {
-			t.Fatal(err)
-		}
-		read = append(read, id)
-	}
-	if err := rows.Err(); err != nil {
-		t.Fatal(err)
-	}
-	if len(read) != 2 || read[0] != 21 || read[1] != 22 {
-		t.Fatalf("source snooze/archive/subscribed filters marked notifications %v read", read)
+	require.NoError(t, err)
+	for _, check := range []struct {
+		name  string
+		query url.Values
+		body  map[string]any
+		want  []string
+	}{
+		{"mentions and multiple types", url.Values{"mentioned": {"true"}, "type": {"assigned,subscribed"}}, map[string]any{"mentioned": true, "type": "assigned,subscribed"}, []string{"assigned mention", "subscribed mention"}},
+		{"inbox and subscribed alias", url.Values{"type": {"subscribed"}, "read": {"false"}}, map[string]any{"type": "watching", "read": false}, []string{"subscribed inbox"}},
+		{"snoozed", url.Values{"snoozed": {"true"}}, map[string]any{"snoozed": true}, []string{"past snooze", "future snooze"}},
+		{"archived", url.Values{"archived": {"true"}}, map[string]any{"archived": true}, []string{"archived", "archived future snooze"}},
+	} {
+		t.Run(check.name, func(t *testing.T) {
+			execNotificationSQL(t, tx, `UPDATE notifications SET read_at=CASE WHEN title='already read' THEN '2020-01-01Z'::timestamptz ELSE NULL END`)
+			selected, err := repository.List(t.Context(), notificationPrincipal, "test", check.query)
+			require.NoError(t, err)
+			require.ElementsMatch(t, check.want, notificationTitles(t, selected))
+			selection, err := ParseBulkSelection(check.body)
+			require.NoError(t, err)
+			require.NoError(t, repository.MarkAllRead(t.Context(), notificationPrincipal, "test", selection))
+			var updated []string
+			err = tx.QueryRow(t.Context(), `SELECT array_agg(title) FROM notifications WHERE read_at=CURRENT_TIMESTAMP`).Scan(&updated)
+			require.NoError(t, err)
+			require.ElementsMatch(t, check.want, updated)
+			var unchanged bool
+			err = tx.QueryRow(t.Context(), `SELECT read_at='2020-01-01Z' FROM notifications WHERE title='already read'`).Scan(&unchanged)
+			require.NoError(t, err)
+			require.True(t, unchanged)
+		})
 	}
 }

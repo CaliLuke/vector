@@ -59,6 +59,7 @@ func assertUpgradeFieldError(t *testing.T, err error, field string) {
 
 type upgradePropertiesRepository struct {
 	userPropertiesRepositoryStub
+	patched        map[string]json.RawMessage
 	writes         int
 	workspaceReads int
 	projectReads   int
@@ -85,9 +86,9 @@ func (r *upgradePropertiesRepository) PatchWorkspace(_ context.Context, _ uuid.U
 	r.patched = fields
 	return r.body, r.err
 }
-func (r *upgradePropertiesRepository) PatchProject(_ context.Context, _ uuid.UUID, _ string, _ uuid.UUID, fields map[string]json.RawMessage) (json.RawMessage, error) {
+func (r *upgradePropertiesRepository) PatchProject(_ context.Context, _ uuid.UUID, _ string, _ uuid.UUID, patch propertiesstore.ProjectPatch) (json.RawMessage, error) {
 	r.writes++
-	r.patched = fields
+	r.patched = patch.Fields
 	return r.body, r.err
 }
 func (r *upgradePropertiesRepository) PatchCycle(_ context.Context, _ uuid.UUID, _ string, _, _ uuid.UUID, fields map[string]json.RawMessage) (json.RawMessage, error) {

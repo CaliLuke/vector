@@ -110,6 +110,11 @@ type ProjectGetPayload struct {
 	ProjectID string  `json:"project_id"`
 }
 
+type ProjectNavigationAction struct {
+	Type   string `json:"type"`
+	TabKey string `json:"tab_key"`
+}
+
 // ProjectPatchPayload is the payload type of the user_properties service
 // project_patch method.
 type ProjectPatchPayload struct {
@@ -122,6 +127,14 @@ type ProjectPatchPayload struct {
 	RichFilters       loom.Nullable[loom.JSONValue] `json:"rich_filters,omitzero"`
 	Preferences       loom.Nullable[loom.JSONValue] `json:"preferences,omitzero"`
 	SortOrder         loom.Nullable[float64]        `json:"sort_order,omitzero"`
+	// Merge object members of filters, display_filters, display_properties, and
+	// preferences atomically. Pages, navigation, and calendar also merge by
+	// member. The last committed update wins for a shared member. Rich filters and
+	// sort order are replaced when supplied.
+	Merge *bool `json:"merge,omitzero"`
+	// Hide or show one tab after applying the other fields. The last committed
+	// action wins for that tab.
+	NavigationAction *ProjectNavigationAction `json:"navigation_action,omitzero"`
 }
 
 // UserProperties is the result type of the user_properties service

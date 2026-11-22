@@ -175,7 +175,8 @@ export class UserService extends APIService {
           params,
         },
         config
-      )
+      ),
+      "response-or-error"
     );
   }
 

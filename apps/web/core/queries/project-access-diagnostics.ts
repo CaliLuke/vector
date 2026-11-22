@@ -46,13 +46,25 @@ function readRequestId(headers: unknown) {
 
 const retryableStatuses = new Set([502, 503, 504]);
 
+function isTransientFailure(failure: ReturnType<typeof accessFailure>) {
+  return failure.reason === "network" || retryableStatuses.has(failure.http_status ?? 0);
+}
+
+export function isTransientProjectAccessError(error: unknown) {
+  return isTransientFailure(accessFailure(error));
+}
+
+export function isDefinitiveProjectAccessDenial(error: unknown) {
+  const failure = accessFailure(error);
+  return failure.reason === "response_mismatch" || [401, 403, 404, 409, 410].includes(failure.http_status ?? 0);
+}
+
 export function projectAccessReadRetry(stage: AccessRead) {
   return {
     retryDelay: (attempt: number) => 500 * 2 ** attempt,
     retry(failureCount: number, error: unknown) {
       const failure = accessFailure(error);
-      const transient = failure.reason === "network" || retryableStatuses.has(failure.http_status ?? 0);
-      const willRetry = failureCount < 3 && transient;
+      const willRetry = failureCount < 3 && isTransientFailure(failure);
       const projectRead = stage === "project_detail" || stage === "project_probe";
       const expectedDenial =
         failure.http_status === 401 || (projectRead && [403, 404, 409].includes(failure.http_status ?? 0));

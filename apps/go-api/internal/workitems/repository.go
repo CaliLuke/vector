@@ -61,6 +61,7 @@ type Repository struct {
 	publisher                Publisher
 	issueDescriptionVersions IssueDescriptionVersionAdmitter
 	recentVisits             RecentVisitAdmitter
+	recentVisitDispatch      *recentVisitDispatcher
 	issueActivities          IssueActivityAdmitter
 	transactionalEffects     bool
 	notifyCollaboration      bool
@@ -94,7 +95,7 @@ func NewRepositoryWithNativeTasks(db Database, publisher Publisher, origin strin
 	if len(issueActivityAdmitters) == 1 {
 		issueActivities = issueActivityAdmitters[0]
 	}
-	return &Repository{db: db, publisher: publisher, origin: origin, now: time.Now, issueDescriptionVersions: issueDescriptionVersions, recentVisits: recentVisits, issueActivities: issueActivities}, nil
+	return &Repository{db: db, publisher: publisher, origin: origin, now: time.Now, issueDescriptionVersions: issueDescriptionVersions, recentVisits: recentVisits, recentVisitDispatch: newRecentVisitDispatcher(), issueActivities: issueActivities}, nil
 }
 
 func (r *Repository) publishTask(ctx context.Context, name string, args []any, kwargs map[string]any) error {

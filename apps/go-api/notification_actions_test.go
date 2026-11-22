@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -25,8 +26,7 @@ type notificationActionStub struct {
 	notificationRepositoryStub
 	authorizations, lookups, writes int
 	markAllCalls                    int
-	markAllSnoozed, markAllArchived bool
-	markAllType                     string
+	markAllSelection                store.Selection
 	field                           string
 	value                           any
 	writeError                      error
@@ -46,9 +46,9 @@ func (s *notificationActionStub) Set(_ context.Context, _ store.Principal, _, _,
 	s.value = value
 	return s.record, s.writeError
 }
-func (s *notificationActionStub) MarkAllRead(_ context.Context, _ store.Principal, _ string, snoozed, archived bool, kind string) error {
+func (s *notificationActionStub) MarkAllRead(_ context.Context, _ store.Principal, _ string, selection store.Selection) error {
 	s.markAllCalls++
-	s.markAllSnoozed, s.markAllArchived, s.markAllType = snoozed, archived, kind
+	s.markAllSelection = selection
 	return s.writeError
 }
 func actionService(t *testing.T, repository *notificationActionStub) (*notificationActionsService, context.Context) {
@@ -102,9 +102,13 @@ func TestNotificationActionMissingTargetDoesNotWrite(t *testing.T) {
 func TestNotificationMarkAllReadAuthorizesBeforeBodyAndPreservesDefaults(t *testing.T) {
 	repository := &notificationActionStub{}
 	service, ctx := actionService(t, repository)
-	result, err := service.MarkAllRead(ctx, &api.MarkAllReadPayload{Slug: "demo"}, io.NopCloser(strings.NewReader(`{"type":"watching","snoozed":true}`)))
-	if err != nil || result == nil || result.Message != "Successful" || repository.authorizations != 1 || repository.markAllCalls != 1 || !repository.markAllSnoozed || repository.markAllArchived || repository.markAllType != "watching" {
-		t.Fatalf("result=%#v error=%v authorization=%d calls=%d", result, err, repository.authorizations, repository.markAllCalls)
+	want, err := store.ParseBulkSelection(map[string]any{"type": "subscribed", "snoozed": true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := service.MarkAllRead(ctx, &api.MarkAllReadPayload{Slug: "demo"}, io.NopCloser(strings.NewReader(`{"type":"watching","snoozed":true,"archived":"false"}`)))
+	if err != nil || result == nil || result.Message != "Successful" || repository.authorizations != 1 || repository.markAllCalls != 1 || !reflect.DeepEqual(repository.markAllSelection, want) {
+		t.Fatalf("result=%#v error=%v authorization=%d calls=%d selection=%#v", result, err, repository.authorizations, repository.markAllCalls, repository.markAllSelection)
 	}
 }
 
@@ -138,8 +142,12 @@ func TestNotificationSnoozeUpdateClearsOmittedValue(t *testing.T) {
 	}
 }
 
-func TestNotificationMarkAllReadRejectsNonObjectWithoutWrites(t *testing.T) {
-	for _, body := range []string{`[]`, `null`, `true`, `3`, `"text"`} {
+func TestNotificationMarkAllReadRejectsInvalidSelectionWithoutWrites(t *testing.T) {
+	for _, body := range []string{
+		`[]`, `null`, `true`, `3`, `"text"`,
+		`{"type":"assigned,typo"}`, `{"type":["assigned"]}`, `{"type":"all,assigned"}`,
+		`{"mentioned":"maybe"}`, `{"snoozed":null}`, `{"tyep":"assigned"}`,
+	} {
 		repository := &notificationActionStub{}
 		service, ctx := actionService(t, repository)
 		_, err := service.MarkAllRead(ctx, &api.MarkAllReadPayload{Slug: "demo"}, io.NopCloser(strings.NewReader(body)))

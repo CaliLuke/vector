@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 import { infiniteQueryOptions, queryOptions, skipToken } from "@tanstack/react-query";
-import type { QueryClient } from "@tanstack/react-query";
+import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { hashKey } from "@tanstack/react-query";
 import type { IssuePaginationOptions, TIssueParams, TIssuesResponse } from "@plane/types";
 import { EIssueServiceType as IssueServiceType } from "@plane/types";
@@ -59,7 +59,12 @@ export type IssueListRead = {
   /** Synchronous authority for display. Transport still requires the committed request identity. */
   isPresentationCurrent?: () => boolean;
 };
-export type IssueListReadData = Readonly<{ generation: string; response: TIssuesResponse }>;
+type IssueGroupPages = InfiniteData<TIssuesResponse, string>;
+export type IssueListReadData = Readonly<{
+  generation: string;
+  response: TIssuesResponse;
+  pagesByGroup?: Record<string, IssueGroupPages>;
+}>;
 /** A response can contain flat groups and nested subgroups alongside one another. */
 export type IssueListGroupedIds = Record<string, string[] | Record<string, string[]>>;
 
@@ -318,6 +323,93 @@ export function issueListGroups(response: TIssuesResponse): IssueListGroup[] {
   return groups;
 }
 
+export function issueListGroupPathKey({ groupId, subGroupId }: IssueListGroup) {
+  return JSON.stringify([groupId ?? null, subGroupId ?? null]);
+}
+
+function issueListGroupKey(read: IssueListRead, generation: string, group: IssueListGroup) {
+  return [
+    ...issueListKeys.list(read),
+    "group-pages",
+    generation,
+    group.groupId ?? null,
+    group.subGroupId ?? null,
+  ] as const;
+}
+
+function nextGroupCursor(pagination: IssuePaginationOptions, lastPage: TIssuesResponse, pages: TIssuesResponse[]) {
+  if (!lastPage.next_page_results) return undefined;
+  const loadedCount = pages.reduce((total, page) => total + processIssueResponse(page).issueList.length, 0);
+  const nextPage = Math.floor(loadedCount / pagination.perPageCount);
+  return `${pagination.perPageCount}:${nextPage}:0`;
+}
+
+function firstGroupPage(read: IssueListRead, response: TIssuesResponse, group: IssueListGroup): IssueGroupPages {
+  return {
+    pages: [selectedGroupResponse(response, group.groupId, group.subGroupId, read.pagination)],
+    pageParams: ["initial"],
+  };
+}
+
+async function fetchGroupPage(
+  read: IssueListRead,
+  group: IssueListGroup,
+  cursor: string,
+  signal: AbortSignal,
+  isCurrent: () => boolean
+) {
+  if (!isCurrent()) throw new Error("The work item list changed before pagination.");
+  const params = requestParams(read.request, read.pagination, cursor, group.groupId, group.subGroupId);
+  if (!params) throw new Error("Work item pagination parameters are unavailable.");
+  const response = await fetchIssueList(read.request, params, signal);
+  if (!isCurrent()) throw new Error("Work item access or list changed during pagination.");
+  validateListResponse(response, read.scope);
+  return response;
+}
+
+async function rereadGroupPages(
+  read: IssueListRead,
+  group: IssueListGroup,
+  pages: IssueGroupPages,
+  depth: number,
+  signal: AbortSignal,
+  isCurrent: () => boolean
+): Promise<IssueGroupPages> {
+  const last = pages.pages.at(-1);
+  if (!last || pages.pages.length >= depth) return pages;
+  const cursor = nextGroupCursor(read.pagination, last, pages.pages);
+  if (!cursor || pages.pageParams.includes(cursor)) return pages;
+  const response = await fetchGroupPage(read, group, cursor, signal, isCurrent);
+  pages.pages.push(response);
+  pages.pageParams.push(cursor);
+  return rereadGroupPages(read, group, pages, depth, signal, isCurrent);
+}
+
+/** Rebuild previously loaded depths under one read owner. A partially refreshed view cannot commit. */
+async function restoreGroupDepths(
+  client: QueryClient,
+  read: IssueListRead,
+  previous: IssueListReadData,
+  response: TIssuesResponse,
+  signal: AbortSignal,
+  isCurrent: () => boolean
+) {
+  const pagesByGroup: Record<string, IssueGroupPages> = {};
+  await client.cancelQueries({
+    queryKey: [...issueListKeys.list(read), "group-pages", previous.generation],
+  });
+  for (const group of issueListGroups(response)) {
+    const key = issueListGroupKey(read, previous.generation, group);
+    const depth = client.getQueryData<IssueGroupPages>(key)?.pages.length ?? 0;
+    if (depth <= 1) continue;
+    const pages = firstGroupPage(read, response, group);
+    // Keep request concurrency bounded during refresh, even when many groups have loaded pages.
+    // oxlint-disable-next-line no-await-in-loop
+    pagesByGroup[issueListGroupPathKey(group)] = await rereadGroupPages(read, group, pages, depth, signal, isCurrent);
+  }
+  return pagesByGroup;
+}
+
 /** A guarded first-page read. The response and its records remain owned by this exact Query. */
 export function issueListOptions(read: IssueListRead) {
   const queryKey = issueListKeys.list(read);
@@ -327,7 +419,7 @@ export function issueListOptions(read: IssueListRead) {
     queryKey,
     queryFn: parentScopeReady(scope)
       ? async ({ client, signal }) => {
-          const query = client.getQueryCache().find({ queryKey, exact: true });
+          const query = client.getQueryCache().find<IssueListReadData>({ queryKey, exact: true });
           const access = captureParentAccess(client, scope);
           const isCurrent = () => verifyQueryOwner(client, queryKey, query, signal, request, scope, access);
           if (!isCurrent()) throw new Error("Work item access or list preferences changed.");
@@ -336,7 +428,12 @@ export function issueListOptions(read: IssueListRead) {
           const response: TIssuesResponse = await fetchIssueList(request, params, signal);
           if (!isCurrent()) throw new Error("Work item access or list preferences changed during the read.");
           validateListResponse(response, scope);
-          return { generation: crypto.randomUUID(), response } satisfies IssueListReadData;
+          const previous = query?.state.data;
+          const pagesByGroup = previous
+            ? await restoreGroupDepths(client, read, previous, response, signal, isCurrent)
+            : undefined;
+          if (!isCurrent()) throw new Error("Work item access or list preferences changed during the read.");
+          return { generation: crypto.randomUUID(), response, ...(pagesByGroup && { pagesByGroup }) };
         }
       : skipToken,
     gcTime: issueListCacheGcTime,
@@ -347,24 +444,16 @@ export function issueListOptions(read: IssueListRead) {
   });
 }
 
-/**
- * Each visible group gets its own infinite Query. The initial page is projected from the
- * full read, and `fullReadUpdatedAt` makes every replacement read a new pagination owner.
- */
+/** Each accepted first-page read and its restored depths own a new pagination generation. */
 export function issueListGroupOptions(read: IssueListRead, fullRead: IssueListReadData, group: IssueListGroup) {
   const fullQueryKey = issueListKeys.list(read);
-  const queryKey = [
-    ...fullQueryKey,
-    "group-pages",
-    fullRead.generation,
-    group.groupId ?? null,
-    group.subGroupId ?? null,
-  ] as const;
-  const seed = selectedGroupResponse(fullRead.response, group.groupId, group.subGroupId, read.pagination);
+  const queryKey = issueListGroupKey(read, fullRead.generation, group);
+  const initialData =
+    fullRead.pagesByGroup?.[issueListGroupPathKey(group)] ?? firstGroupPage(read, fullRead.response, group);
   return infiniteQueryOptions({
     queryKey,
     initialPageParam: "initial",
-    initialData: { pages: [seed], pageParams: ["initial"] },
+    initialData,
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: issueListCacheGcTime,
     retry: false,
@@ -384,18 +473,11 @@ export function issueListGroupOptions(read: IssueListRead, fullRead: IssueListRe
       if (!currentFullRead || !isCurrent()) throw new Error("The work item list changed before pagination.");
       if (pageParam === "initial")
         return selectedGroupResponse(currentFullRead.response, group.groupId, group.subGroupId, read.pagination);
-      const params = requestParams(read.request, read.pagination, pageParam, group.groupId, group.subGroupId);
-      if (!params) throw new Error("Work item pagination parameters are unavailable.");
-      const response = await fetchIssueList(read.request, params, signal);
-      if (!isCurrent()) throw new Error("Work item access or list changed during pagination.");
-      validateListResponse(response, read.scope);
-      return response;
+      return fetchGroupPage(read, group, pageParam, signal, isCurrent);
     },
-    getNextPageParam: (lastPage, pages) => {
-      if (!lastPage.next_page_results) return undefined;
-      const loadedCount = pages.reduce((total, page) => total + processIssueResponse(page).issueList.length, 0);
-      const nextPage = Math.floor(loadedCount / read.pagination.perPageCount);
-      return `${read.pagination.perPageCount}:${nextPage}:0`;
+    getNextPageParam: (lastPage, pages, _pageParam, pageParams) => {
+      const cursor = nextGroupCursor(read.pagination, lastPage, pages);
+      return cursor && !pageParams.includes(cursor) ? cursor : undefined;
     },
   });
 }

@@ -29,7 +29,7 @@ func TestMilestoneNotificationActionsRecheckVisibilityAfterLookup(t *testing.T) 
 		_, err = repo.Set(t.Context(), notificationPrincipal, "test", notificationID(11), field, time.Now())
 		assertNotificationStatus(t, err, 404)
 	}
-	require.NoError(t, repo.MarkAllRead(t.Context(), notificationPrincipal, "test", false, false, "all"))
+	require.NoError(t, repo.MarkAllRead(t.Context(), notificationPrincipal, "test", Selection{}))
 	var hiddenUnchanged, ordinaryRead bool
 	require.NoError(t, tx.QueryRow(t.Context(), `SELECT read_at IS NULL AND archived_at IS NULL AND snoozed_till IS NULL AND deleted_at IS NULL FROM notifications WHERE id=$1`, notificationID(11)).Scan(&hiddenUnchanged))
 	require.True(t, hiddenUnchanged)

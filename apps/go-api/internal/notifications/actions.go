@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"slices"
-	"strings"
 
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -55,39 +54,8 @@ func (r *ActionRepository) Set(ctx context.Context, p Principal, slug, id, field
 	return r.Detail(ctx, p, slug, id, false)
 }
 
-// MarkAllRead applies the source viewset's filters and updates only read_at.
-// Authorization is performed by the service before this method is called.
-func (r *ActionRepository) MarkAllRead(ctx context.Context, p Principal, slug string, snoozed, archived bool, kind string) error {
-	filters := []string{
-		scope,
-		"n.read_at IS NULL",
-	}
-	if snoozed {
-		filters = append(filters, "n.snoozed_till IS NOT NULL")
-	} else {
-		filters = append(filters, "(n.snoozed_till IS NULL OR n.snoozed_till>=CURRENT_TIMESTAMP)")
-	}
-	if archived {
-		filters = append(filters, "n.archived_at IS NOT NULL")
-	} else {
-		filters = append(filters, "n.archived_at IS NULL")
-	}
-	switch kind {
-	case "watching":
-		filters = append(filters, "n.entity_identifier IN (SELECT subscriber.issue_id FROM issue_subscribers subscriber JOIN workspaces sw ON sw.id=subscriber.workspace_id WHERE sw.slug=$2 AND subscriber.subscriber_id=$1 AND subscriber.deleted_at IS NULL)")
-	case "assigned":
-		filters = append(filters, "n.entity_identifier IN (SELECT assignment.issue_id FROM issue_assignees assignment JOIN workspaces aw ON aw.id=assignment.workspace_id WHERE aw.slug=$2 AND assignment.assignee_id=$1 AND assignment.deleted_at IS NULL)")
-	case "created":
-		var guest bool
-		if err := r.writer.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM workspace_members member JOIN workspaces workspace ON workspace.id=member.workspace_id WHERE workspace.slug=$2 AND member.member_id=$1 AND member.role<15 AND member.is_active AND member.deleted_at IS NULL)`, p.UserID, slug).Scan(&guest); err != nil {
-			return err
-		}
-		if guest {
-			filters = append(filters, "FALSE")
-		} else {
-			filters = append(filters, "n.entity_identifier IN (SELECT issue.id FROM issues issue JOIN workspaces iw ON iw.id=issue.workspace_id WHERE iw.slug=$2 AND issue.created_by_id=$1 AND issue.deleted_at IS NULL)")
-		}
-	}
-	_, err := r.writer.Exec(ctx, `UPDATE notifications n SET read_at=CURRENT_TIMESTAMP FROM workspaces w WHERE w.id=n.workspace_id AND `+strings.Join(filters, " AND "), p.UserID, slug)
+// MarkAllRead updates only unread notifications from the selected view.
+func (r *ActionRepository) MarkAllRead(ctx context.Context, p Principal, slug string, selection Selection) error {
+	_, err := r.writer.Exec(ctx, `UPDATE notifications n SET read_at=CURRENT_TIMESTAMP FROM workspaces w WHERE w.id=n.workspace_id AND n.read_at IS NULL AND `+selection.where(), p.UserID, slug)
 	return err
 }

@@ -52,7 +52,8 @@ export class IssueService extends APIService {
           params: queries,
         },
         config
-      )
+      ),
+      "response-or-error"
     );
   }
 

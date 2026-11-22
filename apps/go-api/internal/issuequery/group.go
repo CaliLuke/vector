@@ -101,14 +101,15 @@ func Group(
 }
 func reconstructModuleIssueGroupArrays(grouped map[string]any, groupBy, subGroupBy string) {
 	rows := make([]map[string]any, 0)
-	for _, groupValue := range grouped {
-		group := groupValue.(map[string]any)
+	for _, key := range sortedGroupKeys(grouped) {
+		group := grouped[key].(map[string]any)
 		if subGroupBy == "" {
 			rows = append(rows, group["results"].([]map[string]any)...)
 			continue
 		}
-		for _, subgroupValue := range group["results"].(map[string]any) {
-			subgroup := subgroupValue.(map[string]any)
+		nested := group["results"].(map[string]any)
+		for _, key := range sortedGroupKeys(nested) {
+			subgroup := nested[key].(map[string]any)
 			rows = append(rows, subgroup["results"].([]map[string]any)...)
 		}
 	}
@@ -149,6 +150,15 @@ func reconstructModuleIssueGroupArrays(grouped map[string]any, groupBy, subGroup
 			}
 		}
 	}
+}
+
+func sortedGroupKeys(groups map[string]any) []string {
+	keys := make([]string, 0, len(groups))
+	for key := range groups {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 func moduleGroupSliceContains(values []any, candidate string) bool {
@@ -379,4 +389,60 @@ func GroupValues(issue map[string]any, field string) []string {
 		result = append(result, key)
 	}
 	return result
+}
+
+// GroupPage holds the selected rows and counts of one SQL-paged bucket.
+// RowCount includes every matching row, while Count follows the browser's
+// legacy pagination-count rules.
+type GroupPage struct {
+	Group, Subgroup string
+	Count, RowCount int
+	Rows            []map[string]any
+}
+
+// FormatGroupPages serializes pages already partitioned by the repository.
+// Keep both group and subgroup membership here so one item can appear in
+// several buckets even when other buckets are on different offsets.
+func FormatGroupPages(
+	groupBy, subGroupBy string, groupValues []any, groupCounts map[string]int,
+	pages []GroupPage, limit, offset int,
+) (map[string]any, int, int, bool) {
+	grouped := make(map[string]any)
+	maximum, count, next := 0, 0, false
+	singleM2MGroup := subGroupBy == "" && GroupArrayField(groupBy) != ""
+	for _, groupCount := range groupCounts {
+		maximum = max(maximum, groupCount)
+	}
+	for _, group := range normalizeModuleIssueGroupValues(groupValues) {
+		total, present := groupCounts[group]
+		if present && total == 0 {
+			total = 1
+		}
+		results := any([]map[string]any{})
+		if subGroupBy != "" {
+			results = map[string]any{}
+		}
+		grouped[group] = map[string]any{"results": results, "total_results": total}
+	}
+	for _, page := range pages {
+		if singleM2MGroup && len(page.Rows) == 0 {
+			delete(grouped, page.Group)
+			continue
+		}
+		value, visible := grouped[page.Group]
+		if !visible {
+			continue
+		}
+		record := value.(map[string]any)
+		rows := moduleIssueGroupedRows(page.Rows, groupBy, page.Group, subGroupBy, page.Subgroup)
+		count += len(rows)
+		next = next || page.RowCount > offset+limit
+		if subGroupBy == "" {
+			record["results"] = rows
+			continue
+		}
+		record["results"].(map[string]any)[page.Subgroup] = map[string]any{"results": rows, "total_results": page.Count}
+	}
+	reconstructModuleIssueGroupArrays(grouped, groupBy, subGroupBy)
+	return grouped, count, maximum, next
 }

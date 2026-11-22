@@ -111,10 +111,10 @@ func (r *Repository) identifier(ctx context.Context, q Request) (Result, error) 
 	if err = r.guestIssue(ctx, q, row, project); err != nil {
 		return Result{}, err
 	}
-	if err = r.recentVisit(ctx, q, "issue", q.IssueID); err != nil {
-		return Result{}, err
-	}
 	v, err := r.detail(ctx, row, q, true, true)
+	if err == nil {
+		r.recordRecentVisit(ctx, q, "issue", q.IssueID)
+	}
 	return Result{200, v}, err
 }
 

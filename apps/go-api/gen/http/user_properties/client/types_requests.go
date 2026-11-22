@@ -31,6 +31,14 @@ type ProjectPatchRequestBody struct {
 	RichFilters       loom.Nullable[loom.JSONValue] `form:"rich_filters,omitempty" json:"rich_filters,omitzero" xml:"rich_filters,omitempty"`
 	Preferences       loom.Nullable[loom.JSONValue] `form:"preferences,omitempty" json:"preferences,omitzero" xml:"preferences,omitempty"`
 	SortOrder         loom.Nullable[float64]        `form:"sort_order,omitempty" json:"sort_order,omitzero" xml:"sort_order,omitempty"`
+	// Merge object members of filters, display_filters, display_properties, and
+	// preferences atomically. Pages, navigation, and calendar also merge by
+	// member. The last committed update wins for a shared member. Rich filters and
+	// sort order are replaced when supplied.
+	Merge *bool `form:"merge,omitempty" json:"merge,omitzero" xml:"merge,omitempty"`
+	// Hide or show one tab after applying the other fields. The last committed
+	// action wins for that tab.
+	NavigationAction *ProjectNavigationActionRequestBody `form:"navigation_action,omitempty" json:"navigation_action,omitzero" xml:"navigation_action,omitempty"`
 }
 
 // CyclePatchRequestBody is the type of the "user_properties" service

@@ -20,6 +20,24 @@ import type { TProject, TPartialProject } from "@plane/types";
 // services
 import { APIService } from "@/services/api.service";
 
+type ProjectProperties = IProjectUserPropertiesResponse;
+
+export type ProjectUserPropertiesFields = {
+  preferences?: {
+    pages?: Partial<ProjectProperties["preferences"]["pages"]>;
+    navigation?: Partial<ProjectProperties["preferences"]["navigation"]>;
+  };
+  rich_filters?: ProjectProperties["rich_filters"];
+  display_filters?: Partial<ProjectProperties["display_filters"]>;
+  display_properties?: Partial<ProjectProperties["display_properties"]>;
+  sort_order?: ProjectProperties["sort_order"];
+};
+
+type ProjectUserPropertiesUpdate = ProjectUserPropertiesFields & {
+  merge?: boolean;
+  navigation_action?: { type: "hide-tab" | "show-tab"; tab_key: string };
+};
+
 export class ProjectService extends APIService {
   constructor() {
     super(API_BASE_URL);
@@ -93,7 +111,7 @@ export class ProjectService extends APIService {
   async updateProjectUserProperties(
     workspaceSlug: string,
     projectId: string,
-    data: Partial<IProjectUserPropertiesResponse>
+    data: ProjectUserPropertiesUpdate
   ): Promise<IProjectUserPropertiesResponse> {
     return this.responseData(
       this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-properties/`, data)

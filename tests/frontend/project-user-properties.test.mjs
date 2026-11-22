@@ -51,6 +51,16 @@ await test("navigation intents apply after other preference fields in the same p
     default_tab: "pages",
     hide_in_more_menu: ["cycles", "modules"],
   });
+  const unhidden = applyProjectUserPropertiesPatches(updated, [
+    { navigationAction: { type: "hide-tab", tabKey: "modules" } },
+    { navigationAction: { type: "show-tab", tabKey: "cycles" } },
+    { rich_filters: { or: [] } },
+  ]);
+  assert.deepEqual(unhidden.preferences.navigation, {
+    default_tab: "pages",
+    hide_in_more_menu: ["modules"],
+  });
+  assert.deepEqual(unhidden.rich_filters, { or: [] });
 });
 
 const scope = { accountId: "alice", workspaceSlug: "acme", projectId: "project-a" };
@@ -392,7 +402,7 @@ await test("project preference patches compose pending nested fields and failed 
     }
     secondStarted.resolve();
     if (call > 2) return Promise.reject(new Error("write rejected"));
-    serverResponse = response({ preferences: patch.preferences });
+    serverResponse = applyProjectUserPropertiesPatches(serverResponse, [patch]);
     return Promise.resolve(serverResponse);
   });
   t.mock.method(ProjectService.prototype, "getProjectUserProperties", async () => serverResponse);
@@ -424,9 +434,9 @@ await test("project preference patches compose pending nested fields and failed 
     );
     await Promise.all([first, secondStarted.promise]);
   });
-  assert.deepEqual(savedResponses[1].preferences, {
-    pages: { block_display: false },
-    navigation: { default_tab: "list", hide_in_more_menu: ["cycles"] },
+  assert.deepEqual(savedResponses[1], {
+    merge: true,
+    preferences: { pages: { block_display: false } },
   });
   await act(async () => second);
   assert.deepEqual(client.getQueryData(projectUserPropertiesKeys.detail(scope)).preferences, {
@@ -471,13 +481,8 @@ await test("a failed calendar layout intent is not carried into a queued accepte
     firstWrite.reject(new Error("calendar layout write rejected"));
     assert.match((await first).message, /calendar layout write rejected/);
     await secondStarted.promise;
-    assert.deepEqual(sentPatches[1].display_filters.calendar, { layout: "month", show_weekends: true });
-    const acceptedResponse = response({
-      display_filters: {
-        ...initial.display_filters,
-        calendar: sentPatches[1].display_filters.calendar,
-      },
-    });
+    assert.deepEqual(sentPatches[1].display_filters.calendar, { show_weekends: true });
+    const acceptedResponse = applyProjectUserPropertiesPatches(initial, [sentPatches[1]]);
     setCanonicalResponse(acceptedResponse);
     secondWrite.resolve(acceptedResponse);
     await second;
@@ -511,8 +516,7 @@ await test("a later queued patch is not persisted by an earlier write that succe
   });
 
   assert.deepEqual(sentPatches[0].preferences, {
-    pages: { block_display: true },
-    navigation: { default_tab: "list", hide_in_more_menu: ["cycles"] },
+    navigation: { default_tab: "list" },
   });
 
   await act(async () => {
@@ -557,7 +561,7 @@ await test("a failed earlier nested patch is removed before the queued patch is 
     firstWrite.reject(new Error("navigation write rejected"));
     assert.match((await first).message, /navigation write rejected/);
     await secondStarted.promise;
-    const acceptedResponse = response({ preferences: sentPatches[1].preferences });
+    const acceptedResponse = applyProjectUserPropertiesPatches(response(), [sentPatches[1]]);
     setCanonicalResponse(acceptedResponse);
     secondWrite.resolve(acceptedResponse);
     await second;
@@ -565,7 +569,6 @@ await test("a failed earlier nested patch is removed before the queued patch is 
 
   assert.deepEqual(sentPatches[1].preferences, {
     pages: { block_display: false },
-    navigation: { default_tab: "issues", hide_in_more_menu: ["cycles"] },
   });
   assert.deepEqual(client.getQueryData(projectUserPropertiesKeys.detail(scope)).preferences, {
     pages: { block_display: false },
@@ -653,6 +656,57 @@ await test("accepted patch stays successful when its follow-up query refresh fai
       body: { stage: "project_preferences", reason: "unexpected", will_retry: false },
     },
   ]);
+});
+
+await test("temporary refresh failures preserve accepted preferences until recovery or definitive denial", async (t) => {
+  const client = createClient();
+  seed(client);
+  const ui = await renderProbe(t, client);
+  const key = projectUserPropertiesKeys.detail(scope);
+  const options = projectUserPropertiesOptions(client, scope, { canAccess: true, fetchEnabled: true });
+  const saved = response({ sort_order: 90 });
+  let failure = { status: 503 };
+  const read = t.mock.method(ProjectService.prototype, "getProjectUserProperties", async () => {
+    if (failure) throw failure;
+    return saved;
+  });
+  t.mock.method(ProjectService.prototype, "updateProjectUserProperties", async () => saved);
+
+  await act(async () => {
+    assert.deepEqual(await ui.current().mutate({ sort_order: 90 }), saved);
+    await ui.current().query.refetch({ cancelRefetch: false });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  assert.equal(read.mock.callCount(), 4);
+  assert.equal(ui.current().query.data.sort_order, 90);
+  assert.equal(ui.current().query.isBlockingError, false);
+  assert.equal(ui.current().query.isRefreshError, true);
+
+  failure = undefined;
+  await act(async () => {
+    await ui.current().query.refetch();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  assert.equal(ui.current().query.isRefreshError, false);
+  assert.deepEqual(ui.current().query.data, saved);
+
+  failure = { status: 403 };
+  await act(async () => {
+    await ui.current().query.refetch();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  assert.equal(ui.current().query.isBlockingError, true);
+  assert.equal(ui.current().query.data, undefined);
+  assert.equal(client.getQueryData(key), undefined);
+
+  failure = { status: 503 };
+  await act(async () => {
+    await assert.rejects(client.fetchQuery({ ...options, retry: false }), (error) => error === failure);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  assert.equal(ui.current().query.isBlockingError, true);
+  assert.equal(ui.current().query.isRefreshError, false);
+  assert.equal(ui.current().query.data, undefined);
 });
 
 await test("disabling project preferences hides cached fields without discarding them", async (t) => {

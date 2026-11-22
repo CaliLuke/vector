@@ -52,6 +52,13 @@ const groupedResponse = {
   },
 };
 
+const flatPaginationResponse = (id, hasMore = true) => ({
+  ...groupedResponse,
+  grouped_by: null,
+  results: [row(id)],
+  next_page_results: hasMore,
+});
+
 await test("mounted list keeps per-group counts and paginates only the selected group", async (t) => {
   const env = await createReactDomTestEnvironment();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
@@ -153,4 +160,128 @@ await test("mounted list keeps per-group counts and paginates only the selected 
   assert.equal(requests.length, 3);
   await act(async () => env.render(null));
   assert.equal(signals[2].aborted, true, "unmount cancels the pending group read");
+});
+
+await test("loaded pages survive a refresh and pagination failures require an explicit retry", async (t) => {
+  const env = await createReactDomTestEnvironment();
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+  t.after(() => env.unmount(() => client.clear()));
+  seedIssueQueryScope(client, scope);
+  const read = {
+    scope,
+    pagination: { canGroup: false, perPageCount: 1 },
+    request: {
+      family: "project",
+      input: {
+        workspaceSlug: "acme",
+        projectId: "p1",
+        richFilters: {},
+        displayFilters: { layout: "list" },
+      },
+      isReadCurrent: () => true,
+    },
+  };
+  const delayedRefresh = Promise.withResolvers();
+  const refreshStarted = Promise.withResolvers();
+  const requests = [];
+  t.mock.method(IssueService.prototype, "get", async (_url, { params }) => {
+    requests.push(params.cursor);
+    let data;
+    switch (requests.length) {
+      case 1:
+        data = flatPaginationResponse("old-first");
+        break;
+      case 2:
+        throw { response: { status: 502, data: {} } };
+      case 3:
+        data = flatPaginationResponse("old-second");
+        break;
+      case 4:
+        data = flatPaginationResponse("new-first");
+        break;
+      case 5:
+        refreshStarted.resolve();
+        await delayedRefresh.promise;
+        throw { response: { status: 503, data: {} } };
+      case 6:
+        throw { isAxiosError: true, code: "ERR_NETWORK" };
+      case 7:
+        data = flatPaginationResponse("new-first");
+        break;
+      case 8:
+        data = flatPaginationResponse("new-second");
+        break;
+      case 9:
+        throw { response: { status: 403, data: {} } };
+      case 10:
+        data = flatPaginationResponse("remaining", false);
+        break;
+      default:
+        throw new Error("Unexpected issue list request");
+    }
+    return { data };
+  });
+  let latest;
+  function Probe() {
+    const state = useIssueListQuery(read);
+    React.useEffect(() => {
+      latest = state;
+    }, [state]);
+    return null;
+  }
+  const visibleRows = () => Object.keys(latest.issuesById);
+  await env.render(React.createElement(QueryClientProvider, { client }, React.createElement(Probe)));
+  await act(async () => new Promise((resolve) => setTimeout(resolve, 20)));
+  assert.deepEqual(visibleRows(), ["old-first"]);
+
+  await act(() => latest.fetchNextIssues());
+  assert.equal(latest.isPageError, true);
+  assert.equal(latest.getPaginationData()?.nextPageResults, false);
+  assert.deepEqual(visibleRows(), ["old-first"]);
+  await act(() => latest.fetchNextIssues());
+  assert.equal(requests.length, 2);
+  await act(() => latest.retryFailedPages());
+  assert.deepEqual(visibleRows(), ["old-first", "old-second"]);
+  assert.equal(latest.isPageError, false);
+
+  let refresh;
+  await act(async () => {
+    refresh = latest.retry();
+    await refreshStarted.promise;
+  });
+  assert.deepEqual(visibleRows(), ["old-first", "old-second"]);
+  await act(async () => {
+    delayedRefresh.resolve();
+    const result = await refresh;
+    assert.equal(result.isRefetchError, true);
+    assert.equal(result.error.status, 503);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  assert.deepEqual(visibleRows(), ["old-first", "old-second"]);
+  assert.equal(latest.isRefreshError, true);
+  assert.equal(latest.isError, false);
+  await act(async () => {
+    await latest.retry();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  assert.equal(latest.isRefreshError, true, "network errors also preserve the verified list");
+  assert.deepEqual(visibleRows(), ["old-first", "old-second"]);
+  await act(async () => {
+    await latest.retry();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  assert.deepEqual(visibleRows(), ["new-first", "new-second"]);
+  assert.equal(latest.isRefreshError, false);
+  assert.equal(requests[7], "1:1:0");
+
+  await act(() => latest.fetchNextIssues());
+  assert.equal(latest.isError, true);
+  assert.equal(latest.isPageError, false);
+  assert.deepEqual(visibleRows(), []);
+  await act(async () => {
+    await latest.retry();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  assert.equal(latest.isError, false);
+  assert.deepEqual(visibleRows(), ["remaining"]);
 });

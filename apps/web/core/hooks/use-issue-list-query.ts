@@ -14,20 +14,27 @@ import {
 } from "@tanstack/react-query";
 import type { TGroupedIssueCount, TIssue, TLoader, TPaginationData } from "@plane/types";
 import type { QueryClient, QueryKey } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import { ALL_ISSUES } from "@plane/constants";
 import { processIssueResponse } from "@/helpers/issue-list/response";
 import { getGroupKey } from "@/helpers/issue-list/grouping";
-import type { IssueListGroup, IssueListGroupedIds, IssueListRead, IssueListReadData } from "@/queries/issue-lists";
+import type { IssueListGroupedIds, IssueListRead, IssueListReadData } from "@/queries/issue-lists";
 import {
   issueListGroupOptions,
+  issueListGroupPathKey,
   issueListGroups,
   issueListOptions,
   issueListPresentationKey,
 } from "@/queries/issue-lists";
+import { isAuthorizationError } from "@/queries/authorization-errors";
 import { captureParentAccess } from "@/queries/cycle-module-scope";
 
-function paginationGroupKey(group: IssueListGroup) {
-  return JSON.stringify([group.groupId ?? null, group.subGroupId ?? null]);
+function isRetryableReadError(error: unknown) {
+  const response = isAxiosError(error) ? error.response : error;
+  if (response && typeof response === "object" && "status" in response && typeof response.status === "number") {
+    return response.status === 429 || (response.status >= 500 && response.status < 600);
+  }
+  return isAxiosError(error) && ["ERR_NETWORK", "ECONNABORTED", "ETIMEDOUT"].includes(error.code ?? "");
 }
 
 function createPageObservers(client: QueryClient, options: ReturnType<typeof issueListGroupOptions>[]) {
@@ -120,7 +127,8 @@ function useSettledIssueList(input: {
         isCurrent: () =>
           hasRows &&
           access?.isVerified() === true &&
-          query?.state.status === "success" &&
+          query !== undefined &&
+          (query.state.status === "success" || isRetryableReadError(query.state.error)) &&
           query.state.data === readData &&
           client.getQueryCache().find({ queryKey, exact: true }) === query,
       });
@@ -139,59 +147,61 @@ function useAuthorizedIssueList(client: QueryClient, read: IssueListRead | undef
   const list = useQuery(options);
   const access = read ? captureParentAccess(client, read.scope) : undefined;
   const canPresent = read && access?.isVerified() && (read.isPresentationCurrent ?? read.request.isReadCurrent)();
-  const readData = canPresent && list.isSuccess ? list.data : undefined;
+  const isRefreshError = Boolean(canPresent && list.isRefetchError && isRetryableReadError(list.error));
+  const readData = canPresent && (list.isSuccess || isRefreshError) ? list.data : undefined;
   const viewKey = canPresent ? issueListPresentationKey(read) : undefined;
-  return { list, access, readData, viewKey, queryKey: options.queryKey };
+  return { list, access, readData, viewKey, isRefreshError, queryKey: options.queryKey };
 }
 
 export function useIssueListQuery(read: IssueListRead | undefined) {
   const client = useQueryClient();
-  const { list, access, readData, viewKey, queryKey } = useAuthorizedIssueList(client, read);
+  const { list, access, readData, viewKey, isRefreshError, queryKey } = useAuthorizedIssueList(client, read);
   const groups = useMemo(() => (readData ? issueListGroups(readData.response) : []), [readData]);
   const groupOptions = useMemo(
     () => (read && readData ? groups.map((group) => issueListGroupOptions(read, readData, group)) : []),
     [groups, read, readData]
   );
   const pageQueries = useIssueListPages(client, groupOptions);
+  const pageAccessError = pageQueries.find((query) => isAuthorizationError(query.error))?.error;
   const currentProjection = useMemo(() => {
     const issuesById: Record<string, TIssue> = {};
     const groupedIssueIds: IssueListGroupedIds = {};
     const paginationByGroup: Record<string, TPaginationData> = {};
-    pageQueries.forEach((query, index) => {
-      const group = groups[index];
-      if (!group || !query.data) return;
-      const rows = query.data.pages.flatMap((page) => processIssueResponse(page).issueList);
-      rows.forEach((issue) => {
-        issuesById[issue.id] = issue;
+    if (!pageAccessError)
+      pageQueries.forEach((query, index) => {
+        const group = groups[index];
+        if (!group || !query.data) return;
+        const rows = query.data.pages.flatMap((page) => processIssueResponse(page).issueList);
+        rows.forEach((issue) => {
+          issuesById[issue.id] = issue;
+        });
+        const ids = rows.map((issue) => issue.id);
+        if (group.subGroupId && group.groupId) {
+          const currentGroup = groupedIssueIds[group.groupId];
+          const subGroups = Array.isArray(currentGroup) ? {} : (currentGroup ?? {});
+          groupedIssueIds[group.groupId] = { ...subGroups, [group.subGroupId]: ids };
+        } else if (group.groupId) {
+          groupedIssueIds[group.groupId] = ids;
+        } else {
+          groupedIssueIds[ALL_ISSUES] = ids;
+        }
+        const lastPage = query.data.pages.at(-1);
+        if (lastPage)
+          paginationByGroup[issueListGroupPathKey(group)] = {
+            prevCursor: lastPage.prev_cursor,
+            nextCursor: lastPage.next_cursor,
+            nextPageResults: query.hasNextPage && !query.isFetchNextPageError,
+          };
       });
-      const ids = rows.map((issue) => issue.id);
-      if (group.subGroupId && group.groupId) {
-        const currentGroup = groupedIssueIds[group.groupId];
-        const subGroups = Array.isArray(currentGroup) ? {} : (currentGroup ?? {});
-        groupedIssueIds[group.groupId] = { ...subGroups, [group.subGroupId]: ids };
-      } else if (group.groupId) {
-        groupedIssueIds[group.groupId] = ids;
-      } else {
-        groupedIssueIds[ALL_ISSUES] = ids;
-      }
-      const lastPage = query.data.pages.at(-1);
-      if (lastPage)
-        paginationByGroup[paginationGroupKey(group)] = {
-          prevCursor: lastPage.prev_cursor,
-          nextCursor: lastPage.next_cursor,
-          nextPageResults: lastPage.next_page_results,
-        };
-    });
-    const groupedIssueCount: TGroupedIssueCount = readData
-      ? processIssueResponse(readData.response).groupedIssueCount
-      : {};
+    const groupedIssueCount: TGroupedIssueCount =
+      readData && !pageAccessError ? processIssueResponse(readData.response).groupedIssueCount : {};
     return { issuesById, groupedIssueIds, groupedIssueCount, paginationByGroup };
-  }, [groups, pageQueries, readData]);
+  }, [groups, pageAccessError, pageQueries, readData]);
   const retained = useSettledIssueList({
     client,
     queryKey,
     viewKey,
-    readData,
+    readData: pageAccessError ? undefined : readData,
     projection: currentProjection,
     access,
     pending: list.isPending,
@@ -199,25 +209,38 @@ export function useIssueListQuery(read: IssueListRead | undefined) {
   const projection = retained?.projection ?? currentProjection;
   const fetchNextIssues = useCallback(
     async (groupId?: string, subGroupId?: string) => {
+      if (list.isFetching || pageAccessError) return;
       const normalizedGroupId = groupId === ALL_ISSUES ? undefined : groupId;
       const queries =
         normalizedGroupId === undefined && subGroupId === undefined
-          ? pageQueries.filter((query) => query.hasNextPage && !query.isFetchingNextPage)
+          ? pageQueries
           : [
               pageQueries[
                 groups.findIndex((group) => group.groupId === normalizedGroupId && group.subGroupId === subGroupId)
               ],
             ];
       await Promise.all(
-        queries.flatMap((query) => (query?.hasNextPage && !query.isFetchingNextPage ? [query.fetchNextPage()] : []))
+        queries.flatMap((query) =>
+          query?.hasNextPage && !query.isFetchingNextPage && !query.isFetchNextPageError
+            ? [query.fetchNextPage({ cancelRefetch: false })]
+            : []
+        )
       );
     },
-    [groups, pageQueries]
+    [groups, list.isFetching, pageAccessError, pageQueries]
   );
+  const retryFailedPages = useCallback(async () => {
+    if (list.isFetching || pageAccessError) return;
+    await Promise.all(
+      pageQueries
+        .filter((query) => query.isFetchNextPageError && !query.isFetchingNextPage)
+        .map((query) => query.fetchNextPage({ cancelRefetch: false }))
+    );
+  }, [list.isFetching, pageAccessError, pageQueries]);
   const getPaginationData = useCallback(
     (groupId?: string, subGroupId?: string) => {
       const normalizedGroupId = groupId === ALL_ISSUES ? undefined : groupId;
-      return projection.paginationByGroup[paginationGroupKey({ groupId: normalizedGroupId, subGroupId })];
+      return projection.paginationByGroup[issueListGroupPathKey({ groupId: normalizedGroupId, subGroupId })];
     },
     [projection.paginationByGroup]
   );
@@ -242,18 +265,21 @@ export function useIssueListQuery(read: IssueListRead | undefined) {
   );
   return {
     ...projection,
-    response: readData?.response ?? retained?.data.response,
+    response: pageAccessError ? undefined : (readData?.response ?? retained?.data.response),
     isPending: !readData && !retained && !list.isError,
     isUpdatingResults: Boolean(retained),
     isFetching: list.isFetching,
-    isError: list.isError,
-    error: list.error,
+    isError: Boolean(pageAccessError) || (list.isError && !isRefreshError),
+    error: pageAccessError ?? list.error,
+    isRefreshError,
     retry: list.refetch,
+    retryRefresh: list.refetch,
     fetchNextIssues,
     getPaginationData,
     getGroupIssueCount,
     getIssueLoader,
     isFetchingNextPage: pageQueries.some((query) => query.isFetchingNextPage),
-    isPageError: pageQueries.some((query) => query.isError),
+    isPageError: !pageAccessError && pageQueries.some((query) => query.isFetchNextPageError),
+    retryFailedPages,
   };
 }

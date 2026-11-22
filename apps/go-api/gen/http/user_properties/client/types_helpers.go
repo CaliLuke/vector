@@ -11,6 +11,13 @@ import (
 	userproperties "github.com/CaliLuke/go-plane/gen/user_properties"
 )
 
+// ProjectNavigationActionRequestBody is used to define fields on request body
+// types.
+type ProjectNavigationActionRequestBody struct {
+	Type   string `form:"type" json:"type" xml:"type"`
+	TabKey string `form:"tab_key" json:"tab_key" xml:"tab_key"`
+}
+
 // NewWorkspacePatchRequestBody builds the HTTP request body from the payload
 // of the "workspace_patch" endpoint of the "user_properties" service.
 func NewWorkspacePatchRequestBody(p *userproperties.WorkspacePatchPayload) *WorkspacePatchRequestBody {
@@ -27,13 +34,18 @@ func NewWorkspacePatchRequestBody(p *userproperties.WorkspacePatchPayload) *Work
 // NewProjectPatchRequestBody builds the HTTP request body from the payload of
 // the "project_patch" endpoint of the "user_properties" service.
 func NewProjectPatchRequestBody(p *userproperties.ProjectPatchPayload) *ProjectPatchRequestBody {
-	body := &ProjectPatchRequestBody{}
+	body := &ProjectPatchRequestBody{
+		Merge: p.Merge,
+	}
 	body.Filters = p.Filters
 	body.DisplayFilters = p.DisplayFilters
 	body.DisplayProperties = p.DisplayProperties
 	body.RichFilters = p.RichFilters
 	body.Preferences = p.Preferences
 	body.SortOrder = p.SortOrder
+	if p.NavigationAction != nil {
+		body.NavigationAction = marshalUserpropertiesProjectNavigationActionToProjectNavigationActionRequestBody(p.NavigationAction)
+	}
 	return body
 }
 

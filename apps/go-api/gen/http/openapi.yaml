@@ -25625,6 +25625,10 @@ paths:
                                 display_filters: Animi est iure.
                                 display_properties: Similique illo voluptates iusto est quia.
                                 filters: Dolores dolores fugit incidunt voluptatem aut et.
+                                merge: true
+                                navigation_action:
+                                    tab_key: hib
+                                    type: show-tab
                                 preferences: Maxime ut laborum aut ea temporibus.
                                 rich_filters: Et consequatur cupiditate minima.
                                 sort_order: 0.06777809129508289
@@ -25633,6 +25637,10 @@ paths:
                             display_filters: Animi est iure.
                             display_properties: Similique illo voluptates iusto est quia.
                             filters: Dolores dolores fugit incidunt voluptatem aut et.
+                            merge: true
+                            navigation_action:
+                                tab_key: hib
+                                type: show-tab
                             preferences: Maxime ut laborum aut ea temporibus.
                             rich_filters: Et consequatur cupiditate minima.
                             sort_order: 0.06777809129508289
@@ -38866,6 +38874,25 @@ components:
                 - name
                 - slug
                 - logo_url
+        ProjectNavigationAction:
+            type: object
+            properties:
+                tab_key:
+                    type: string
+                    example: ci
+                    minLength: 1
+                type:
+                    type: string
+                    example: hide-tab
+                    enum:
+                        - hide-tab
+                        - show-tab
+            example:
+                tab_key: 1b
+                type: hide-tab
+            required:
+                - type
+                - tab_key
         ProjectPatchRequestBody:
             type: object
             properties:
@@ -38884,6 +38911,16 @@ components:
                     anyOf:
                         - {}
                         - type: "null"
+                merge:
+                    type: boolean
+                    description: Merge object members of filters, display_filters, display_properties, and preferences atomically. Pages, navigation, and calendar also merge by member. The last committed update wins for a shared member. Rich filters and sort order are replaced when supplied.
+                    example: true
+                navigation_action:
+                    description: Hide or show one tab after applying the other fields. The last committed action wins for that tab.
+                    example:
+                        tab_key: "n"
+                        type: hide-tab
+                    $ref: '#/components/schemas/ProjectNavigationAction'
                 preferences:
                     example: Inventore voluptas.
                     anyOf:
@@ -38904,6 +38941,10 @@ components:
                 display_filters: Consectetur minima blanditiis dignissimos maiores commodi.
                 display_properties: Alias labore.
                 filters: In veniam illo quis voluptates minima ut.
+                merge: false
+                navigation_action:
+                    tab_key: c6
+                    type: hide-tab
                 preferences: Libero perferendis aut id at sit maiores.
                 rich_filters: Ipsam temporibus officiis.
                 sort_order: 0.38789348762277653

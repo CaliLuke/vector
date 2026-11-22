@@ -356,17 +356,19 @@ its undo history. Page exports wait for roster readiness and preserve failed For
 for retry.
 
 Project tab preferences use account-, workspace- and project-scoped Query data. The
-active project wrapper owns loading; sidebar rows observe cached preferences without
-starting per-row requests. Native mutation scopes serialize writes, and pending
-variables provide the visible overlay. Hide/show actions compose against the latest
-accepted preferences so failed changes cannot leak into later saves. Late responses
-cannot restore replaced queries or cleared sessions. Project issue layouts also read these
-native preferences and pass explicit filter snapshots to list requests. Mutations reconcile
+active project wrapper owns loading. Sidebar rows observe cached preferences without
+starting per-row requests. Native mutation scopes serialize writes within a client, and
+pending variables provide the visible overlay. The API merges changed members into the
+current database row atomically across clients. Hide/show actions update one tab in that
+row. The last committed update to the same member, tab, rich filter expression, or sort
+order wins. Late responses cannot restore replaced queries or cleared sessions. Project issue
+layouts read these preferences and pass explicit filter snapshots to list requests. Mutations reconcile
 the active project list only while its route, session, permission queries, preference query,
 and request generation remain current. Off-view writes update their entities without altering
-the active list. Failed preference reads invalidate captured list inputs even when older data
-remains cached. Layouts reload from changed Query preferences; completing a save does not
-imperatively refresh a list from the previous route. Project column collapse uses scoped
+the active list. A transient refresh failure retains verified preferences and readable
+issue rows while retry is available. A definitive denial clears the accepted preferences
+and blocks list reads until preferences are verified again. Changes to Query preferences refresh
+the layouts for the current route. Project column collapse uses scoped
 React state and the existing account/project local-storage format. Profile and archive filters
 also use account-scoped React preferences, with stable request inputs. Cycle, module and
 workspace-view preferences have their own explicit React scopes.
@@ -623,3 +625,10 @@ accepted rows visible as a read-only snapshot with an updating indicator. The
 new request owns its own result and pagination. Changes of project, identity,
 permissions, or layout discard the snapshot. The cold-load and error states
 remain visible for their respective outcomes.
+
+A same-query refresh holds the accepted generation while it rereads each
+previously loaded depth, capped by the available pages. It publishes the
+replacement together after verifying that the request and permission owners
+still match. A transient refresh error keeps the accepted rows and exposes a
+retry. When loading a later page fails, its group stops automatic pagination
+until the user retries. An authorization error hides results immediately.

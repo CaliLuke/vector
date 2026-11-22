@@ -32,7 +32,8 @@ export class IssueArchiveService extends APIService {
           params: { ...queries },
         },
         config
-      )
+      ),
+      "response-or-error"
     );
   }
 
