@@ -6,6 +6,8 @@ import { lintFrontend } from "../observability-lint.mjs";
 
 test("reports UI failure handling and detached rejections using the TypeScript AST", () => {
   const fixture = `
+import { reportBrowserActionFailure as reportVectorAction } from "@/helpers/browser-diagnostics";
+import { reportBrowserActionFailure } from "./unrelated-local-module";
 type Action = () => Promise<void>;
 export async function BrowserActions(save: Action) {
   try {
@@ -79,6 +81,27 @@ export async function BrowserActions(save: Action) {
       method: "POST", credentials: "omit", keepalive: true, body: JSON.stringify({ stage: "identity", reason: "unexpected" })
     }).catch(() => {});
     setFailure(error);
+  }
+
+  try {
+    await save();
+  } catch (error) {
+    reportVectorAction("theme_config_download");
+    setFailure(error);
+  }
+
+  try {
+    await save();
+  } catch (error) {
+    reportVectorAction("unexpected_action");
+    setFailure(error); // want unreported-ui-failure
+  }
+
+  try {
+    await save();
+  } catch (error) {
+    reportBrowserActionFailure("theme_config_download");
+    setFailure(error); // want unreported-ui-failure
   }
 
   void save().catch(() => undefined); // want swallowed-detached-rejection

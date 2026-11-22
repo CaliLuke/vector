@@ -11,6 +11,20 @@ const branches = new Set([
   "WhileStatement",
 ]);
 const errorSetters = new Set(["setError", "setErrors", "setFailure", "setSubmitError", "setErrorMap"]);
+const browserActions = new Set(["webhook_secret_csv_download", "theme_config_download"]);
+
+function browserActionReporters(program) {
+  const reporters = new Set();
+  for (const declaration of program.body) {
+    if (declaration.type !== "ImportDeclaration" || declaration.source.value !== "@/helpers/browser-diagnostics")
+      continue;
+    for (const specifier of declaration.specifiers) {
+      if (specifier.type === "ImportSpecifier" && name(specifier.imported) === "reportBrowserActionFailure")
+        reporters.add(specifier.local.name);
+    }
+  }
+  return reporters;
+}
 
 function name(node) {
   if (node?.type === "Identifier") return node.name;
@@ -75,9 +89,10 @@ function projectAccessPost(call) {
   );
 }
 
-function signal(call) {
-  if (projectAccessPost(call)) return "production";
-  const { callee } = call;
+function signal(call, reporters) {
+  const { callee, arguments: args } = call;
+  if (projectAccessPost(call) || (reporters.has(name(callee)) && browserActions.has(name(args[0]))))
+    return "production";
   if (
     name(callee) === "reportLocalQueryError" ||
     (name(callee.object) === "console" && ["warn", "error"].includes(member(callee)))
@@ -85,14 +100,14 @@ function signal(call) {
     return "local";
 }
 
-function signalOnPath(feedback, body, keys) {
+function signalOnPath(feedback, body, keys, reporters) {
   let local = false;
   for (let node = feedback; node !== body && node.parent; node = node.parent) {
     const parent = node.parent;
     const candidates = parent.type === "BlockStatement" ? parent.body : [node];
     for (const statement of candidates) {
       for (const call of calls(statement, keys, true)) {
-        const signalType = signal(call);
+        const signalType = signal(call, reporters);
         if (signalType === "production") return signalType;
         if (signalType === "local") local = true;
       }
@@ -134,10 +149,11 @@ function visibleFailureRule(target, message) {
     meta: { schema: [] },
     create(context) {
       const keys = context.sourceCode.visitorKeys;
+      const reporters = browserActionReporters(context.sourceCode.ast);
       function check(body, error) {
         if (propagatesFailure(body, error)) return;
         for (const call of calls(body, keys)) {
-          if (isUIFailure(call) && signalOnPath(call, body, keys) === target) {
+          if (isUIFailure(call) && signalOnPath(call, body, keys, reporters) === target) {
             context.report({ node: call, message });
             return;
           }
