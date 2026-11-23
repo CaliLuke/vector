@@ -33,7 +33,7 @@ func (s *Service) stateMutation(ctx context.Context, input stateInput) (result *
 		}
 		s.recordMutation(ctx, span, fields, err)
 	}()
-	verified, current, authErr := actionActor(ctx, input.workspace, true)
+	verified, current, authErr := s.scopedActor(ctx, input.workspace, true)
 	if authErr != nil {
 		return nil, authErr
 	}

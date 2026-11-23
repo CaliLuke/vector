@@ -12,7 +12,7 @@ import (
 )
 
 func (s *Service) WorkitemActivity(ctx context.Context, input *api.WorkitemActivityRequest) (*api.WorkitemActivityResult, error) {
-	return readProjectResource(ctx, input, selectWorkitemActivityAction, activityRead{s.activityReads}, activityreads.ErrForbidden, activityreads.ErrNotFound, projectWorkitemActivityResult)
+	return readProjectResource(ctx, s, input, selectWorkitemActivityAction, activityRead{s.activityReads}, activityreads.ErrForbidden, activityreads.ErrNotFound, projectWorkitemActivityResult)
 }
 func selectWorkitemActivityAction(input *api.WorkitemActivityRequest) (apicontract.ProjectReadRequest, *string, error) {
 	return selectItemReadUnion(input, func(input api.WorkitemActivityRequest) itemReadSelection {

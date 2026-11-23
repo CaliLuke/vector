@@ -202,7 +202,7 @@ func (s *Service) customerOperation(ctx context.Context, tool string, input inte
 		return nil, err
 	}
 	write := in.Action != "list" && in.Action != "retrieve" && in.Action != "list_workitems" && in.Action != "get_values"
-	ctx, actor, err := actionActor(ctx, in.Workspace, write)
+	ctx, actor, err := s.scopedActor(ctx, in.Workspace, write)
 	if err != nil {
 		return nil, err
 	}

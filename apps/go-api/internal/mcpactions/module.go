@@ -17,7 +17,7 @@ func (s *Service) moduleRead(ctx context.Context, input *api.ModuleRequest) (*ap
 			return planningWorkitems(ctx, s, "module", items, api.NewModuleResultWorkitemPQLFailure, api.NewModuleResultWorkitemPage)
 		}
 	}
-	return readProjectResource(ctx, input, selectModuleAction, s.moduleReads, modules.ErrForbidden, modules.ErrNotFound, projectModuleResult)
+	return readProjectResource(ctx, s, input, selectModuleAction, s.moduleReads, modules.ErrForbidden, modules.ErrNotFound, projectModuleResult)
 }
 
 func selectModuleAction(input *api.ModuleRequest) (modules.APIV1Request, *string, error) {

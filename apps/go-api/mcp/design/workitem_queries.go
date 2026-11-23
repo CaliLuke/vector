@@ -19,7 +19,8 @@ func workitemQueryFields(page bool, external bool) {
 
 var workitemList = Type("WorkitemList", func() {
 	Attribute("action", String, func() { Enum("list") })
-	Attribute("project_id", String, func() { Format(FormatUUID) })
+	projectKey()
+	compactListFormat()
 	projectWorkspaceSelector()
 	workitemQueryFields(true, true)
 	Required("action")
@@ -36,7 +37,7 @@ var workitemRetrieve = Type("WorkitemRetrieve", func() {
 })
 var workitemIdentifier = Type("WorkitemIdentifier", func() {
 	Attribute("action", String, func() { Enum("retrieve_by_identifier") })
-	Attribute("workitem_identifier", String)
+	Attribute("workitem_identifier", String, "Full work-item key, for example VEC-42.")
 	projectWorkspaceSelector()
 	workitemQueryFields(false, true)
 	Required("action", "workitem_identifier")
@@ -129,7 +130,7 @@ var moduleListWorkitems = Type("ModuleListWorkitems", func() {
 var workitemCount = Type("WorkitemCount", func() {
 	Attribute("action", String, func() { Enum("count") })
 	Required("action")
-	Attribute("project_id", String, func() { Format(FormatUUID) })
+	projectKey()
 	projectWorkspaceSelector()
 	Attribute("pql", String)
 	for _, key := range []string{"group_by", "sub_group_by"} {

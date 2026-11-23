@@ -45,7 +45,7 @@ func (s *Service) mutateResource(ctx context.Context, tool string, input resourc
 		}
 		s.recordMutation(ctx, span, fields, err)
 	}()
-	verified, current, authErr := actionActor(ctx, input.workspace, true)
+	verified, current, authErr := s.scopedActor(ctx, input.workspace, true)
 	if authErr != nil {
 		return value, authErr
 	}

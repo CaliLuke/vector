@@ -76,7 +76,7 @@ func TestProjectListUsesSDKDefaultsAndIncludesArchivedProjects(t *testing.T) {
 
 func TestProjectGeneratedValidationRejectsInvalidActionInputs(t *testing.T) {
 	for _, input := range []string{
-		`{"action":"retrieve"}`, `{"action":"retrieve","project_id":"invalid"}`,
+		`{"action":"retrieve"}`, `{"action":"retrieve","project_id":"too-long-to-be-a-project-key"}`,
 		`{"action":"retrieve","project_id":"30000000-0000-4000-8000-000000000001","cursor":"100:1:0"}`,
 		`{"action":"create","name":"New"}`, `{"action":"list","per_page":-1}`,
 		`{"action":"list","per_page":1001}`, `{"action":"list","per_page":null}`,
@@ -142,7 +142,7 @@ func TestDirectProjectCallsRequireIdentityAndValidInputs(t *testing.T) {
 		new(api.NewProjectRequestProjectList(&api.ProjectList{Action: "bad"})),
 		new(api.NewProjectRequestProjectList(&api.ProjectList{Action: "list", PerPage: new(-1)})),
 		new(api.NewProjectRequestProjectList(&api.ProjectList{Action: "list", PerPage: new(1001)})),
-		new(api.NewProjectRequestProjectRetrieve(&api.ProjectRetrieve{Action: "retrieve", ProjectID: "bad"})),
+		new(api.NewProjectRequestProjectRetrieve(&api.ProjectRetrieve{Action: "retrieve", ProjectID: "too-long-to-be-a-project-key"})),
 	} {
 		_, err = f.service.Project(ctx, input)
 		require.Error(t, err)

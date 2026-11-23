@@ -80,8 +80,10 @@ or generated UUID in `X-Request-ID`. Successful authentication updates token
 
 The authentication package revalidates before each invocation and receipt replay.
 The shared resolver checks current membership for each tool selector. If a header
-is present, an explicit tool selector must match it. Missing scope on a scoped
-action returns `invalid_params`. `workspace.list`, `member.me`, discovery and the
+is present, an explicit tool selector must match it. When a scoped call omits the selector, the tool returns a recovery message
+with the currently accessible workspace slugs and names. Retry the same call
+with `workspace_slug` set to the intended slug. The original operation does
+not run until a workspace is selected. `workspace.list`, `member.me`, discovery and the
 PQL reference work without a selector. Discovery combines the actions available
 in each accessible workspace; each invocation still checks its target permissions.
 See the [multi-workspace client example](self-hosting.md#remote-mcp). Archive/restore receipt replay and revision checks are described in [write recovery](mcp-writes.md).
@@ -95,6 +97,26 @@ Generated action smoke tests exercise both authentication modes. Credential-neut
 shape, input, timestamp, storage, and worker checks run once through a personal
 token. Separate matrices cover authentication, current permissions, revocation,
 and their interactions with writes and replay.
+
+## Compact lists and keys
+
+Set `format: "compact"` on the `list` action of `workspace`, `project`,
+`workitem`, or `state` to get one plain-text result with one row per entry.
+Project, work-item and state lists default to 20 rows in compact mode. When
+there is another page, pass the returned cursor with the original filters and
+format. The default JSON response remains available by omitting `format` or
+passing `"json"`. Explicit work-item `fields` or `expand` use the JSON projection.
+
+1. Use the workspace slug from `workspace.list` as `workspace_slug`.
+2. Use an exact project key such as `VEC` as `project_id` in
+   `project.retrieve`, `workitem.list`, or `workitem.count`. When an action
+   requires the project UUID, read the project by key to get it.
+3. Read a work-item key such as `VEC-42` with `workitem.retrieve_by_identifier`
+   and `workitem_identifier`. That result includes the UUID for actions that
+   require it. Compact state lists include UUIDs for use in state filters and writes.
+
+An invalid PQL filter on a compact work-item list returns the parse error and
+points to `get_pql_reference` with `detail: "brief"`.
 
 ## OAuth authentication and account linking
 

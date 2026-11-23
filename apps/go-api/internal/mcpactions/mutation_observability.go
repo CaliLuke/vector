@@ -36,14 +36,11 @@ func (s *Service) projectMutation(ctx context.Context, input *api.ProjectArchive
 		fields["latency_ms"] = time.Since(started).Milliseconds()
 		s.recordMutation(ctx, span, fields, err)
 	}()
-	verified, current, authErr := actionActor(ctx, input.WorkspaceSlug, true)
+	verified, current, authErr := s.scopedActor(ctx, input.WorkspaceSlug, true)
 	if authErr != nil {
 		return nil, authErr
 	}
 	actor = current
-	if actor.WorkspaceID == uuid.Nil {
-		return nil, api.MakeInvalidParams(errors.New("workspace is required"))
-	}
 	return s.archiveProject(verified, actor, input)
 }
 

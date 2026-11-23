@@ -43,7 +43,7 @@ func (s *Service) milestoneMutation(ctx context.Context, input milestoneInput) (
 		}
 		s.recordMutation(ctx, span, fields, err)
 	}()
-	verified, current, authErr := actionActor(ctx, input.workspace, true)
+	verified, current, authErr := s.scopedActor(ctx, input.workspace, true)
 	if authErr != nil {
 		return nil, authErr
 	}
@@ -53,7 +53,7 @@ func (s *Service) milestoneMutation(ctx context.Context, input milestoneInput) (
 		return nil, err
 	}
 	options := milestones.WriteOptions{Scope: scope, ExpectedRevision: input.revision, Origin: s.origin, Revalidate: func(ctx context.Context) error {
-		_, fresh, authErr := actionActor(ctx, input.workspace, true)
+		_, fresh, authErr := s.scopedActor(ctx, input.workspace, true)
 		if authErr != nil {
 			return authErr
 		}

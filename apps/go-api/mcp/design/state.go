@@ -31,6 +31,7 @@ func mutationExtensions(revision bool) {
 
 var stateList = Type("StateList", func() {
 	stateTarget("list", false)
+	compactListFormat()
 	Attribute("cursor", String)
 	Attribute("per_page", Int, "Zero or omitted uses 1000.", func() { Minimum(0); Maximum(1000) })
 })

@@ -7,6 +7,7 @@ import (
 
 var workspaceList = Type("WorkspaceList", func() {
 	Attribute("action", String, func() { Enum("list") })
+	compactListFormat()
 	Required("action")
 	Meta("openapi:additionalProperties", "false")
 })
@@ -51,6 +52,6 @@ func workspace() {
 		Meta("mcp:annotation:readOnlyHint", "false")
 		Meta("mcp:annotation:destructiveHint", "false")
 		Meta("mcp:annotation:openWorldHint", "false")
-		mcp.Tool("workspace", "List accessible workspaces, retrieve a selected workspace, and manage its feature settings.", mcp.ToolTitle("Workspace settings"))
+		mcp.Tool("workspace", "List accessible workspace slugs with format=compact, retrieve a workspace, or manage features.", mcp.ToolTitle("Workspace settings"))
 	})
 }

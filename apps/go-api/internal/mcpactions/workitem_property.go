@@ -31,7 +31,7 @@ func (s *Service) WorkitemProperty(ctx context.Context, input *api.WorkitemPrope
 		return s.propertyValue(ctx, in)
 	}
 	read := in.Action == "list" || in.Action == "retrieve" || in.Action == "list_options" || in.Action == "retrieve_option"
-	ctx, actor, err := actionActor(ctx, in.Workspace, !read)
+	ctx, actor, err := s.scopedActor(ctx, in.Workspace, !read)
 	if err != nil {
 		return result, err
 	}
@@ -84,7 +84,7 @@ func (s *Service) mutateProperty(ctx context.Context, actor mcpauth.Principal, i
 		s.recordMutation(ctx, span, fields, err)
 	}()
 	cmd.Revalidate = func(ctx context.Context) error {
-		_, current, err := actionActor(ctx, in.Workspace, true)
+		_, current, err := s.scopedActor(ctx, in.Workspace, true)
 		if err != nil {
 			return err
 		}

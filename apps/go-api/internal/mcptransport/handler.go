@@ -85,7 +85,7 @@ func New(config Config, options Options, fallback http.Handler) (http.Handler, e
 			return nil, fmt.Errorf("MCP action discovery authorization is required")
 		}
 		server, err := generated.NewSDKServer(options.Service, &generated.SDKServerOptions{
-			Adapter: &generated.MCPAdapterOptions{ToolCallInterceptors: []generated.ToolCallInterceptor{memberContent, attachmentContent}},
+			Adapter: &generated.MCPAdapterOptions{ToolCallInterceptors: []generated.ToolCallInterceptor{memberContent, attachmentContent, compactListContent}},
 			Server: &mcpsdk.ServerOptions{
 				SupportedProtocolVersions: []string{"2026-07-28"},
 				SetCacheable: func(_ context.Context, _ mcpsdk.Request, result *mcpsdk.Cacheable) {

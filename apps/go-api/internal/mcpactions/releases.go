@@ -163,7 +163,7 @@ func (s *Service) releaseOperation(ctx context.Context, tool string, input inter
 		return nil, err
 	}
 	write := cmd.Action != "list" && cmd.Action != "retrieve" && cmd.Action != "get_changelog" && cmd.Action != "list_workitems"
-	ctx, actor, err := actionActor(ctx, in.Workspace, write)
+	ctx, actor, err := s.scopedActor(ctx, in.Workspace, write)
 	if err != nil {
 		return nil, err
 	}

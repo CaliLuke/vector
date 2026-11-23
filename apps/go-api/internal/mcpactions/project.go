@@ -6,6 +6,8 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
@@ -66,12 +68,9 @@ func (s *Service) project(ctx context.Context, input *api.ProjectRequest) (*api.
 	if mutation {
 		return s.projectMutation(ctx, archive)
 	}
-	ctx, actor, err := actionActor(ctx, workspace, false)
+	ctx, actor, err := s.scopedActor(ctx, workspace, false)
 	if err != nil {
 		return nil, err
-	}
-	if actor.WorkspaceSlug == "" {
-		return nil, api.MakeInvalidParams(errors.New("workspace is required"))
 	}
 	if isList {
 		return s.projectList(ctx, actor, list)
@@ -83,6 +82,12 @@ func (s *Service) projectList(ctx context.Context, actor mcpauth.Principal, inpu
 	size := 100
 	if input.PerPage != nil && *input.PerPage != 0 {
 		size = *input.PerPage
+	} else if input.Format != nil && *input.Format == "compact" {
+		var err error
+		size, err = compactPageSize(input.Cursor)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if size < 1 || size > 1000 {
 		return nil, api.MakeInvalidParams(errors.New("invalid project page size"))
@@ -106,14 +111,9 @@ func (s *Service) projectList(ctx context.Context, actor mcpauth.Principal, inpu
 }
 
 func (s *Service) projectDetail(ctx context.Context, actor mcpauth.Principal, input *api.ProjectRetrieve) (*api.ProjectResult, error) {
-	id, err := uuid.Parse(input.ProjectID)
+	body, err := s.readProjectReference(ctx, actor, input.ProjectID, projects.APIProjectDetailOptions{IncludeRevision: input.IncludeRevision != nil && *input.IncludeRevision})
 	if err != nil {
-		return nil, api.MakeInvalidParams(errors.New("invalid project identifier"))
-	}
-	workspaceID := uuid.UUID(actor.WorkspaceID)
-	body, err := s.projectReads.APIProject(ctx, uuid.UUID(actor.UserID), actor.WorkspaceSlug, id, projects.APIProjectDetailOptions{ExpectedWorkspaceID: &workspaceID, IncludeRevision: input.IncludeRevision != nil && *input.IncludeRevision})
-	if err != nil {
-		return nil, projectReadError(err)
+		return nil, err
 	}
 	// The HTTP detail omits per-member sort_order; the pinned SDK defaults it to null.
 	detail := &api.ProjectDetail{SortOrder: loom.NullValue[float64]()}
@@ -125,6 +125,23 @@ func (s *Service) projectDetail(ctx context.Context, actor mcpauth.Principal, in
 	}
 	result := api.NewProjectResultProjectDetail(detail)
 	return &result, nil
+}
+
+func (s *Service) readProjectReference(ctx context.Context, actor mcpauth.Principal, reference string, options projects.APIProjectDetailOptions) (json.RawMessage, error) {
+	id, err := uuid.Parse(reference)
+	if err != nil {
+		if reference == "" || utf8.RuneCountInString(reference) > 12 || strings.TrimSpace(reference) != reference {
+			return nil, api.MakeInvalidParams(errors.New("expected project UUID or exact project key"))
+		}
+		options.Identifier = reference
+	}
+	workspaceID := uuid.UUID(actor.WorkspaceID)
+	options.ExpectedWorkspaceID = &workspaceID
+	body, err := s.projectReads.APIProject(ctx, uuid.UUID(actor.UserID), actor.WorkspaceSlug, id, options)
+	if err != nil {
+		return nil, projectReadError(err)
+	}
+	return body, nil
 }
 
 func projectReadError(err error) error {

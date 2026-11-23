@@ -53,7 +53,7 @@ func typeUUID(value string) (uuid.UUID, error) {
 	return id, nil
 }
 func (s *Service) readWorkitemType(ctx context.Context, in workitemTypeInput) (loom.Nullable[api.WorkitemTypeResult], error) {
-	ctx, actor, err := actionActor(ctx, in.workspace, false)
+	ctx, actor, err := s.scopedActor(ctx, in.workspace, false)
 	if err != nil {
 		return loom.Nullable[api.WorkitemTypeResult]{}, err
 	}
@@ -125,7 +125,7 @@ func (s *Service) mutateWorkitemType(ctx context.Context, in workitemTypeInput) 
 		}
 		s.recordMutation(ctx, span, fields, err)
 	}()
-	verified, current, authErr := actionActor(ctx, in.workspace, true)
+	verified, current, authErr := s.scopedActor(ctx, in.workspace, true)
 	if authErr != nil {
 		return result, authErr
 	}

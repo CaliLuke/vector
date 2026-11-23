@@ -11,7 +11,7 @@ import (
 )
 
 func (s *Service) milestoneRead(ctx context.Context, input milestoneInput) (*api.MilestoneResult, error) {
-	ctx, actor, err := actionActor(ctx, input.workspace, false)
+	ctx, actor, err := s.scopedActor(ctx, input.workspace, false)
 	if err != nil {
 		return nil, err
 	}

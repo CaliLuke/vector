@@ -10,7 +10,7 @@ import (
 )
 
 func (s *Service) workitemLinkRead(ctx context.Context, input *api.WorkitemLinkRequest) (*api.WorkitemLinkResult, error) {
-	return readProjectResource(ctx, input, selectWorkitemLinkAction, collaborationRead{s.collaborationReads, "links"}, nil, nil, projectWorkitemLinkResult)
+	return readProjectResource(ctx, s, input, selectWorkitemLinkAction, collaborationRead{s.collaborationReads, "links"}, nil, nil, projectWorkitemLinkResult)
 }
 func selectWorkitemLinkAction(input *api.WorkitemLinkRequest) (apicontract.ProjectReadRequest, *string, error) {
 	return selectItemReadUnion(input, func(input api.WorkitemLinkRequest) itemReadSelection {

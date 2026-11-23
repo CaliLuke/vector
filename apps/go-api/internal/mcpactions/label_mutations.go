@@ -118,7 +118,7 @@ func (s *Service) labelMutation(ctx context.Context, input *api.LabelRequest) (r
 		}
 		s.recordMutation(ctx, span, fields, err)
 	}()
-	verified, current, authErr := actionActor(ctx, workspace, true)
+	verified, current, authErr := s.scopedActor(ctx, workspace, true)
 	if authErr != nil {
 		return nil, authErr
 	}

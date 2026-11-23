@@ -19,7 +19,7 @@ func (s *Service) projectWorklogSummary(ctx context.Context, input *api.ProjectW
 	if err != nil {
 		return loom.Nullable[api.ProjectResult]{}, err
 	}
-	ctx, actor, err := readActor(ctx, input.WorkspaceSlug)
+	ctx, actor, err := s.scopedReadActor(ctx, input.WorkspaceSlug)
 	if err != nil {
 		return loom.Nullable[api.ProjectResult]{}, err
 	}

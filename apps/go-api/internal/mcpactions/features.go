@@ -75,7 +75,7 @@ func (s *Service) featureOperation(ctx context.Context, input interface{ Validat
 		cmd.Values[key] = *flag
 	}
 	write := in.Action == "update_features"
-	ctx, actor, err := actionActor(ctx, in.Workspace, write)
+	ctx, actor, err := s.scopedActor(ctx, in.Workspace, write)
 	if err != nil {
 		return nil, err
 	}

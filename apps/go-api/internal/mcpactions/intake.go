@@ -102,7 +102,7 @@ func (s *Service) readIntake(ctx context.Context, in intakeInput) (loom.Nullable
 			return loom.Nullable[api.IntakeResult]{}, err
 		}
 	}
-	ctx, actor, err := readActor(ctx, in.Workspace)
+	ctx, actor, err := s.scopedReadActor(ctx, in.Workspace)
 	if err != nil {
 		return loom.Nullable[api.IntakeResult]{}, err
 	}

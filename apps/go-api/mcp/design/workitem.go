@@ -111,6 +111,6 @@ func workitem() {
 		Meta("mcp:annotation:readOnlyHint", "false")
 		Meta("mcp:annotation:destructiveHint", "true")
 		Meta("mcp:annotation:openWorldHint", "false")
-		mcp.Tool("workitem", "Work items: issues, tasks and epics. Use an advertised action.", mcp.ToolTitle("Work items"))
+		mcp.Tool("workitem", "List with format=compact. Read a key such as VEC-42 with retrieve_by_identifier and workitem_identifier.", mcp.ToolTitle("Work items"))
 	})
 }

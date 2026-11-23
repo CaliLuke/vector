@@ -85,7 +85,7 @@ func (s *Service) templateOperation(ctx context.Context, input *api.TemplateRequ
 	if err != nil {
 		return nil, err
 	}
-	ctx, actor, err := actionActor(ctx, in.Workspace, in.Action != "list")
+	ctx, actor, err := s.scopedActor(ctx, in.Workspace, in.Action != "list")
 	if err != nil {
 		return nil, err
 	}

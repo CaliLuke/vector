@@ -90,7 +90,7 @@ func (s *Service) attachmentRead(ctx context.Context, q assets.AttachmentQuery, 
 			return loom.Nullable[api.WorkitemAttachmentResult]{}, api.MakeInvalidParams(errors.New("invalid attachment identifier"))
 		}
 	}
-	ctx, actor, err := readActor(ctx, workspace)
+	ctx, actor, err := s.scopedReadActor(ctx, workspace)
 	if err != nil {
 		return loom.Nullable[api.WorkitemAttachmentResult]{}, err
 	}

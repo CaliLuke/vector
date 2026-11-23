@@ -32,7 +32,7 @@ func (s *Service) State(ctx context.Context, input *api.StateRequest) (loom.Null
 	}
 	var result *api.StateResult
 	if command.action == "list" || command.action == "retrieve" {
-		result, err = readProjectResource(ctx, &command, selectStateRead, s.states, states.ErrForbidden, states.ErrNotFound, projectStateResult)
+		result, err = readProjectResource(ctx, s, &command, selectStateRead, s.states, states.ErrForbidden, states.ErrNotFound, projectStateResult)
 	} else {
 		result, err = s.stateMutation(ctx, command)
 	}
@@ -56,6 +56,13 @@ func stateCommand(input *api.StateRequest) (stateInput, error) {
 			return command, stateInvalid()
 		}
 		command = stateInput{action: v.Action, project: v.ProjectID, workspace: v.WorkspaceSlug, cursor: v.Cursor, perPage: v.PerPage}
+		if v.Format != nil && *v.Format == "compact" && (v.PerPage == nil || *v.PerPage == 0) {
+			size, err := compactPageSize(v.Cursor)
+			if err != nil {
+				return command, err
+			}
+			command.perPage = &size
+		}
 	case api.StateRequestKindStateRetrieve:
 		v, ok := input.AsStateRetrieve()
 		if !ok || v == nil || v.Action != "retrieve" {

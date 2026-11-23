@@ -98,7 +98,7 @@ func (s *Service) listWorkLogs(ctx context.Context, input *api.WorkLogList) (loo
 	if err != nil || item == uuid.Nil {
 		return loom.Nullable[api.WorkLogResult]{}, api.MakeInvalidParams(errors.New("invalid work log item"))
 	}
-	ctx, actor, err := readActor(ctx, input.WorkspaceSlug)
+	ctx, actor, err := s.scopedReadActor(ctx, input.WorkspaceSlug)
 	if err != nil {
 		return loom.Nullable[api.WorkLogResult]{}, err
 	}

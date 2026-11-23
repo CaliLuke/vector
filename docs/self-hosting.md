@@ -197,8 +197,9 @@ The next call can use a different authorized slug on the same connection. No new
 token or connection configuration is needed. An optional `X-Workspace-Slug`
 header remains available as a default for existing clients; when present, an
 explicit tool selector must match it. Omit the header for multi-workspace use.
-Missing selectors on scoped actions return `invalid_params`. Listing, discovery,
-and `member.me` need no selector. Workspace listing excludes deleted workspaces
+Scoped calls with no selector return accessible workspace choices and explain
+how to retry. `workspace.list`, discovery, and `member.me` work without a selector.
+See [compact lists and keys](mcp.md#compact-lists-and-keys) for shorter tool replies. Workspace listing excludes deleted workspaces
 and inactive or deleted memberships. Every invocation and receipt replay checks
 current credentials and permissions; token workspace metadata grants no access.
 

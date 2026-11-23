@@ -12,7 +12,7 @@ import (
 )
 
 func (s *Service) labelRead(ctx context.Context, input *api.LabelRequest) (*api.LabelResult, error) {
-	return readProjectResource(ctx, input, selectLabelAction, s.labelReads, labels.ErrForbidden, labels.ErrNotFound, projectLabelResult)
+	return readProjectResource(ctx, s, input, selectLabelAction, s.labelReads, labels.ErrForbidden, labels.ErrNotFound, projectLabelResult)
 }
 
 func selectLabelAction(input *api.LabelRequest) (labels.APIV1Request, *string, error) {

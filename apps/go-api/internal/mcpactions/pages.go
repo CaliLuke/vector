@@ -159,7 +159,7 @@ func (s *Service) pageOperation(ctx context.Context, tool string, input interfac
 		return nil, err
 	}
 	write := cmd.Action != "list" && cmd.Action != "retrieve" && cmd.Action != "list_workitem_pages" && cmd.Action != "list_pages" && cmd.Action != "search_pages" && cmd.Action != "list_members"
-	ctx, actor, err := actionActor(ctx, in.Workspace, write)
+	ctx, actor, err := s.scopedActor(ctx, in.Workspace, write)
 	if err != nil {
 		return nil, err
 	}

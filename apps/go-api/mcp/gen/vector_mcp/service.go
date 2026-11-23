@@ -29,7 +29,7 @@ type Service interface {
 	// Read authorized identities, workspace and project members, and role
 	// definitions.
 	Member(context.Context, *MemberRequest) (res *MemberResult, err error)
-	// Projects in a workspace. Use an advertised action.
+	// List workspace projects with format=compact. Retrieve by project key or UUID.
 	Project(context.Context, *ProjectRequest) (res loom.Nullable[ProjectResult], err error)
 	// Cycles in a project. Use an advertised action.
 	Cycle(context.Context, *CycleRequest) (res loom.Nullable[CycleResult], err error)
@@ -2081,7 +2081,10 @@ type ProjectGetFeatures struct {
 }
 
 type ProjectList struct {
-	Action  string  `json:"action"`
+	Action string `json:"action"`
+	// Use compact for plain-text rows and pagination. Omit for the full JSON
+	// contract.
+	Format  *string `json:"format,omitzero"`
 	Cursor  *string `json:"cursor,omitzero"`
 	OrderBy *string `json:"order_by,omitzero"`
 	// Zero or omitted uses 100.
@@ -2131,7 +2134,8 @@ type ProjectPage struct {
 }
 
 type ProjectRetrieve struct {
-	Action    string `json:"action"`
+	Action string `json:"action"`
+	// Project UUID or exact project key, such as VEC.
 	ProjectID string `json:"project_id"`
 	// Vector extension: include an opaque revision token for guarded writes.
 	IncludeRevision *bool   `json:"include_revision,omitzero"`
@@ -2690,7 +2694,10 @@ type StateList struct {
 	// Omit or use an empty string for workspace scope.
 	ProjectID     *string `json:"project_id,omitzero"`
 	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
-	Cursor        *string `json:"cursor,omitzero"`
+	// Use compact for plain-text rows and pagination. Omit for the full JSON
+	// contract.
+	Format *string `json:"format,omitzero"`
+	Cursor *string `json:"cursor,omitzero"`
 	// Zero or omitted uses 1000.
 	PerPage *int `json:"per_page,omitzero"`
 }
@@ -2963,12 +2970,6 @@ func ValidateAttachmentRecord(result *AttachmentRecord, validationContext ...str
 			validationPath += validationPart
 		}
 	}
-	if !result.Attributes.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("attributes", validationPath))
-	}
-	if !result.StorageMetadata.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("storage_metadata", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -3025,6 +3026,12 @@ func ValidateAttachmentRecord(result *AttachmentRecord, validationContext ...str
 	}
 	if !result.ContentType.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("content_type", validationPath))
+	}
+	if !result.Attributes.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("attributes", validationPath))
+	}
+	if !result.StorageMetadata.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("storage_metadata", validationPath))
 	}
 	if !result.IsDeleted.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("is_deleted", validationPath))
@@ -3383,9 +3390,6 @@ func ValidateCollectionPageRow(result *CollectionPageRow, validationContext ...s
 			validationPath += validationPart
 		}
 	}
-	if result.Page == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("page", validationPath))
-	}
 	if !result.PageCollectionID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("page_collection_id", validationPath))
 	}
@@ -3394,6 +3398,9 @@ func ValidateCollectionPageRow(result *CollectionPageRow, validationContext ...s
 	}
 	if !result.ParentID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("parent_id", validationPath))
+	}
+	if result.Page == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("page", validationPath))
 	}
 	if result.Page != nil {
 		if err2 := ValidatePageRecord(result.Page, validationPath+".page"); err2 != nil {
@@ -3437,9 +3444,6 @@ func ValidateCollectionRecord(result *CollectionRecord, validationContext ...str
 			validationPath += validationPart
 		}
 	}
-	if !result.LogoProps.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -3481,6 +3485,9 @@ func ValidateCollectionRecord(result *CollectionRecord, validationContext ...str
 	}
 	if !result.SortOrder.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("sort_order", validationPath))
+	}
+	if !result.LogoProps.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
 	}
 	return
 }
@@ -4035,12 +4042,6 @@ func ValidateCustomerRecord(result *CustomerRecord, validationContext ...string)
 			validationPath += validationPart
 		}
 	}
-	if !result.Description.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("description", validationPath))
-	}
-	if !result.LogoProps.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -4109,6 +4110,12 @@ func ValidateCustomerRecord(result *CustomerRecord, validationContext ...string)
 	}
 	if !result.Employees.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("employees", validationPath))
+	}
+	if !result.Description.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("description", validationPath))
+	}
+	if !result.LogoProps.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
 	}
 	return
 }
@@ -4276,12 +4283,6 @@ func ValidateCustomerRequestRecord(result *CustomerRequestRecord, validationCont
 			validationPath += validationPart
 		}
 	}
-	if !result.Description.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("description", validationPath))
-	}
-	if !result.WorkItemIds.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("work_item_ids", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -4293,6 +4294,12 @@ func ValidateCustomerRequestRecord(result *CustomerRequestRecord, validationCont
 	}
 	if !result.CreatedAt.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("created_at", validationPath))
+	}
+	if !result.Description.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("description", validationPath))
+	}
+	if !result.WorkItemIds.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("work_item_ids", validationPath))
 	}
 	if !result.AttachmentCount.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("attachment_count", validationPath))
@@ -4460,6 +4467,11 @@ func ValidateCustomerWorkitems(result CustomerWorkitems, validationContext ...st
 	for i, e := range result {
 		if e == nil {
 			err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath, i))
+		}
+		if e != nil {
+			if err2 := ValidateCustomerWorkitem(e, validationPath+"[*]"); err2 != nil {
+				err = loom.MergeErrors(err, err2)
+			}
 		}
 	}
 	return
@@ -4645,14 +4657,14 @@ func ValidateCyclePage(result *CyclePage, validationContext ...string) (err erro
 			validationPath += validationPart
 		}
 	}
-	if result.Results == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
-	}
 	if !result.ExtraStats.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", validationPath))
 	}
 	if !result.GroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", validationPath))
+	}
+	if result.Results == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
 	}
 	if !result.SubGroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", validationPath))
@@ -4678,15 +4690,6 @@ func ValidateCycleRecord(result *CycleRecord, validationContext ...string) (err 
 		for _, validationPart := range validationContext {
 			validationPath += validationPart
 		}
-	}
-	if !result.ViewProps.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("view_props", validationPath))
-	}
-	if !result.ProgressSnapshot.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("progress_snapshot", validationPath))
-	}
-	if !result.LogoProps.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
 	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
@@ -4735,6 +4738,15 @@ func ValidateCycleRecord(result *CycleRecord, validationContext ...string) (err 
 	}
 	if !result.OwnedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("owned_by", validationPath))
+	}
+	if !result.ViewProps.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("view_props", validationPath))
+	}
+	if !result.ProgressSnapshot.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("progress_snapshot", validationPath))
+	}
+	if !result.LogoProps.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
 	}
 	if !result.SortOrder.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("sort_order", validationPath))
@@ -4888,6 +4900,11 @@ func ValidateEstimatePoints(result EstimatePoints, validationContext ...string) 
 	for i, e := range result {
 		if e == nil {
 			err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath, i))
+		}
+		if e != nil {
+			if err2 := ValidateEstimatePointRecord(e, validationPath+"[*]"); err2 != nil {
+				err = loom.MergeErrors(err, err2)
+			}
 		}
 	}
 	return
@@ -5457,12 +5474,6 @@ func ValidateIntakeRecord(result *IntakeRecord, validationContext ...string) (er
 			validationPath += validationPart
 		}
 	}
-	if !result.IssueDetail.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("issue_detail", validationPath))
-	}
-	if !result.Extra.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("extra", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -5514,8 +5525,14 @@ func ValidateIntakeRecord(result *IntakeRecord, validationContext ...string) (er
 	if !result.DuplicateTo.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("duplicate_to", validationPath))
 	}
+	if !result.IssueDetail.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("issue_detail", validationPath))
+	}
 	if !result.Status.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("status", validationPath))
+	}
+	if !result.Extra.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("extra", validationPath))
 	}
 	return
 }
@@ -5680,6 +5697,11 @@ func ValidateLabelMutationReceipt(result *LabelMutationReceipt, validationContex
 		err = loom.MergeErrors(err, loom.MissingFieldError("result", validationPath))
 	}
 	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".label_id", result.LabelID, loom.FormatUUID))
+	if actual, ok := result.Result.Value(); ok {
+		if err2 := ValidateLabelRecord(&actual, validationPath+".result"); err2 != nil {
+			err = loom.MergeErrors(err, err2)
+		}
+	}
 	if result.RequestID != nil {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".request_id", *result.RequestID, loom.FormatUUID))
 	}
@@ -5701,6 +5723,11 @@ func ValidateLabelPage(result *LabelPage, validationContext ...string) (err erro
 	for i, e := range result.Results {
 		if e == nil {
 			err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath+".results", i))
+		}
+		if e != nil {
+			if err2 := ValidateLabelRecord(e, validationPath+".results[*]"); err2 != nil {
+				err = loom.MergeErrors(err, err2)
+			}
 		}
 	}
 	return
@@ -5844,14 +5871,14 @@ func ValidateMemberDirectoryPage(result *MemberDirectoryPage, validationContext 
 			validationPath += validationPart
 		}
 	}
-	if result.Results == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
-	}
 	if !result.ExtraStats.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", validationPath))
 	}
 	if !result.GroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", validationPath))
+	}
+	if result.Results == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
 	}
 	if !result.SubGroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", validationPath))
@@ -5881,9 +5908,6 @@ func ValidateMemberIdentity(result *MemberIdentity, validationContext ...string)
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
-	if actual, ok := result.ID.Value(); ok {
-		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", actual, loom.FormatUUID))
-	}
 	if !result.FirstName.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("first_name", validationPath))
 	}
@@ -5901,6 +5925,9 @@ func ValidateMemberIdentity(result *MemberIdentity, validationContext ...string)
 	}
 	if !result.DisplayName.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("display_name", validationPath))
+	}
+	if actual, ok := result.ID.Value(); ok {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", actual, loom.FormatUUID))
 	}
 	return
 }
@@ -5929,9 +5956,6 @@ func ValidateMemberIdentityWithRole(result *MemberIdentityWithRole, validationCo
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
-	if actual, ok := result.ID.Value(); ok {
-		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", actual, loom.FormatUUID))
-	}
 	if !result.FirstName.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("first_name", validationPath))
 	}
@@ -5949,6 +5973,9 @@ func ValidateMemberIdentityWithRole(result *MemberIdentityWithRole, validationCo
 	}
 	if !result.DisplayName.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("display_name", validationPath))
+	}
+	if actual, ok := result.ID.Value(); ok {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", actual, loom.FormatUUID))
 	}
 	return
 }
@@ -6342,18 +6369,18 @@ func ValidateMilestoneRecord(result *MilestoneRecord, validationContext ...strin
 			validationPath += validationPart
 		}
 	}
-	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", result.ID, loom.FormatUUID))
 	if !result.TargetDate.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("target_date", validationPath))
-	}
-	if actual, ok := result.TargetDate.Value(); ok {
-		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".target_date", actual, loom.FormatDate))
 	}
 	if !result.ExternalSource.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("external_source", validationPath))
 	}
 	if !result.ExternalID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("external_id", validationPath))
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", result.ID, loom.FormatUUID))
+	if actual, ok := result.TargetDate.Value(); ok {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".target_date", actual, loom.FormatDate))
 	}
 	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".created_at", result.CreatedAt, loom.FormatDateTime))
 	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".updated_at", result.UpdatedAt, loom.FormatDateTime))
@@ -6597,14 +6624,14 @@ func ValidateModulePage(result *ModulePage, validationContext ...string) (err er
 			validationPath += validationPart
 		}
 	}
-	if result.Results == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
-	}
 	if !result.ExtraStats.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", validationPath))
 	}
 	if !result.GroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", validationPath))
+	}
+	if result.Results == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
 	}
 	if !result.SubGroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", validationPath))
@@ -6630,21 +6657,6 @@ func ValidateModuleRecord(result *ModuleRecord, validationContext ...string) (er
 		for _, validationPart := range validationContext {
 			validationPath += validationPart
 		}
-	}
-	if !result.DescriptionText.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("description_text", validationPath))
-	}
-	if !result.DescriptionHTML.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("description_html", validationPath))
-	}
-	if !result.ViewProps.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("view_props", validationPath))
-	}
-	if !result.LogoProps.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
-	}
-	if !result.Members.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("members", validationPath))
 	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
@@ -6694,13 +6706,28 @@ func ValidateModuleRecord(result *ModuleRecord, validationContext ...string) (er
 	if !result.Status.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("status", validationPath))
 	}
+	if !result.DescriptionText.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("description_text", validationPath))
+	}
+	if !result.DescriptionHTML.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("description_html", validationPath))
+	}
+	if !result.ViewProps.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("view_props", validationPath))
+	}
+	if !result.LogoProps.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
+	}
+	if !result.SortOrder.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("sort_order", validationPath))
+	}
+	if !result.Members.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("members", validationPath))
+	}
 	if actual, ok := result.Status.Value(); ok {
 		if !(actual == "backlog" || actual == "planned" || actual == "in-progress" || actual == "paused" || actual == "completed" || actual == "cancelled") {
 			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".status", actual, []any{"backlog", "planned", "in-progress", "paused", "completed", "cancelled"}))
 		}
-	}
-	if !result.SortOrder.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("sort_order", validationPath))
 	}
 	return
 }
@@ -7043,12 +7070,6 @@ func ValidatePageRecord(result *PageRecord, validationContext ...string) (err er
 			validationPath += validationPart
 		}
 	}
-	if !result.Description.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("description", validationPath))
-	}
-	if !result.Projects.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("projects", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -7090,6 +7111,12 @@ func ValidatePageRecord(result *PageRecord, validationContext ...string) (err er
 	}
 	if !result.PageCollectionID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("page_collection_id", validationPath))
+	}
+	if !result.Description.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("description", validationPath))
+	}
+	if !result.Projects.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("projects", validationPath))
 	}
 	if !result.Access.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("access", validationPath))
@@ -7281,18 +7308,6 @@ func ValidateProjectDetail(result *ProjectDetail, validationContext ...string) (
 			validationPath += validationPart
 		}
 	}
-	if !result.DescriptionText.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("description_text", validationPath))
-	}
-	if !result.DescriptionHTML.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("description_html", validationPath))
-	}
-	if !result.LogoProps.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
-	}
-	if !result.IconProp.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("icon_prop", validationPath))
-	}
 	if !result.TotalMembers.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("total_members", validationPath))
 	}
@@ -7316,11 +7331,6 @@ func ValidateProjectDetail(result *ProjectDetail, validationContext ...string) (
 	}
 	if !result.Network.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("network", validationPath))
-	}
-	if actual, ok := result.Network.Value(); ok {
-		if !(actual == 0 || actual == 2) {
-			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".network", actual, []any{0, 2}))
-		}
 	}
 	if !result.IsMember.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("is_member", validationPath))
@@ -7394,11 +7404,14 @@ func ValidateProjectDetail(result *ProjectDetail, validationContext ...string) (
 	if !result.DefaultState.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("default_state", validationPath))
 	}
-	if !result.ID.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
+	if !result.DescriptionText.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("description_text", validationPath))
 	}
-	if actual, ok := result.ID.Value(); ok {
-		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", actual, loom.FormatUUID))
+	if !result.DescriptionHTML.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("description_html", validationPath))
+	}
+	if !result.LogoProps.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
 	}
 	if !result.CoverImage.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("cover_image", validationPath))
@@ -7414,6 +7427,20 @@ func ValidateProjectDetail(result *ProjectDetail, validationContext ...string) (
 	}
 	if !result.ArchivedAt.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("archived_at", validationPath))
+	}
+	if !result.ID.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
+	}
+	if !result.IconProp.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("icon_prop", validationPath))
+	}
+	if actual, ok := result.Network.Value(); ok {
+		if !(actual == 0 || actual == 2) {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".network", actual, []any{0, 2}))
+		}
+	}
+	if actual, ok := result.ID.Value(); ok {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", actual, loom.FormatUUID))
 	}
 	return
 }
@@ -7608,9 +7635,24 @@ func ValidateProjectEstimateMutationReceipt(result *ProjectEstimateMutationRecei
 		err = loom.MergeErrors(err, loom.MissingFieldError("points", validationPath))
 	}
 	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", result.ProjectID, loom.FormatUUID))
+	if actual, ok := result.Estimate.Value(); ok {
+		if err2 := ValidateEstimateRecord(&actual, validationPath+".estimate"); err2 != nil {
+			err = loom.MergeErrors(err, err2)
+		}
+	}
+	if actual, ok := result.Point.Value(); ok {
+		if err2 := ValidateEstimatePointRecord(&actual, validationPath+".point"); err2 != nil {
+			err = loom.MergeErrors(err, err2)
+		}
+	}
 	for i, e := range result.Points {
 		if e == nil {
 			err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath+".points", i))
+		}
+		if e != nil {
+			if err2 := ValidateEstimatePointRecord(e, validationPath+".points[*]"); err2 != nil {
+				err = loom.MergeErrors(err, err2)
+			}
 		}
 	}
 	if result.RequestID != nil {
@@ -7783,6 +7825,11 @@ func ValidateProjectList(result *ProjectList, validationContext ...string) (err 
 	if !(result.Action == "list") {
 		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", result.Action, []any{"list"}))
 	}
+	if result.Format != nil {
+		if !(*result.Format == "compact" || *result.Format == "json") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".format", *result.Format, []any{"compact", "json"}))
+		}
+	}
 	if result.PerPage != nil {
 		if *result.PerPage < 0 {
 			err = loom.MergeErrors(err, loom.InvalidRangeError(validationPath+".per_page", *result.PerPage, "0", true))
@@ -7810,15 +7857,6 @@ func ValidateProjectLite(result *ProjectLite, validationContext ...string) (err 
 			validationPath += validationPart
 		}
 	}
-	if !result.IconProp.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("icon_prop", validationPath))
-	}
-	if !result.ID.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
-	}
-	if actual, ok := result.ID.Value(); ok {
-		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", actual, loom.FormatUUID))
-	}
 	if !result.CoverImage.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("cover_image", validationPath))
 	}
@@ -7833,6 +7871,15 @@ func ValidateProjectLite(result *ProjectLite, validationContext ...string) (err 
 	}
 	if !result.ArchivedAt.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("archived_at", validationPath))
+	}
+	if !result.ID.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
+	}
+	if !result.IconProp.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("icon_prop", validationPath))
+	}
+	if actual, ok := result.ID.Value(); ok {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", actual, loom.FormatUUID))
 	}
 	return
 }
@@ -7892,14 +7939,14 @@ func ValidateProjectPage(result *ProjectPage, validationContext ...string) (err 
 			validationPath += validationPart
 		}
 	}
-	if result.Results == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
-	}
 	if !result.ExtraStats.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", validationPath))
 	}
 	if !result.GroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", validationPath))
+	}
+	if result.Results == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
 	}
 	if !result.SubGroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", validationPath))
@@ -7929,7 +7976,9 @@ func ValidateProjectRetrieve(result *ProjectRetrieve, validationContext ...strin
 	if !(result.Action == "retrieve") {
 		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", result.Action, []any{"retrieve"}))
 	}
-	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", result.ProjectID, loom.FormatUUID))
+	if utf8.RuneCountInString(result.ProjectID) > 36 {
+		err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".project_id", utf8.RuneCountInString(result.ProjectID), 36, false))
+	}
 	if result.WorkspaceSlug != nil {
 		if utf8.RuneCountInString(*result.WorkspaceSlug) > 255 {
 			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*result.WorkspaceSlug), 255, false))
@@ -8135,6 +8184,11 @@ func ValidateRelationDefinitionCollection(result *RelationDefinitionCollection, 
 	for i, e := range result.CustomDefinitions {
 		if e == nil {
 			err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath+".custom_definitions", i))
+		}
+		if e != nil {
+			if err2 := ValidateRelationDefinitionRecord(e, validationPath+".custom_definitions[*]"); err2 != nil {
+				err = loom.MergeErrors(err, err2)
+			}
 		}
 	}
 	return
@@ -8429,12 +8483,6 @@ func ValidateRelationItem(result *RelationItem, validationContext ...string) (er
 			validationPath += validationPart
 		}
 	}
-	if result.LabelIds == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("label_ids", validationPath))
-	}
-	if result.AssigneeIds == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("assignee_ids", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -8476,6 +8524,12 @@ func ValidateRelationItem(result *RelationItem, validationContext ...string) (er
 	}
 	if !result.IsEpic.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("is_epic", validationPath))
+	}
+	if result.LabelIds == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("label_ids", validationPath))
+	}
+	if result.AssigneeIds == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("assignee_ids", validationPath))
 	}
 	return
 }
@@ -8548,9 +8602,6 @@ func ValidateReleaseBody(result *ReleaseBody, validationContext ...string) (err 
 			validationPath += validationPart
 		}
 	}
-	if !result.DescriptionJSON.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("description_json", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -8559,6 +8610,9 @@ func ValidateReleaseBody(result *ReleaseBody, validationContext ...string) (err 
 	}
 	if !result.DescriptionStripped.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("description_stripped", validationPath))
+	}
+	if !result.DescriptionJSON.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("description_json", validationPath))
 	}
 	return
 }
@@ -8593,9 +8647,6 @@ func ValidateReleaseChangelogRecord(result *ReleaseChangelogRecord, validationCo
 			validationPath += validationPart
 		}
 	}
-	if !result.Changelog.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("changelog", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -8616,6 +8667,9 @@ func ValidateReleaseChangelogRecord(result *ReleaseChangelogRecord, validationCo
 	}
 	if !result.Release.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("release", validationPath))
+	}
+	if !result.Changelog.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("changelog", validationPath))
 	}
 	if actual, ok := result.Changelog.Value(); ok {
 		if err2 := ValidateReleaseBody(&actual, validationPath+".changelog"); err2 != nil {
@@ -8885,14 +8939,14 @@ func ValidateReleaseLabelPage(result *ReleaseLabelPage, validationContext ...str
 			validationPath += validationPart
 		}
 	}
-	if result.Results == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
-	}
 	if !result.ExtraStats.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", validationPath))
 	}
 	if !result.GroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", validationPath))
+	}
+	if result.Results == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
 	}
 	if !result.SubGroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", validationPath))
@@ -8900,6 +8954,11 @@ func ValidateReleaseLabelPage(result *ReleaseLabelPage, validationContext ...str
 	for i, e := range result.Results {
 		if e == nil {
 			err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath+".results", i))
+		}
+		if e != nil {
+			if err2 := ValidateReleaseLabelRecord(e, validationPath+".results[*]"); err2 != nil {
+				err = loom.MergeErrors(err, err2)
+			}
 		}
 	}
 	return
@@ -9054,14 +9113,14 @@ func ValidateReleasePage(result *ReleasePage, validationContext ...string) (err 
 			validationPath += validationPart
 		}
 	}
-	if result.Results == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
-	}
 	if !result.ExtraStats.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", validationPath))
 	}
 	if !result.GroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", validationPath))
+	}
+	if result.Results == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
 	}
 	if !result.SubGroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", validationPath))
@@ -9077,12 +9136,6 @@ func ValidateReleaseRecord(result *ReleaseRecord, validationContext ...string) (
 		for _, validationPart := range validationContext {
 			validationPath += validationPart
 		}
-	}
-	if !result.Description.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("description", validationPath))
-	}
-	if !result.LogoProps.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
 	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
@@ -9129,16 +9182,22 @@ func ValidateReleaseRecord(result *ReleaseRecord, validationContext ...string) (
 	if !result.StartDate.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("start_date", validationPath))
 	}
-	if actual, ok := result.Description.Value(); ok {
-		if err2 := ValidateReleaseBody(&actual, validationPath+".description"); err2 != nil {
-			err = loom.MergeErrors(err, err2)
-		}
+	if !result.Description.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("description", validationPath))
+	}
+	if !result.LogoProps.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
 	}
 	if !result.IsLatest.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("is_latest", validationPath))
 	}
 	if !result.IsPrerelease.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("is_prerelease", validationPath))
+	}
+	if actual, ok := result.Description.Value(); ok {
+		if err2 := ValidateReleaseBody(&actual, validationPath+".description"); err2 != nil {
+			err = loom.MergeErrors(err, err2)
+		}
 	}
 	return
 }
@@ -9266,14 +9325,14 @@ func ValidateReleaseTagPage(result *ReleaseTagPage, validationContext ...string)
 			validationPath += validationPart
 		}
 	}
-	if result.Results == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
-	}
 	if !result.ExtraStats.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", validationPath))
 	}
 	if !result.GroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", validationPath))
+	}
+	if result.Results == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
 	}
 	if !result.SubGroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", validationPath))
@@ -9281,6 +9340,11 @@ func ValidateReleaseTagPage(result *ReleaseTagPage, validationContext ...string)
 	for i, e := range result.Results {
 		if e == nil {
 			err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath+".results", i))
+		}
+		if e != nil {
+			if err2 := ValidateReleaseTagRecord(e, validationPath+".results[*]"); err2 != nil {
+				err = loom.MergeErrors(err, err2)
+			}
 		}
 	}
 	return
@@ -9535,6 +9599,11 @@ func ValidateStateList(result *StateList, validationContext ...string) (err erro
 			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*result.WorkspaceSlug), 255, false))
 		}
 	}
+	if result.Format != nil {
+		if !(*result.Format == "compact" || *result.Format == "json") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".format", *result.Format, []any{"compact", "json"}))
+		}
+	}
 	if result.PerPage != nil {
 		if *result.PerPage < 0 {
 			err = loom.MergeErrors(err, loom.InvalidRangeError(validationPath+".per_page", *result.PerPage, "0", true))
@@ -9561,6 +9630,11 @@ func ValidateStateMutationReceipt(result *StateMutationReceipt, validationContex
 		err = loom.MergeErrors(err, loom.MissingFieldError("result", validationPath))
 	}
 	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".state_id", result.StateID, loom.FormatUUID))
+	if actual, ok := result.Result.Value(); ok {
+		if err2 := ValidateStateRecord(&actual, validationPath+".result"); err2 != nil {
+			err = loom.MergeErrors(err, err2)
+		}
+	}
 	if result.RequestID != nil {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".request_id", *result.RequestID, loom.FormatUUID))
 	}
@@ -9582,6 +9656,11 @@ func ValidateStatePage(result *StatePage, validationContext ...string) (err erro
 	for i, e := range result.Results {
 		if e == nil {
 			err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath+".results", i))
+		}
+		if e != nil {
+			if err2 := ValidateStateRecord(e, validationPath+".results[*]"); err2 != nil {
+				err = loom.MergeErrors(err, err2)
+			}
 		}
 	}
 	return
@@ -9793,9 +9872,6 @@ func ValidateTemplateRecord(result *TemplateRecord, validationContext ...string)
 			validationPath += validationPart
 		}
 	}
-	if !result.TemplateData.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("template_data", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -9813,6 +9889,9 @@ func ValidateTemplateRecord(result *TemplateRecord, validationContext ...string)
 	}
 	if !result.Project.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("project", validationPath))
+	}
+	if !result.TemplateData.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("template_data", validationPath))
 	}
 	return
 }
@@ -9980,6 +10059,11 @@ func ValidateWorkLogMutationReceipt(result *WorkLogMutationReceipt, validationCo
 	if !result.Result.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("result", validationPath))
 	}
+	if actual, ok := result.Result.Value(); ok {
+		if err2 := ValidateWorkLogRecord(&actual, validationPath+".result"); err2 != nil {
+			err = loom.MergeErrors(err, err2)
+		}
+	}
 	return
 }
 
@@ -10037,6 +10121,11 @@ func ValidateWorkLogRecords(result WorkLogRecords, validationContext ...string) 
 	for i, e := range result {
 		if e == nil {
 			err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath, i))
+		}
+		if e != nil {
+			if err2 := ValidateWorkLogRecord(e, validationPath+"[*]"); err2 != nil {
+				err = loom.MergeErrors(err, err2)
+			}
 		}
 	}
 	return
@@ -10117,9 +10206,6 @@ func ValidateWorkitemActivityRecord(result *WorkitemActivityRecord, validationCo
 			validationPath += validationPart
 		}
 	}
-	if !result.Attachments.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("attachments", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -10161,6 +10247,9 @@ func ValidateWorkitemActivityRecord(result *WorkitemActivityRecord, validationCo
 	}
 	if !result.Actor.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("actor", validationPath))
+	}
+	if !result.Attachments.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("attachments", validationPath))
 	}
 	if !result.Epoch.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("epoch", validationPath))
@@ -10323,14 +10412,14 @@ func ValidateWorkitemCommentPage(result *WorkitemCommentPage, validationContext 
 			validationPath += validationPart
 		}
 	}
-	if result.Results == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
-	}
 	if !result.ExtraStats.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", validationPath))
 	}
 	if !result.GroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", validationPath))
+	}
+	if result.Results == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
 	}
 	if !result.SubGroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", validationPath))
@@ -10356,9 +10445,6 @@ func ValidateWorkitemCommentRecord(result *WorkitemCommentRecord, validationCont
 		for _, validationPart := range validationContext {
 			validationPath += validationPart
 		}
-	}
-	if !result.Attachments.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("attachments", validationPath))
 	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
@@ -10413,6 +10499,9 @@ func ValidateWorkitemCommentRecord(result *WorkitemCommentRecord, validationCont
 	}
 	if !result.IsMember.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("is_member", validationPath))
+	}
+	if !result.Attachments.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("attachments", validationPath))
 	}
 	if !result.Access.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("access", validationPath))
@@ -10487,7 +10576,9 @@ func ValidateWorkitemCount(result *WorkitemCount, validationContext ...string) (
 		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", result.Action, []any{"count"}))
 	}
 	if result.ProjectID != nil {
-		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", *result.ProjectID, loom.FormatUUID))
+		if utf8.RuneCountInString(*result.ProjectID) > 36 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".project_id", utf8.RuneCountInString(*result.ProjectID), 36, false))
+		}
 	}
 	if result.WorkspaceSlug != nil {
 		if utf8.RuneCountInString(*result.WorkspaceSlug) > 255 {
@@ -10516,14 +10607,14 @@ func ValidateWorkitemCountResult(result *WorkitemCountResult, validationContext 
 			validationPath += validationPart
 		}
 	}
-	if result.GroupedCounts == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("grouped_counts", validationPath))
-	}
 	if !result.GroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", validationPath))
 	}
 	if !result.SubGroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", validationPath))
+	}
+	if result.GroupedCounts == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("grouped_counts", validationPath))
 	}
 	return
 }
@@ -10691,14 +10782,14 @@ func ValidateWorkitemLinkPage(result *WorkitemLinkPage, validationContext ...str
 			validationPath += validationPart
 		}
 	}
-	if result.Results == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
-	}
 	if !result.ExtraStats.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", validationPath))
 	}
 	if !result.GroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", validationPath))
+	}
+	if result.Results == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
 	}
 	if !result.SubGroupedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", validationPath))
@@ -10724,9 +10815,6 @@ func ValidateWorkitemLinkRecord(result *WorkitemLinkRecord, validationContext ..
 		for _, validationPart := range validationContext {
 			validationPath += validationPart
 		}
-	}
-	if !result.Metadata.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("metadata", validationPath))
 	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
@@ -10757,6 +10845,9 @@ func ValidateWorkitemLinkRecord(result *WorkitemLinkRecord, validationContext ..
 	}
 	if !result.Issue.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("issue", validationPath))
+	}
+	if !result.Metadata.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("metadata", validationPath))
 	}
 	return
 }
@@ -10828,7 +10919,14 @@ func ValidateWorkitemList(result *WorkitemList, validationContext ...string) (er
 		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", result.Action, []any{"list"}))
 	}
 	if result.ProjectID != nil {
-		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", *result.ProjectID, loom.FormatUUID))
+		if utf8.RuneCountInString(*result.ProjectID) > 36 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".project_id", utf8.RuneCountInString(*result.ProjectID), 36, false))
+		}
+	}
+	if result.Format != nil {
+		if !(*result.Format == "compact" || *result.Format == "json") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".format", *result.Format, []any{"compact", "json"}))
+		}
 	}
 	if result.WorkspaceSlug != nil {
 		if utf8.RuneCountInString(*result.WorkspaceSlug) > 255 {
@@ -10990,16 +11088,16 @@ func ValidateWorkitemPage(result *WorkitemPage, validationContext ...string) (er
 	if result.Results == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
 	}
-	for i, e := range result.Results {
-		if e == nil {
-			err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath+".results", i))
-		}
-	}
 	if !result.NextCursor.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("next_cursor", validationPath))
 	}
 	if !result.PrevCursor.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("prev_cursor", validationPath))
+	}
+	for i, e := range result.Results {
+		if e == nil {
+			err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath+".results", i))
+		}
 	}
 	return
 }
@@ -11035,9 +11133,6 @@ func ValidateWorkitemPageLite(result *WorkitemPageLite, validationContext ...str
 			validationPath += validationPart
 		}
 	}
-	if !result.LogoProps.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -11056,6 +11151,9 @@ func ValidateWorkitemPageLite(result *WorkitemPageLite, validationContext ...str
 	if !result.IsGlobal.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("is_global", validationPath))
 	}
+	if !result.LogoProps.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
+	}
 	return
 }
 
@@ -11067,9 +11165,6 @@ func ValidateWorkitemPageRecord(result *WorkitemPageRecord, validationContext ..
 		for _, validationPart := range validationContext {
 			validationPath += validationPart
 		}
-	}
-	if !result.Page.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("page", validationPath))
 	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
@@ -11091,6 +11186,9 @@ func ValidateWorkitemPageRecord(result *WorkitemPageRecord, validationContext ..
 	}
 	if !result.CreatedBy.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("created_by", validationPath))
+	}
+	if !result.Page.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("page", validationPath))
 	}
 	if actual, ok := result.Page.Value(); ok {
 		if err2 := ValidateWorkitemPageLite(&actual, validationPath+".page"); err2 != nil {
@@ -11175,8 +11273,10 @@ func ValidateWorkitemPropertyCreateConfiguration(result *WorkitemPropertyCreateC
 			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".content", utf8.RuneCountInString(*result.Content), 65536, false))
 		}
 	}
-	if len(result.Levels) > 4 {
-		err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".levels", len(result.Levels), 4, false))
+	if result.Levels != nil {
+		if len(result.Levels) > 4 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".levels", len(result.Levels), 4, false))
+		}
 	}
 	for i, e := range result.Levels {
 		if e == nil {
@@ -11188,8 +11288,10 @@ func ValidateWorkitemPropertyCreateConfiguration(result *WorkitemPropertyCreateC
 			}
 		}
 	}
-	if len(result.Options) > 1000 {
-		err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".options", len(result.Options), 1000, false))
+	if result.Options != nil {
+		if len(result.Options) > 1000 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".options", len(result.Options), 1000, false))
+		}
 	}
 	for i, e := range result.Options {
 		if e == nil {
@@ -11475,9 +11577,6 @@ func ValidateWorkitemPropertyOptionRecord(result *WorkitemPropertyOptionRecord, 
 			validationPath += validationPart
 		}
 	}
-	if !result.LogoProps.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -11519,6 +11618,9 @@ func ValidateWorkitemPropertyOptionRecord(result *WorkitemPropertyOptionRecord, 
 	}
 	if !result.SortOrder.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("sort_order", validationPath))
+	}
+	if !result.LogoProps.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
 	}
 	if !result.IsActive.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("is_active", validationPath))
@@ -11621,21 +11723,6 @@ func ValidateWorkitemPropertyRecord(result *WorkitemPropertyRecord, validationCo
 			validationPath += validationPart
 		}
 	}
-	if !result.LogoProps.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
-	}
-	if !result.Settings.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("settings", validationPath))
-	}
-	if !result.ValidationRules.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("validation_rules", validationPath))
-	}
-	if !result.DefaultValue.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("default_value", validationPath))
-	}
-	if !result.Options.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("options", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -11681,6 +11768,15 @@ func ValidateWorkitemPropertyRecord(result *WorkitemPropertyRecord, validationCo
 	if !result.SortOrder.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("sort_order", validationPath))
 	}
+	if !result.LogoProps.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
+	}
+	if !result.Settings.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("settings", validationPath))
+	}
+	if !result.ValidationRules.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("validation_rules", validationPath))
+	}
 	if !result.IsRequired.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("is_required", validationPath))
 	}
@@ -11689,6 +11785,12 @@ func ValidateWorkitemPropertyRecord(result *WorkitemPropertyRecord, validationCo
 	}
 	if !result.IsMulti.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("is_multi", validationPath))
+	}
+	if !result.DefaultValue.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("default_value", validationPath))
+	}
+	if !result.Options.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("options", validationPath))
 	}
 	if actual, ok := result.Options.Value(); ok {
 		for i, e := range actual {
@@ -11854,8 +11956,10 @@ func ValidateWorkitemPropertyUpdateConfiguration(result *WorkitemPropertyUpdateC
 			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".content", utf8.RuneCountInString(*result.Content), 65536, false))
 		}
 	}
-	if len(result.Levels) > 4 {
-		err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".levels", len(result.Levels), 4, false))
+	if result.Levels != nil {
+		if len(result.Levels) > 4 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".levels", len(result.Levels), 4, false))
+		}
 	}
 	for i, e := range result.Levels {
 		if e == nil {
@@ -11867,8 +11971,10 @@ func ValidateWorkitemPropertyUpdateConfiguration(result *WorkitemPropertyUpdateC
 			}
 		}
 	}
-	if len(result.Options) > 1000 {
-		err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".options", len(result.Options), 1000, false))
+	if result.Options != nil {
+		if len(result.Options) > 1000 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".options", len(result.Options), 1000, false))
+		}
 	}
 	for i, e := range result.Options {
 		if e == nil {
@@ -11944,9 +12050,6 @@ func ValidateWorkitemPropertyValueRecord(result *WorkitemPropertyValueRecord, va
 	if !result.Value.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("value", validationPath))
 	}
-	if !result.ValueDetail.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("value_detail", validationPath))
-	}
 	if !result.ValueType.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("value_type", validationPath))
 	}
@@ -11961,6 +12064,14 @@ func ValidateWorkitemPropertyValueRecord(result *WorkitemPropertyValueRecord, va
 	}
 	if !result.UpdatedAt.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("updated_at", validationPath))
+	}
+	if !result.ValueDetail.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("value_detail", validationPath))
+	}
+	if actual, ok := result.ValueDetail.Value(); ok {
+		if err2 := ValidateWorkitemPropertyRichValue(&actual, validationPath+".value_detail"); err2 != nil {
+			err = loom.MergeErrors(err, err2)
+		}
 	}
 	return
 }
@@ -12010,12 +12121,6 @@ func ValidateWorkitemRecord(result *WorkitemRecord, validationContext ...string)
 		for _, validationPart := range validationContext {
 			validationPath += validationPart
 		}
-	}
-	if result.Assignees == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("assignees", validationPath))
-	}
-	if result.Labels == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("labels", validationPath))
 	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
@@ -12100,6 +12205,12 @@ func ValidateWorkitemRecord(result *WorkitemRecord, validationContext ...string)
 	}
 	if !result.IsDraft.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("is_draft", validationPath))
+	}
+	if result.Assignees == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("assignees", validationPath))
+	}
+	if result.Labels == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("labels", validationPath))
 	}
 	return
 }
@@ -12322,12 +12433,6 @@ func ValidateWorkitemTypeRecord(result *WorkitemTypeRecord, validationContext ..
 			validationPath += validationPart
 		}
 	}
-	if !result.ProjectIds.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("project_ids", validationPath))
-	}
-	if !result.LogoProps.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
-	}
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
@@ -12357,6 +12462,12 @@ func ValidateWorkitemTypeRecord(result *WorkitemTypeRecord, validationContext ..
 	}
 	if !result.Workspace.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("workspace", validationPath))
+	}
+	if !result.ProjectIds.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("project_ids", validationPath))
+	}
+	if !result.LogoProps.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
 	}
 	if !result.Level.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("level", validationPath))
@@ -12574,6 +12685,11 @@ func ValidateWorkspaceList(result *WorkspaceList, validationContext ...string) (
 	if !(result.Action == "list") {
 		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", result.Action, []any{"list"}))
 	}
+	if result.Format != nil {
+		if !(*result.Format == "compact" || *result.Format == "json") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".format", *result.Format, []any{"compact", "json"}))
+		}
+	}
 	return
 }
 
@@ -12614,11 +12730,11 @@ func ValidateWorkspaceRecord(result *WorkspaceRecord, validationContext ...strin
 	if !result.ID.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
 	}
-	if actual, ok := result.ID.Value(); ok {
-		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", actual, loom.FormatUUID))
-	}
 	if !result.Name.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("name", validationPath))
+	}
+	if actual, ok := result.ID.Value(); ok {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", actual, loom.FormatUUID))
 	}
 	if !(result.ConnectedVia == "oauth" || result.ConnectedVia == "api_key_header") {
 		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".connected_via", result.ConnectedVia, []any{"oauth", "api_key_header"}))
@@ -12892,7 +13008,8 @@ type WorkitemCommentUpdate struct {
 }
 
 type WorkitemCount struct {
-	Action        string  `json:"action"`
+	Action string `json:"action"`
+	// Project UUID or exact project key, such as VEC.
 	ProjectID     *string `json:"project_id,omitzero"`
 	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
 	Pql           *string `json:"pql,omitzero"`
@@ -12943,7 +13060,8 @@ type WorkitemDelete struct {
 }
 
 type WorkitemIdentifier struct {
-	Action             string  `json:"action"`
+	Action string `json:"action"`
+	// Full work-item key, for example VEC-42.
 	WorkitemIdentifier string  `json:"workitem_identifier"`
 	WorkspaceSlug      *string `json:"workspace_slug,omitzero"`
 	OrderBy            *string `json:"order_by,omitzero"`
@@ -13035,8 +13153,12 @@ type WorkitemLinkUpdate struct {
 }
 
 type WorkitemList struct {
-	Action         string  `json:"action"`
-	ProjectID      *string `json:"project_id,omitzero"`
+	Action string `json:"action"`
+	// Project UUID or exact project key, such as VEC.
+	ProjectID *string `json:"project_id,omitzero"`
+	// Use compact for plain-text rows and pagination. Omit for the full JSON
+	// contract.
+	Format         *string `json:"format,omitzero"`
 	WorkspaceSlug  *string `json:"workspace_slug,omitzero"`
 	OrderBy        *string `json:"order_by,omitzero"`
 	Expand         *string `json:"expand,omitzero"`
@@ -13760,6 +13882,9 @@ type WorkspaceGetFeatures struct {
 
 type WorkspaceList struct {
 	Action string `json:"action"`
+	// Use compact for plain-text rows and pagination. Omit for the full JSON
+	// contract.
+	Format *string `json:"format,omitzero"`
 }
 
 type WorkspaceListResult struct {
@@ -17553,9 +17678,6 @@ func (u CollectionResult) matchJSON(data []byte) (CollectionResult, int, error) 
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.LogoProps.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -17597,6 +17719,9 @@ func (u CollectionResult) matchJSON(data []byte) (CollectionResult, int, error) 
 				}
 				if !v.SortOrder.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("sort_order", "v"))
+				}
+				if !v.LogoProps.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
 				}
 				return
 			}(); err != nil {
@@ -22795,12 +22920,6 @@ func (u CustomerRequestResult) matchJSON(data []byte) (CustomerRequestResult, in
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.Description.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("description", "v"))
-				}
-				if !v.WorkItemIds.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("work_item_ids", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -22812,6 +22931,12 @@ func (u CustomerRequestResult) matchJSON(data []byte) (CustomerRequestResult, in
 				}
 				if !v.CreatedAt.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("created_at", "v"))
+				}
+				if !v.Description.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("description", "v"))
+				}
+				if !v.WorkItemIds.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("work_item_ids", "v"))
 				}
 				if !v.AttachmentCount.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("attachment_count", "v"))
@@ -23997,12 +24122,6 @@ func (u CustomerResult) matchJSON(data []byte) (CustomerResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.Description.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("description", "v"))
-				}
-				if !v.LogoProps.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -24072,6 +24191,12 @@ func (u CustomerResult) matchJSON(data []byte) (CustomerResult, int, error) {
 				if !v.Employees.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("employees", "v"))
 				}
+				if !v.Description.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("description", "v"))
+				}
+				if !v.LogoProps.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
+				}
 				return
 			}(); err != nil {
 				return false, nil
@@ -24133,6 +24258,11 @@ func (u CustomerResult) matchJSON(data []byte) (CustomerResult, int, error) {
 				for i, e := range v {
 					if e == nil {
 						err = loom.MergeErrors(err, loom.InvalidNullElementError("v", i))
+					}
+					if e != nil {
+						if err2 := ValidateCustomerWorkitem(e, "v[*]"); err2 != nil {
+							err = loom.MergeErrors(err, err2)
+						}
 					}
 				}
 				return
@@ -27828,16 +27958,16 @@ func (u CycleResult) matchJSON(data []byte) (CycleResult, int, error) {
 				if v.Results == nil {
 					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
 				}
-				for i, e := range v.Results {
-					if e == nil {
-						err = loom.MergeErrors(err, loom.InvalidNullElementError("v.results", i))
-					}
-				}
 				if !v.NextCursor.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("next_cursor", "v"))
 				}
 				if !v.PrevCursor.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("prev_cursor", "v"))
+				}
+				for i, e := range v.Results {
+					if e == nil {
+						err = loom.MergeErrors(err, loom.InvalidNullElementError("v.results", i))
+					}
 				}
 				return
 			}(); err != nil {
@@ -27878,14 +28008,14 @@ func (u CycleResult) matchJSON(data []byte) (CycleResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if v.Results == nil {
-					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
-				}
 				if !v.ExtraStats.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", "v"))
 				}
 				if !v.GroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", "v"))
+				}
+				if v.Results == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
 				}
 				if !v.SubGroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", "v"))
@@ -27918,15 +28048,6 @@ func (u CycleResult) matchJSON(data []byte) (CycleResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.ViewProps.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("view_props", "v"))
-				}
-				if !v.ProgressSnapshot.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("progress_snapshot", "v"))
-				}
-				if !v.LogoProps.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -27974,6 +28095,15 @@ func (u CycleResult) matchJSON(data []byte) (CycleResult, int, error) {
 				}
 				if !v.OwnedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("owned_by", "v"))
+				}
+				if !v.ViewProps.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("view_props", "v"))
+				}
+				if !v.ProgressSnapshot.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("progress_snapshot", "v"))
+				}
+				if !v.LogoProps.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
 				}
 				if !v.SortOrder.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("sort_order", "v"))
@@ -33988,12 +34118,6 @@ func (u IntakeResult) matchJSON(data []byte) (IntakeResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.IssueDetail.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("issue_detail", "v"))
-				}
-				if !v.Extra.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("extra", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -34045,8 +34169,14 @@ func (u IntakeResult) matchJSON(data []byte) (IntakeResult, int, error) {
 				if !v.DuplicateTo.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("duplicate_to", "v"))
 				}
+				if !v.IssueDetail.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("issue_detail", "v"))
+				}
 				if !v.Status.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("status", "v"))
+				}
+				if !v.Extra.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("extra", "v"))
 				}
 				return
 			}(); err != nil {
@@ -36093,6 +36223,11 @@ func (u LabelResult) matchJSON(data []byte) (LabelResult, int, error) {
 					if e == nil {
 						err = loom.MergeErrors(err, loom.InvalidNullElementError("v.results", i))
 					}
+					if e != nil {
+						if err2 := ValidateLabelRecord(e, "v.results[*]"); err2 != nil {
+							err = loom.MergeErrors(err, err2)
+						}
+					}
 				}
 				return
 			}(); err != nil {
@@ -36176,6 +36311,11 @@ func (u LabelResult) matchJSON(data []byte) (LabelResult, int, error) {
 					err = loom.MergeErrors(err, loom.MissingFieldError("result", "v"))
 				}
 				err = loom.MergeErrors(err, loom.ValidateFormat("v.label_id", v.LabelID, loom.FormatUUID))
+				if actual, ok := v.Result.Value(); ok {
+					if err2 := ValidateLabelRecord(&actual, "v.result"); err2 != nil {
+						err = loom.MergeErrors(err, err2)
+					}
+				}
 				if v.RequestID != nil {
 					err = loom.MergeErrors(err, loom.ValidateFormat("v.request_id", *v.RequestID, loom.FormatUUID))
 				}
@@ -38019,9 +38159,6 @@ func (u MemberResult) matchJSON(data []byte) (MemberResult, int, error) {
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
-				if actual, ok := v.ID.Value(); ok {
-					err = loom.MergeErrors(err, loom.ValidateFormat("v.id", actual, loom.FormatUUID))
-				}
 				if !v.FirstName.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("first_name", "v"))
 				}
@@ -38039,6 +38176,9 @@ func (u MemberResult) matchJSON(data []byte) (MemberResult, int, error) {
 				}
 				if !v.DisplayName.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("display_name", "v"))
+				}
+				if actual, ok := v.ID.Value(); ok {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.id", actual, loom.FormatUUID))
 				}
 				return
 			}(); err != nil {
@@ -38086,14 +38226,14 @@ func (u MemberResult) matchJSON(data []byte) (MemberResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if v.Results == nil {
-					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
-				}
 				if !v.ExtraStats.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", "v"))
 				}
 				if !v.GroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", "v"))
+				}
+				if v.Results == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
 				}
 				if !v.SubGroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", "v"))
@@ -40481,18 +40621,18 @@ func (u MilestoneResult) matchJSON(data []byte) (MilestoneResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				err = loom.MergeErrors(err, loom.ValidateFormat("v.id", v.ID, loom.FormatUUID))
 				if !v.TargetDate.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("target_date", "v"))
-				}
-				if actual, ok := v.TargetDate.Value(); ok {
-					err = loom.MergeErrors(err, loom.ValidateFormat("v.target_date", actual, loom.FormatDate))
 				}
 				if !v.ExternalSource.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("external_source", "v"))
 				}
 				if !v.ExternalID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("external_id", "v"))
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.id", v.ID, loom.FormatUUID))
+				if actual, ok := v.TargetDate.Value(); ok {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.target_date", actual, loom.FormatDate))
 				}
 				err = loom.MergeErrors(err, loom.ValidateFormat("v.created_at", v.CreatedAt, loom.FormatDateTime))
 				err = loom.MergeErrors(err, loom.ValidateFormat("v.updated_at", v.UpdatedAt, loom.FormatDateTime))
@@ -44027,16 +44167,16 @@ func (u ModuleResult) matchJSON(data []byte) (ModuleResult, int, error) {
 				if v.Results == nil {
 					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
 				}
-				for i, e := range v.Results {
-					if e == nil {
-						err = loom.MergeErrors(err, loom.InvalidNullElementError("v.results", i))
-					}
-				}
 				if !v.NextCursor.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("next_cursor", "v"))
 				}
 				if !v.PrevCursor.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("prev_cursor", "v"))
+				}
+				for i, e := range v.Results {
+					if e == nil {
+						err = loom.MergeErrors(err, loom.InvalidNullElementError("v.results", i))
+					}
 				}
 				return
 			}(); err != nil {
@@ -44077,14 +44217,14 @@ func (u ModuleResult) matchJSON(data []byte) (ModuleResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if v.Results == nil {
-					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
-				}
 				if !v.ExtraStats.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", "v"))
 				}
 				if !v.GroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", "v"))
+				}
+				if v.Results == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
 				}
 				if !v.SubGroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", "v"))
@@ -44117,21 +44257,6 @@ func (u ModuleResult) matchJSON(data []byte) (ModuleResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.DescriptionText.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("description_text", "v"))
-				}
-				if !v.DescriptionHTML.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("description_html", "v"))
-				}
-				if !v.ViewProps.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("view_props", "v"))
-				}
-				if !v.LogoProps.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
-				}
-				if !v.Members.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("members", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -44180,13 +44305,28 @@ func (u ModuleResult) matchJSON(data []byte) (ModuleResult, int, error) {
 				if !v.Status.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("status", "v"))
 				}
+				if !v.DescriptionText.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("description_text", "v"))
+				}
+				if !v.DescriptionHTML.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("description_html", "v"))
+				}
+				if !v.ViewProps.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("view_props", "v"))
+				}
+				if !v.LogoProps.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
+				}
+				if !v.SortOrder.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("sort_order", "v"))
+				}
+				if !v.Members.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("members", "v"))
+				}
 				if actual, ok := v.Status.Value(); ok {
 					if !(actual == "backlog" || actual == "planned" || actual == "in-progress" || actual == "paused" || actual == "completed" || actual == "cancelled") {
 						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.status", actual, []any{"backlog", "planned", "in-progress", "paused", "completed", "cancelled"}))
 					}
-				}
-				if !v.SortOrder.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("sort_order", "v"))
 				}
 				return
 			}(); err != nil {
@@ -47849,12 +47989,6 @@ func (u PageResult) matchJSON(data []byte) (PageResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.Description.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("description", "v"))
-				}
-				if !v.Projects.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("projects", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -47896,6 +48030,12 @@ func (u PageResult) matchJSON(data []byte) (PageResult, int, error) {
 				}
 				if !v.PageCollectionID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("page_collection_id", "v"))
+				}
+				if !v.Description.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("description", "v"))
+				}
+				if !v.Projects.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("projects", "v"))
 				}
 				if !v.Access.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("access", "v"))
@@ -47952,9 +48092,6 @@ func (u PageResult) matchJSON(data []byte) (PageResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.Page.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("page", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -47975,6 +48112,9 @@ func (u PageResult) matchJSON(data []byte) (PageResult, int, error) {
 				}
 				if !v.CreatedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("created_by", "v"))
+				}
+				if !v.Page.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("page", "v"))
 				}
 				if actual, ok := v.Page.Value(); ok {
 					if err2 := ValidateWorkitemPageLite(&actual, "v.page"); err2 != nil {
@@ -52219,6 +52359,11 @@ func (u ProjectEstimateResult) matchJSON(data []byte) (ProjectEstimateResult, in
 					if e == nil {
 						err = loom.MergeErrors(err, loom.InvalidNullElementError("v", i))
 					}
+					if e != nil {
+						if err2 := ValidateEstimatePointRecord(e, "v[*]"); err2 != nil {
+							err = loom.MergeErrors(err, err2)
+						}
+					}
 				}
 				return
 			}(); err != nil {
@@ -52238,18 +52383,6 @@ func (u ProjectEstimateResult) matchJSON(data []byte) (ProjectEstimateResult, in
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.DescriptionText.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("description_text", "v"))
-				}
-				if !v.DescriptionHTML.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("description_html", "v"))
-				}
-				if !v.LogoProps.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
-				}
-				if !v.IconProp.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("icon_prop", "v"))
-				}
 				if !v.TotalMembers.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("total_members", "v"))
 				}
@@ -52273,11 +52406,6 @@ func (u ProjectEstimateResult) matchJSON(data []byte) (ProjectEstimateResult, in
 				}
 				if !v.Network.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("network", "v"))
-				}
-				if actual, ok := v.Network.Value(); ok {
-					if !(actual == 0 || actual == 2) {
-						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.network", actual, []any{0, 2}))
-					}
 				}
 				if !v.IsMember.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("is_member", "v"))
@@ -52351,11 +52479,14 @@ func (u ProjectEstimateResult) matchJSON(data []byte) (ProjectEstimateResult, in
 				if !v.DefaultState.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("default_state", "v"))
 				}
-				if !v.ID.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
+				if !v.DescriptionText.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("description_text", "v"))
 				}
-				if actual, ok := v.ID.Value(); ok {
-					err = loom.MergeErrors(err, loom.ValidateFormat("v.id", actual, loom.FormatUUID))
+				if !v.DescriptionHTML.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("description_html", "v"))
+				}
+				if !v.LogoProps.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
 				}
 				if !v.CoverImage.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("cover_image", "v"))
@@ -52371,6 +52502,20 @@ func (u ProjectEstimateResult) matchJSON(data []byte) (ProjectEstimateResult, in
 				}
 				if !v.ArchivedAt.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("archived_at", "v"))
+				}
+				if !v.ID.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
+				}
+				if !v.IconProp.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("icon_prop", "v"))
+				}
+				if actual, ok := v.Network.Value(); ok {
+					if !(actual == 0 || actual == 2) {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.network", actual, []any{0, 2}))
+					}
+				}
+				if actual, ok := v.ID.Value(); ok {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.id", actual, loom.FormatUUID))
 				}
 				return
 			}(); err != nil {
@@ -52400,9 +52545,24 @@ func (u ProjectEstimateResult) matchJSON(data []byte) (ProjectEstimateResult, in
 					err = loom.MergeErrors(err, loom.MissingFieldError("points", "v"))
 				}
 				err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", v.ProjectID, loom.FormatUUID))
+				if actual, ok := v.Estimate.Value(); ok {
+					if err2 := ValidateEstimateRecord(&actual, "v.estimate"); err2 != nil {
+						err = loom.MergeErrors(err, err2)
+					}
+				}
+				if actual, ok := v.Point.Value(); ok {
+					if err2 := ValidateEstimatePointRecord(&actual, "v.point"); err2 != nil {
+						err = loom.MergeErrors(err, err2)
+					}
+				}
 				for i, e := range v.Points {
 					if e == nil {
 						err = loom.MergeErrors(err, loom.InvalidNullElementError("v.points", i))
+					}
+					if e != nil {
+						if err2 := ValidateEstimatePointRecord(e, "v.points[*]"); err2 != nil {
+							err = loom.MergeErrors(err, err2)
+						}
 					}
 				}
 				if v.RequestID != nil {
@@ -52997,7 +53157,7 @@ func (u *ProjectRequest) UnmarshalJSON(data []byte) error {
 }
 func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 	var value0 *ProjectList
-	schema0Nodes := make([]loom.JSONShape, 7)
+	schema0Nodes := make([]loom.JSONShape, 8)
 	schema0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &schema0Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -53005,10 +53165,11 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 	schema0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &schema0Nodes[2]},
-			{Name: "cursor", Required: false, Shape: &schema0Nodes[3]},
-			{Name: "order_by", Required: false, Shape: &schema0Nodes[4]},
-			{Name: "per_page", Required: false, Shape: &schema0Nodes[5]},
-			{Name: "workspace_slug", Required: false, Shape: &schema0Nodes[6]},
+			{Name: "format", Required: false, Shape: &schema0Nodes[3]},
+			{Name: "cursor", Required: false, Shape: &schema0Nodes[4]},
+			{Name: "order_by", Required: false, Shape: &schema0Nodes[5]},
+			{Name: "per_page", Required: false, Shape: &schema0Nodes[6]},
+			{Name: "workspace_slug", Required: false, Shape: &schema0Nodes[7]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -53022,21 +53183,31 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 		},
 	}
 	schema0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
+				},
+			},
+		},
 	}
 	schema0Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema0Nodes[5] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+	schema0Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[6] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema0Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+	schema0Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			MaxLength: new(255),
 		},
 	}
 	schema0 := &schema0Nodes[0]
-	runtime0Nodes := make([]loom.JSONShape, 7)
+	runtime0Nodes := make([]loom.JSONShape, 8)
 	runtime0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &runtime0Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -53044,10 +53215,11 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 	runtime0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &runtime0Nodes[2]},
-			{Name: "cursor", Required: false, Shape: &runtime0Nodes[3]},
-			{Name: "order_by", Required: false, Shape: &runtime0Nodes[4]},
-			{Name: "per_page", Required: false, Shape: &runtime0Nodes[5]},
-			{Name: "workspace_slug", Required: false, Shape: &runtime0Nodes[6]},
+			{Name: "format", Required: false, Shape: &runtime0Nodes[3]},
+			{Name: "cursor", Required: false, Shape: &runtime0Nodes[4]},
+			{Name: "order_by", Required: false, Shape: &runtime0Nodes[5]},
+			{Name: "per_page", Required: false, Shape: &runtime0Nodes[6]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime0Nodes[7]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -53061,15 +53233,25 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 		},
 	}
 	runtime0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
+				},
+			},
+		},
 	}
 	runtime0Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime0Nodes[5] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime0Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[6] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime0Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime0Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			MaxLength: new(255),
 		},
@@ -53101,9 +53283,7 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 	}
 	schema1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			Formats: []loom.Format{
-				"uuid",
-			},
+			MaxLength: new(36),
 		},
 	}
 	schema1Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
@@ -53140,9 +53320,7 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 	}
 	runtime1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			Formats: []loom.Format{
-				"uuid",
-			},
+			MaxLength: new(36),
 		},
 	}
 	runtime1Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
@@ -54220,6 +54398,11 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 				if !(v.Action == "list") {
 					err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", v.Action, []any{"list"}))
 				}
+				if v.Format != nil {
+					if !(*v.Format == "compact" || *v.Format == "json") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.format", *v.Format, []any{"compact", "json"}))
+					}
+				}
 				if v.PerPage != nil {
 					if *v.PerPage < 0 {
 						err = loom.MergeErrors(err, loom.InvalidRangeError("v.per_page", *v.PerPage, "0", true))
@@ -54256,7 +54439,9 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 				if !(v.Action == "retrieve") {
 					err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", v.Action, []any{"retrieve"}))
 				}
-				err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", v.ProjectID, loom.FormatUUID))
+				if utf8.RuneCountInString(v.ProjectID) > 36 {
+					err = loom.MergeErrors(err, loom.InvalidLengthError("v.project_id", utf8.RuneCountInString(v.ProjectID), 36, false))
+				}
 				if v.WorkspaceSlug != nil {
 					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
 						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
@@ -56280,14 +56465,14 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if v.Results == nil {
-					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
-				}
 				if !v.ExtraStats.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", "v"))
 				}
 				if !v.GroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", "v"))
+				}
+				if v.Results == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
 				}
 				if !v.SubGroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", "v"))
@@ -56320,18 +56505,6 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.DescriptionText.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("description_text", "v"))
-				}
-				if !v.DescriptionHTML.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("description_html", "v"))
-				}
-				if !v.LogoProps.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
-				}
-				if !v.IconProp.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("icon_prop", "v"))
-				}
 				if !v.TotalMembers.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("total_members", "v"))
 				}
@@ -56355,11 +56528,6 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 				}
 				if !v.Network.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("network", "v"))
-				}
-				if actual, ok := v.Network.Value(); ok {
-					if !(actual == 0 || actual == 2) {
-						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.network", actual, []any{0, 2}))
-					}
 				}
 				if !v.IsMember.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("is_member", "v"))
@@ -56433,11 +56601,14 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 				if !v.DefaultState.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("default_state", "v"))
 				}
-				if !v.ID.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
+				if !v.DescriptionText.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("description_text", "v"))
 				}
-				if actual, ok := v.ID.Value(); ok {
-					err = loom.MergeErrors(err, loom.ValidateFormat("v.id", actual, loom.FormatUUID))
+				if !v.DescriptionHTML.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("description_html", "v"))
+				}
+				if !v.LogoProps.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
 				}
 				if !v.CoverImage.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("cover_image", "v"))
@@ -56453,6 +56624,20 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 				}
 				if !v.ArchivedAt.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("archived_at", "v"))
+				}
+				if !v.ID.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
+				}
+				if !v.IconProp.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("icon_prop", "v"))
+				}
+				if actual, ok := v.Network.Value(); ok {
+					if !(actual == 0 || actual == 2) {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.network", actual, []any{0, 2}))
+					}
+				}
+				if actual, ok := v.ID.Value(); ok {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.id", actual, loom.FormatUUID))
 				}
 				return
 			}(); err != nil {
@@ -58518,14 +58703,14 @@ func (u ReleaseLabelResult) matchJSON(data []byte) (ReleaseLabelResult, int, err
 				return matched, err
 			}
 			if err := func() (err error) {
-				if v.Results == nil {
-					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
-				}
 				if !v.ExtraStats.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", "v"))
 				}
 				if !v.GroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", "v"))
+				}
+				if v.Results == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
 				}
 				if !v.SubGroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", "v"))
@@ -58533,6 +58718,11 @@ func (u ReleaseLabelResult) matchJSON(data []byte) (ReleaseLabelResult, int, err
 				for i, e := range v.Results {
 					if e == nil {
 						err = loom.MergeErrors(err, loom.InvalidNullElementError("v.results", i))
+					}
+					if e != nil {
+						if err2 := ValidateReleaseLabelRecord(e, "v.results[*]"); err2 != nil {
+							err = loom.MergeErrors(err, err2)
+						}
 					}
 				}
 				return
@@ -61373,14 +61563,14 @@ func (u ReleaseResult) matchJSON(data []byte) (ReleaseResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if v.Results == nil {
-					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
-				}
 				if !v.ExtraStats.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", "v"))
 				}
 				if !v.GroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", "v"))
+				}
+				if v.Results == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
 				}
 				if !v.SubGroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", "v"))
@@ -61403,12 +61593,6 @@ func (u ReleaseResult) matchJSON(data []byte) (ReleaseResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.Description.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("description", "v"))
-				}
-				if !v.LogoProps.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -61454,16 +61638,22 @@ func (u ReleaseResult) matchJSON(data []byte) (ReleaseResult, int, error) {
 				if !v.StartDate.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("start_date", "v"))
 				}
-				if actual, ok := v.Description.Value(); ok {
-					if err2 := ValidateReleaseBody(&actual, "v.description"); err2 != nil {
-						err = loom.MergeErrors(err, err2)
-					}
+				if !v.Description.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("description", "v"))
+				}
+				if !v.LogoProps.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
 				}
 				if !v.IsLatest.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("is_latest", "v"))
 				}
 				if !v.IsPrerelease.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("is_prerelease", "v"))
+				}
+				if actual, ok := v.Description.Value(); ok {
+					if err2 := ValidateReleaseBody(&actual, "v.description"); err2 != nil {
+						err = loom.MergeErrors(err, err2)
+					}
 				}
 				return
 			}(); err != nil {
@@ -61483,9 +61673,6 @@ func (u ReleaseResult) matchJSON(data []byte) (ReleaseResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.Changelog.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("changelog", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -61506,6 +61693,9 @@ func (u ReleaseResult) matchJSON(data []byte) (ReleaseResult, int, error) {
 				}
 				if !v.Release.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("release", "v"))
+				}
+				if !v.Changelog.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("changelog", "v"))
 				}
 				if actual, ok := v.Changelog.Value(); ok {
 					if err2 := ValidateReleaseBody(&actual, "v.changelog"); err2 != nil {
@@ -63348,14 +63538,14 @@ func (u ReleaseTagResult) matchJSON(data []byte) (ReleaseTagResult, int, error) 
 				return matched, err
 			}
 			if err := func() (err error) {
-				if v.Results == nil {
-					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
-				}
 				if !v.ExtraStats.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", "v"))
 				}
 				if !v.GroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", "v"))
+				}
+				if v.Results == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
 				}
 				if !v.SubGroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", "v"))
@@ -63363,6 +63553,11 @@ func (u ReleaseTagResult) matchJSON(data []byte) (ReleaseTagResult, int, error) 
 				for i, e := range v.Results {
 					if e == nil {
 						err = loom.MergeErrors(err, loom.InvalidNullElementError("v.results", i))
+					}
+					if e != nil {
+						if err2 := ValidateReleaseTagRecord(e, "v.results[*]"); err2 != nil {
+							err = loom.MergeErrors(err, err2)
+						}
 					}
 				}
 				return
@@ -63744,7 +63939,7 @@ func (u *StateRequest) UnmarshalJSON(data []byte) error {
 }
 func (u StateRequest) matchJSON(data []byte) (StateRequest, int, error) {
 	var value0 *StateList
-	schema0Nodes := make([]loom.JSONShape, 7)
+	schema0Nodes := make([]loom.JSONShape, 8)
 	schema0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &schema0Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -63754,8 +63949,9 @@ func (u StateRequest) matchJSON(data []byte) (StateRequest, int, error) {
 			{Name: "action", Required: true, Shape: &schema0Nodes[2]},
 			{Name: "project_id", Required: false, Shape: &schema0Nodes[3]},
 			{Name: "workspace_slug", Required: false, Shape: &schema0Nodes[4]},
-			{Name: "cursor", Required: false, Shape: &schema0Nodes[5]},
-			{Name: "per_page", Required: false, Shape: &schema0Nodes[6]},
+			{Name: "format", Required: false, Shape: &schema0Nodes[5]},
+			{Name: "cursor", Required: false, Shape: &schema0Nodes[6]},
+			{Name: "per_page", Required: false, Shape: &schema0Nodes[7]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -63777,13 +63973,23 @@ func (u StateRequest) matchJSON(data []byte) (StateRequest, int, error) {
 		},
 	}
 	schema0Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
+				},
+			},
+		},
+	}
+	schema0Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema0Nodes[6] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+	schema0Nodes[7] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema0 := &schema0Nodes[0]
-	runtime0Nodes := make([]loom.JSONShape, 7)
+	runtime0Nodes := make([]loom.JSONShape, 8)
 	runtime0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &runtime0Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -63793,8 +63999,9 @@ func (u StateRequest) matchJSON(data []byte) (StateRequest, int, error) {
 			{Name: "action", Required: true, Shape: &runtime0Nodes[2]},
 			{Name: "project_id", Required: false, Shape: &runtime0Nodes[3]},
 			{Name: "workspace_slug", Required: false, Shape: &runtime0Nodes[4]},
-			{Name: "cursor", Required: false, Shape: &runtime0Nodes[5]},
-			{Name: "per_page", Required: false, Shape: &runtime0Nodes[6]},
+			{Name: "format", Required: false, Shape: &runtime0Nodes[5]},
+			{Name: "cursor", Required: false, Shape: &runtime0Nodes[6]},
+			{Name: "per_page", Required: false, Shape: &runtime0Nodes[7]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -63816,9 +64023,19 @@ func (u StateRequest) matchJSON(data []byte) (StateRequest, int, error) {
 		},
 	}
 	runtime0Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
+				},
+			},
+		},
+	}
+	runtime0Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime0Nodes[6] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime0Nodes[7] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime0 := &runtime0Nodes[0]
@@ -64348,6 +64565,11 @@ func (u StateRequest) matchJSON(data []byte) (StateRequest, int, error) {
 				if v.WorkspaceSlug != nil {
 					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
 						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				if v.Format != nil {
+					if !(*v.Format == "compact" || *v.Format == "json") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.format", *v.Format, []any{"compact", "json"}))
 					}
 				}
 				if v.PerPage != nil {
@@ -65448,6 +65670,11 @@ func (u StateResult) matchJSON(data []byte) (StateResult, int, error) {
 					if e == nil {
 						err = loom.MergeErrors(err, loom.InvalidNullElementError("v.results", i))
 					}
+					if e != nil {
+						if err2 := ValidateStateRecord(e, "v.results[*]"); err2 != nil {
+							err = loom.MergeErrors(err, err2)
+						}
+					}
 				}
 				return
 			}(); err != nil {
@@ -65534,6 +65761,11 @@ func (u StateResult) matchJSON(data []byte) (StateResult, int, error) {
 					err = loom.MergeErrors(err, loom.MissingFieldError("result", "v"))
 				}
 				err = loom.MergeErrors(err, loom.ValidateFormat("v.state_id", v.StateID, loom.FormatUUID))
+				if actual, ok := v.Result.Value(); ok {
+					if err2 := ValidateStateRecord(&actual, "v.result"); err2 != nil {
+						err = loom.MergeErrors(err, err2)
+					}
+				}
 				if v.RequestID != nil {
 					err = loom.MergeErrors(err, loom.ValidateFormat("v.request_id", *v.RequestID, loom.FormatUUID))
 				}
@@ -67147,9 +67379,6 @@ func (u TemplateResult) matchJSON(data []byte) (TemplateResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.TemplateData.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("template_data", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -67167,6 +67396,9 @@ func (u TemplateResult) matchJSON(data []byte) (TemplateResult, int, error) {
 				}
 				if !v.Project.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("project", "v"))
+				}
+				if !v.TemplateData.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("template_data", "v"))
 				}
 				return
 			}(); err != nil {
@@ -68878,6 +69110,11 @@ func (u WorkLogResult) matchJSON(data []byte) (WorkLogResult, int, error) {
 					if e == nil {
 						err = loom.MergeErrors(err, loom.InvalidNullElementError("v", i))
 					}
+					if e != nil {
+						if err2 := ValidateWorkLogRecord(e, "v[*]"); err2 != nil {
+							err = loom.MergeErrors(err, err2)
+						}
+					}
 				}
 				return
 			}(); err != nil {
@@ -68947,6 +69184,11 @@ func (u WorkLogResult) matchJSON(data []byte) (WorkLogResult, int, error) {
 			if err := func() (err error) {
 				if !v.Result.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("result", "v"))
+				}
+				if actual, ok := v.Result.Value(); ok {
+					if err2 := ValidateWorkLogRecord(&actual, "v.result"); err2 != nil {
+						err = loom.MergeErrors(err, err2)
+					}
 				}
 				return
 			}(); err != nil {
@@ -70115,9 +70357,6 @@ func (u WorkitemActivityResult) matchJSON(data []byte) (WorkitemActivityResult, 
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.Attachments.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("attachments", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -70159,6 +70398,9 @@ func (u WorkitemActivityResult) matchJSON(data []byte) (WorkitemActivityResult, 
 				}
 				if !v.Actor.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("actor", "v"))
+				}
+				if !v.Attachments.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("attachments", "v"))
 				}
 				if !v.Epoch.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("epoch", "v"))
@@ -72369,12 +72611,6 @@ func (u WorkitemAttachmentResult) matchJSON(data []byte) (WorkitemAttachmentResu
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.Attributes.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("attributes", "v"))
-				}
-				if !v.StorageMetadata.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("storage_metadata", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -72431,6 +72667,12 @@ func (u WorkitemAttachmentResult) matchJSON(data []byte) (WorkitemAttachmentResu
 				}
 				if !v.ContentType.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("content_type", "v"))
+				}
+				if !v.Attributes.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("attributes", "v"))
+				}
+				if !v.StorageMetadata.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("storage_metadata", "v"))
 				}
 				if !v.IsDeleted.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("is_deleted", "v"))
@@ -74751,14 +74993,14 @@ func (u WorkitemCommentResult) matchJSON(data []byte) (WorkitemCommentResult, in
 				return matched, err
 			}
 			if err := func() (err error) {
-				if v.Results == nil {
-					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
-				}
 				if !v.ExtraStats.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", "v"))
 				}
 				if !v.GroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", "v"))
+				}
+				if v.Results == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
 				}
 				if !v.SubGroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", "v"))
@@ -74791,9 +75033,6 @@ func (u WorkitemCommentResult) matchJSON(data []byte) (WorkitemCommentResult, in
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.Attachments.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("attachments", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -74847,6 +75086,9 @@ func (u WorkitemCommentResult) matchJSON(data []byte) (WorkitemCommentResult, in
 				}
 				if !v.IsMember.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("is_member", "v"))
+				}
+				if !v.Attachments.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("attachments", "v"))
 				}
 				if !v.Access.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("access", "v"))
@@ -76873,14 +77115,14 @@ func (u WorkitemLinkResult) matchJSON(data []byte) (WorkitemLinkResult, int, err
 				return matched, err
 			}
 			if err := func() (err error) {
-				if v.Results == nil {
-					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
-				}
 				if !v.ExtraStats.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", "v"))
 				}
 				if !v.GroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", "v"))
+				}
+				if v.Results == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
 				}
 				if !v.SubGroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", "v"))
@@ -76913,9 +77155,6 @@ func (u WorkitemLinkResult) matchJSON(data []byte) (WorkitemLinkResult, int, err
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.Metadata.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("metadata", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -76945,6 +77184,9 @@ func (u WorkitemLinkResult) matchJSON(data []byte) (WorkitemLinkResult, int, err
 				}
 				if !v.Issue.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("issue", "v"))
+				}
+				if !v.Metadata.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("metadata", "v"))
 				}
 				return
 			}(); err != nil {
@@ -81973,21 +82215,6 @@ func (u WorkitemPropertyResult) matchJSON(data []byte) (WorkitemPropertyResult, 
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.LogoProps.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
-				}
-				if !v.Settings.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("settings", "v"))
-				}
-				if !v.ValidationRules.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("validation_rules", "v"))
-				}
-				if !v.DefaultValue.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("default_value", "v"))
-				}
-				if !v.Options.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("options", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -82033,6 +82260,15 @@ func (u WorkitemPropertyResult) matchJSON(data []byte) (WorkitemPropertyResult, 
 				if !v.SortOrder.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("sort_order", "v"))
 				}
+				if !v.LogoProps.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
+				}
+				if !v.Settings.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("settings", "v"))
+				}
+				if !v.ValidationRules.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("validation_rules", "v"))
+				}
 				if !v.IsRequired.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("is_required", "v"))
 				}
@@ -82041,6 +82277,12 @@ func (u WorkitemPropertyResult) matchJSON(data []byte) (WorkitemPropertyResult, 
 				}
 				if !v.IsMulti.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("is_multi", "v"))
+				}
+				if !v.DefaultValue.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("default_value", "v"))
+				}
+				if !v.Options.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("options", "v"))
 				}
 				if actual, ok := v.Options.Value(); ok {
 					for i, e := range actual {
@@ -82072,9 +82314,6 @@ func (u WorkitemPropertyResult) matchJSON(data []byte) (WorkitemPropertyResult, 
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.LogoProps.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -82116,6 +82355,9 @@ func (u WorkitemPropertyResult) matchJSON(data []byte) (WorkitemPropertyResult, 
 				}
 				if !v.SortOrder.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("sort_order", "v"))
+				}
+				if !v.LogoProps.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
 				}
 				if !v.IsActive.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("is_active", "v"))
@@ -82178,9 +82420,6 @@ func (u WorkitemPropertyResult) matchJSON(data []byte) (WorkitemPropertyResult, 
 				if !v.Value.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("value", "v"))
 				}
-				if !v.ValueDetail.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("value_detail", "v"))
-				}
 				if !v.ValueType.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("value_type", "v"))
 				}
@@ -82195,6 +82434,14 @@ func (u WorkitemPropertyResult) matchJSON(data []byte) (WorkitemPropertyResult, 
 				}
 				if !v.UpdatedAt.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("updated_at", "v"))
+				}
+				if !v.ValueDetail.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("value_detail", "v"))
+				}
+				if actual, ok := v.ValueDetail.Value(); ok {
+					if err2 := ValidateWorkitemPropertyRichValue(&actual, "v.value_detail"); err2 != nil {
+						err = loom.MergeErrors(err, err2)
+					}
 				}
 				return
 			}(); err != nil {
@@ -85119,6 +85366,11 @@ func (u WorkitemRelationResult) matchJSON(data []byte) (WorkitemRelationResult, 
 					if e == nil {
 						err = loom.MergeErrors(err, loom.InvalidNullElementError("v.custom_definitions", i))
 					}
+					if e != nil {
+						if err2 := ValidateRelationDefinitionRecord(e, "v.custom_definitions[*]"); err2 != nil {
+							err = loom.MergeErrors(err, err2)
+						}
+					}
 				}
 				return
 			}(); err != nil {
@@ -85922,9 +86174,7 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 	}
 	schema0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			Formats: []loom.Format{
-				"uuid",
-			},
+			MaxLength: new(36),
 		},
 	}
 	schema0Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
@@ -86009,9 +86259,7 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 	}
 	runtime0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			Formats: []loom.Format{
-				"uuid",
-			},
+			MaxLength: new(36),
 		},
 	}
 	runtime0Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
@@ -86070,7 +86318,7 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 	}
 	runtime0 := &runtime0Nodes[0]
 	var value1 *WorkitemList
-	schema1Nodes := make([]loom.JSONShape, 13)
+	schema1Nodes := make([]loom.JSONShape, 14)
 	schema1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &schema1Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -86079,15 +86327,16 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &schema1Nodes[2]},
 			{Name: "project_id", Required: false, Shape: &schema1Nodes[3]},
-			{Name: "workspace_slug", Required: false, Shape: &schema1Nodes[4]},
-			{Name: "order_by", Required: false, Shape: &schema1Nodes[5]},
-			{Name: "expand", Required: false, Shape: &schema1Nodes[6]},
-			{Name: "fields", Required: false, Shape: &schema1Nodes[7]},
-			{Name: "external_id", Required: false, Shape: &schema1Nodes[8]},
-			{Name: "external_source", Required: false, Shape: &schema1Nodes[9]},
-			{Name: "pql", Required: false, Shape: &schema1Nodes[10]},
-			{Name: "cursor", Required: false, Shape: &schema1Nodes[11]},
-			{Name: "per_page", Required: false, Shape: &schema1Nodes[12]},
+			{Name: "format", Required: false, Shape: &schema1Nodes[4]},
+			{Name: "workspace_slug", Required: false, Shape: &schema1Nodes[5]},
+			{Name: "order_by", Required: false, Shape: &schema1Nodes[6]},
+			{Name: "expand", Required: false, Shape: &schema1Nodes[7]},
+			{Name: "fields", Required: false, Shape: &schema1Nodes[8]},
+			{Name: "external_id", Required: false, Shape: &schema1Nodes[9]},
+			{Name: "external_source", Required: false, Shape: &schema1Nodes[10]},
+			{Name: "pql", Required: false, Shape: &schema1Nodes[11]},
+			{Name: "cursor", Required: false, Shape: &schema1Nodes[12]},
+			{Name: "per_page", Required: false, Shape: &schema1Nodes[13]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -86102,18 +86351,23 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 	}
 	schema1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			Formats: []loom.Format{
-				"uuid",
-			},
+			MaxLength: new(36),
 		},
 	}
 	schema1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			MaxLength: new(255),
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
+				},
+			},
 		},
 	}
 	schema1Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
 	}
 	schema1Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -86133,11 +86387,14 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 	schema1Nodes[11] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema1Nodes[12] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+	schema1Nodes[12] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[13] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema1 := &schema1Nodes[0]
-	runtime1Nodes := make([]loom.JSONShape, 13)
+	runtime1Nodes := make([]loom.JSONShape, 14)
 	runtime1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &runtime1Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -86146,15 +86403,16 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &runtime1Nodes[2]},
 			{Name: "project_id", Required: false, Shape: &runtime1Nodes[3]},
-			{Name: "workspace_slug", Required: false, Shape: &runtime1Nodes[4]},
-			{Name: "order_by", Required: false, Shape: &runtime1Nodes[5]},
-			{Name: "expand", Required: false, Shape: &runtime1Nodes[6]},
-			{Name: "fields", Required: false, Shape: &runtime1Nodes[7]},
-			{Name: "external_id", Required: false, Shape: &runtime1Nodes[8]},
-			{Name: "external_source", Required: false, Shape: &runtime1Nodes[9]},
-			{Name: "pql", Required: false, Shape: &runtime1Nodes[10]},
-			{Name: "cursor", Required: false, Shape: &runtime1Nodes[11]},
-			{Name: "per_page", Required: false, Shape: &runtime1Nodes[12]},
+			{Name: "format", Required: false, Shape: &runtime1Nodes[4]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime1Nodes[5]},
+			{Name: "order_by", Required: false, Shape: &runtime1Nodes[6]},
+			{Name: "expand", Required: false, Shape: &runtime1Nodes[7]},
+			{Name: "fields", Required: false, Shape: &runtime1Nodes[8]},
+			{Name: "external_id", Required: false, Shape: &runtime1Nodes[9]},
+			{Name: "external_source", Required: false, Shape: &runtime1Nodes[10]},
+			{Name: "pql", Required: false, Shape: &runtime1Nodes[11]},
+			{Name: "cursor", Required: false, Shape: &runtime1Nodes[12]},
+			{Name: "per_page", Required: false, Shape: &runtime1Nodes[13]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -86169,18 +86427,23 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 	}
 	runtime1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			Formats: []loom.Format{
-				"uuid",
-			},
+			MaxLength: new(36),
 		},
 	}
 	runtime1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			MaxLength: new(255),
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
+				},
+			},
 		},
 	}
 	runtime1Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
 	}
 	runtime1Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -86200,7 +86463,10 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 	runtime1Nodes[11] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime1Nodes[12] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime1Nodes[12] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[13] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime1 := &runtime1Nodes[0]
@@ -87706,7 +87972,9 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 					err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", v.Action, []any{"count"}))
 				}
 				if v.ProjectID != nil {
-					err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", *v.ProjectID, loom.FormatUUID))
+					if utf8.RuneCountInString(*v.ProjectID) > 36 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.project_id", utf8.RuneCountInString(*v.ProjectID), 36, false))
+					}
 				}
 				if v.WorkspaceSlug != nil {
 					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
@@ -87745,7 +88013,14 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 					err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", v.Action, []any{"list"}))
 				}
 				if v.ProjectID != nil {
-					err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", *v.ProjectID, loom.FormatUUID))
+					if utf8.RuneCountInString(*v.ProjectID) > 36 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.project_id", utf8.RuneCountInString(*v.ProjectID), 36, false))
+					}
+				}
+				if v.Format != nil {
+					if !(*v.Format == "compact" || *v.Format == "json") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.format", *v.Format, []any{"compact", "json"}))
+					}
 				}
 				if v.WorkspaceSlug != nil {
 					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
@@ -89883,14 +90158,14 @@ func (u WorkitemResult) matchJSON(data []byte) (WorkitemResult, int, error) {
 				return matched, err
 			}
 			if err := func() (err error) {
-				if v.GroupedCounts == nil {
-					err = loom.MergeErrors(err, loom.MissingFieldError("grouped_counts", "v"))
-				}
 				if !v.GroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", "v"))
 				}
 				if !v.SubGroupedBy.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", "v"))
+				}
+				if v.GroupedCounts == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("grouped_counts", "v"))
 				}
 				return
 			}(); err != nil {
@@ -89926,16 +90201,16 @@ func (u WorkitemResult) matchJSON(data []byte) (WorkitemResult, int, error) {
 				if v.Results == nil {
 					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
 				}
-				for i, e := range v.Results {
-					if e == nil {
-						err = loom.MergeErrors(err, loom.InvalidNullElementError("v.results", i))
-					}
-				}
 				if !v.NextCursor.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("next_cursor", "v"))
 				}
 				if !v.PrevCursor.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("prev_cursor", "v"))
+				}
+				for i, e := range v.Results {
+					if e == nil {
+						err = loom.MergeErrors(err, loom.InvalidNullElementError("v.results", i))
+					}
 				}
 				return
 			}(); err != nil {
@@ -92425,12 +92700,6 @@ func (u WorkitemTypeResult) matchJSON(data []byte) (WorkitemTypeResult, int, err
 				return matched, err
 			}
 			if err := func() (err error) {
-				if !v.ProjectIds.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("project_ids", "v"))
-				}
-				if !v.LogoProps.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
-				}
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
@@ -92460,6 +92729,12 @@ func (u WorkitemTypeResult) matchJSON(data []byte) (WorkitemTypeResult, int, err
 				}
 				if !v.Workspace.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("workspace", "v"))
+				}
+				if !v.ProjectIds.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("project_ids", "v"))
+				}
+				if !v.LogoProps.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", "v"))
 				}
 				if !v.Level.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("level", "v"))
@@ -92816,7 +93091,7 @@ func (u *WorkspaceRequest) UnmarshalJSON(data []byte) error {
 }
 func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) {
 	var value0 *WorkspaceList
-	schema0Nodes := make([]loom.JSONShape, 3)
+	schema0Nodes := make([]loom.JSONShape, 4)
 	schema0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &schema0Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -92824,6 +93099,7 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 	schema0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &schema0Nodes[2]},
+			{Name: "format", Required: false, Shape: &schema0Nodes[3]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -92836,8 +93112,18 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 			},
 		},
 	}
+	schema0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
+				},
+			},
+		},
+	}
 	schema0 := &schema0Nodes[0]
-	runtime0Nodes := make([]loom.JSONShape, 3)
+	runtime0Nodes := make([]loom.JSONShape, 4)
 	runtime0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &runtime0Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -92845,6 +93131,7 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 	runtime0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &runtime0Nodes[2]},
+			{Name: "format", Required: false, Shape: &runtime0Nodes[3]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -92853,6 +93140,16 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 			Enums: [][]jsontext.Value{
 				{
 					jsontext.Value("\"list\""),
+				},
+			},
+		},
+	}
+	runtime0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
 				},
 			},
 		},
@@ -93121,6 +93418,11 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 			if err := func() (err error) {
 				if !(v.Action == "list") {
 					err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", v.Action, []any{"list"}))
+				}
+				if v.Format != nil {
+					if !(*v.Format == "compact" || *v.Format == "json") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.format", *v.Format, []any{"compact", "json"}))
+					}
 				}
 				return
 			}(); err != nil {
@@ -93903,11 +94205,11 @@ func (u WorkspaceResult) matchJSON(data []byte) (WorkspaceResult, int, error) {
 				if !v.ID.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("id", "v"))
 				}
-				if actual, ok := v.ID.Value(); ok {
-					err = loom.MergeErrors(err, loom.ValidateFormat("v.id", actual, loom.FormatUUID))
-				}
 				if !v.Name.Present() {
 					err = loom.MergeErrors(err, loom.MissingFieldError("name", "v"))
+				}
+				if actual, ok := v.ID.Value(); ok {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.id", actual, loom.FormatUUID))
 				}
 				if !(v.ConnectedVia == "oauth" || v.ConnectedVia == "api_key_header") {
 					err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.connected_via", v.ConnectedVia, []any{"oauth", "api_key_header"}))

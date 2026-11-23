@@ -65,7 +65,7 @@ func (s *Service) ProjectEstimate(ctx context.Context, input *api.ProjectEstimat
 	return loom.NullableValue(api.NewProjectEstimateResultProjectEstimateMutationReceipt(receipt)), nil
 }
 func (s *Service) readProjectEstimate(ctx context.Context, selected resourceMutationInput, revision bool) (loom.Nullable[api.ProjectEstimateResult], error) {
-	ctx, actor, err := actionActor(ctx, selected.workspace, false)
+	ctx, actor, err := s.scopedActor(ctx, selected.workspace, false)
 	if err != nil {
 		return loom.Nullable[api.ProjectEstimateResult]{}, err
 	}

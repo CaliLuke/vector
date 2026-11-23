@@ -20,7 +20,7 @@ func (w propertyValueWriter) MutateResource(ctx context.Context, cmd projectmuta
 }
 func (s *Service) propertyValue(ctx context.Context, in propertyInput) (result loom.Nullable[api.WorkitemPropertyResult], err error) {
 	read := in.Action == "get_value"
-	ctx, actor, err := actionActor(ctx, in.Workspace, !read)
+	ctx, actor, err := s.scopedActor(ctx, in.Workspace, !read)
 	if err != nil {
 		return result, err
 	}

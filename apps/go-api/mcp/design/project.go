@@ -10,8 +10,17 @@ func projectWorkspaceSelector() {
 	Attribute("workspace_slug", String, func() { MaxLength(255) })
 }
 
+func compactListFormat() {
+	Attribute("format", String, "Use compact for plain-text rows and pagination. Omit for the full JSON contract.", func() { Enum("compact", "json") })
+}
+
+func projectKey() {
+	Attribute("project_id", String, "Project UUID or exact project key, such as VEC.", func() { MaxLength(36) })
+}
+
 var projectList = Type("ProjectList", func() {
 	Attribute("action", String, func() { Enum("list") })
+	compactListFormat()
 	Attribute("cursor", String)
 	Attribute("order_by", String)
 	Attribute("per_page", Int, "Zero or omitted uses 100.", func() { Minimum(0); Maximum(1000) })
@@ -22,7 +31,7 @@ var projectList = Type("ProjectList", func() {
 
 var projectRetrieve = Type("ProjectRetrieve", func() {
 	Attribute("action", String, func() { Enum("retrieve") })
-	Attribute("project_id", String, func() { Format(FormatUUID) })
+	projectKey()
 	Attribute("include_revision", Boolean, "Vector extension: include an opaque revision token for guarded writes.")
 	projectWorkspaceSelector()
 	Required("action", "project_id")
@@ -100,7 +109,7 @@ var projectResult = Type("ProjectResult", OneOf(projectPage, projectDetail, proj
 
 func project() {
 	Method("project", func() {
-		Description("Projects in a workspace. Use an advertised action.")
+		Description("List workspace projects with format=compact. Retrieve by project key or UUID.")
 		Payload(projectRequest)
 		Result(projectResult, func() { Nullable() })
 		readErrors()

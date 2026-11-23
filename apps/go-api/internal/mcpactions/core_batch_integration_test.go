@@ -102,8 +102,7 @@ func catalogueWorkitems(t *testing.T, root catalogueCall) {
 	rows := catalogueRows(t, call("workitem", map[string]any{"action": "list", "pql": query, "per_page": 1}))
 	require.Len(t, rows, 1)
 	require.Equal(t, id, rows[0].(map[string]any)["id"])
-	count := milestoneObject(t, call("workitem", map[string]any{"action": "count", "pql": query, "group_by": "priority", "sub_group_by": "labels__id"}))
-	require.Equal(t, float64(1), count["total_count"])
+	catalogueCompactWorkitems(t, root, project["identifier"].(string), projectID, id, identifier, query)
 	search := milestoneObject(t, root("workitem", map[string]any{"action": "search", "query": "Core renamed"}))
 	require.Contains(t, fmt.Sprint(search), id)
 	for _, detail := range []string{"brief", "full"} {
@@ -121,6 +120,30 @@ func catalogueWorkitems(t *testing.T, root catalogueCall) {
 	catalogueNull(t, itemCall("workitem", map[string]any{"action": "delete"}))
 	catalogueNull(t, call("label", map[string]any{"action": "delete", "label_id": labelID}))
 	catalogueNull(t, root("project", map[string]any{"action": "delete", "project_id": projectID}))
+}
+
+func catalogueCompactWorkitems(t *testing.T, root catalogueCall, projectKey, projectID, id, identifier, query string) {
+	t.Helper()
+	require.Equal(t, projectID, milestoneObject(t, root("project", map[string]any{"action": "retrieve", "project_id": projectKey}))["id"])
+	compactProjects := root("project", map[string]any{"action": "list", "format": "compact"})
+	require.False(t, compactProjects.IsError, compactProjects.Content)
+	require.Empty(t, compactProjects.StructuredContent)
+	require.Contains(t, compactProjects.Content[0].Text, fmt.Sprint(projectKey)+"  Items")
+	require.NotContains(t, compactProjects.Content[0].Text, projectID)
+	compact := root("workitem", map[string]any{"action": "list", "project_id": projectKey, "format": "compact", "pql": query})
+	require.False(t, compact.IsError, compact.Content)
+	require.Empty(t, compact.StructuredContent)
+	require.Contains(t, compact.Content[0].Text, identifier+"  Core renamed")
+	require.NotContains(t, compact.Content[0].Text, id)
+	sparse := root("workitem", map[string]any{"action": "list", "project_id": projectKey, "format": "compact", "fields": "id"})
+	require.Equal(t, id, catalogueRows(t, sparse)[0].(map[string]any)["id"])
+	count := milestoneObject(t, root("workitem", map[string]any{"action": "count", "project_id": projectKey, "pql": query, "group_by": "priority", "sub_group_by": "labels__id"}))
+	require.Equal(t, float64(1), count["total_count"])
+	invalid := root("workitem", map[string]any{"action": "list", "project_id": projectKey, "format": "compact", "pql": "priority ="})
+	require.True(t, invalid.IsError)
+	require.Empty(t, invalid.StructuredContent)
+	require.Contains(t, invalid.Content[0].Text, "[invalid_pql]")
+	require.Contains(t, invalid.Content[0].Text, "detail=brief")
 }
 
 func cataloguePlanning(t *testing.T, f milestoneFixture, root catalogueCall) {

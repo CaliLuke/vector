@@ -11,7 +11,7 @@ import (
 )
 
 func TestWorkspaceSelectionAndListingAcrossCredentials(t *testing.T) {
-	f, pool, auth, _ := oauthFixture(t)
+	f, pool, auth, issuer := oauthFixture(t)
 	addMCPProjectFixture(t, pool)
 	_, err := pool.Exec(t.Context(), `
  INSERT INTO workspace_members(workspace_id,member_id,role,is_active)
@@ -53,12 +53,45 @@ func TestWorkspaceSelectionAndListingAcrossCredentials(t *testing.T) {
 			require.False(t, me.IsError, me.Content)
 			for _, input := range []struct{ tool, arguments string }{
 				{"workspace", `{"action":"retrieve"}`},
+				{"project", `{"action":"list"}`},
+				{"workitem", `{"action":"list"}`},
+				{"state", `{"action":"list"}`},
 				{"project", `{"action":"retrieve","project_id":"30000000-0000-4000-8000-000000000001"}`},
 			} {
 				missing := call(input.tool, input.arguments)
 				require.True(t, missing.IsError)
 				require.Contains(t, missing.Content[0].Text, "[invalid_params]")
+				require.Contains(t, missing.Content[0].Text, "retry with workspace_slug")
+				require.Contains(t, missing.Content[0].Text, "workspace-one")
+				require.Contains(t, missing.Content[0].Text, "workspace-two")
+				require.NotContains(t, missing.Content[0].Text, "other-user-workspace")
+				require.NotContains(t, missing.Content[0].Text, "20000000-")
 			}
+			if mode.name == "OAuth" {
+				blocked := call("project", `{"action":"create","name":"Unscoped project","identifier":"UNSCOPED"}`)
+				require.Contains(t, blocked.Content[0].Text, "[forbidden]")
+				require.NotContains(t, blocked.Content[0].Text, "workspace-two")
+				issuer.mu.Lock()
+				issuer.scope = "vector:read vector:write"
+				issuer.mu.Unlock()
+			}
+			unscopedWrite := call("project", `{"action":"create","name":"Unscoped project","identifier":"UNSCOPED"}`)
+			require.True(t, unscopedWrite.IsError)
+			require.Contains(t, unscopedWrite.Content[0].Text, "retry with workspace_slug")
+			var created bool
+			require.NoError(t, pool.QueryRow(t.Context(), `SELECT EXISTS(SELECT 1 FROM projects WHERE identifier='UNSCOPED')`).Scan(&created))
+			require.False(t, created)
+			hidden := call("project", `{"action":"retrieve","workspace_slug":"workspace-one","project_id":"FOREIGN"}`)
+			require.True(t, hidden.IsError)
+			require.Contains(t, hidden.Content[0].Text, "[not_found]")
+			compact := call("workspace", `{"action":"list","format":"compact"}`)
+			require.False(t, compact.IsError, compact.Content)
+			require.Empty(t, compact.StructuredContent)
+			require.Equal(t, "2 workspaces\nworkspace-one  workspace-one\nworkspace-two  Second workspace", compact.Content[0].Text)
+			paged := call("project", `{"action":"list","workspace_slug":"workspace-one","format":"compact","per_page":1,"order_by":"name"}`)
+			require.Equal(t, "1 of 2 projects\nZZ  Archived project [archived]\nNext cursor 1:1:0", paged.Content[0].Text)
+			next := call("project", `{"action":"list","workspace_slug":"workspace-one","format":"compact","cursor":"1:1:0","order_by":"name"}`)
+			require.Equal(t, "1 of 2 projects\nSDK  SDK project\nPrevious cursor 1:0:1", next.Content[0].Text)
 			denied := call("project", `{"action":"list","workspace_slug":"unavailable"}`)
 			require.True(t, denied.IsError)
 			require.Contains(t, denied.Content[0].Text, "[forbidden]")

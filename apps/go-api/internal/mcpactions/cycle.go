@@ -17,7 +17,7 @@ func (s *Service) cycleRead(ctx context.Context, input *api.CycleRequest) (*api.
 			return planningWorkitems(ctx, s, "cycle", items, api.NewCycleResultWorkitemPQLFailure, api.NewCycleResultWorkitemPage)
 		}
 	}
-	return readProjectResource(ctx, input, selectCycleAction, s.cycleReads, cycles.ErrForbidden, cycles.ErrNotFound, projectCycleResult)
+	return readProjectResource(ctx, s, input, selectCycleAction, s.cycleReads, cycles.ErrForbidden, cycles.ErrNotFound, projectCycleResult)
 }
 
 func selectCycleAction(input *api.CycleRequest) (cycles.APIV1Request, *string, error) {

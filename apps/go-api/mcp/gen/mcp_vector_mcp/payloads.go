@@ -1307,7 +1307,10 @@ type ProjectGetFeaturesTransport struct {
 
 // ProjectListTransport preserves JSON field presence before service conversion.
 type ProjectListTransport struct {
-	Action  *string `json:"action"`
+	Action *string `json:"action"`
+	// Use compact for plain-text rows and pagination. Omit for the full JSON
+	// contract.
+	Format  *string `json:"format,omitzero"`
 	Cursor  *string `json:"cursor,omitzero"`
 	OrderBy *string `json:"order_by,omitzero"`
 	// Zero or omitted uses 100.
@@ -1320,7 +1323,8 @@ type ProjectMCPInput = ProjectRequest
 
 // ProjectRetrieveTransport preserves JSON field presence before service conversion.
 type ProjectRetrieveTransport struct {
-	Action    *string `json:"action"`
+	Action *string `json:"action"`
+	// Project UUID or exact project key, such as VEC.
 	ProjectID *string `json:"project_id"`
 	// Vector extension: include an opaque revision token for guarded writes.
 	IncludeRevision *bool   `json:"include_revision,omitzero"`
@@ -1724,7 +1728,10 @@ type StateListTransport struct {
 	// Omit or use an empty string for workspace scope.
 	ProjectID     *string `json:"project_id,omitzero"`
 	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
-	Cursor        *string `json:"cursor,omitzero"`
+	// Use compact for plain-text rows and pagination. Omit for the full JSON
+	// contract.
+	Format *string `json:"format,omitzero"`
+	Cursor *string `json:"cursor,omitzero"`
 	// Zero or omitted uses 1000.
 	PerPage *int `json:"per_page,omitzero"`
 }
@@ -1944,7 +1951,8 @@ type WorkitemCommentUpdateTransport struct {
 
 // WorkitemCountTransport preserves JSON field presence before service conversion.
 type WorkitemCountTransport struct {
-	Action        *string `json:"action"`
+	Action *string `json:"action"`
+	// Project UUID or exact project key, such as VEC.
 	ProjectID     *string `json:"project_id,omitzero"`
 	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
 	Pql           *string `json:"pql,omitzero"`
@@ -1991,7 +1999,8 @@ type WorkitemDeleteTransport struct {
 
 // WorkitemIdentifierTransport preserves JSON field presence before service conversion.
 type WorkitemIdentifierTransport struct {
-	Action             *string `json:"action"`
+	Action *string `json:"action"`
+	// Full work-item key, for example VEC-42.
 	WorkitemIdentifier *string `json:"workitem_identifier"`
 	WorkspaceSlug      *string `json:"workspace_slug,omitzero"`
 	OrderBy            *string `json:"order_by,omitzero"`
@@ -2068,8 +2077,12 @@ type WorkitemListArchivedTransport struct {
 
 // WorkitemListTransport preserves JSON field presence before service conversion.
 type WorkitemListTransport struct {
-	Action         *string `json:"action"`
-	ProjectID      *string `json:"project_id,omitzero"`
+	Action *string `json:"action"`
+	// Project UUID or exact project key, such as VEC.
+	ProjectID *string `json:"project_id,omitzero"`
+	// Use compact for plain-text rows and pagination. Omit for the full JSON
+	// contract.
+	Format         *string `json:"format,omitzero"`
 	WorkspaceSlug  *string `json:"workspace_slug,omitzero"`
 	OrderBy        *string `json:"order_by,omitzero"`
 	Expand         *string `json:"expand,omitzero"`
@@ -2553,6 +2566,9 @@ type WorkspaceGetFeaturesTransport struct {
 // WorkspaceListTransport preserves JSON field presence before service conversion.
 type WorkspaceListTransport struct {
 	Action *string `json:"action"`
+	// Use compact for plain-text rows and pagination. Omit for the full JSON
+	// contract.
+	Format *string `json:"format,omitzero"`
 }
 
 // WorkspaceMCPInput preserves JSON field presence before service conversion.
@@ -27512,7 +27528,7 @@ func (u *ProjectRequest) UnmarshalJSON(data []byte) error {
 }
 func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 	var value0 *ProjectListTransport
-	schema0Nodes := make([]loom.JSONShape, 7)
+	schema0Nodes := make([]loom.JSONShape, 8)
 	schema0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &schema0Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -27520,10 +27536,11 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 	schema0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &schema0Nodes[2]},
-			{Name: "cursor", Required: false, Shape: &schema0Nodes[3]},
-			{Name: "order_by", Required: false, Shape: &schema0Nodes[4]},
-			{Name: "per_page", Required: false, Shape: &schema0Nodes[5]},
-			{Name: "workspace_slug", Required: false, Shape: &schema0Nodes[6]},
+			{Name: "format", Required: false, Shape: &schema0Nodes[3]},
+			{Name: "cursor", Required: false, Shape: &schema0Nodes[4]},
+			{Name: "order_by", Required: false, Shape: &schema0Nodes[5]},
+			{Name: "per_page", Required: false, Shape: &schema0Nodes[6]},
+			{Name: "workspace_slug", Required: false, Shape: &schema0Nodes[7]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -27537,21 +27554,31 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 		},
 	}
 	schema0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
+				},
+			},
+		},
 	}
 	schema0Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema0Nodes[5] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+	schema0Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[6] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema0Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+	schema0Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			MaxLength: new(255),
 		},
 	}
 	schema0 := &schema0Nodes[0]
-	runtime0Nodes := make([]loom.JSONShape, 7)
+	runtime0Nodes := make([]loom.JSONShape, 8)
 	runtime0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &runtime0Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -27559,10 +27586,11 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 	runtime0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &runtime0Nodes[2]},
-			{Name: "cursor", Required: false, Shape: &runtime0Nodes[3]},
-			{Name: "order_by", Required: false, Shape: &runtime0Nodes[4]},
-			{Name: "per_page", Required: false, Shape: &runtime0Nodes[5]},
-			{Name: "workspace_slug", Required: false, Shape: &runtime0Nodes[6]},
+			{Name: "format", Required: false, Shape: &runtime0Nodes[3]},
+			{Name: "cursor", Required: false, Shape: &runtime0Nodes[4]},
+			{Name: "order_by", Required: false, Shape: &runtime0Nodes[5]},
+			{Name: "per_page", Required: false, Shape: &runtime0Nodes[6]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime0Nodes[7]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -27576,15 +27604,25 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 		},
 	}
 	runtime0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
+				},
+			},
+		},
 	}
 	runtime0Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime0Nodes[5] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime0Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[6] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime0Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime0Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			MaxLength: new(255),
 		},
@@ -27616,9 +27654,7 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 	}
 	schema1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			Formats: []loom.Format{
-				"uuid",
-			},
+			MaxLength: new(36),
 		},
 	}
 	schema1Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
@@ -27655,9 +27691,7 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 	}
 	runtime1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			Formats: []loom.Format{
-				"uuid",
-			},
+			MaxLength: new(36),
 		},
 	}
 	runtime1Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
@@ -28740,6 +28774,11 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", *v.Action, []any{"list"}))
 					}
 				}
+				if v.Format != nil {
+					if !(*v.Format == "compact" || *v.Format == "json") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.format", *v.Format, []any{"compact", "json"}))
+					}
+				}
 				if v.PerPage != nil {
 					if *v.PerPage < 0 {
 						err = loom.MergeErrors(err, loom.InvalidRangeError("v.per_page", *v.PerPage, "0", true))
@@ -28785,7 +28824,9 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 					}
 				}
 				if v.ProjectID != nil {
-					err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", *v.ProjectID, loom.FormatUUID))
+					if utf8.RuneCountInString(*v.ProjectID) > 36 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.project_id", utf8.RuneCountInString(*v.ProjectID), 36, false))
+					}
 				}
 				if v.WorkspaceSlug != nil {
 					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
@@ -29146,6 +29187,11 @@ func validateProjectRequestProjectListTransport(body *ProjectListTransport, vali
 			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", *body.Action, []any{"list"}))
 		}
 	}
+	if body.Format != nil {
+		if !(*body.Format == "compact" || *body.Format == "json") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".format", *body.Format, []any{"compact", "json"}))
+		}
+	}
 	if body.PerPage != nil {
 		if *body.PerPage < 0 {
 			err = loom.MergeErrors(err, loom.InvalidRangeError(validationPath+".per_page", *body.PerPage, "0", true))
@@ -29184,7 +29230,9 @@ func validateProjectRequestProjectRetrieveTransport(body *ProjectRetrieveTranspo
 		}
 	}
 	if body.ProjectID != nil {
-		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", *body.ProjectID, loom.FormatUUID))
+		if utf8.RuneCountInString(*body.ProjectID) > 36 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".project_id", utf8.RuneCountInString(*body.ProjectID), 36, false))
+		}
 	}
 	if body.WorkspaceSlug != nil {
 		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
@@ -34531,7 +34579,7 @@ func (u *StateRequest) UnmarshalJSON(data []byte) error {
 }
 func (u StateRequest) matchJSON(data []byte) (StateRequest, int, error) {
 	var value0 *StateListTransport
-	schema0Nodes := make([]loom.JSONShape, 7)
+	schema0Nodes := make([]loom.JSONShape, 8)
 	schema0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &schema0Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -34541,8 +34589,9 @@ func (u StateRequest) matchJSON(data []byte) (StateRequest, int, error) {
 			{Name: "action", Required: true, Shape: &schema0Nodes[2]},
 			{Name: "project_id", Required: false, Shape: &schema0Nodes[3]},
 			{Name: "workspace_slug", Required: false, Shape: &schema0Nodes[4]},
-			{Name: "cursor", Required: false, Shape: &schema0Nodes[5]},
-			{Name: "per_page", Required: false, Shape: &schema0Nodes[6]},
+			{Name: "format", Required: false, Shape: &schema0Nodes[5]},
+			{Name: "cursor", Required: false, Shape: &schema0Nodes[6]},
+			{Name: "per_page", Required: false, Shape: &schema0Nodes[7]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -34564,13 +34613,23 @@ func (u StateRequest) matchJSON(data []byte) (StateRequest, int, error) {
 		},
 	}
 	schema0Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
+				},
+			},
+		},
+	}
+	schema0Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema0Nodes[6] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+	schema0Nodes[7] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema0 := &schema0Nodes[0]
-	runtime0Nodes := make([]loom.JSONShape, 7)
+	runtime0Nodes := make([]loom.JSONShape, 8)
 	runtime0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &runtime0Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -34580,8 +34639,9 @@ func (u StateRequest) matchJSON(data []byte) (StateRequest, int, error) {
 			{Name: "action", Required: true, Shape: &runtime0Nodes[2]},
 			{Name: "project_id", Required: false, Shape: &runtime0Nodes[3]},
 			{Name: "workspace_slug", Required: false, Shape: &runtime0Nodes[4]},
-			{Name: "cursor", Required: false, Shape: &runtime0Nodes[5]},
-			{Name: "per_page", Required: false, Shape: &runtime0Nodes[6]},
+			{Name: "format", Required: false, Shape: &runtime0Nodes[5]},
+			{Name: "cursor", Required: false, Shape: &runtime0Nodes[6]},
+			{Name: "per_page", Required: false, Shape: &runtime0Nodes[7]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -34603,9 +34663,19 @@ func (u StateRequest) matchJSON(data []byte) (StateRequest, int, error) {
 		},
 	}
 	runtime0Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
+				},
+			},
+		},
+	}
+	runtime0Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime0Nodes[6] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime0Nodes[7] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime0 := &runtime0Nodes[0]
@@ -35142,6 +35212,11 @@ func (u StateRequest) matchJSON(data []byte) (StateRequest, int, error) {
 						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
 					}
 				}
+				if v.Format != nil {
+					if !(*v.Format == "compact" || *v.Format == "json") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.format", *v.Format, []any{"compact", "json"}))
+					}
+				}
 				if v.PerPage != nil {
 					if *v.PerPage < 0 {
 						err = loom.MergeErrors(err, loom.InvalidRangeError("v.per_page", *v.PerPage, "0", true))
@@ -35364,6 +35439,11 @@ func validateStateRequestStateListTransport(body *StateListTransport, validation
 	if body.WorkspaceSlug != nil {
 		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
 			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*body.WorkspaceSlug), 255, false))
+		}
+	}
+	if body.Format != nil {
+		if !(*body.Format == "compact" || *body.Format == "json") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".format", *body.Format, []any{"compact", "json"}))
 		}
 	}
 	if body.PerPage != nil {
@@ -46004,8 +46084,10 @@ func validateWorkitemPropertyRequestWorkitemPropertyCreateConfigurationTransport
 			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".content", utf8.RuneCountInString(*body.Content), 65536, false))
 		}
 	}
-	if len(body.Levels) > 4 {
-		err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".levels", len(body.Levels), 4, false))
+	if body.Levels != nil {
+		if len(body.Levels) > 4 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".levels", len(body.Levels), 4, false))
+		}
 	}
 	for i, e := range body.Levels {
 		if e == nil {
@@ -46017,8 +46099,10 @@ func validateWorkitemPropertyRequestWorkitemPropertyCreateConfigurationTransport
 			}
 		}
 	}
-	if len(body.Options) > 1000 {
-		err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".options", len(body.Options), 1000, false))
+	if body.Options != nil {
+		if len(body.Options) > 1000 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".options", len(body.Options), 1000, false))
+		}
 	}
 	for i, e := range body.Options {
 		if e == nil {
@@ -46195,8 +46279,10 @@ func validateWorkitemPropertyRequestWorkitemPropertyUpdateConfigurationTransport
 			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".content", utf8.RuneCountInString(*body.Content), 65536, false))
 		}
 	}
-	if len(body.Levels) > 4 {
-		err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".levels", len(body.Levels), 4, false))
+	if body.Levels != nil {
+		if len(body.Levels) > 4 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".levels", len(body.Levels), 4, false))
+		}
 	}
 	for i, e := range body.Levels {
 		if e == nil {
@@ -46208,8 +46294,10 @@ func validateWorkitemPropertyRequestWorkitemPropertyUpdateConfigurationTransport
 			}
 		}
 	}
-	if len(body.Options) > 1000 {
-		err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".options", len(body.Options), 1000, false))
+	if body.Options != nil {
+		if len(body.Options) > 1000 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".options", len(body.Options), 1000, false))
+		}
 	}
 	for i, e := range body.Options {
 		if e == nil {
@@ -49144,9 +49232,7 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 	}
 	schema0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			Formats: []loom.Format{
-				"uuid",
-			},
+			MaxLength: new(36),
 		},
 	}
 	schema0Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
@@ -49231,9 +49317,7 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 	}
 	runtime0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			Formats: []loom.Format{
-				"uuid",
-			},
+			MaxLength: new(36),
 		},
 	}
 	runtime0Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
@@ -49292,7 +49376,7 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 	}
 	runtime0 := &runtime0Nodes[0]
 	var value1 *WorkitemListTransport
-	schema1Nodes := make([]loom.JSONShape, 13)
+	schema1Nodes := make([]loom.JSONShape, 14)
 	schema1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &schema1Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -49301,15 +49385,16 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &schema1Nodes[2]},
 			{Name: "project_id", Required: false, Shape: &schema1Nodes[3]},
-			{Name: "workspace_slug", Required: false, Shape: &schema1Nodes[4]},
-			{Name: "order_by", Required: false, Shape: &schema1Nodes[5]},
-			{Name: "expand", Required: false, Shape: &schema1Nodes[6]},
-			{Name: "fields", Required: false, Shape: &schema1Nodes[7]},
-			{Name: "external_id", Required: false, Shape: &schema1Nodes[8]},
-			{Name: "external_source", Required: false, Shape: &schema1Nodes[9]},
-			{Name: "pql", Required: false, Shape: &schema1Nodes[10]},
-			{Name: "cursor", Required: false, Shape: &schema1Nodes[11]},
-			{Name: "per_page", Required: false, Shape: &schema1Nodes[12]},
+			{Name: "format", Required: false, Shape: &schema1Nodes[4]},
+			{Name: "workspace_slug", Required: false, Shape: &schema1Nodes[5]},
+			{Name: "order_by", Required: false, Shape: &schema1Nodes[6]},
+			{Name: "expand", Required: false, Shape: &schema1Nodes[7]},
+			{Name: "fields", Required: false, Shape: &schema1Nodes[8]},
+			{Name: "external_id", Required: false, Shape: &schema1Nodes[9]},
+			{Name: "external_source", Required: false, Shape: &schema1Nodes[10]},
+			{Name: "pql", Required: false, Shape: &schema1Nodes[11]},
+			{Name: "cursor", Required: false, Shape: &schema1Nodes[12]},
+			{Name: "per_page", Required: false, Shape: &schema1Nodes[13]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -49324,18 +49409,23 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 	}
 	schema1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			Formats: []loom.Format{
-				"uuid",
-			},
+			MaxLength: new(36),
 		},
 	}
 	schema1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			MaxLength: new(255),
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
+				},
+			},
 		},
 	}
 	schema1Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
 	}
 	schema1Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -49355,11 +49445,14 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 	schema1Nodes[11] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema1Nodes[12] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+	schema1Nodes[12] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[13] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema1 := &schema1Nodes[0]
-	runtime1Nodes := make([]loom.JSONShape, 13)
+	runtime1Nodes := make([]loom.JSONShape, 14)
 	runtime1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &runtime1Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -49368,15 +49461,16 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &runtime1Nodes[2]},
 			{Name: "project_id", Required: false, Shape: &runtime1Nodes[3]},
-			{Name: "workspace_slug", Required: false, Shape: &runtime1Nodes[4]},
-			{Name: "order_by", Required: false, Shape: &runtime1Nodes[5]},
-			{Name: "expand", Required: false, Shape: &runtime1Nodes[6]},
-			{Name: "fields", Required: false, Shape: &runtime1Nodes[7]},
-			{Name: "external_id", Required: false, Shape: &runtime1Nodes[8]},
-			{Name: "external_source", Required: false, Shape: &runtime1Nodes[9]},
-			{Name: "pql", Required: false, Shape: &runtime1Nodes[10]},
-			{Name: "cursor", Required: false, Shape: &runtime1Nodes[11]},
-			{Name: "per_page", Required: false, Shape: &runtime1Nodes[12]},
+			{Name: "format", Required: false, Shape: &runtime1Nodes[4]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime1Nodes[5]},
+			{Name: "order_by", Required: false, Shape: &runtime1Nodes[6]},
+			{Name: "expand", Required: false, Shape: &runtime1Nodes[7]},
+			{Name: "fields", Required: false, Shape: &runtime1Nodes[8]},
+			{Name: "external_id", Required: false, Shape: &runtime1Nodes[9]},
+			{Name: "external_source", Required: false, Shape: &runtime1Nodes[10]},
+			{Name: "pql", Required: false, Shape: &runtime1Nodes[11]},
+			{Name: "cursor", Required: false, Shape: &runtime1Nodes[12]},
+			{Name: "per_page", Required: false, Shape: &runtime1Nodes[13]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -49391,18 +49485,23 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 	}
 	runtime1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			Formats: []loom.Format{
-				"uuid",
-			},
+			MaxLength: new(36),
 		},
 	}
 	runtime1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			MaxLength: new(255),
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
+				},
+			},
 		},
 	}
 	runtime1Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
 	}
 	runtime1Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -49422,7 +49521,10 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 	runtime1Nodes[11] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime1Nodes[12] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime1Nodes[12] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[13] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime1 := &runtime1Nodes[0]
@@ -50933,7 +51035,9 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 					}
 				}
 				if v.ProjectID != nil {
-					err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", *v.ProjectID, loom.FormatUUID))
+					if utf8.RuneCountInString(*v.ProjectID) > 36 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.project_id", utf8.RuneCountInString(*v.ProjectID), 36, false))
+					}
 				}
 				if v.WorkspaceSlug != nil {
 					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
@@ -50977,7 +51081,14 @@ func (u WorkitemRequest) matchJSON(data []byte) (WorkitemRequest, int, error) {
 					}
 				}
 				if v.ProjectID != nil {
-					err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", *v.ProjectID, loom.FormatUUID))
+					if utf8.RuneCountInString(*v.ProjectID) > 36 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.project_id", utf8.RuneCountInString(*v.ProjectID), 36, false))
+					}
+				}
+				if v.Format != nil {
+					if !(*v.Format == "compact" || *v.Format == "json") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.format", *v.Format, []any{"compact", "json"}))
+					}
 				}
 				if v.WorkspaceSlug != nil {
 					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
@@ -51512,7 +51623,9 @@ func validateWorkitemRequestWorkitemCountTransport(body *WorkitemCountTransport,
 		}
 	}
 	if body.ProjectID != nil {
-		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", *body.ProjectID, loom.FormatUUID))
+		if utf8.RuneCountInString(*body.ProjectID) > 36 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".project_id", utf8.RuneCountInString(*body.ProjectID), 36, false))
+		}
 	}
 	if body.WorkspaceSlug != nil {
 		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
@@ -51549,7 +51662,14 @@ func validateWorkitemRequestWorkitemListTransport(body *WorkitemListTransport, v
 		}
 	}
 	if body.ProjectID != nil {
-		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", *body.ProjectID, loom.FormatUUID))
+		if utf8.RuneCountInString(*body.ProjectID) > 36 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".project_id", utf8.RuneCountInString(*body.ProjectID), 36, false))
+		}
+	}
+	if body.Format != nil {
+		if !(*body.Format == "compact" || *body.Format == "json") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".format", *body.Format, []any{"compact", "json"}))
+		}
 	}
 	if body.WorkspaceSlug != nil {
 		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
@@ -53796,7 +53916,7 @@ func (u *WorkspaceRequest) UnmarshalJSON(data []byte) error {
 }
 func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) {
 	var value0 *WorkspaceListTransport
-	schema0Nodes := make([]loom.JSONShape, 3)
+	schema0Nodes := make([]loom.JSONShape, 4)
 	schema0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &schema0Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -53804,6 +53924,7 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 	schema0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &schema0Nodes[2]},
+			{Name: "format", Required: false, Shape: &schema0Nodes[3]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -53816,8 +53937,18 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 			},
 		},
 	}
+	schema0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
+				},
+			},
+		},
+	}
 	schema0 := &schema0Nodes[0]
-	runtime0Nodes := make([]loom.JSONShape, 3)
+	runtime0Nodes := make([]loom.JSONShape, 4)
 	runtime0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &runtime0Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -53825,6 +53956,7 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 	runtime0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &runtime0Nodes[2]},
+			{Name: "format", Required: false, Shape: &runtime0Nodes[3]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -53833,6 +53965,16 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 			Enums: [][]jsontext.Value{
 				{
 					jsontext.Value("\"list\""),
+				},
+			},
+		},
+	}
+	runtime0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"compact\""),
+					jsontext.Value("\"json\""),
 				},
 			},
 		},
@@ -54107,6 +54249,11 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", *v.Action, []any{"list"}))
 					}
 				}
+				if v.Format != nil {
+					if !(*v.Format == "compact" || *v.Format == "json") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.format", *v.Format, []any{"compact", "json"}))
+					}
+				}
 				return
 			}(); err != nil {
 				return false, nil
@@ -54248,6 +54395,11 @@ func validateWorkspaceRequestWorkspaceListTransport(body *WorkspaceListTransport
 			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", *body.Action, []any{"list"}))
 		}
 	}
+	if body.Format != nil {
+		if !(*body.Format == "compact" || *body.Format == "json") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".format", *body.Format, []any{"compact", "json"}))
+		}
+	}
 	return
 }
 
@@ -54336,7 +54488,7 @@ func decodeWorkspacePayload(raw jsontext.Value) (out *vector_mcp.WorkspaceReques
 	if err = decodeMCPPayloadStrict(raw, &in); err != nil {
 		return out, err
 	}
-	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_features\"]},\"include_revision\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_features\"]},\"customers\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"initiatives\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"pi\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_grouping\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"teams\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"wiki\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"get_features\"]},{\"type\":\"string\",\"enum\":[\"update_features\"]}]},\"customers\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"initiatives\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"pi\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_grouping\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"teams\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"wiki\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
+	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"format\":{\"type\":\"string\",\"description\":\"Use compact for plain-text rows and pagination. Omit for the full JSON contract.\",\"enum\":[\"compact\",\"json\"]}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_features\"]},\"include_revision\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_features\"]},\"customers\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"initiatives\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"pi\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_grouping\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"teams\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"wiki\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"get_features\"]},{\"type\":\"string\",\"enum\":[\"update_features\"]}]},\"customers\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"format\":{\"type\":\"string\",\"description\":\"Use compact for plain-text rows and pagination. Omit for the full JSON contract.\",\"enum\":[\"compact\",\"json\"]},\"include_revision\":{\"type\":\"boolean\"},\"initiatives\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"pi\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_grouping\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"teams\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"wiki\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
 		return out, err
 	}
 
@@ -54454,7 +54606,7 @@ func decodeProjectPayload(raw jsontext.Value) (out *vector_mcp.ProjectRequest, e
 	if err = decodeMCPPayloadStrict(raw, &in); err != nil {
 		return out, err
 	}
-	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\",\"description\":\"Vector extension: include an opaque revision token for guarded writes.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\"]},\"expected_revision\":{\"type\":\"string\",\"description\":\"Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.\",\"minLength\":1,\"maxLength\":128},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"description\":\"Optional Vector retry identity; retained for at least 24 hours.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\",\"identifier\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"default_assignee\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"identifier\":{\"type\":\"string\"},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_lead\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"default_assignee\":{\"type\":\"string\"},\"default_state\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"estimate\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"identifier\":{\"type\":\"string\"},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"is_time_tracking_enabled\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"network\":{\"anyOf\":[{\"type\":\"integer\",\"enum\":[0,2],\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},{\"type\":\"null\"}]},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_lead\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"worklog_summary\"]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_features\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_features\"]},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"epics\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"parallel_cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_updates\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workflows\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"worklog_summary\"]},{\"type\":\"string\",\"enum\":[\"get_features\"]},{\"type\":\"string\",\"enum\":[\"update_features\"]}]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"default_assignee\":{\"type\":\"string\"},\"default_state\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"epics\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"estimate\":{\"type\":\"string\"},\"expected_revision\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.\",\"minLength\":1,\"maxLength\":128},{\"type\":\"string\",\"minLength\":1}]},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"identifier\":{\"type\":\"string\"},\"include_revision\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Vector extension: include an opaque revision token for guarded writes.\"},{\"type\":\"boolean\"}]},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"is_time_tracking_enabled\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"network\":{\"anyOf\":[{\"type\":\"integer\",\"enum\":[0,2],\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},{\"type\":\"null\"}]},\"order_by\":{\"type\":\"string\"},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"parallel_cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_lead\":{\"type\":\"string\"},\"project_updates\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"request_id\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Optional Vector retry identity; retained for at least 24 hours.\",\"format\":\"uuid\"},{\"type\":\"string\",\"format\":\"uuid\"}]},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workflows\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
+	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"format\":{\"type\":\"string\",\"description\":\"Use compact for plain-text rows and pagination. Omit for the full JSON contract.\",\"enum\":[\"compact\",\"json\"]},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\",\"description\":\"Vector extension: include an opaque revision token for guarded writes.\"},\"project_id\":{\"type\":\"string\",\"description\":\"Project UUID or exact project key, such as VEC.\",\"maxLength\":36},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\"]},\"expected_revision\":{\"type\":\"string\",\"description\":\"Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.\",\"minLength\":1,\"maxLength\":128},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"description\":\"Optional Vector retry identity; retained for at least 24 hours.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\",\"identifier\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"default_assignee\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"identifier\":{\"type\":\"string\"},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_lead\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"default_assignee\":{\"type\":\"string\"},\"default_state\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"estimate\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"identifier\":{\"type\":\"string\"},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"is_time_tracking_enabled\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"network\":{\"anyOf\":[{\"type\":\"integer\",\"enum\":[0,2],\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},{\"type\":\"null\"}]},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_lead\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"worklog_summary\"]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_features\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_features\"]},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"epics\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"parallel_cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_updates\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workflows\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"worklog_summary\"]},{\"type\":\"string\",\"enum\":[\"get_features\"]},{\"type\":\"string\",\"enum\":[\"update_features\"]}]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"default_assignee\":{\"type\":\"string\"},\"default_state\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"epics\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"estimate\":{\"type\":\"string\"},\"expected_revision\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.\",\"minLength\":1,\"maxLength\":128},{\"type\":\"string\",\"minLength\":1}]},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"format\":{\"type\":\"string\",\"description\":\"Use compact for plain-text rows and pagination. Omit for the full JSON contract.\",\"enum\":[\"compact\",\"json\"]},\"identifier\":{\"type\":\"string\"},\"include_revision\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Vector extension: include an opaque revision token for guarded writes.\"},{\"type\":\"boolean\"}]},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"is_time_tracking_enabled\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"network\":{\"anyOf\":[{\"type\":\"integer\",\"enum\":[0,2],\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},{\"type\":\"null\"}]},\"order_by\":{\"type\":\"string\"},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"parallel_cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Project UUID or exact project key, such as VEC.\",\"maxLength\":36},{\"type\":\"string\",\"format\":\"uuid\"}]},\"project_lead\":{\"type\":\"string\"},\"project_updates\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"request_id\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Optional Vector retry identity; retained for at least 24 hours.\",\"format\":\"uuid\"},{\"type\":\"string\",\"format\":\"uuid\"}]},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workflows\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
 		return out, err
 	}
 
@@ -55046,7 +55198,7 @@ func decodeStatePayload(raw jsontext.Value) (out *vector_mcp.StateRequest, err e
 	if err = decodeMCPPayloadStrict(raw, &in); err != nil {
 		return out, err
 	}
-	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"state_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"state_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\",\"color\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"color\":{\"type\":\"string\"},\"default\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"description\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"group\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sequence\":{\"anyOf\":[{\"type\":\"number\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"state_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"color\":{\"type\":\"string\"},\"default\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"group\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sequence\":{\"anyOf\":[{\"type\":\"number\"},{\"type\":\"null\"}]},\"state_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"state_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"state_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]}]},\"color\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"default\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"group\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"name\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sequence\":{\"anyOf\":[{\"type\":\"number\"},{\"type\":\"null\"}]},\"state_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
+	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"format\":{\"type\":\"string\",\"description\":\"Use compact for plain-text rows and pagination. Omit for the full JSON contract.\",\"enum\":[\"compact\",\"json\"]},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"state_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"state_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\",\"color\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"color\":{\"type\":\"string\"},\"default\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"description\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"group\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sequence\":{\"anyOf\":[{\"type\":\"number\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"state_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"color\":{\"type\":\"string\"},\"default\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"group\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sequence\":{\"anyOf\":[{\"type\":\"number\"},{\"type\":\"null\"}]},\"state_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"state_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"state_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]}]},\"color\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"default\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"format\":{\"type\":\"string\",\"description\":\"Use compact for plain-text rows and pagination. Omit for the full JSON contract.\",\"enum\":[\"compact\",\"json\"]},\"group\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"name\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sequence\":{\"anyOf\":[{\"type\":\"number\"},{\"type\":\"null\"}]},\"state_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
 		return out, err
 	}
 
@@ -55298,7 +55450,7 @@ func decodeWorkitemPayload(raw jsontext.Value) (out *vector_mcp.WorkitemRequest,
 	if err = decodeMCPPayloadStrict(raw, &in); err != nil {
 		return out, err
 	}
-	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"count\"]},\"group_by\":{\"type\":\"string\",\"enum\":[\"\",\"state_id\",\"state__group\",\"priority\",\"project_id\",\"type_id\",\"labels__id\",\"assignees__id\",\"issue_module__module_id\",\"release_work_items__release_id\",\"cycle_id\",\"milestone_id\",\"created_by\",\"target_date\",\"start_date\"]},\"pql\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sub_group_by\":{\"type\":\"string\",\"enum\":[\"\",\"state_id\",\"state__group\",\"priority\",\"project_id\",\"type_id\",\"labels__id\",\"assignees__id\",\"issue_module__module_id\",\"release_work_items__release_id\",\"cycle_id\",\"milestone_id\",\"created_by\",\"target_date\",\"start_date\"]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses the native page size.\",\"minimum\":0,\"maximum\":1e3},\"pql\":{\"type\":\"string\",\"description\":\"PQL predicate; call get_pql_reference for syntax.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_archived\"]},\"cursor\":{\"type\":\"string\"},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses the native page size.\",\"minimum\":0,\"maximum\":1e3},\"pql\":{\"type\":\"string\",\"description\":\"PQL predicate; call get_pql_reference for syntax.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"order_by\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"workitem_identifier\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve_by_identifier\"]},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"workitem_identifier\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"query\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"search\"]},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"query\":{\"type\":\"string\",\"minLength\":1},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"assignees\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"description_html\":{\"type\":\"string\"},\"description_stripped\":{\"type\":\"string\"},\"estimate_point\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_draft\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"labels\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"parent\":{\"type\":\"string\"},\"point\":{\"type\":\"integer\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"priority\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"type\":\"number\"},\"start_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"state\":{\"type\":\"string\"},\"target_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"type_id\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"assignees\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"description_html\":{\"type\":\"string\"},\"description_stripped\":{\"type\":\"string\"},\"estimate_point\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_draft\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"labels\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"parent\":{\"type\":\"string\"},\"point\":{\"type\":\"integer\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"priority\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"type\":\"number\"},\"start_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"state\":{\"type\":\"string\"},\"target_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"type_id\":{\"type\":\"string\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"archive\"]},\"archive\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_assignee\"]},\"add_user_id\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_user_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_label\"]},\"add_label_id\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_label_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"count\"]},{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"list_archived\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"retrieve_by_identifier\"]},{\"type\":\"string\",\"enum\":[\"search\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"archive\"]},{\"type\":\"string\",\"enum\":[\"manage_assignee\"]},{\"type\":\"string\",\"enum\":[\"manage_label\"]}]},\"add_label_id\":{\"type\":\"string\"},\"add_user_id\":{\"type\":\"string\"},\"archive\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"assignees\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"cursor\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"description_stripped\":{\"type\":\"string\"},\"estimate_point\":{\"type\":\"string\"},\"expand\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"group_by\":{\"type\":\"string\",\"enum\":[\"\",\"state_id\",\"state__group\",\"priority\",\"project_id\",\"type_id\",\"labels__id\",\"assignees__id\",\"issue_module__module_id\",\"release_work_items__release_id\",\"cycle_id\",\"milestone_id\",\"created_by\",\"target_date\",\"start_date\"]},\"include_revision\":{\"type\":\"boolean\"},\"is_draft\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"labels\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"parent\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses the native page size.\",\"minimum\":0,\"maximum\":1e3},\"point\":{\"type\":\"integer\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"pql\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"string\",\"description\":\"PQL predicate; call get_pql_reference for syntax.\"}]},\"priority\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"query\":{\"type\":\"string\",\"minLength\":1},\"remove_label_id\":{\"type\":\"string\"},\"remove_user_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"type\":\"number\"},\"start_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"state\":{\"type\":\"string\"},\"sub_group_by\":{\"type\":\"string\",\"enum\":[\"\",\"state_id\",\"state__group\",\"priority\",\"project_id\",\"type_id\",\"labels__id\",\"assignees__id\",\"issue_module__module_id\",\"release_work_items__release_id\",\"cycle_id\",\"milestone_id\",\"created_by\",\"target_date\",\"start_date\"]},\"target_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"type_id\":{\"type\":\"string\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_identifier\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
+	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"count\"]},\"group_by\":{\"type\":\"string\",\"enum\":[\"\",\"state_id\",\"state__group\",\"priority\",\"project_id\",\"type_id\",\"labels__id\",\"assignees__id\",\"issue_module__module_id\",\"release_work_items__release_id\",\"cycle_id\",\"milestone_id\",\"created_by\",\"target_date\",\"start_date\"]},\"pql\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"description\":\"Project UUID or exact project key, such as VEC.\",\"maxLength\":36},\"sub_group_by\":{\"type\":\"string\",\"enum\":[\"\",\"state_id\",\"state__group\",\"priority\",\"project_id\",\"type_id\",\"labels__id\",\"assignees__id\",\"issue_module__module_id\",\"release_work_items__release_id\",\"cycle_id\",\"milestone_id\",\"created_by\",\"target_date\",\"start_date\"]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"format\":{\"type\":\"string\",\"description\":\"Use compact for plain-text rows and pagination. Omit for the full JSON contract.\",\"enum\":[\"compact\",\"json\"]},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses the native page size.\",\"minimum\":0,\"maximum\":1e3},\"pql\":{\"type\":\"string\",\"description\":\"PQL predicate; call get_pql_reference for syntax.\"},\"project_id\":{\"type\":\"string\",\"description\":\"Project UUID or exact project key, such as VEC.\",\"maxLength\":36},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_archived\"]},\"cursor\":{\"type\":\"string\"},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses the native page size.\",\"minimum\":0,\"maximum\":1e3},\"pql\":{\"type\":\"string\",\"description\":\"PQL predicate; call get_pql_reference for syntax.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"order_by\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"workitem_identifier\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve_by_identifier\"]},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"workitem_identifier\":{\"type\":\"string\",\"description\":\"Full work-item key, for example VEC-42.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"query\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"search\"]},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"query\":{\"type\":\"string\",\"minLength\":1},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"assignees\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"description_html\":{\"type\":\"string\"},\"description_stripped\":{\"type\":\"string\"},\"estimate_point\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_draft\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"labels\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"parent\":{\"type\":\"string\"},\"point\":{\"type\":\"integer\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"priority\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"type\":\"number\"},\"start_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"state\":{\"type\":\"string\"},\"target_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"type_id\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"assignees\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"description_html\":{\"type\":\"string\"},\"description_stripped\":{\"type\":\"string\"},\"estimate_point\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_draft\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"labels\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"parent\":{\"type\":\"string\"},\"point\":{\"type\":\"integer\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"priority\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"type\":\"number\"},\"start_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"state\":{\"type\":\"string\"},\"target_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"type_id\":{\"type\":\"string\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"archive\"]},\"archive\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_assignee\"]},\"add_user_id\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_user_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_label\"]},\"add_label_id\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_label_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"count\"]},{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"list_archived\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"retrieve_by_identifier\"]},{\"type\":\"string\",\"enum\":[\"search\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"archive\"]},{\"type\":\"string\",\"enum\":[\"manage_assignee\"]},{\"type\":\"string\",\"enum\":[\"manage_label\"]}]},\"add_label_id\":{\"type\":\"string\"},\"add_user_id\":{\"type\":\"string\"},\"archive\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"assignees\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"cursor\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"description_stripped\":{\"type\":\"string\"},\"estimate_point\":{\"type\":\"string\"},\"expand\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"format\":{\"type\":\"string\",\"description\":\"Use compact for plain-text rows and pagination. Omit for the full JSON contract.\",\"enum\":[\"compact\",\"json\"]},\"group_by\":{\"type\":\"string\",\"enum\":[\"\",\"state_id\",\"state__group\",\"priority\",\"project_id\",\"type_id\",\"labels__id\",\"assignees__id\",\"issue_module__module_id\",\"release_work_items__release_id\",\"cycle_id\",\"milestone_id\",\"created_by\",\"target_date\",\"start_date\"]},\"include_revision\":{\"type\":\"boolean\"},\"is_draft\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"labels\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"parent\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses the native page size.\",\"minimum\":0,\"maximum\":1e3},\"point\":{\"type\":\"integer\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"pql\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"string\",\"description\":\"PQL predicate; call get_pql_reference for syntax.\"}]},\"priority\":{\"type\":\"string\"},\"project_id\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Project UUID or exact project key, such as VEC.\",\"maxLength\":36},{\"type\":\"string\",\"format\":\"uuid\"}]},\"query\":{\"type\":\"string\",\"minLength\":1},\"remove_label_id\":{\"type\":\"string\"},\"remove_user_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"type\":\"number\"},\"start_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"state\":{\"type\":\"string\"},\"sub_group_by\":{\"type\":\"string\",\"enum\":[\"\",\"state_id\",\"state__group\",\"priority\",\"project_id\",\"type_id\",\"labels__id\",\"assignees__id\",\"issue_module__module_id\",\"release_work_items__release_id\",\"cycle_id\",\"milestone_id\",\"created_by\",\"target_date\",\"start_date\"]},\"target_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"type_id\":{\"type\":\"string\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_identifier\":{\"type\":\"string\",\"description\":\"Full work-item key, for example VEC-42.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
 		return out, err
 	}
 
@@ -56768,6 +56920,7 @@ func decodeWorkspacePayloadWorkspaceListTransportToVectorMcpWorkspaceList(v *Wor
 	}
 	res := &vector_mcp.WorkspaceList{
 		Action: *v.Action,
+		Format: v.Format,
 	}
 
 	return res
@@ -56899,6 +57052,7 @@ func decodeProjectPayloadProjectListTransportToVectorMcpProjectList(v *ProjectLi
 	}
 	res := &vector_mcp.ProjectList{
 		Action:        *v.Action,
+		Format:        v.Format,
 		Cursor:        v.Cursor,
 		OrderBy:       v.OrderBy,
 		PerPage:       v.PerPage,
@@ -57780,6 +57934,7 @@ func decodeStatePayloadStateListTransportToVectorMcpStateList(v *StateListTransp
 		Action:        *v.Action,
 		ProjectID:     v.ProjectID,
 		WorkspaceSlug: v.WorkspaceSlug,
+		Format:        v.Format,
 		Cursor:        v.Cursor,
 		PerPage:       v.PerPage,
 	}
@@ -58163,6 +58318,7 @@ func decodeWorkitemPayloadWorkitemListTransportToVectorMcpWorkitemList(v *Workit
 	res := &vector_mcp.WorkitemList{
 		Action:         *v.Action,
 		ProjectID:      v.ProjectID,
+		Format:         v.Format,
 		WorkspaceSlug:  v.WorkspaceSlug,
 		OrderBy:        v.OrderBy,
 		Expand:         v.Expand,

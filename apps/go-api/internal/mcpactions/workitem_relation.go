@@ -26,7 +26,7 @@ func (s *Service) WorkitemRelation(ctx context.Context, input *api.WorkitemRelat
 		return result, err
 	}
 	write := in.command.Action != "list" && in.command.Action != "list_definitions"
-	ctx, actor, err := actionActor(ctx, in.workspace, write)
+	ctx, actor, err := s.scopedActor(ctx, in.workspace, write)
 	if err != nil {
 		return result, err
 	}
@@ -86,7 +86,7 @@ func (s *Service) mutateRelation(ctx context.Context, actor mcpauth.Principal, i
 		s.recordMutation(ctx, span, fields, err)
 	}()
 	in.command.Revalidate = func(ctx context.Context) error {
-		_, current, err := actionActor(ctx, in.workspace, true)
+		_, current, err := s.scopedActor(ctx, in.workspace, true)
 		if err != nil {
 			return err
 		}

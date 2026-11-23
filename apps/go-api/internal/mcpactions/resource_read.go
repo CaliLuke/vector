@@ -13,17 +13,14 @@ type projectResourceReader interface {
 	ReadAPIV1(context.Context, string, apicontract.ProjectReadRequest) (any, error)
 }
 
-func readProjectResource[Input, Result any](ctx context.Context, input *Input, selectAction func(*Input) (apicontract.ProjectReadRequest, *string, error), reader projectResourceReader, forbidden, notFound error, project func(any, string) (*Result, error)) (*Result, error) {
+func readProjectResource[Input, Result any](ctx context.Context, s *Service, input *Input, selectAction func(*Input) (apicontract.ProjectReadRequest, *string, error), reader projectResourceReader, forbidden, notFound error, project func(any, string) (*Result, error)) (*Result, error) {
 	request, workspace, err := selectAction(input)
 	if err != nil {
 		return nil, err
 	}
-	ctx, actor, err := readActor(ctx, workspace)
+	ctx, actor, err := s.scopedReadActor(ctx, workspace)
 	if err != nil {
 		return nil, err
-	}
-	if actor.WorkspaceSlug == "" {
-		return nil, api.MakeInvalidParams(errors.New("workspace is required"))
 	}
 	workspaceID := uuid.UUID(actor.WorkspaceID)
 	request.ExpectedWorkspaceID = &workspaceID
@@ -57,4 +54,16 @@ func resourceReadError(err, forbidden, notFound error) error {
 		}
 	}
 	return api.MakeInternalError(errors.New("resource read unavailable"))
+}
+
+// Compact lists default to a small page and can continue using only the cursor.
+func compactPageSize(cursor *string) (int, error) {
+	if cursor == nil || *cursor == "" {
+		return 20, nil
+	}
+	size, _, _, err := apicontract.CursorWindow(cursor)
+	if err != nil {
+		return 0, api.MakeInvalidParams(errors.New("invalid pagination cursor"))
+	}
+	return size, nil
 }

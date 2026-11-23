@@ -94,7 +94,7 @@ func (s *Service) initiativeOperation(ctx context.Context, input *api.Initiative
 		return nil, err
 	}
 	write := in.Action != "list" && in.Action != "retrieve" && in.Action != "list_projects" && in.Action != "list_workitems"
-	ctx, actor, err := actionActor(ctx, in.Workspace, write)
+	ctx, actor, err := s.scopedActor(ctx, in.Workspace, write)
 	if err != nil {
 		return nil, err
 	}

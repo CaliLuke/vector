@@ -127,14 +127,18 @@ func (repository *Repository) APIProject(ctx context.Context, userID uuid.UUID, 
 		project += ` || jsonb_build_object('revision',(SELECT 'project:' || project.id::text || ':' || revision::text FROM project_edit_revisions WHERE project_id=project.id))`
 	}
 
+	match, target := "project.id=$3", any(projectID)
+	if options.Identifier != "" {
+		match, target = "project.identifier=$3", options.Identifier
+	}
 	query := fmt.Sprintf(`WITH requester AS MATERIALIZED (`+apiProjectRequesterSQL(5)+`)
 SELECT (SELECT %s FROM projects project JOIN workspaces workspace ON workspace.id=project.workspace_id CROSS JOIN requester
-WHERE workspace.slug=$2 AND workspace.deleted_at IS NULL AND project.id=$3 AND project.deleted_at IS NULL
+WHERE workspace.slug=$2 AND workspace.deleted_at IS NULL AND %s AND project.deleted_at IS NULL
  AND requester.user_timezone IS NOT NULL
  AND $4 IN (5,15,20)
  AND (project.network=2 OR EXISTS (SELECT 1 FROM project_members visible WHERE visible.project_id=project.id AND visible.workspace_id=project.workspace_id AND visible.member_id=$1 AND visible.is_active=true AND visible.deleted_at IS NULL))
-LIMIT 1), EXISTS(SELECT 1 FROM requester)`, project)
-	body, err := authorizedProjectBody(repository.database.QueryRow(ctx, query, userID, slug, projectID, role, optionalUUID(options.ExpectedWorkspaceID)))
+LIMIT 1), EXISTS(SELECT 1 FROM requester)`, project, match)
+	body, err := authorizedProjectBody(repository.database.QueryRow(ctx, query, userID, slug, target, role, optionalUUID(options.ExpectedWorkspaceID)))
 	if err != nil {
 		return nil, fmt.Errorf("get API project: %w", err)
 	}

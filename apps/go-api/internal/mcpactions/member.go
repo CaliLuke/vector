@@ -38,7 +38,11 @@ func (s *Service) Member(ctx context.Context, input *api.MemberRequest) (*api.Me
 	if err != nil {
 		return nil, err
 	}
-	ctx, actor, err := readActor(ctx, request.workspace)
+	authorize := s.scopedReadActor
+	if request.action == "me" {
+		authorize = readActor
+	}
+	ctx, actor, err := authorize(ctx, request.workspace)
 	if err != nil {
 		return nil, err
 	}
