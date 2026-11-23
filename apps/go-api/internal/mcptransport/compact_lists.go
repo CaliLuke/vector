@@ -37,7 +37,7 @@ type compactListRow struct {
 	ArchivedAt *string `json:"archived_at"`
 	Draft      bool    `json:"is_draft"`
 	Sequence   int64   `json:"sequence_id"`
-	Project    struct{ Identifier string }
+	Project    json.RawMessage
 	State      struct{ Name string }
 }
 
@@ -114,8 +114,9 @@ func formatCompactRow(tool string, row compactListRow) string {
 
 func formatCompactWorkitem(row compactListRow, name string) string {
 	key := row.ID
-	if !row.Draft && row.Sequence > 0 && row.Project.Identifier != "" {
-		key = row.Project.Identifier + "-" + strconv.FormatInt(row.Sequence, 10)
+	var project struct{ Identifier string }
+	if !row.Draft && row.Sequence > 0 && json.Unmarshal(row.Project, &project) == nil && project.Identifier != "" {
+		key = project.Identifier + "-" + strconv.FormatInt(row.Sequence, 10)
 	}
 	parts := []string{key, name}
 	if row.State.Name != "" {

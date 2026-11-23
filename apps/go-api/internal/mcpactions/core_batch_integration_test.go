@@ -111,6 +111,11 @@ func catalogueWorkitems(t *testing.T, root catalogueCall) {
 		require.Contains(t, reference["reference"], "currentUser()")
 	}
 	completed := milestoneObject(t, call("state", map[string]any{"action": "create", "name": "Batch done", "color": "#123456", "group": "completed"}))
+	compactStates := call("state", map[string]any{"action": "list", "format": "compact"})
+	require.False(t, compactStates.IsError, compactStates.Content)
+	require.Empty(t, compactStates.StructuredContent)
+	require.Contains(t, compactStates.Content[0].Text, "Batch done  completed  "+completed["id"].(string))
+	require.NotContains(t, compactStates.Content[0].Text, projectID)
 	milestoneObject(t, itemCall("workitem", map[string]any{"action": "update", "state": completed["id"]}))
 	require.Equal(t, true, milestoneObject(t, itemCall("workitem", map[string]any{"action": "archive"}))["archived"])
 	archived := catalogueRows(t, call("workitem", map[string]any{"action": "list_archived"}))
