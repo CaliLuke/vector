@@ -128,6 +128,7 @@ void test("projects sidebar transitions through initial loading and closed/open 
   const { ProjectService } = await import("../../apps/web/core/services/project/project.service.ts");
   const projects = Promise.withResolvers();
   t.mock.method(ProjectService.prototype, "getProjectsLite", () => projects.promise);
+  t.mock.method(ProjectService.prototype, "getProjects", () => projects.promise);
 
   ({ SidebarProjectsList } = await import("../../apps/web/core/components/workspace/sidebar/projects-list.tsx"));
   const { SidebarStateProvider } = await import("../../apps/web/core/providers/sidebar-state.tsx");

@@ -80,6 +80,7 @@ func TestProjectGeneratedValidationRejectsInvalidActionInputs(t *testing.T) {
 		`{"action":"retrieve","project_id":"30000000-0000-4000-8000-000000000001","cursor":"100:1:0"}`,
 		`{"action":"create","name":"New"}`, `{"action":"list","per_page":-1}`,
 		`{"action":"list","per_page":1001}`, `{"action":"list","per_page":null}`,
+		`{"action":"list","format":"compact","cursor":"bad"}`,
 	} {
 		t.Run(input, func(t *testing.T) {
 			f := newFixture(t)

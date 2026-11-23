@@ -79,11 +79,12 @@ func normalize(in *Command) error {
 	if err != nil {
 		return projectmutations.ErrInvalid
 	}
-	if in.Options != nil {
-		if err = json.Unmarshal(raw, &in.Options); err != nil {
-			return projectmutations.ErrInvalid
-		}
+	// Decode into owned storage because retries can share the original option maps.
+	var options []map[string]any
+	if err = json.Unmarshal(raw, &options); err != nil {
+		return projectmutations.ErrInvalid
 	}
+	in.Options = options
 	if in.Values != nil {
 		in.Values = valuesByID
 	}
